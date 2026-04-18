@@ -901,8 +901,6 @@ k.scene("game", () => {
     stars.push(s);
   }
 
-  k.onUpdate("night-deco", () => {});
-
   k.onKeyPress("n", () => {
     isNight = !isNight;
     const targetOpacity = isNight ? 1 : 0;
@@ -1604,6 +1602,7 @@ k.scene("game", () => {
     }
 
     k.wait(0.08, () => {
+      if (!wagon.exists()) return;
       if (wagon.passengerEntity && wagon.passengerEntity.exists()) {
         k.destroy(wagon.passengerEntity);
       }
@@ -1763,6 +1762,25 @@ k.scene("game", () => {
       if (tile && tile.tileType === "water" && v.isSkeleton) {
         v.isSkeleton = false;
         v.sprite = "human";
+        gameState.skeletons = Math.max(0, gameState.skeletons - 1);
+        audio.splash();
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 * i) / 8;
+          const drop = k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(v.pos.x + 14, v.pos.y + 20),
+            k.color(k.rgb(100, 180, 230)),
+            k.opacity(0.9),
+            k.lifespan(0.5, { fade: 0.3 }),
+            k.z(10),
+            { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 40 },
+          ]);
+          drop.onUpdate(() => {
+            drop.pos.x += drop.vx * k.dt();
+            drop.pos.y += drop.vy * k.dt();
+            drop.vy += 180 * k.dt();
+          });
+        }
       }
       if (v.pos.x > WIDTH + 40) {
         if (v.crown) v.crown.forEach((e) => k.destroy(e));
