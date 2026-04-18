@@ -11,6 +11,7 @@
     "kaplay": "^3001.0.19"
   },
   "devDependencies": {
+    "terser": "^5.46.1",
     "vite": "^6.0.0"
   }
 }
