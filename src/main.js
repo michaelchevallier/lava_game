@@ -543,58 +543,46 @@ k.scene("game", () => {
     } else if (type === "rail") {
       const x = col * TILE;
       const y = row * TILE + TILE - 10;
-      const t = k.add([
-        k.rect(TILE, 8),
-        k.pos(x, y),
-        k.color(k.rgb(200, 200, 215)),
-        k.outline(2, k.rgb(70, 70, 90)),
-        k.area(),
-        k.body({ isStatic: true }),
-        k.z(2),
-        "tile",
-        "rail",
-        { gridCol: col, gridRow: row, tileType: "rail", extras: [] },
-      ]);
       const ties = [];
       for (let i = 0; i < 3; i++) {
         ties.push(
           k.add([
             k.rect(5, 9),
-            k.pos(x + 4 + i * 10, y + 8),
+            k.pos(x + 4 + i * 10, y + 7),
             k.color(k.rgb(100, 60, 30)),
             k.outline(1, k.rgb(40, 20, 10)),
             k.z(1),
           ]),
         );
       }
-      t.extras = ties;
+      const t = k.add([
+        k.rect(TILE, 6),
+        k.pos(x, y),
+        k.color(k.rgb(210, 210, 225)),
+        k.outline(2, k.rgb(70, 70, 90)),
+        k.area(),
+        k.body({ isStatic: true }),
+        k.z(3),
+        "tile",
+        "rail",
+        { gridCol: col, gridRow: row, tileType: "rail", extras: ties },
+      ]);
       tileMap.set(key, t);
     } else if (type === "rail_up" || type === "rail_down") {
-      const angle = type === "rail_up" ? -30 : 30;
-      const x = col * TILE + TILE / 2;
-      const y = row * TILE + TILE / 2;
-      const len = TILE * 1.2;
-      const t = k.add([
-        k.rect(len, 6),
-        k.pos(x, y),
-        k.anchor("center"),
-        k.rotate(angle),
-        k.color(k.rgb(200, 200, 215)),
-        k.outline(2, k.rgb(70, 70, 90)),
-        k.z(2),
-        "tile",
-        { gridCol: col, gridRow: row, tileType: type, extras: [] },
-      ]);
+      const angle = type === "rail_up" ? -45 : 45;
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2 - 7;
+      const len = TILE * Math.SQRT2 + 2;
+      const rad = (angle * Math.PI) / 180;
       const ties = [];
       for (let i = 0; i < 3; i++) {
-        const rad = (angle * Math.PI) / 180;
-        const off = (i - 1) * 10;
-        const tx = x + off * Math.cos(rad);
-        const ty = y + off * Math.sin(rad);
+        const off = (i - 1) * 13;
+        const tx = cx + off * Math.cos(rad);
+        const ty = cy + off * Math.sin(rad);
         ties.push(
           k.add([
             k.rect(5, 11),
-            k.pos(tx, ty + 8),
+            k.pos(tx, ty + 7),
             k.anchor("center"),
             k.rotate(angle),
             k.color(k.rgb(100, 60, 30)),
@@ -603,7 +591,17 @@ k.scene("game", () => {
           ]),
         );
       }
-      t.extras = ties;
+      const t = k.add([
+        k.rect(len, 6),
+        k.pos(cx, cy),
+        k.anchor("center"),
+        k.rotate(angle),
+        k.color(k.rgb(210, 210, 225)),
+        k.outline(2, k.rgb(70, 70, 90)),
+        k.z(3),
+        "tile",
+        { gridCol: col, gridRow: row, tileType: type, extras: ties },
+      ]);
       tileMap.set(key, t);
     }
   }
