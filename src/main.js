@@ -951,6 +951,32 @@ k.scene("game", () => {
         wagon.rider.pos.y = wagon.pos.y - 44;
       }
 
+      if (wagon.isGrounded() && Math.random() < 0.4) {
+        const dust = k.add([
+          k.circle(1.5 + Math.random() * 1.5),
+          k.pos(dx + 6 + Math.random() * 48, wagon.pos.y + 34 + Math.random() * 2),
+          k.color(180, 160, 120),
+          k.opacity(0.7),
+          k.lifespan(0.35, { fade: 0.25 }),
+          k.z(2),
+          { vx: -20 - Math.random() * 30, vy: -15 - Math.random() * 15 },
+        ]);
+        dust.onUpdate(() => {
+          dust.pos.x += dust.vx * k.dt();
+          dust.pos.y += dust.vy * k.dt();
+        });
+      }
+      if (!wagon.isGrounded() && Math.random() < 0.5) {
+        k.add([
+          k.circle(1 + Math.random()),
+          k.pos(dx + 10 + Math.random() * 40, wagon.pos.y + 32),
+          k.color(255, 220, 100),
+          k.opacity(0.9),
+          k.lifespan(0.2, { fade: 0.15 }),
+          k.z(2),
+        ]);
+      }
+
       if (wagon.pos.x > WIDTH + 80) {
         if (wagon.rider) exitWagon(wagon.rider);
         wagon.parts.forEach((p) => k.destroy(p));
