@@ -412,6 +412,25 @@ const SPR_WATER2 = [
   "UUUUuuUUUUuuUUUU",
 ];
 
+const SPR_BOOST = [
+  "YYYYYYYYYYYYYYYY",
+  "YyyyyYYYYYYyyyyY",
+  "YyyyyyYYYYyyyyyY",
+  "YyyKyyyyYYyyKyyY",
+  "YyKKyyyyyyyyKKyY",
+  "YKKKyyyyyyyyKKKY",
+  "YKKKKyyyyyyKKKKY",
+  "YKKKKKyyyyKKKKKY",
+  "YKKKKKyyyyKKKKKY",
+  "YKKKKyyyyyyKKKKY",
+  "YKKKyyyyyyyyKKKY",
+  "YyKKyyyyyyyyKKyY",
+  "YyyKyyyyYYyyKyyY",
+  "YyyyyyYYYYyyyyyY",
+  "YyyyyYYYYYYyyyyY",
+  "YYYYYYYYYYYYYYYY",
+];
+
 const SPR_CLOUD = [
   ".....cccccc.........",
   "...ccCCCCCCcc.......",
@@ -449,6 +468,7 @@ Promise.all([
   k.loadSprite("lava2", makeSpriteUrl(SPR_LAVA2, 2)),
   k.loadSprite("water1", makeSpriteUrl(SPR_WATER, 2)),
   k.loadSprite("water2", makeSpriteUrl(SPR_WATER2, 2)),
+  k.loadSprite("boost", makeSpriteUrl(SPR_BOOST, 2)),
   k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
   k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
 ]).then(() => {
@@ -675,6 +695,7 @@ k.scene("game", () => {
   k.onKeyPress("4", () => (selectedTool = "rail_up"));
   k.onKeyPress("5", () => (selectedTool = "rail_down"));
   k.onKeyPress("6", () => (selectedTool = "water"));
+  k.onKeyPress("7", () => (selectedTool = "boost"));
   k.onKeyPress("8", () => (selectedTool = "coin"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
@@ -776,6 +797,20 @@ k.scene("game", () => {
         "rail",
         { gridCol: col, gridRow: row, tileType: "rail", extras: ties },
       ]);
+      tileMap.set(key, t);
+    } else if (type === "boost") {
+      const t = k.add([
+        k.sprite("boost"),
+        k.pos(col * TILE, row * TILE),
+        k.area(),
+        k.z(1),
+        "tile",
+        "boost",
+        { gridCol: col, gridRow: row, tileType: "boost", extras: [] },
+      ]);
+      t.onUpdate(() => {
+        t.angle = Math.sin(k.time() * 8 + col) * 3;
+      });
       tileMap.set(key, t);
     } else if (type === "coin") {
       const cx = col * TILE + TILE / 2;
@@ -960,7 +995,23 @@ k.scene("game", () => {
     let spokeAngle = 0;
 
     wagon.onUpdate(() => {
-      wagon.move(wagon.speed, 0);
+      const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
+      const currentSpeed = boosted ? wagon.speed * 2.2 : wagon.speed;
+      wagon.move(currentSpeed, 0);
+      if (boosted && Math.random() < 0.6) {
+        const f = k.add([
+          k.circle(2 + Math.random() * 3),
+          k.pos(wagon.pos.x - 4, wagon.pos.y + 8 + Math.random() * 20),
+          k.color(k.rgb(255, 180 + Math.random() * 60, 40)),
+          k.opacity(0.9),
+          k.lifespan(0.35, { fade: 0.2 }),
+          k.z(2),
+          { vx: -50 - Math.random() * 60 },
+        ]);
+        f.onUpdate(() => {
+          f.pos.x += f.vx * k.dt();
+        });
+      }
       const dx = wagon.pos.x;
       parts[0].pos.x = dx;
       parts[0].pos.y = wagon.pos.y;
@@ -1045,6 +1096,28 @@ k.scene("game", () => {
 
     wagon.onCollide("coin", (c) => {
       collectCoin(c);
+    });
+
+    wagon.onCollide("boost", () => {
+      if (wagon.boostUntil && k.time() < wagon.boostUntil) return;
+      wagon.boostUntil = k.time() + 1.5;
+      audio.boost();
+      for (let i = 0; i < 12; i++) {
+        const a = (Math.PI * 2 * i) / 12;
+        const p = k.add([
+          k.circle(3 + Math.random() * 3),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
+          k.color(k.rgb(255, 230, 60)),
+          k.opacity(1),
+          k.lifespan(0.4, { fade: 0.3 }),
+          k.z(14),
+          { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+        });
+      }
     });
   }
 
@@ -1396,6 +1469,7 @@ k.scene("game", () => {
       rail_down: "RAIL \\",
       water: "EAU",
       coin: "PIECE",
+      boost: "BOOST",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -1405,6 +1479,7 @@ k.scene("game", () => {
       rail_down: k.rgb(150, 220, 255),
       water: k.rgb(80, 180, 230),
       coin: k.rgb(255, 210, 50),
+      boost: k.rgb(255, 210, 63),
     };
 
     k.drawRect({
@@ -1463,7 +1538,7 @@ k.scene("game", () => {
       });
     }
     k.drawText({
-      text: "(1)Lave (2)Rail-- (4)/ (5)\\ (6)Eau (8)Piece (3)Gomme  |  Clic=pose  ClicD=efface",
+      text: "(1)Lave (2)Rail (4)/ (5)\\ (6)Eau (7)Boost (8)Piece (3)Gomme",
       size: 12,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
