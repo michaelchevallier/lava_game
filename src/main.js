@@ -610,7 +610,7 @@ k.scene("game", () => {
     persistSave(save);
   }
 
-  function registerKill(x, y, base = 10, vip = false) {
+  function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
     const now = k.time();
     if (now < gameState.comboExpire) {
       gameState.comboCount = Math.min(gameState.comboCount + 1, 5);
@@ -619,7 +619,7 @@ k.scene("game", () => {
     }
     gameState.comboExpire = now + COMBO_WINDOW;
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
-    const pts = base * mult;
+    const pts = base * mult * (1 + darkBonus);
     gameState.score += pts;
     if (vip) {
       audio.combo();
@@ -1387,6 +1387,36 @@ k.scene("game", () => {
       collectCoin(c);
     });
 
+    wagon.onCollide("ghost", (g) => {
+      wagon.darkPassenger = (wagon.darkPassenger || 0) + 1;
+      k.destroy(g);
+      k.shake(4);
+      audio.coin();
+      showPopup(
+        wagon.pos.x + 30,
+        wagon.pos.y - 20,
+        `DETTE x${wagon.darkPassenger + 1}`,
+        k.rgb(180, 100, 255),
+        16,
+      );
+      for (let i = 0; i < 10; i++) {
+        const a = (Math.PI * 2 * i) / 10;
+        const p = k.add([
+          k.circle(3 + Math.random() * 2),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 10),
+          k.color(k.rgb(180, 100, 255)),
+          k.opacity(0.9),
+          k.lifespan(0.6, { fade: 0.4 }),
+          k.z(13),
+          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 20 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+        });
+      }
+    });
+
     wagon.onCollide("trampoline", () => {
       if (wagon.lastBounce && k.time() - wagon.lastBounce < 0.3) return;
       wagon.lastBounce = k.time();
@@ -1539,7 +1569,9 @@ k.scene("game", () => {
     k.shake(6);
     gameState.skeletons += 1;
     audio.transform();
-    registerKill(wagon.pos.x + 30, wagon.pos.y);
+    const dark = wagon.darkPassenger || 0;
+    registerKill(wagon.pos.x + 30, wagon.pos.y, 10, false, dark);
+    if (dark > 0) wagon.darkPassenger = 0;
 
     const savedSpeed = wagon.speed;
     wagon.speed = 0;
@@ -1674,6 +1706,27 @@ k.scene("game", () => {
       ]);
       wagon.passengerEntity = skel;
       wagon.parts.push(skel);
+
+      const ghost = k.add([
+        k.sprite("skeleton"),
+        k.pos(wagon.pos.x + 16, wagon.pos.y - 30),
+        k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+        k.opacity(0.55),
+        k.z(5),
+        "ghost",
+        { vx: -60 - Math.random() * 40, vy: -30, born: k.time() },
+      ]);
+      ghost.onUpdate(() => {
+        ghost.pos.x += ghost.vx * k.dt();
+        ghost.pos.y += ghost.vy * k.dt();
+        ghost.vy += 100 * k.dt();
+        if (ghost.pos.y > (GROUND_ROW - 2) * TILE) {
+          ghost.pos.y = (GROUND_ROW - 2) * TILE;
+          ghost.vy = 0;
+        }
+        ghost.opacity = Math.max(0, 0.55 - (k.time() - ghost.born) / 4);
+        if (k.time() - ghost.born > 3.5 || ghost.pos.x < -60) k.destroy(ghost);
+      });
     });
   }
 
