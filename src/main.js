@@ -709,6 +709,68 @@ k.scene("game", () => {
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
 
+  let isNight = false;
+  const stars = [];
+  const moon = k.add([
+    k.circle(24),
+    k.pos(WIDTH - 140, 90),
+    k.color(k.rgb(255, 250, 220)),
+    k.opacity(0),
+    k.z(-11),
+    "night-deco",
+  ]);
+  const moonCrater = k.add([
+    k.circle(8),
+    k.pos(WIDTH - 150, 82),
+    k.color(k.rgb(200, 195, 170)),
+    k.opacity(0),
+    k.z(-10),
+    "night-deco",
+  ]);
+  const nightTint = k.add([
+    k.rect(WIDTH, HEIGHT),
+    k.pos(0, 0),
+    k.color(k.rgb(20, 30, 80)),
+    k.opacity(0),
+    k.z(-12),
+    k.fixed(),
+    "night-deco",
+  ]);
+
+  for (let i = 0; i < 40; i++) {
+    const s = k.add([
+      k.circle(1 + Math.random()),
+      k.pos(Math.random() * WIDTH, Math.random() * (GROUND_ROW * TILE - 80) + 20),
+      k.color(k.rgb(255, 255, 220)),
+      k.opacity(0),
+      k.z(-10),
+      "night-deco",
+      { twinkle: Math.random() * 10 },
+    ]);
+    stars.push(s);
+  }
+
+  k.onUpdate("night-deco", () => {});
+
+  k.onKeyPress("n", () => {
+    isNight = !isNight;
+    const targetOpacity = isNight ? 1 : 0;
+    for (const s of stars) {
+      s.opacity = targetOpacity * (0.7 + Math.random() * 0.3);
+    }
+    moon.opacity = targetOpacity;
+    moonCrater.opacity = targetOpacity;
+    nightTint.opacity = targetOpacity * 0.35;
+  });
+
+  k.onUpdate(() => {
+    if (isNight) {
+      for (const s of stars) {
+        s.opacity = 0.5 + Math.sin(k.time() * 2 + s.twinkle) * 0.5;
+      }
+    }
+  });
+
   k.onMousePress("left", () => {
     const m = k.toWorld(k.mousePos());
     const col = Math.floor(m.x / TILE);
