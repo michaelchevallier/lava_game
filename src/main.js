@@ -940,6 +940,18 @@ k.scene("game", () => {
   }
   if (settings.autoMode) startAutoMode();
 
+  let ghostTrainInterval = null;
+  function startGhostTrain() {
+    if (ghostTrainInterval) return;
+    ghostTrainInterval = k.loop(45, () => {
+      showPopup(WIDTH / 2, 120, "TRAIN FANTOME !", k.rgb(255, 40, 40), 46);
+      audio.transform();
+      k.shake(5);
+      k.wait(2.5, () => spawnWagon(true));
+    });
+  }
+  startGhostTrain();
+
   k.onKeyPress("d", () => {
     settings.autoMode = !settings.autoMode;
     save.autoMode = settings.autoMode;
@@ -1393,7 +1405,7 @@ k.scene("game", () => {
     return [body, frontRim, backRim, plank1, plank2, trim];
   }
 
-  function spawnWagon() {
+  function spawnWagon(ghost = false) {
     audio.wagonSpawn();
     const y = (GROUND_ROW - 1) * TILE + 2;
     const wagon = k.add([
@@ -1405,11 +1417,40 @@ k.scene("game", () => {
       k.anchor("topleft"),
       k.z(3),
       "wagon",
-      { passenger: "human", speed: 140, parts: [], rider: null },
+      {
+        passenger: "human",
+        speed: ghost ? 180 : 140,
+        parts: [],
+        rider: null,
+        ghostTrain: ghost,
+      },
     ]);
 
-    const theme = WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
+    const theme = ghost
+      ? { body: [30, 30, 40], dark: [0, 0, 0], trim: [180, 30, 30] }
+      : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
     const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
+    if (ghost) {
+      const eye1 = k.add([
+        k.circle(4),
+        k.pos(wagon.pos.x + 12, wagon.pos.y + 10),
+        k.color(k.rgb(255, 40, 40)),
+        k.outline(1, k.rgb(255, 180, 180)),
+        k.z(5),
+        "wagon-part",
+        { off: 12 },
+      ]);
+      const eye2 = k.add([
+        k.circle(4),
+        k.pos(wagon.pos.x + 48, wagon.pos.y + 10),
+        k.color(k.rgb(255, 40, 40)),
+        k.outline(1, k.rgb(255, 180, 180)),
+        k.z(5),
+        "wagon-part",
+        { off: 48 },
+      ]);
+      parts.push(eye1, eye2);
+    }
 
     const wheel1 = k.add([
       k.circle(9),
@@ -1746,8 +1787,27 @@ k.scene("game", () => {
     gameState.skeletons += 1;
     audio.transform();
     const dark = wagon.darkPassenger || 0;
-    registerKill(wagon.pos.x + 30, wagon.pos.y, 10, false, dark);
+    const base = wagon.ghostTrain ? 100 : 10;
+    registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain, dark);
     if (dark > 0) wagon.darkPassenger = 0;
+    if (wagon.ghostTrain) {
+      for (let i = 0; i < 30; i++) {
+        const a = (Math.PI * 2 * i) / 30;
+        const p = k.add([
+          k.circle(4 + Math.random() * 4),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 10),
+          k.color(k.rgb(180, 100, 255)),
+          k.opacity(1),
+          k.lifespan(1.2, { fade: 0.8 }),
+          k.z(15),
+          { vx: Math.cos(a) * 200, vy: Math.sin(a) * 200 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+        });
+      }
+    }
 
     const savedSpeed = wagon.speed;
     wagon.speed = 0;
