@@ -38,6 +38,7 @@ const PALETTE = {
   N: "#3a3a3a", n: "#666666",
   P: "#ff4c6d", p: "#d63a5a",
   Z: "#fff6a8",
+  U: "#4fb8e8", u: "#2e7da0",
 };
 
 function makeSpriteUrl(rows, scale = 2) {
@@ -287,6 +288,44 @@ const SPR_LAVA2 = [
   "FFLLLLLLLLLLLLFF",
 ];
 
+const SPR_WATER = [
+  "UUUUUUUUUUUUUUUU",
+  "UUuuUUUUUUUUuuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUuUUUUUUUUUUuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUuuUUUUUUUUuuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UuUUUUUUUUUUUUuU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+];
+
+const SPR_WATER2 = [
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUuuUUUUUUUUuuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUuUUUUUUUUUUuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUuuUUUUUUUUuuUU",
+  "UUUUuuUUUUuuUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UUUUUUUUUUUUUUUU",
+  "UuUUUUUUUUUUUUuU",
+  "UUUUuuUUUUuuUUUU",
+];
+
 const SPR_CLOUD = [
   ".....cccccc.........",
   "...ccCCCCCCcc.......",
@@ -322,6 +361,8 @@ Promise.all([
   k.loadSprite("ground", makeSpriteUrl(SPR_GROUND, 2)),
   k.loadSprite("lava1", makeSpriteUrl(SPR_LAVA, 2)),
   k.loadSprite("lava2", makeSpriteUrl(SPR_LAVA2, 2)),
+  k.loadSprite("water1", makeSpriteUrl(SPR_WATER, 2)),
+  k.loadSprite("water2", makeSpriteUrl(SPR_WATER2, 2)),
   k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
   k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
 ]).then(() => {
@@ -487,6 +528,7 @@ k.scene("game", () => {
   k.onKeyPress("3", () => (selectedTool = "erase"));
   k.onKeyPress("4", () => (selectedTool = "rail_up"));
   k.onKeyPress("5", () => (selectedTool = "rail_down"));
+  k.onKeyPress("6", () => (selectedTool = "water"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -537,6 +579,24 @@ k.scene("game", () => {
         if (f !== t.lavaPhase) {
           t.lavaPhase = f;
           t.sprite = f === 0 ? "lava1" : "lava2";
+        }
+      });
+      tileMap.set(key, t);
+    } else if (type === "water") {
+      const t = k.add([
+        k.sprite("water1"),
+        k.pos(col * TILE, row * TILE),
+        k.area(),
+        k.z(1),
+        "tile",
+        "water",
+        { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, extras: [] },
+      ]);
+      t.onUpdate(() => {
+        const f = Math.floor(k.time() * 2 + col * 0.3) % 2;
+        if (f !== t.waterPhase) {
+          t.waterPhase = f;
+          t.sprite = f === 0 ? "water1" : "water2";
         }
       });
       tileMap.set(key, t);
@@ -769,6 +829,62 @@ k.scene("game", () => {
         transformToSkeleton(wagon);
       }
     });
+
+    wagon.onCollide("water", () => {
+      if (wagon.passenger === "skeleton") {
+        wagon.passenger = "human";
+        reviveFromSkeleton(wagon);
+      }
+    });
+  }
+
+  function reviveFromSkeleton(wagon) {
+    const cx = wagon.pos.x + 30;
+    const cy = wagon.pos.y - 10;
+    for (let i = 0; i < 20; i++) {
+      const angle = (Math.PI * 2 * i) / 20;
+      const r = 40 + Math.random() * 30;
+      const drop = k.add([
+        k.circle(3 + Math.random() * 3),
+        k.pos(cx, cy),
+        k.color(k.rgb(90 + Math.random() * 100, 180, 230)),
+        k.opacity(1),
+        k.lifespan(0.8, { fade: 0.5 }),
+        k.z(14),
+        {
+          vx: Math.cos(angle) * r,
+          vy: Math.sin(angle) * r - 60,
+          grav: 200,
+        },
+      ]);
+      drop.onUpdate(() => {
+        drop.pos.x += drop.vx * k.dt();
+        drop.pos.y += drop.vy * k.dt();
+        drop.vy += drop.grav * k.dt();
+      });
+    }
+    k.wait(0.05, () => {
+      if (wagon.passengerEntity && wagon.passengerEntity.exists()) {
+        k.destroy(wagon.passengerEntity);
+      }
+      let spr = "human";
+      if (wagon.rider) {
+        spr = wagon.rider.normalSprite;
+        if (wagon.rider.isSkeleton) {
+          wagon.rider.isSkeleton = false;
+          wagon.rider.sprite = wagon.rider.normalSprite;
+        }
+      }
+      const passenger = k.add([
+        k.sprite(spr),
+        k.pos(wagon.pos.x + 16, wagon.pos.y - 40),
+        k.z(7),
+        "passenger",
+        { wagon, currentType: "human" },
+      ]);
+      wagon.passengerEntity = passenger;
+      wagon.parts.push(passenger);
+    });
   }
 
   function transformToSkeleton(wagon) {
@@ -955,6 +1071,7 @@ k.scene("game", () => {
       erase: "GOMME",
       rail_up: "RAIL /",
       rail_down: "RAIL \\",
+      water: "EAU",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -962,6 +1079,7 @@ k.scene("game", () => {
       erase: k.rgb(200, 200, 200),
       rail_up: k.rgb(150, 220, 255),
       rail_down: k.rgb(150, 220, 255),
+      water: k.rgb(80, 180, 230),
     };
 
     k.drawRect({
@@ -990,7 +1108,7 @@ k.scene("game", () => {
       color: toolColors[selectedTool],
     });
     k.drawText({
-      text: "(1)Lave (2)Rail-- (4)Rail/ (5)Rail\\ (3)Gomme  |  Clic=pose  ClicD=efface",
+      text: "(1)Lave (2)Rail-- (4)Rail/ (5)Rail\\ (6)Eau (3)Gomme  |  Clic=pose  ClicD=efface",
       size: 12,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
