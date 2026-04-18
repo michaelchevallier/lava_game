@@ -657,7 +657,6 @@ k.scene("game", () => {
       k.opacity(0.85),
       k.lifespan(0.4, { fade: 0.3 }),
       k.z(100),
-      k.fixed(),
     ]);
     showPopup(WIDTH / 2, HEIGHT / 2 - 40, "APOCALYPSE !", k.rgb(255, 80, 80), 60);
     showPopup(WIDTH / 2, HEIGHT / 2 + 30, "x8 COMBO", k.rgb(255, 230, 80), 32);
@@ -1045,8 +1044,8 @@ k.scene("game", () => {
   const TOOLBAR_ORDER = [
     { tool: "lava", key: "1", label: "Lave" },
     { tool: "rail", key: "2", label: "Rail" },
-    { tool: "rail_up", key: "4", label: "/" },
-    { tool: "rail_down", key: "5", label: "\\" },
+    { tool: "rail_up", key: "4", label: "Up" },
+    { tool: "rail_down", key: "5", label: "Dn" },
     { tool: "water", key: "6", label: "Eau" },
     { tool: "boost", key: "7", label: "Boost" },
     { tool: "coin", key: "8", label: "Piece" },
@@ -1835,7 +1834,6 @@ k.scene("game", () => {
       k.opacity(0.55),
       k.lifespan(0.12, { fade: 0.1 }),
       k.z(100),
-      k.fixed(),
     ]);
 
     const cx = wagon.pos.x + 30;
@@ -2154,7 +2152,7 @@ k.scene("game", () => {
       rail: "RAIL --",
       erase: "GOMME",
       rail_up: "RAIL /",
-      rail_down: "RAIL \\",
+      rail_down: "RAIL Dn",
       water: "EAU",
       coin: "PIECE",
       boost: "BOOST",
@@ -2623,7 +2621,7 @@ k.scene("game", () => {
       });
     }
     k.drawText({
-      text: "(1)Lave (2)Rail (4)/ (5)\\ (6)Eau (7)Boost (8)Piece (9)Trampo (3)Gomme",
+      text: "(1)Lave (2)Rail (4)Up (5)Dn (6)Eau (7)Boost (8)Piece (9)Trampo (3)Gomme",
       size: 12,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
