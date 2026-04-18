@@ -469,12 +469,12 @@ const SPR_TOAD = substituteSprite(SPR_PLAYER, { R: "P", r: "p", O: "P", o: "p" }
 const SPR_TOAD_SKEL = substituteSprite(SPR_PLAYER_SKEL, { R: "P", r: "p" });
 
 Promise.all([
-  k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)),
-  k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)),
-  k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)),
-  k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)),
-  k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)),
-  k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)),
+  k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)).catch(e => console.error("player failed", e)),
+  k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)).catch(e => console.error("player_skel failed", e)),
+  k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)).catch(e => console.error("luigi failed", e)),
+  k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)).catch(e => console.error("luigi_skel failed", e)),
+  k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)).catch(e => console.error("toad failed", e)),
+  k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)).catch(e => console.error("toad_skel failed", e)),
   k.loadSprite("pika", makeSpriteUrl(SPR_PIKA, 2)),
   k.loadSprite("pika_skel", makeSpriteUrl(SPR_PIKA_SKEL, 2)),
   k.loadSprite("human", makeSpriteUrl(SPR_HUMAN, 2)),
@@ -489,8 +489,11 @@ Promise.all([
   k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
   k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
 ]).then(() => {
-  k.go("game");
-});
+  console.log("sprites loaded, starting scene");
+  try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
+}).catch(e => console.error("Promise.all failed", e));
+
+window.addEventListener("error", (e) => console.error("global error:", e.message, e.filename, e.lineno));
 
 let selectedTool = "lava";
 
