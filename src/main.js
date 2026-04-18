@@ -836,6 +836,10 @@ k.scene("game", () => {
   k.onKeyPress("r", () => k.go("game"));
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
+  k.onKeyPress(["p", "escape"], () => {
+    const root = k.getTreeRoot();
+    root.paused = !root.paused;
+  });
 
   k.onKeyPress("t", () => buildDemoCircuit());
 
@@ -2216,6 +2220,86 @@ k.scene("game", () => {
         height: 8,
         color: k.rgb(255, 210, 63),
       });
+    }
+
+    const isPaused = k.getTreeRoot().paused;
+    if (isPaused) {
+      k.drawRect({
+        pos: k.vec2(0, 0),
+        width: WIDTH,
+        height: HEIGHT,
+        color: k.rgb(0, 0, 0),
+        opacity: 0.7,
+      });
+      k.drawText({
+        text: "PAUSE",
+        size: 80,
+        pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 30),
+        anchor: "center",
+        color: k.rgb(255, 210, 63),
+      });
+      k.drawText({
+        text: "Appuie sur P ou ECHAP pour reprendre",
+        size: 18,
+        pos: k.vec2(WIDTH / 2, HEIGHT / 2 + 40),
+        anchor: "center",
+        color: k.rgb(220, 220, 220),
+      });
+    }
+
+    if ((save.plays || 0) === 0 && !isPaused && !settings.open) {
+      const alpha = Math.max(0, 1 - (k.time() / 10));
+      if (alpha > 0.1) {
+        k.drawRect({
+          pos: k.vec2(WIDTH / 2 - 300, HEIGHT / 2 - 100),
+          width: 600,
+          height: 200,
+          color: k.rgb(0, 0, 0),
+          opacity: alpha * 0.8,
+        });
+        k.drawRect({
+          pos: k.vec2(WIDTH / 2 - 300, HEIGHT / 2 - 100),
+          width: 600,
+          height: 4,
+          color: k.rgb(255, 210, 63),
+          opacity: alpha,
+        });
+        k.drawText({
+          text: "BIENVENUE !",
+          size: 28,
+          pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 75),
+          anchor: "center",
+          color: k.rgb(255, 230, 80),
+          opacity: alpha,
+        });
+        k.drawText({
+          text: "Clique sur les outils en bas pour construire.",
+          size: 15,
+          pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 40),
+          anchor: "center",
+          color: k.WHITE,
+          opacity: alpha,
+        });
+        k.drawText({
+          text: "Clique sur le terrain pour poser. X = Spawn wagon.",
+          size: 15,
+          pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 15),
+          anchor: "center",
+          color: k.WHITE,
+          opacity: alpha,
+        });
+        k.drawText({
+          text: "D = Mode auto. Engrenage en haut a droite pour les options.",
+          size: 15,
+          pos: k.vec2(WIDTH / 2, HEIGHT / 2 + 10),
+          anchor: "center",
+          color: k.WHITE,
+          opacity: alpha,
+        });
+      } else {
+        save.plays = 1;
+        persistSave(save);
+      }
     }
 
     if (settings.open) {
