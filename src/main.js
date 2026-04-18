@@ -977,6 +977,25 @@ k.scene("game", () => {
     });
   }
 
+  function showPopup(x, y, text, color, size = 20) {
+    const p = k.add([
+      k.text(text, { size }),
+      k.pos(x, y),
+      k.anchor("center"),
+      k.color(color),
+      k.opacity(1),
+      k.lifespan(1, { fade: 0.6 }),
+      k.z(20),
+      { vy: -70, vx: (Math.random() - 0.5) * 30 },
+    ]);
+    p.onUpdate(() => {
+      p.pos.y += p.vy * k.dt();
+      p.pos.x += p.vx * k.dt();
+      p.vy *= 0.97;
+    });
+    return p;
+  }
+
   function collectCoin(c) {
     audio.coin();
     const cx = c.pos.x;
@@ -986,6 +1005,7 @@ k.scene("game", () => {
     tileMap.delete(key);
     k.destroy(c);
     gameState.coins += 1;
+    showPopup(cx, cy - 8, "+5", k.rgb(255, 230, 80), 18);
     for (let i = 0; i < 10; i++) {
       const angle = (Math.PI * 2 * i) / 10;
       const spark = k.add([
@@ -1063,6 +1083,7 @@ k.scene("game", () => {
     k.shake(6);
     gameState.skeletons += 1;
     audio.transform();
+    showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "+10", k.rgb(255, 180, 60), 24);
 
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
@@ -1246,7 +1267,9 @@ k.scene("game", () => {
         v.isSkeleton = true;
         v.sprite = "skeleton";
         gameState.skeletons += 1;
+        audio.transform();
         k.shake(3);
+        showPopup(v.pos.x + 14, v.pos.y - 10, "+10", k.rgb(255, 180, 60), 20);
         const cx = v.pos.x + 14;
         const cy = v.pos.y + 10;
         for (let i = 0; i < 12; i++) {
