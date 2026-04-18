@@ -19,6 +19,92 @@ const k = kaplay({
 
 k.setGravity(1600);
 
+const audio = (() => {
+  let ctx = null;
+  let muted = false;
+  const getCtx = () => {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { return null; }
+    }
+    return ctx;
+  };
+  const beep = (freq, dur, type = "square", vol = 0.12, slideTo = null) => {
+    if (muted) return;
+    const c = getCtx();
+    if (!c) return;
+    try {
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, c.currentTime);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime + dur);
+      g.gain.setValueAtTime(vol, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+      osc.connect(g);
+      g.connect(c.destination);
+      osc.start();
+      osc.stop(c.currentTime + dur);
+    } catch (e) {}
+  };
+  const noise = (dur, vol = 0.1) => {
+    if (muted) return;
+    const c = getCtx();
+    if (!c) return;
+    try {
+      const bufSize = c.sampleRate * dur;
+      const buf = c.createBuffer(1, bufSize, c.sampleRate);
+      const out = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) out[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      const g = c.createGain();
+      g.gain.value = vol;
+      src.connect(g);
+      g.connect(c.destination);
+      src.start();
+    } catch (e) {}
+  };
+  return {
+    isMuted: () => muted,
+    toggleMute: () => {
+      muted = !muted;
+      return muted;
+    },
+    jump: () => beep(440, 0.1, "square", 0.1, 720),
+    coin: () => {
+      beep(988, 0.07, "square", 0.1);
+      setTimeout(() => beep(1318, 0.12, "square", 0.1), 50);
+    },
+    transform: () => {
+      beep(220, 0.35, "sawtooth", 0.18, 80);
+      setTimeout(() => beep(90, 0.25, "sine", 0.15), 100);
+      setTimeout(() => noise(0.3, 0.1), 60);
+    },
+    splash: () => {
+      beep(600, 0.12, "triangle", 0.1, 300);
+      setTimeout(() => beep(400, 0.12, "triangle", 0.08, 180), 80);
+    },
+    wagonSpawn: () => {
+      beep(330, 0.08, "square", 0.12);
+      setTimeout(() => beep(494, 0.12, "square", 0.12), 80);
+    },
+    place: () => beep(180, 0.04, "square", 0.07),
+    boost: () => {
+      for (let i = 0; i < 5; i++) setTimeout(() => beep(400 + i * 120, 0.05, "square", 0.1), i * 25);
+    },
+    combo: () => {
+      beep(660, 0.08, "square", 0.12);
+      setTimeout(() => beep(880, 0.08, "square", 0.12), 70);
+      setTimeout(() => beep(1175, 0.14, "square", 0.12), 140);
+    },
+    board: () => {
+      beep(523, 0.06, "square", 0.1);
+      setTimeout(() => beep(784, 0.08, "square", 0.1), 60);
+    },
+  };
+})();
+
 const PALETTE = {
   ".": null,
   R: "#e63946", r: "#a11a24",
@@ -471,10 +557,16 @@ k.scene("game", () => {
     });
     k.onKeyPress(opts.keys.jump, () => {
       if (p.ridingWagon) {
-        if (p.ridingWagon.isGrounded()) p.ridingWagon.jump(WAGON_JUMP);
+        if (p.ridingWagon.isGrounded()) {
+          p.ridingWagon.jump(WAGON_JUMP);
+          audio.jump();
+        }
         return;
       }
-      if (p.isGrounded()) p.jump(JUMP);
+      if (p.isGrounded()) {
+        p.jump(JUMP);
+        audio.jump();
+      }
     });
     k.onKeyPress(opts.keys.board, () => {
       if (p.ridingWagon) {
@@ -548,6 +640,7 @@ k.scene("game", () => {
   });
   k.onKeyPress("r", () => k.go("game"));
   k.onKeyPress("x", () => spawnWagon());
+  k.onKeyPress("m", () => audio.toggleMute());
 
   k.onMousePress("left", () => {
     const m = k.toWorld(k.mousePos());
@@ -555,6 +648,7 @@ k.scene("game", () => {
     const row = Math.floor(m.y / TILE);
     if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
+    audio.place();
   });
 
   k.onMouseDown("right", () => {
@@ -756,6 +850,7 @@ k.scene("game", () => {
   }
 
   function spawnWagon() {
+    audio.wagonSpawn();
     const y = (GROUND_ROW - 1) * TILE + 2;
     const wagon = k.add([
       k.rect(60, 30),
@@ -883,6 +978,7 @@ k.scene("game", () => {
   }
 
   function collectCoin(c) {
+    audio.coin();
     const cx = c.pos.x;
     const cy = c.pos.y;
     if (c.extras) c.extras.forEach((e) => k.destroy(e));
@@ -914,6 +1010,7 @@ k.scene("game", () => {
   }
 
   function reviveFromSkeleton(wagon) {
+    audio.splash();
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
     for (let i = 0; i < 20; i++) {
@@ -965,6 +1062,7 @@ k.scene("game", () => {
   function transformToSkeleton(wagon) {
     k.shake(6);
     gameState.skeletons += 1;
+    audio.transform();
 
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
@@ -1106,6 +1204,7 @@ k.scene("game", () => {
     closest.passengerEntity = rider;
     closest.parts.push(rider);
     closest.passenger = p.isSkeleton ? "skeleton" : "human";
+    audio.board();
   }
 
   function exitWagon(p) {
