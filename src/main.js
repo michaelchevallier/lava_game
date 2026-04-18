@@ -1540,6 +1540,26 @@ k.scene("game", () => {
     gameState.skeletons += 1;
     audio.transform();
     registerKill(wagon.pos.x + 30, wagon.pos.y);
+
+    const savedSpeed = wagon.speed;
+    wagon.speed = 0;
+    k.wait(0.12, () => {
+      if (wagon.exists()) wagon.speed = savedSpeed;
+    });
+
+    for (let i = 0; i < 3; i++) {
+      k.wait(i * 0.05, () => {
+        k.add([
+          k.circle(20 + i * 20),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 10),
+          k.color(k.rgb(255, 200, 80)),
+          k.opacity(0.5),
+          k.lifespan(0.3, { fade: 0.25 }),
+          k.z(12),
+        ]);
+      });
+    }
+
     const flash = k.add([
       k.rect(WIDTH, HEIGHT),
       k.pos(0, 0),
