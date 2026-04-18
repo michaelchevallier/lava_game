@@ -697,6 +697,7 @@ k.scene("game", () => {
   k.onKeyPress("6", () => (selectedTool = "water"));
   k.onKeyPress("7", () => (selectedTool = "boost"));
   k.onKeyPress("8", () => (selectedTool = "coin"));
+  k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -796,6 +797,40 @@ k.scene("game", () => {
         "tile",
         "rail",
         { gridCol: col, gridRow: row, tileType: "rail", extras: ties },
+      ]);
+      tileMap.set(key, t);
+    } else if (type === "trampoline") {
+      const x = col * TILE;
+      const y = row * TILE;
+      const base = k.add([
+        k.rect(TILE, TILE - 8),
+        k.pos(x, y + 8),
+        k.color(k.rgb(60, 40, 60)),
+        k.outline(2, k.rgb(30, 20, 30)),
+        k.z(1),
+      ]);
+      const spring1 = k.add([
+        k.rect(4, TILE - 12),
+        k.pos(x + 6, y + 10),
+        k.color(k.rgb(200, 200, 215)),
+        k.z(2),
+      ]);
+      const spring2 = k.add([
+        k.rect(4, TILE - 12),
+        k.pos(x + TILE - 10, y + 10),
+        k.color(k.rgb(200, 200, 215)),
+        k.z(2),
+      ]);
+      const t = k.add([
+        k.rect(TILE, 6),
+        k.pos(x, y + 4),
+        k.color(k.rgb(255, 80, 130)),
+        k.outline(2, k.rgb(140, 20, 60)),
+        k.area(),
+        k.z(3),
+        "tile",
+        "trampoline",
+        { gridCol: col, gridRow: row, tileType: "trampoline", extras: [base, spring1, spring2] },
       ]);
       tileMap.set(key, t);
     } else if (type === "boost") {
@@ -1108,6 +1143,29 @@ k.scene("game", () => {
 
     wagon.onCollide("coin", (c) => {
       collectCoin(c);
+    });
+
+    wagon.onCollide("trampoline", () => {
+      if (wagon.lastBounce && k.time() - wagon.lastBounce < 0.3) return;
+      wagon.lastBounce = k.time();
+      wagon.jump(850);
+      audio.boost();
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        const p = k.add([
+          k.circle(2 + Math.random() * 2),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 30),
+          k.color(k.rgb(255, 120, 180)),
+          k.opacity(1),
+          k.lifespan(0.3, { fade: 0.2 }),
+          k.z(14),
+          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+        });
+      }
     });
 
     wagon.onCollide("boost", () => {
@@ -1491,6 +1549,7 @@ k.scene("game", () => {
       water: "EAU",
       coin: "PIECE",
       boost: "BOOST",
+      trampoline: "TRAMPOLINE",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -1501,6 +1560,7 @@ k.scene("game", () => {
       water: k.rgb(80, 180, 230),
       coin: k.rgb(255, 210, 50),
       boost: k.rgb(255, 210, 63),
+      trampoline: k.rgb(255, 100, 160),
     };
 
     k.drawRect({
@@ -1559,7 +1619,7 @@ k.scene("game", () => {
       });
     }
     k.drawText({
-      text: "(1)Lave (2)Rail (4)/ (5)\\ (6)Eau (7)Boost (8)Piece (3)Gomme",
+      text: "(1)Lave (2)Rail (4)/ (5)\\ (6)Eau (7)Boost (8)Piece (9)Trampo (3)Gomme",
       size: 12,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
