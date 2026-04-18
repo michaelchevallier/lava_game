@@ -937,7 +937,7 @@ k.scene("game", () => {
   function stopAutoMode() {
     if (autoSpawnTimer) { autoSpawnTimer.cancel(); autoSpawnTimer = null; }
   }
-  if (settings.autoMode) startAutoMode();
+  if (settings.autoMode) k.wait(0.05, () => startAutoMode());
 
   let ghostTrainInterval = null;
   function startGhostTrain() {
@@ -949,7 +949,7 @@ k.scene("game", () => {
       k.wait(2.5, () => spawnWagon(true));
     });
   }
-  startGhostTrain();
+  k.wait(0.05, () => startGhostTrain());
 
   k.onKeyPress("d", () => {
     settings.autoMode = !settings.autoMode;
