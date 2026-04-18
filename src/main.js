@@ -1309,8 +1309,8 @@ k.scene("game", () => {
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
       const cx = col * TILE + TILE / 2;
-      const cy = row * TILE + TILE / 2 - 7;
-      const len = TILE * Math.SQRT2 + 2;
+      const cy = row * TILE + 6;
+      const len = TILE * Math.SQRT2 + 4;
       const rad = (angle * Math.PI) / 180;
       const ties = [];
       for (let i = 0; i < 3; i++) {
@@ -1503,6 +1503,31 @@ k.scene("game", () => {
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
       const currentSpeed = boosted ? wagon.speed * 2.2 : wagon.speed;
       wagon.move(currentSpeed, 0);
+
+      const wCenterX = wagon.pos.x + 30;
+      const wCol = Math.floor(wCenterX / TILE);
+      for (let r = 0; r < GROUND_ROW; r++) {
+        const rt = tileMap.get(gridKey(wCol, r));
+        if (
+          rt &&
+          (rt.tileType === "rail_up" || rt.tileType === "rail_down")
+        ) {
+          const localX = Math.max(
+            0,
+            Math.min(1, (wCenterX - wCol * TILE) / TILE),
+          );
+          const slopeY =
+            rt.tileType === "rail_up"
+              ? r * TILE + 22 - localX * TILE
+              : r * TILE - 10 + localX * TILE;
+          const wagonBottom = wagon.pos.y + 30;
+          if (Math.abs(wagonBottom - slopeY) < 28) {
+            wagon.pos.y = slopeY - 30;
+            if (wagon.vel) wagon.vel.y = 0;
+            break;
+          }
+        }
+      }
       if (boosted && Math.random() < 0.6) {
         const f = k.add([
           k.circle(2 + Math.random() * 3),
