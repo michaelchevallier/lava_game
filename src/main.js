@@ -506,7 +506,7 @@ k.scene("game", () => {
   gameState.comboCount = 0;
   gameState.comboExpire = 0;
 
-  function registerKill(x, y) {
+  function registerKill(x, y, base = 10, vip = false) {
     const now = k.time();
     if (now < gameState.comboExpire) {
       gameState.comboCount = Math.min(gameState.comboCount + 1, 5);
@@ -515,9 +515,12 @@ k.scene("game", () => {
     }
     gameState.comboExpire = now + COMBO_WINDOW;
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
-    const pts = 10 * mult;
+    const pts = base * mult;
     gameState.score += pts;
-    if (gameState.comboCount >= 2) {
+    if (vip) {
+      audio.combo();
+      showPopup(x, y - 30, `VIP +${pts}!`, k.rgb(255, 230, 80), 28);
+    } else if (gameState.comboCount >= 2) {
       audio.combo();
       showPopup(
         x,
@@ -1533,6 +1536,7 @@ k.scene("game", () => {
 
   function spawnVisitor() {
     const speed = 40 + Math.random() * 40;
+    const isVIP = Math.random() < 0.12;
     const v = k.add([
       k.sprite("human"),
       k.pos(-40, (GROUND_ROW - 3) * TILE),
@@ -1541,10 +1545,44 @@ k.scene("game", () => {
       k.anchor("topleft"),
       k.z(5),
       "visitor",
-      { walkSpeed: speed, isSkeleton: false },
+      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null },
     ]);
+    if (isVIP) {
+      const hat = k.add([
+        k.rect(18, 10),
+        k.pos(v.pos.x + 5, v.pos.y - 6),
+        k.color(k.rgb(20, 20, 20)),
+        k.outline(1, k.rgb(100, 80, 0)),
+        k.z(6),
+        "visitor-hat",
+      ]);
+      const hatBrim = k.add([
+        k.rect(24, 3),
+        k.pos(v.pos.x + 2, v.pos.y + 2),
+        k.color(k.rgb(20, 20, 20)),
+        k.outline(1, k.rgb(100, 80, 0)),
+        k.z(6),
+        "visitor-hat",
+      ]);
+      const hatBand = k.add([
+        k.rect(18, 2),
+        k.pos(v.pos.x + 5, v.pos.y + 0),
+        k.color(k.rgb(255, 220, 50)),
+        k.z(7),
+        "visitor-hat",
+      ]);
+      v.crown = [hat, hatBrim, hatBand];
+    }
     v.onUpdate(() => {
       v.move(v.walkSpeed, 0);
+      if (v.crown) {
+        v.crown[0].pos.x = v.pos.x + 5;
+        v.crown[0].pos.y = v.pos.y - 6;
+        v.crown[1].pos.x = v.pos.x + 2;
+        v.crown[1].pos.y = v.pos.y + 2;
+        v.crown[2].pos.x = v.pos.x + 5;
+        v.crown[2].pos.y = v.pos.y + 0;
+      }
       const pCol = Math.floor((v.pos.x + 14) / TILE);
       const pRowFeet = Math.floor((v.pos.y + 42) / TILE);
       const tile = tileMap.get(gridKey(pCol, pRowFeet));
@@ -1553,8 +1591,8 @@ k.scene("game", () => {
         v.sprite = "skeleton";
         gameState.skeletons += 1;
         audio.transform();
-        k.shake(3);
-        registerKill(v.pos.x + 14, v.pos.y);
+        k.shake(v.isVIP ? 7 : 3);
+        registerKill(v.pos.x + 14, v.pos.y, v.isVIP ? 50 : 10, v.isVIP);
         const cx = v.pos.x + 14;
         const cy = v.pos.y + 10;
         for (let i = 0; i < 12; i++) {
@@ -1578,7 +1616,10 @@ k.scene("game", () => {
         v.isSkeleton = false;
         v.sprite = "human";
       }
-      if (v.pos.x > WIDTH + 40) k.destroy(v);
+      if (v.pos.x > WIDTH + 40) {
+        if (v.crown) v.crown.forEach((e) => k.destroy(e));
+        k.destroy(v);
+      }
     });
     return v;
   }
