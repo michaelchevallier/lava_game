@@ -492,10 +492,12 @@ const gameState = {
   score: 0,
   comboCount: 0,
   comboExpire: 0,
+  milestoneIdx: 0,
 };
 
 const COMBO_WINDOW = 2.5;
 const COMBO_MULTIPLIERS = [1, 1, 2, 3, 5, 8];
+const MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
 
 k.scene("game", () => {
   const tileMap = new Map();
@@ -505,6 +507,61 @@ k.scene("game", () => {
   gameState.score = 0;
   gameState.comboCount = 0;
   gameState.comboExpire = 0;
+  gameState.milestoneIdx = 0;
+
+  function launchFirework(x, y, color) {
+    for (let i = 0; i < 40; i++) {
+      const a = (Math.PI * 2 * i) / 40 + Math.random() * 0.1;
+      const sp = 150 + Math.random() * 120;
+      const p = k.add([
+        k.circle(3 + Math.random() * 2),
+        k.pos(x, y),
+        k.color(color),
+        k.opacity(1),
+        k.lifespan(1.5, { fade: 1 }),
+        k.z(20),
+        { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, grav: 180 },
+      ]);
+      p.onUpdate(() => {
+        p.pos.x += p.vx * k.dt();
+        p.pos.y += p.vy * k.dt();
+        p.vy += p.grav * k.dt();
+        p.vx *= 0.98;
+      });
+    }
+  }
+
+  function celebrateMilestone(target) {
+    audio.combo();
+    setTimeout(() => audio.coin(), 200);
+    setTimeout(() => audio.combo(), 400);
+    const colors = [
+      k.rgb(255, 80, 120),
+      k.rgb(255, 210, 60),
+      k.rgb(100, 230, 255),
+      k.rgb(140, 255, 120),
+      k.rgb(255, 140, 240),
+    ];
+    for (let i = 0; i < 4; i++) {
+      k.wait(i * 0.25, () => {
+        const x = 100 + Math.random() * (WIDTH - 200);
+        const y = 100 + Math.random() * 200;
+        launchFirework(x, y, colors[i % colors.length]);
+      });
+    }
+    showPopup(WIDTH / 2, HEIGHT / 2, `PALIER ${target}!`, k.rgb(255, 230, 80), 40);
+    k.shake(10);
+  }
+
+  function checkMilestone() {
+    while (
+      gameState.milestoneIdx < MILESTONES.length &&
+      gameState.score >= MILESTONES[gameState.milestoneIdx]
+    ) {
+      celebrateMilestone(MILESTONES[gameState.milestoneIdx]);
+      gameState.milestoneIdx += 1;
+    }
+  }
 
   function registerKill(x, y, base = 10, vip = false) {
     const now = k.time();
@@ -532,6 +589,7 @@ k.scene("game", () => {
     } else {
       showPopup(x, y - 30, `+${pts}`, k.rgb(255, 180, 60), 22);
     }
+    checkMilestone();
     return mult;
   }
 
@@ -543,6 +601,7 @@ k.scene("game", () => {
     const pts = 5 * mult;
     gameState.score += pts;
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
+    checkMilestone();
   }
 
   for (let i = 0; i < 6; i++) {
