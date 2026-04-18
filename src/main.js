@@ -469,13 +469,58 @@ const gameState = {
   skeletons: 0,
   coins: 0,
   rides: 0,
+  score: 0,
+  comboCount: 0,
+  comboExpire: 0,
 };
+
+const COMBO_WINDOW = 2.5;
+const COMBO_MULTIPLIERS = [1, 1, 2, 3, 5, 8];
 
 k.scene("game", () => {
   const tileMap = new Map();
   gameState.skeletons = 0;
   gameState.coins = 0;
   gameState.rides = 0;
+  gameState.score = 0;
+  gameState.comboCount = 0;
+  gameState.comboExpire = 0;
+
+  function registerKill(x, y) {
+    const now = k.time();
+    if (now < gameState.comboExpire) {
+      gameState.comboCount = Math.min(gameState.comboCount + 1, 5);
+    } else {
+      gameState.comboCount = 1;
+    }
+    gameState.comboExpire = now + COMBO_WINDOW;
+    const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
+    const pts = 10 * mult;
+    gameState.score += pts;
+    if (gameState.comboCount >= 2) {
+      audio.combo();
+      showPopup(
+        x,
+        y - 30,
+        `x${mult} +${pts}`,
+        k.rgb(255, 120, 220),
+        20 + gameState.comboCount * 2,
+      );
+    } else {
+      showPopup(x, y - 30, `+${pts}`, k.rgb(255, 180, 60), 22);
+    }
+    return mult;
+  }
+
+  function registerCoin(x, y) {
+    const now = k.time();
+    const mult = now < gameState.comboExpire
+      ? COMBO_MULTIPLIERS[gameState.comboCount] || 1
+      : 1;
+    const pts = 5 * mult;
+    gameState.score += pts;
+    showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
+  }
 
   for (let i = 0; i < 6; i++) {
     k.add([
@@ -1031,7 +1076,7 @@ k.scene("game", () => {
     tileMap.delete(key);
     k.destroy(c);
     gameState.coins += 1;
-    showPopup(cx, cy - 8, "+5", k.rgb(255, 230, 80), 18);
+    registerCoin(cx, cy);
     for (let i = 0; i < 10; i++) {
       const angle = (Math.PI * 2 * i) / 10;
       const spark = k.add([
@@ -1109,7 +1154,7 @@ k.scene("game", () => {
     k.shake(6);
     gameState.skeletons += 1;
     audio.transform();
-    showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "+10", k.rgb(255, 180, 60), 24);
+    registerKill(wagon.pos.x + 30, wagon.pos.y);
 
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
@@ -1295,7 +1340,7 @@ k.scene("game", () => {
         gameState.skeletons += 1;
         audio.transform();
         k.shake(3);
-        showPopup(v.pos.x + 14, v.pos.y - 10, "+10", k.rgb(255, 180, 60), 20);
+        registerKill(v.pos.x + 14, v.pos.y);
         const cx = v.pos.x + 14;
         const cy = v.pos.y + 10;
         for (let i = 0; i < 12; i++) {
@@ -1387,9 +1432,8 @@ k.scene("game", () => {
       pos: k.vec2(72, 8),
       color: toolColors[selectedTool],
     });
-    const score = gameState.skeletons * 10 + gameState.coins * 5;
     k.drawText({
-      text: `SCORE ${score}`,
+      text: `SCORE ${gameState.score}`,
       size: 18,
       pos: k.vec2(WIDTH - 300, 8),
       color: k.rgb(255, 230, 80),
@@ -1400,6 +1444,24 @@ k.scene("game", () => {
       pos: k.vec2(WIDTH - 300, 30),
       color: k.rgb(220, 220, 220),
     });
+    if (gameState.comboCount >= 2 && k.time() < gameState.comboExpire) {
+      const remaining = gameState.comboExpire - k.time();
+      const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
+      const pulse = 1 + Math.sin(k.time() * 12) * 0.08;
+      k.drawText({
+        text: `COMBO x${mult}`,
+        size: 32 * pulse,
+        pos: k.vec2(WIDTH / 2, 90),
+        anchor: "center",
+        color: k.rgb(255, 120, 220),
+      });
+      k.drawRect({
+        pos: k.vec2(WIDTH / 2 - 80, 115),
+        width: 160 * (remaining / COMBO_WINDOW),
+        height: 4,
+        color: k.rgb(255, 120, 220),
+      });
+    }
     k.drawText({
       text: "(1)Lave (2)Rail-- (4)/ (5)\\ (6)Eau (8)Piece (3)Gomme  |  Clic=pose  ClicD=efface",
       size: 12,
