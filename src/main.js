@@ -613,6 +613,7 @@ k.scene("game", () => {
 
   function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
     const now = k.time();
+    const prev = gameState.comboCount;
     if (now < gameState.comboExpire) {
       gameState.comboCount = Math.min(gameState.comboCount + 1, 5);
     } else {
@@ -622,6 +623,9 @@ k.scene("game", () => {
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
     const pts = base * mult * (1 + darkBonus);
     gameState.score += pts;
+    if (prev < 5 && gameState.comboCount === 5) {
+      triggerApocalypse();
+    }
     if (vip) {
       audio.combo();
       showPopup(x, y - 30, `VIP +${pts}!`, k.rgb(255, 230, 80), 28);
@@ -640,6 +644,55 @@ k.scene("game", () => {
     updatePersistence();
     checkMilestone();
     return mult;
+  }
+
+  function triggerApocalypse() {
+    audio.combo();
+    setTimeout(() => audio.transform(), 100);
+    k.shake(22);
+    k.add([
+      k.rect(WIDTH, HEIGHT),
+      k.pos(0, 0),
+      k.color(255, 255, 255),
+      k.opacity(0.85),
+      k.lifespan(0.4, { fade: 0.3 }),
+      k.z(100),
+      k.fixed(),
+    ]);
+    showPopup(WIDTH / 2, HEIGHT / 2 - 40, "APOCALYPSE !", k.rgb(255, 80, 80), 60);
+    showPopup(WIDTH / 2, HEIGHT / 2 + 30, "x8 COMBO", k.rgb(255, 230, 80), 32);
+    const visitors = k.get("visitor").filter((v) => !v.isSkeleton);
+    visitors.forEach((v, i) => {
+      k.wait(i * 0.1, () => {
+        if (!v.exists() || v.isSkeleton) return;
+        v.isSkeleton = true;
+        v.sprite = "skeleton";
+        gameState.skeletons += 1;
+        gameState.score += 10 * 8;
+        k.shake(4);
+        showPopup(v.pos.x + 14, v.pos.y - 10, "+80", k.rgb(255, 80, 80), 18);
+        for (let j = 0; j < 10; j++) {
+          const a = (Math.PI * 2 * j) / 10;
+          k.add([
+            k.circle(3 + Math.random() * 3),
+            k.pos(v.pos.x + 14, v.pos.y + 10),
+            k.color(k.rgb(255, 80 + Math.random() * 100, 30)),
+            k.opacity(1),
+            k.lifespan(0.4, { fade: 0.3 }),
+            k.z(14),
+            { vx: Math.cos(a) * 100, vy: Math.sin(a) * 100 },
+          ]);
+        }
+      });
+    });
+    for (let i = 0; i < 3; i++) {
+      k.wait(0.2 + i * 0.3, () => {
+        const colors = [k.rgb(255, 80, 80), k.rgb(255, 210, 60), k.rgb(180, 100, 255)];
+        const x = 100 + Math.random() * (WIDTH - 200);
+        const y = 80 + Math.random() * 200;
+        launchFirework(x, y, colors[i % 3]);
+      });
+    }
   }
 
   function registerCoin(x, y) {
