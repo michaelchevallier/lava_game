@@ -379,8 +379,17 @@ const SPEED = 220;
 const JUMP = 620;
 const WAGON_JUMP = 560;
 
+const gameState = {
+  skeletons: 0,
+  coins: 0,
+  rides: 0,
+};
+
 k.scene("game", () => {
   const tileMap = new Map();
+  gameState.skeletons = 0;
+  gameState.coins = 0;
+  gameState.rides = 0;
 
   for (let i = 0; i < 6; i++) {
     k.add([
@@ -529,6 +538,7 @@ k.scene("game", () => {
   k.onKeyPress("4", () => (selectedTool = "rail_up"));
   k.onKeyPress("5", () => (selectedTool = "rail_down"));
   k.onKeyPress("6", () => (selectedTool = "water"));
+  k.onKeyPress("8", () => (selectedTool = "coin"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -627,6 +637,36 @@ k.scene("game", () => {
         "rail",
         { gridCol: col, gridRow: row, tileType: "rail", extras: ties },
       ]);
+      tileMap.set(key, t);
+    } else if (type === "coin") {
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2;
+      const t = k.add([
+        k.circle(9),
+        k.pos(cx, cy),
+        k.color(k.rgb(255, 210, 50)),
+        k.outline(2, k.rgb(160, 110, 0)),
+        k.area({ shape: new k.Rect(k.vec2(-10, -10), 20, 20) }),
+        k.z(4),
+        "tile",
+        "coin",
+        { gridCol: col, gridRow: row, tileType: "coin", baseY: cy, extras: [] },
+      ]);
+      const inner = k.add([
+        k.rect(3, 10),
+        k.pos(cx, cy),
+        k.anchor("center"),
+        k.color(k.rgb(200, 150, 0)),
+        k.z(5),
+      ]);
+      t.extras = [inner];
+      t.onUpdate(() => {
+        t.pos.y = t.baseY + Math.sin(k.time() * 3 + col * 0.4) * 4;
+        inner.pos.x = t.pos.x;
+        inner.pos.y = t.pos.y;
+        const s = Math.abs(Math.cos(k.time() * 4 + col * 0.4));
+        inner.scale = k.vec2(s, 1);
+      });
       tileMap.set(key, t);
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
@@ -836,6 +876,41 @@ k.scene("game", () => {
         reviveFromSkeleton(wagon);
       }
     });
+
+    wagon.onCollide("coin", (c) => {
+      collectCoin(c);
+    });
+  }
+
+  function collectCoin(c) {
+    const cx = c.pos.x;
+    const cy = c.pos.y;
+    if (c.extras) c.extras.forEach((e) => k.destroy(e));
+    const key = gridKey(c.gridCol, c.gridRow);
+    tileMap.delete(key);
+    k.destroy(c);
+    gameState.coins += 1;
+    for (let i = 0; i < 10; i++) {
+      const angle = (Math.PI * 2 * i) / 10;
+      const spark = k.add([
+        k.rect(3, 3),
+        k.pos(cx, cy),
+        k.color(k.rgb(255, 230, 80)),
+        k.opacity(1),
+        k.lifespan(0.5, { fade: 0.3 }),
+        k.z(15),
+        {
+          vx: Math.cos(angle) * 120,
+          vy: Math.sin(angle) * 120 - 40,
+          grav: 250,
+        },
+      ]);
+      spark.onUpdate(() => {
+        spark.pos.x += spark.vx * k.dt();
+        spark.pos.y += spark.vy * k.dt();
+        spark.vy += spark.grav * k.dt();
+      });
+    }
   }
 
   function reviveFromSkeleton(wagon) {
@@ -889,6 +964,7 @@ k.scene("game", () => {
 
   function transformToSkeleton(wagon) {
     k.shake(6);
+    gameState.skeletons += 1;
 
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
@@ -1072,6 +1148,7 @@ k.scene("game", () => {
       rail_up: "RAIL /",
       rail_down: "RAIL \\",
       water: "EAU",
+      coin: "PIECE",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -1080,6 +1157,7 @@ k.scene("game", () => {
       rail_up: k.rgb(150, 220, 255),
       rail_down: k.rgb(150, 220, 255),
       water: k.rgb(80, 180, 230),
+      coin: k.rgb(255, 210, 50),
     };
 
     k.drawRect({
@@ -1107,8 +1185,21 @@ k.scene("game", () => {
       pos: k.vec2(72, 8),
       color: toolColors[selectedTool],
     });
+    const score = gameState.skeletons * 10 + gameState.coins * 5;
     k.drawText({
-      text: "(1)Lave (2)Rail-- (4)Rail/ (5)Rail\\ (6)Eau (3)Gomme  |  Clic=pose  ClicD=efface",
+      text: `SCORE ${score}`,
+      size: 18,
+      pos: k.vec2(WIDTH - 300, 8),
+      color: k.rgb(255, 230, 80),
+    });
+    k.drawText({
+      text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}`,
+      size: 12,
+      pos: k.vec2(WIDTH - 300, 30),
+      color: k.rgb(220, 220, 220),
+    });
+    k.drawText({
+      text: "(1)Lave (2)Rail-- (4)/ (5)\\ (6)Eau (8)Piece (3)Gomme  |  Clic=pose  ClicD=efface",
       size: 12,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
