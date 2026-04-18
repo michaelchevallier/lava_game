@@ -469,12 +469,12 @@ const SPR_TOAD = substituteSprite(SPR_PLAYER, { R: "P", r: "p", O: "P", o: "p" }
 const SPR_TOAD_SKEL = substituteSprite(SPR_PLAYER_SKEL, { R: "P", r: "p" });
 
 Promise.all([
-  k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)).catch(e => console.error("player failed", e)),
-  k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)).catch(e => console.error("player_skel failed", e)),
-  k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)).catch(e => console.error("luigi failed", e)),
-  k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)).catch(e => console.error("luigi_skel failed", e)),
-  k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)).catch(e => console.error("toad failed", e)),
-  k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)).catch(e => console.error("toad_skel failed", e)),
+  k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)),
+  k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)),
+  k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)),
+  k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)),
+  k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)),
+  k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)),
   k.loadSprite("pika", makeSpriteUrl(SPR_PIKA, 2)),
   k.loadSprite("pika_skel", makeSpriteUrl(SPR_PIKA_SKEL, 2)),
   k.loadSprite("human", makeSpriteUrl(SPR_HUMAN, 2)),
@@ -509,16 +509,22 @@ const STORAGE_KEY = "milan_lava_park";
 function loadSave() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0 };
-    return JSON.parse(raw);
+    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2 };
+    const parsed = JSON.parse(raw);
+    if (!parsed.numPlayers) parsed.numPlayers = 2;
+    return parsed;
   } catch (e) {
-    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0 };
+    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2 };
   }
 }
 function persistSave(save) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(save)); } catch (e) {}
 }
 const save = loadSave();
+const settings = {
+  open: false,
+  numPlayers: save.numPlayers || 2,
+};
 
 const gameState = {
   skeletons: 0,
@@ -770,57 +776,45 @@ k.scene("game", () => {
     return p;
   }
 
-  const mario = createPlayer({
-    x: 80,
-    sprite: "player",
-    skelSprite: "player_skel",
-    name: "Mario",
-    keys: {
-      left: ["a", "q"],
-      right: "d",
-      jump: ["space", "z"],
-      board: "e",
+  const PLAYER_CONFIGS = [
+    {
+      x: 80,
+      sprite: "player",
+      skelSprite: "player_skel",
+      name: "Mario",
+      color: k.rgb(230, 57, 70),
+      keys: { left: ["a", "q"], right: "d", jump: ["space", "z"], board: "e" },
     },
-  });
+    {
+      x: 180,
+      sprite: "pika",
+      skelSprite: "pika_skel",
+      name: "Pika",
+      color: k.rgb(255, 210, 63),
+      keys: { left: "j", right: "l", jump: "i", board: "o" },
+    },
+    {
+      x: 280,
+      sprite: "luigi",
+      skelSprite: "luigi_skel",
+      name: "Luigi",
+      color: k.rgb(124, 201, 71),
+      keys: { left: "left", right: "right", jump: "up", board: "enter" },
+    },
+    {
+      x: 380,
+      sprite: "toad",
+      skelSprite: "toad_skel",
+      name: "Toad",
+      color: k.rgb(255, 76, 109),
+      keys: { left: "f", right: "h", jump: "t", board: "g" },
+    },
+  ];
 
-  const pika = createPlayer({
-    x: 180,
-    sprite: "pika",
-    skelSprite: "pika_skel",
-    name: "Pika",
-    keys: {
-      left: "j",
-      right: "l",
-      jump: "i",
-      board: "o",
-    },
-  });
-
-  const luigi = createPlayer({
-    x: 280,
-    sprite: "luigi",
-    skelSprite: "luigi_skel",
-    name: "Luigi",
-    keys: {
-      left: "left",
-      right: "right",
-      jump: "up",
-      board: "enter",
-    },
-  });
-
-  const toad = createPlayer({
-    x: 380,
-    sprite: "toad",
-    skelSprite: "toad_skel",
-    name: "Toad",
-    keys: {
-      left: "f",
-      right: "h",
-      jump: "t",
-      board: "g",
-    },
-  });
+  const activePlayers = [];
+  for (let i = 0; i < settings.numPlayers; i++) {
+    activePlayers.push(createPlayer(PLAYER_CONFIGS[i]));
+  }
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
   k.onKeyPress("2", () => (selectedTool = "rail"));
@@ -920,10 +914,47 @@ k.scene("game", () => {
     }
   });
 
+  const COG_X = WIDTH - 50;
+  const COG_Y = 90;
+  const COG_R = 22;
+
+  function inCog(m) {
+    const dx = m.x - COG_X;
+    const dy = m.y - COG_Y;
+    return dx * dx + dy * dy < COG_R * COG_R;
+  }
+
+  function inPlayerBtn(m, i) {
+    const bx = WIDTH / 2 - 200 + 20 + (i - 1) * 92;
+    const by = HEIGHT / 2 - 60;
+    return m.x > bx && m.x < bx + 70 && m.y > by && m.y < by + 70;
+  }
+
   k.onMousePress("left", () => {
-    const m = k.toWorld(k.mousePos());
-    const col = Math.floor(m.x / TILE);
-    const row = Math.floor(m.y / TILE);
+    const m = k.mousePos();
+    if (inCog(m)) {
+      settings.open = !settings.open;
+      audio.place();
+      return;
+    }
+    if (settings.open) {
+      for (let i = 1; i <= 4; i++) {
+        if (inPlayerBtn(m, i)) {
+          if (settings.numPlayers !== i) {
+            settings.numPlayers = i;
+            save.numPlayers = i;
+            persistSave(save);
+            audio.combo();
+            k.go("game");
+          }
+          return;
+        }
+      }
+      return;
+    }
+    const w = k.toWorld(k.mousePos());
+    const col = Math.floor(w.x / TILE);
+    const row = Math.floor(w.y / TILE);
     if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
     audio.place();
@@ -1875,6 +1906,121 @@ k.scene("game", () => {
       pos: k.vec2(WIDTH - 300, 46),
       color: k.rgb(180, 200, 255),
     });
+
+    k.drawCircle({
+      pos: k.vec2(COG_X, COG_Y),
+      radius: COG_R,
+      color: k.rgb(40, 40, 55),
+    });
+    k.drawCircle({
+      pos: k.vec2(COG_X, COG_Y),
+      radius: COG_R - 4,
+      color: k.rgb(255, 210, 63),
+    });
+    k.drawCircle({
+      pos: k.vec2(COG_X, COG_Y),
+      radius: 6,
+      color: k.rgb(40, 40, 55),
+    });
+    const cogSpin = k.time() * 0.5;
+    for (let i = 0; i < 6; i++) {
+      const a = cogSpin + (Math.PI * 2 * i) / 6;
+      k.drawRect({
+        pos: k.vec2(
+          COG_X + Math.cos(a) * (COG_R - 2) - 4,
+          COG_Y + Math.sin(a) * (COG_R - 2) - 4,
+        ),
+        width: 8,
+        height: 8,
+        color: k.rgb(255, 210, 63),
+      });
+    }
+
+    if (settings.open) {
+      k.drawRect({
+        pos: k.vec2(0, 0),
+        width: WIDTH,
+        height: HEIGHT,
+        color: k.rgb(0, 0, 0),
+        opacity: 0.75,
+      });
+      const panelW = 440;
+      const panelH = 280;
+      const panelX = WIDTH / 2 - panelW / 2;
+      const panelY = HEIGHT / 2 - panelH / 2;
+      k.drawRect({
+        pos: k.vec2(panelX, panelY),
+        width: panelW,
+        height: panelH,
+        color: k.rgb(30, 40, 60),
+      });
+      k.drawRect({
+        pos: k.vec2(panelX, panelY),
+        width: panelW,
+        height: 4,
+        color: k.rgb(255, 210, 63),
+      });
+      k.drawText({
+        text: "PARAMETRES",
+        size: 30,
+        pos: k.vec2(WIDTH / 2, panelY + 25),
+        anchor: "top",
+        color: k.rgb(255, 230, 80),
+      });
+      k.drawText({
+        text: "Nombre de joueurs",
+        size: 18,
+        pos: k.vec2(WIDTH / 2, panelY + 70),
+        anchor: "top",
+        color: k.WHITE,
+      });
+      for (let i = 1; i <= 4; i++) {
+        const bx = panelX + 20 + (i - 1) * 92;
+        const by = panelY + 120;
+        const isSelected = settings.numPlayers === i;
+        const cfg = PLAYER_CONFIGS[i - 1];
+        k.drawRect({
+          pos: k.vec2(bx, by),
+          width: 70,
+          height: 70,
+          color: isSelected ? cfg.color : k.rgb(50, 60, 85),
+        });
+        k.drawRect({
+          pos: k.vec2(bx, by),
+          width: 70,
+          height: 4,
+          color: isSelected ? k.rgb(255, 255, 255) : k.rgb(90, 110, 140),
+        });
+        k.drawText({
+          text: String(i),
+          size: 36,
+          pos: k.vec2(bx + 35, by + 32),
+          anchor: "center",
+          color: isSelected ? k.rgb(20, 20, 30) : k.WHITE,
+        });
+        k.drawText({
+          text: cfg.name,
+          size: 11,
+          pos: k.vec2(bx + 35, by + 82),
+          anchor: "top",
+          color: isSelected ? cfg.color : k.rgb(180, 200, 220),
+        });
+      }
+      k.drawText({
+        text: "(M) Son / Mute       (N) Jour/Nuit       (R) Reset       (T) Test",
+        size: 13,
+        pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
+        anchor: "top",
+        color: k.rgb(180, 200, 220),
+      });
+      k.drawText({
+        text: "Clic sur l'engrenage pour fermer",
+        size: 11,
+        pos: k.vec2(WIDTH / 2, panelY + panelH - 18),
+        anchor: "top",
+        color: k.rgb(140, 160, 190),
+      });
+    }
     if (gameState.comboCount >= 2 && k.time() < gameState.comboExpire) {
       const remaining = gameState.comboExpire - k.time();
       const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
