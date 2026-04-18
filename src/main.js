@@ -1003,7 +1003,19 @@ k.scene("game", () => {
     return null;
   }
 
+  let audioUnlocked = false;
+  function tryUnlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+    } catch (e) {}
+  }
+  k.onKeyPress(() => tryUnlockAudio());
+
   k.onMousePress("left", () => {
+    tryUnlockAudio();
     const m = k.mousePos();
     if (inCog(m)) {
       settings.open = !settings.open;
@@ -1048,6 +1060,27 @@ k.scene("game", () => {
     if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
     audio.place();
+  });
+
+  let lastPlacedKey = null;
+
+  k.onMouseDown("left", () => {
+    if (settings.open) return;
+    const screenM = k.mousePos();
+    if (inCog(screenM) || toolbarHit(screenM) || screenM.y < 65) return;
+    const w = k.toWorld(screenM);
+    const col = Math.floor(w.x / TILE);
+    const row = Math.floor(w.y / TILE);
+    if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
+    const key = gridKey(col, row);
+    if (key === lastPlacedKey) return;
+    if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
+    placeTile(col, row, selectedTool);
+    lastPlacedKey = key;
+  });
+
+  k.onMouseRelease("left", () => {
+    lastPlacedKey = null;
   });
 
   k.onMouseDown("right", () => {
@@ -2220,6 +2253,62 @@ k.scene("game", () => {
         height: 8,
         color: k.rgb(255, 210, 63),
       });
+    }
+
+    if (!settings.open && !k.getTreeRoot().paused) {
+      const sm = k.mousePos();
+      if (sm.y > 65 && sm.y < TB_Y - 10 && !inCog(sm)) {
+        const wm = k.toWorld(sm);
+        const col = Math.floor(wm.x / TILE);
+        const row = Math.floor(wm.y / TILE);
+        if (col >= 0 && col < COLS && row >= 0 && row < GROUND_ROW) {
+          const ghostColor =
+            selectedTool === "lava"
+              ? k.rgb(255, 107, 28)
+              : selectedTool === "water"
+                ? k.rgb(79, 184, 232)
+                : selectedTool === "coin"
+                  ? k.rgb(255, 210, 50)
+                  : selectedTool === "boost"
+                    ? k.rgb(255, 210, 63)
+                    : selectedTool === "trampoline"
+                      ? k.rgb(255, 80, 130)
+                      : selectedTool === "erase"
+                        ? k.rgb(220, 80, 80)
+                        : k.rgb(210, 210, 225);
+          k.drawRect({
+            pos: k.vec2(col * TILE, row * TILE),
+            width: TILE,
+            height: TILE,
+            color: ghostColor,
+            opacity: 0.3 + Math.sin(k.time() * 6) * 0.1,
+          });
+          k.drawRect({
+            pos: k.vec2(col * TILE, row * TILE),
+            width: TILE,
+            height: 2,
+            color: ghostColor,
+          });
+          k.drawRect({
+            pos: k.vec2(col * TILE, row * TILE + TILE - 2),
+            width: TILE,
+            height: 2,
+            color: ghostColor,
+          });
+          k.drawRect({
+            pos: k.vec2(col * TILE, row * TILE),
+            width: 2,
+            height: TILE,
+            color: ghostColor,
+          });
+          k.drawRect({
+            pos: k.vec2(col * TILE + TILE - 2, row * TILE),
+            width: 2,
+            height: TILE,
+            color: ghostColor,
+          });
+        }
+      }
     }
 
     const isPaused = k.getTreeRoot().paused;
