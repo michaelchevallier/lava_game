@@ -127,6 +127,14 @@ const PALETTE = {
   U: "#4fb8e8", u: "#2e7da0",
 };
 
+function substituteSprite(rows, map) {
+  return rows.map((r) => {
+    let s = "";
+    for (const c of r) s += map[c] !== undefined ? map[c] : c;
+    return s;
+  });
+}
+
 function makeSpriteUrl(rows, scale = 2) {
   const w = rows[0].length;
   const h = rows.length;
@@ -455,9 +463,18 @@ const SPR_HILL = [
   "gGGGGGGGGGGGGGGGGGGGGg",
 ];
 
+const SPR_LUIGI = substituteSprite(SPR_PLAYER, { R: "G", r: "g" });
+const SPR_LUIGI_SKEL = substituteSprite(SPR_PLAYER_SKEL, { R: "G", r: "g" });
+const SPR_TOAD = substituteSprite(SPR_PLAYER, { R: "P", r: "p", O: "P", o: "p" });
+const SPR_TOAD_SKEL = substituteSprite(SPR_PLAYER_SKEL, { R: "P", r: "p" });
+
 Promise.all([
   k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)),
   k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)),
+  k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)),
+  k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)),
+  k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)),
+  k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)),
   k.loadSprite("pika", makeSpriteUrl(SPR_PIKA, 2)),
   k.loadSprite("pika_skel", makeSpriteUrl(SPR_PIKA_SKEL, 2)),
   k.loadSprite("human", makeSpriteUrl(SPR_HUMAN, 2)),
@@ -731,9 +748,9 @@ k.scene("game", () => {
     skelSprite: "player_skel",
     name: "Mario",
     keys: {
-      left: ["left", "a", "q"],
-      right: ["right", "d"],
-      jump: ["space", "up", "z"],
+      left: ["a", "q"],
+      right: "d",
+      jump: ["space", "z"],
       board: "e",
     },
   });
@@ -748,6 +765,32 @@ k.scene("game", () => {
       right: "l",
       jump: "i",
       board: "o",
+    },
+  });
+
+  const luigi = createPlayer({
+    x: 280,
+    sprite: "luigi",
+    skelSprite: "luigi_skel",
+    name: "Luigi",
+    keys: {
+      left: "left",
+      right: "right",
+      jump: "up",
+      board: "enter",
+    },
+  });
+
+  const toad = createPlayer({
+    x: 380,
+    sprite: "toad",
+    skelSprite: "toad_skel",
+    name: "Toad",
+    keys: {
+      left: "f",
+      right: "h",
+      jump: "t",
+      board: "g",
     },
   });
 
@@ -770,6 +813,24 @@ k.scene("game", () => {
   k.onKeyPress("r", () => k.go("game"));
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
+
+  k.onKeyPress("t", () => {
+    placeTile(18, 13, "lava");
+    placeTile(19, 13, "lava");
+    placeTile(20, 13, "lava");
+    placeTile(21, 13, "lava");
+    placeTile(15, 13, "coin");
+    placeTile(16, 13, "coin");
+    placeTile(25, 13, "water");
+    placeTile(26, 13, "water");
+    placeTile(30, 13, "boost");
+    placeTile(33, 13, "trampoline");
+    placeTile(12, 12, "rail_up");
+    placeTile(13, 11, "rail");
+    placeTile(14, 11, "rail");
+    spawnWagon();
+    setTimeout(() => spawnWagon(), 600);
+  });
 
   let isNight = false;
   const stars = [];
@@ -1787,7 +1848,7 @@ k.scene("game", () => {
       color: k.rgb(220, 220, 220),
     });
     k.drawText({
-      text: "MARIO: A/D marcher, Espace sauter, E monter    |    PIKA: J/L marcher, I sauter, O monter",
+      text: "MARIO A/D/Esp/E  PIKA J/L/I/O  LUIGI fleches+Enter  TOAD F/H/T/G",
       size: 12,
       pos: k.vec2(12, 30),
       color: k.rgb(255, 210, 63),
