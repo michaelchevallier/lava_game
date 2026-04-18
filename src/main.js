@@ -524,6 +524,7 @@ const save = loadSave();
 const settings = {
   open: false,
   numPlayers: save.numPlayers || 2,
+  autoMode: save.autoMode || false,
 };
 
 const gameState = {
@@ -836,22 +837,58 @@ k.scene("game", () => {
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
 
-  k.onKeyPress("t", () => {
-    placeTile(18, 13, "lava");
-    placeTile(19, 13, "lava");
-    placeTile(20, 13, "lava");
-    placeTile(21, 13, "lava");
-    placeTile(15, 13, "coin");
-    placeTile(16, 13, "coin");
-    placeTile(25, 13, "water");
-    placeTile(26, 13, "water");
-    placeTile(30, 13, "boost");
-    placeTile(33, 13, "trampoline");
-    placeTile(12, 12, "rail_up");
-    placeTile(13, 11, "rail");
-    placeTile(14, 11, "rail");
+  k.onKeyPress("t", () => buildDemoCircuit());
+
+  function buildDemoCircuit() {
+    tileMap.forEach((t) => {
+      if (t.extras) t.extras.forEach((e) => k.destroy(e));
+      k.destroy(t);
+    });
+    tileMap.clear();
+    placeTile(6, 13, "coin");
+    placeTile(8, 13, "coin");
+    placeTile(10, 13, "boost");
+    placeTile(13, 13, "lava");
+    placeTile(14, 13, "lava");
+    placeTile(15, 13, "lava");
+    placeTile(16, 13, "lava");
+    placeTile(18, 13, "coin");
+    placeTile(20, 12, "rail_up");
+    placeTile(21, 11, "rail");
+    placeTile(22, 11, "rail");
+    placeTile(23, 11, "coin");
+    placeTile(24, 11, "rail");
+    placeTile(25, 11, "rail");
+    placeTile(26, 12, "rail_down");
+    placeTile(28, 13, "trampoline");
+    placeTile(31, 13, "water");
+    placeTile(32, 13, "water");
+    placeTile(34, 13, "lava");
+    placeTile(35, 13, "lava");
+    placeTile(36, 13, "lava");
+    placeTile(38, 13, "coin");
+  }
+
+  let autoSpawnTimer = null;
+  function startAutoMode() {
+    buildDemoCircuit();
     spawnWagon();
-    setTimeout(() => spawnWagon(), 600);
+    if (autoSpawnTimer) autoSpawnTimer.cancel();
+    autoSpawnTimer = k.loop(2.8, () => {
+      if (k.get("wagon").length < 5) spawnWagon();
+    });
+  }
+  function stopAutoMode() {
+    if (autoSpawnTimer) { autoSpawnTimer.cancel(); autoSpawnTimer = null; }
+  }
+  if (settings.autoMode) startAutoMode();
+
+  k.onKeyPress("d", () => {
+    settings.autoMode = !settings.autoMode;
+    save.autoMode = settings.autoMode;
+    persistSave(save);
+    if (settings.autoMode) startAutoMode();
+    else stopAutoMode();
   });
 
   let isNight = false;
@@ -930,6 +967,12 @@ k.scene("game", () => {
     return m.x > bx && m.x < bx + 70 && m.y > by && m.y < by + 70;
   }
 
+  function inAutoModeBtn(m) {
+    const bx = WIDTH / 2 - 120;
+    const by = HEIGHT / 2 + 50;
+    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 40;
+  }
+
   k.onMousePress("left", () => {
     const m = k.mousePos();
     if (inCog(m)) {
@@ -949,6 +992,15 @@ k.scene("game", () => {
           }
           return;
         }
+      }
+      if (inAutoModeBtn(m)) {
+        settings.autoMode = !settings.autoMode;
+        save.autoMode = settings.autoMode;
+        persistSave(save);
+        audio.boost();
+        if (settings.autoMode) startAutoMode();
+        else stopAutoMode();
+        return;
       }
       return;
     }
@@ -2079,9 +2131,24 @@ k.scene("game", () => {
           color: isSelected ? cfg.color : k.rgb(180, 200, 220),
         });
       }
+      const autoBx = WIDTH / 2 - 120;
+      const autoBy = HEIGHT / 2 + 50;
+      k.drawRect({
+        pos: k.vec2(autoBx, autoBy),
+        width: 240,
+        height: 40,
+        color: settings.autoMode ? k.rgb(124, 201, 71) : k.rgb(60, 80, 110),
+      });
       k.drawText({
-        text: "(M) Son / Mute       (N) Jour/Nuit       (R) Reset       (T) Test",
-        size: 13,
+        text: settings.autoMode ? "MODE DEMO: ON" : "MODE DEMO: OFF",
+        size: 18,
+        pos: k.vec2(WIDTH / 2, autoBy + 20),
+        anchor: "center",
+        color: k.WHITE,
+      });
+      k.drawText({
+        text: "(D) Demo  (T) Circuit test  (M) Son  (N) Nuit  (R) Reset",
+        size: 12,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
         anchor: "top",
         color: k.rgb(180, 200, 220),
