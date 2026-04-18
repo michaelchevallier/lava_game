@@ -1126,6 +1126,60 @@ k.scene("game", () => {
     }
   }
 
+  function spawnVisitor() {
+    const speed = 40 + Math.random() * 40;
+    const v = k.add([
+      k.sprite("human"),
+      k.pos(-40, (GROUND_ROW - 3) * TILE),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+      k.body(),
+      k.anchor("topleft"),
+      k.z(5),
+      "visitor",
+      { walkSpeed: speed, isSkeleton: false },
+    ]);
+    v.onUpdate(() => {
+      v.move(v.walkSpeed, 0);
+      const pCol = Math.floor((v.pos.x + 14) / TILE);
+      const pRowFeet = Math.floor((v.pos.y + 42) / TILE);
+      const tile = tileMap.get(gridKey(pCol, pRowFeet));
+      if (tile && tile.tileType === "lava" && !v.isSkeleton) {
+        v.isSkeleton = true;
+        v.sprite = "skeleton";
+        gameState.skeletons += 1;
+        k.shake(3);
+        const cx = v.pos.x + 14;
+        const cy = v.pos.y + 10;
+        for (let i = 0; i < 12; i++) {
+          const a = (Math.PI * 2 * i) / 12;
+          const fl = k.add([
+            k.circle(3 + Math.random() * 3),
+            k.pos(cx, cy),
+            k.color(k.rgb(255, 150 + Math.random() * 80, 40)),
+            k.opacity(1),
+            k.lifespan(0.5, { fade: 0.3 }),
+            k.z(14),
+            { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30 },
+          ]);
+          fl.onUpdate(() => {
+            fl.pos.x += fl.vx * k.dt();
+            fl.pos.y += fl.vy * k.dt();
+          });
+        }
+      }
+      if (tile && tile.tileType === "water" && v.isSkeleton) {
+        v.isSkeleton = false;
+        v.sprite = "human";
+      }
+      if (v.pos.x > WIDTH + 40) k.destroy(v);
+    });
+    return v;
+  }
+
+  k.loop(3, () => {
+    if (k.get("visitor").length < 6) spawnVisitor();
+  });
+
   k.onUpdate("lava", (t) => {
     if (Math.random() < 0.03) {
       k.add([
