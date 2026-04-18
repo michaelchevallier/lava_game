@@ -973,12 +973,46 @@ k.scene("game", () => {
     return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 40;
   }
 
+  const TOOLBAR_ORDER = [
+    { tool: "lava", key: "1", label: "Lave" },
+    { tool: "rail", key: "2", label: "Rail" },
+    { tool: "rail_up", key: "4", label: "/" },
+    { tool: "rail_down", key: "5", label: "\\" },
+    { tool: "water", key: "6", label: "Eau" },
+    { tool: "boost", key: "7", label: "Boost" },
+    { tool: "coin", key: "8", label: "Piece" },
+    { tool: "trampoline", key: "9", label: "Tramp" },
+    { tool: "erase", key: "3", label: "Gomme" },
+  ];
+  const TB_ICON = 52;
+  const TB_GAP = 4;
+  const TB_TOTAL_W = TOOLBAR_ORDER.length * (TB_ICON + TB_GAP);
+  const TB_START_X = (WIDTH - TB_TOTAL_W) / 2;
+  const TB_Y = HEIGHT - TB_ICON - 14;
+
+  function toolbarHit(m) {
+    if (m.y < TB_Y || m.y > TB_Y + TB_ICON) return null;
+    for (let i = 0; i < TOOLBAR_ORDER.length; i++) {
+      const x = TB_START_X + i * (TB_ICON + TB_GAP);
+      if (m.x >= x && m.x <= x + TB_ICON) return TOOLBAR_ORDER[i].tool;
+    }
+    return null;
+  }
+
   k.onMousePress("left", () => {
     const m = k.mousePos();
     if (inCog(m)) {
       settings.open = !settings.open;
       audio.place();
       return;
+    }
+    if (!settings.open) {
+      const clickedTool = toolbarHit(m);
+      if (clickedTool) {
+        selectedTool = clickedTool;
+        audio.place();
+        return;
+      }
     }
     if (settings.open) {
       for (let i = 1; i <= 4; i++) {
@@ -2031,6 +2065,129 @@ k.scene("game", () => {
       pos: k.vec2(WIDTH - 300, 46),
       color: k.rgb(180, 200, 255),
     });
+
+    for (let i = 0; i < TOOLBAR_ORDER.length; i++) {
+      const item = TOOLBAR_ORDER[i];
+      const bx = TB_START_X + i * (TB_ICON + TB_GAP);
+      const by = TB_Y;
+      const isSelected = selectedTool === item.tool;
+      k.drawRect({
+        pos: k.vec2(bx, by),
+        width: TB_ICON,
+        height: TB_ICON,
+        color: isSelected ? k.rgb(255, 210, 63) : k.rgb(25, 35, 55),
+      });
+      k.drawRect({
+        pos: k.vec2(bx, by),
+        width: TB_ICON,
+        height: 3,
+        color: isSelected ? k.WHITE : k.rgb(80, 100, 130),
+      });
+      const cx = bx + TB_ICON / 2;
+      const cy = by + TB_ICON / 2;
+      if (item.tool === "lava") {
+        k.drawRect({
+          pos: k.vec2(bx + 8, by + 12),
+          width: TB_ICON - 16,
+          height: TB_ICON - 20,
+          color: k.rgb(255, 107, 28),
+        });
+      } else if (item.tool === "water") {
+        k.drawRect({
+          pos: k.vec2(bx + 8, by + 12),
+          width: TB_ICON - 16,
+          height: TB_ICON - 20,
+          color: k.rgb(79, 184, 232),
+        });
+      } else if (item.tool === "coin") {
+        k.drawCircle({ pos: k.vec2(cx, cy + 3), radius: 13, color: k.rgb(255, 210, 50) });
+        k.drawCircle({ pos: k.vec2(cx, cy + 3), radius: 7, color: k.rgb(200, 150, 0) });
+      } else if (item.tool === "rail") {
+        k.drawRect({
+          pos: k.vec2(bx + 6, cy - 2),
+          width: TB_ICON - 12,
+          height: 5,
+          color: k.rgb(210, 210, 225),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 8, cy + 6),
+          width: 4,
+          height: 8,
+          color: k.rgb(100, 60, 30),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + TB_ICON - 12, cy + 6),
+          width: 4,
+          height: 8,
+          color: k.rgb(100, 60, 30),
+        });
+      } else if (item.tool === "rail_up" || item.tool === "rail_down") {
+        const angle = item.tool === "rail_up" ? -45 : 45;
+        k.drawRect({
+          pos: k.vec2(cx, cy + 3),
+          width: TB_ICON - 14,
+          height: 5,
+          anchor: "center",
+          angle,
+          color: k.rgb(210, 210, 225),
+        });
+      } else if (item.tool === "boost") {
+        k.drawRect({
+          pos: k.vec2(bx + 6, by + 10),
+          width: TB_ICON - 12,
+          height: TB_ICON - 16,
+          color: k.rgb(255, 210, 63),
+        });
+        k.drawText({
+          text: ">>",
+          size: 22,
+          pos: k.vec2(cx, cy + 2),
+          anchor: "center",
+          color: k.rgb(20, 20, 20),
+        });
+      } else if (item.tool === "trampoline") {
+        k.drawRect({
+          pos: k.vec2(bx + 6, cy - 2),
+          width: TB_ICON - 12,
+          height: 5,
+          color: k.rgb(255, 80, 130),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 10, cy + 4),
+          width: 3,
+          height: 10,
+          color: k.rgb(200, 200, 215),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + TB_ICON - 13, cy + 4),
+          width: 3,
+          height: 10,
+          color: k.rgb(200, 200, 215),
+        });
+      } else if (item.tool === "erase") {
+        k.drawText({
+          text: "X",
+          size: 28,
+          pos: k.vec2(cx, cy + 2),
+          anchor: "center",
+          color: k.rgb(220, 80, 80),
+        });
+      }
+      k.drawText({
+        text: item.key,
+        size: 10,
+        pos: k.vec2(bx + TB_ICON - 4, by + 3),
+        anchor: "topright",
+        color: isSelected ? k.rgb(30, 30, 40) : k.rgb(150, 170, 200),
+      });
+      k.drawText({
+        text: item.label,
+        size: 9,
+        pos: k.vec2(cx, by + TB_ICON - 10),
+        anchor: "center",
+        color: isSelected ? k.rgb(30, 30, 40) : k.rgb(180, 200, 220),
+      });
+    }
 
     k.drawCircle({
       pos: k.vec2(COG_X, COG_Y),
