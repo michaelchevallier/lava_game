@@ -541,6 +541,17 @@ const COMBO_WINDOW = 2.5;
 const COMBO_MULTIPLIERS = [1, 1, 2, 3, 5, 8];
 const MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
 
+const WAGON_THEMES = [
+  { body: [107, 60, 26], dark: [45, 26, 14], trim: [255, 210, 63] },
+  { body: [196, 60, 60], dark: [120, 30, 30], trim: [255, 220, 80] },
+  { body: [60, 150, 80], dark: [30, 80, 40], trim: [255, 255, 150] },
+  { body: [70, 90, 200], dark: [30, 40, 120], trim: [150, 220, 255] },
+  { body: [180, 80, 200], dark: [100, 40, 120], trim: [255, 200, 255] },
+  { body: [240, 150, 50], dark: [140, 80, 20], trim: [255, 230, 120] },
+  { body: [40, 40, 40], dark: [10, 10, 10], trim: [200, 50, 50] },
+  { body: [220, 220, 230], dark: [130, 130, 150], trim: [80, 160, 230] },
+];
+
 k.scene("game", () => {
   const tileMap = new Map();
   gameState.skeletons = 0;
@@ -1343,17 +1354,6 @@ k.scene("game", () => {
       tileMap.set(key, t);
     }
   }
-
-  const WAGON_THEMES = [
-    { body: [107, 60, 26], dark: [45, 26, 14], trim: [255, 210, 63] },
-    { body: [196, 60, 60], dark: [120, 30, 30], trim: [255, 220, 80] },
-    { body: [60, 150, 80], dark: [30, 80, 40], trim: [255, 255, 150] },
-    { body: [70, 90, 200], dark: [30, 40, 120], trim: [150, 220, 255] },
-    { body: [180, 80, 200], dark: [100, 40, 120], trim: [255, 200, 255] },
-    { body: [240, 150, 50], dark: [140, 80, 20], trim: [255, 230, 120] },
-    { body: [40, 40, 40], dark: [10, 10, 10], trim: [200, 50, 50] },
-    { body: [220, 220, 230], dark: [130, 130, 150], trim: [80, 160, 230] },
-  ];
 
   function drawWagonBody(x, y, theme) {
     const body = k.add([
