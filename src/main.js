@@ -880,12 +880,23 @@ k.scene("game", () => {
     }
   }
 
-  function drawWagonBody(x, y) {
+  const WAGON_THEMES = [
+    { body: [107, 60, 26], dark: [45, 26, 14], trim: [255, 210, 63] },
+    { body: [196, 60, 60], dark: [120, 30, 30], trim: [255, 220, 80] },
+    { body: [60, 150, 80], dark: [30, 80, 40], trim: [255, 255, 150] },
+    { body: [70, 90, 200], dark: [30, 40, 120], trim: [150, 220, 255] },
+    { body: [180, 80, 200], dark: [100, 40, 120], trim: [255, 200, 255] },
+    { body: [240, 150, 50], dark: [140, 80, 20], trim: [255, 230, 120] },
+    { body: [40, 40, 40], dark: [10, 10, 10], trim: [200, 50, 50] },
+    { body: [220, 220, 230], dark: [130, 130, 150], trim: [80, 160, 230] },
+  ];
+
+  function drawWagonBody(x, y, theme) {
     const body = k.add([
       k.rect(60, 30),
       k.pos(x, y),
-      k.color(k.rgb(107, 60, 26)),
-      k.outline(2, k.rgb(40, 20, 8)),
+      k.color(k.rgb(theme.body[0], theme.body[1], theme.body[2])),
+      k.outline(2, k.rgb(20, 10, 5)),
       k.z(3),
       "wagon-part",
     ]);
@@ -908,21 +919,21 @@ k.scene("game", () => {
     const plank1 = k.add([
       k.rect(52, 2),
       k.pos(x + 4, y + 8),
-      k.color(k.rgb(45, 26, 14)),
+      k.color(k.rgb(theme.dark[0], theme.dark[1], theme.dark[2])),
       k.z(4),
       "wagon-part",
     ]);
     const plank2 = k.add([
       k.rect(52, 2),
       k.pos(x + 4, y + 20),
-      k.color(k.rgb(45, 26, 14)),
+      k.color(k.rgb(theme.dark[0], theme.dark[1], theme.dark[2])),
       k.z(4),
       "wagon-part",
     ]);
     const trim = k.add([
       k.rect(60, 3),
       k.pos(x, y - 3),
-      k.color(k.rgb(255, 210, 63)),
+      k.color(k.rgb(theme.trim[0], theme.trim[1], theme.trim[2])),
       k.z(4),
       "wagon-part",
     ]);
@@ -944,7 +955,8 @@ k.scene("game", () => {
       { passenger: "human", speed: 140, parts: [], rider: null },
     ]);
 
-    const parts = drawWagonBody(wagon.pos.x, wagon.pos.y);
+    const theme = WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
+    const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
 
     const wheel1 = k.add([
       k.circle(9),
@@ -1228,6 +1240,15 @@ k.scene("game", () => {
     gameState.skeletons += 1;
     audio.transform();
     registerKill(wagon.pos.x + 30, wagon.pos.y);
+    const flash = k.add([
+      k.rect(WIDTH, HEIGHT),
+      k.pos(0, 0),
+      k.color(255, 255, 255),
+      k.opacity(0.55),
+      k.lifespan(0.12, { fade: 0.1 }),
+      k.z(100),
+      k.fixed(),
+    ]);
 
     const cx = wagon.pos.x + 30;
     const cy = wagon.pos.y - 10;
