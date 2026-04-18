@@ -505,6 +505,21 @@ const SPEED = 220;
 const JUMP = 620;
 const WAGON_JUMP = 560;
 
+const STORAGE_KEY = "milan_lava_park";
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0 };
+    return JSON.parse(raw);
+  } catch (e) {
+    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0 };
+  }
+}
+function persistSave(save) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(save)); } catch (e) {}
+}
+const save = loadSave();
+
 const gameState = {
   skeletons: 0,
   coins: 0,
@@ -583,6 +598,12 @@ k.scene("game", () => {
     }
   }
 
+  function updatePersistence() {
+    if (gameState.score > save.bestScore) save.bestScore = gameState.score;
+    save.totalSkeletons = (save.totalSkeletons || 0) + 1;
+    persistSave(save);
+  }
+
   function registerKill(x, y, base = 10, vip = false) {
     const now = k.time();
     if (now < gameState.comboExpire) {
@@ -609,6 +630,7 @@ k.scene("game", () => {
     } else {
       showPopup(x, y - 30, `+${pts}`, k.rgb(255, 180, 60), 22);
     }
+    updatePersistence();
     checkMilestone();
     return mult;
   }
@@ -620,6 +642,9 @@ k.scene("game", () => {
       : 1;
     const pts = 5 * mult;
     gameState.score += pts;
+    save.totalCoins = (save.totalCoins || 0) + 1;
+    if (gameState.score > save.bestScore) save.bestScore = gameState.score;
+    persistSave(save);
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
     checkMilestone();
   }
@@ -1825,6 +1850,12 @@ k.scene("game", () => {
       size: 12,
       pos: k.vec2(WIDTH - 300, 30),
       color: k.rgb(220, 220, 220),
+    });
+    k.drawText({
+      text: `Record ${save.bestScore}  |  Squelettes tot. ${save.totalSkeletons || 0}`,
+      size: 11,
+      pos: k.vec2(WIDTH - 300, 46),
+      color: k.rgb(180, 200, 255),
     });
     if (gameState.comboCount >= 2 && k.time() < gameState.comboExpire) {
       const remaining = gameState.comboExpire - k.time();
