@@ -94,5 +94,14 @@ export const audio = (() => {
       setTimeout(() => beep(1760, 0.08, "square", 0.1), 80);
       setTimeout(() => noise(0.18, 0.06), 60);
     },
+    crack: () => {
+      noise(0.25, 0.18);
+      beep(180, 0.12, "sawtooth", 0.12, 60);
+    },
+    gold: () => {
+      beep(1320, 0.06, "triangle", 0.1);
+      setTimeout(() => beep(1760, 0.06, "triangle", 0.1), 50);
+      setTimeout(() => beep(2093, 0.1, "triangle", 0.1), 100);
+    },
   };
 })();

@@ -130,7 +130,7 @@ export function createWagonSystem({
     wagon.theme = theme;
     wagon.isGolden = isGolden;
     if (isGolden) {
-      audio.combo();
+      audio.gold?.();
       showPopup(WIDTH / 2, 180, "WAGON DOR\u00c9 ! 2x points", k.rgb(255, 220, 60), 22);
       // Sparkle aura around wagon every frame
       wagon.onUpdate(() => {
@@ -722,6 +722,7 @@ export function createWagonSystem({
       }
       if (b.crossings >= 2) {
         b.breaking = true;
+        audio.crack?.();
         for (let i = 0; i < 10; i++) {
           k.add([
             k.rect(4 + Math.random() * 4, 3 + Math.random() * 3),
