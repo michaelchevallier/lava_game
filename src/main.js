@@ -34,6 +34,30 @@ window.addEventListener("error", (e) => console.error("global error:", e.message
 
 let selectedTool = "lava";
 
+window.__mobileInput = { left: false, right: false, jumpPressed: false, wagonPressed: false };
+
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.getElementById('mobile-controls').style.display = 'block';
+
+  const mi = window.__mobileInput;
+
+  function bindHoldBtn(id, onDown, onUp) {
+    const btn = document.getElementById(id);
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); onDown(); }, { passive: false });
+    btn.addEventListener('touchend',   (e) => { e.preventDefault(); onUp && onUp(); }, { passive: false });
+    btn.addEventListener('touchcancel', () => { onUp && onUp(); });
+    btn.addEventListener('mousedown',  onDown);
+    btn.addEventListener('mouseup',    () => { onUp && onUp(); });
+    btn.addEventListener('mouseleave', () => { onUp && onUp(); });
+  }
+
+  bindHoldBtn('mc-left',  () => { mi.left  = true; }, () => { mi.left  = false; });
+  bindHoldBtn('mc-right', () => { mi.right = true; }, () => { mi.right = false; });
+  bindHoldBtn('mc-jump',  () => { mi.jumpPressed  = true; }, () => { mi.jumpPressed  = false; });
+  bindHoldBtn('mc-wagon', () => { mi.wagonPressed = true; }, () => { mi.wagonPressed = false; });
+}
+
 const save = loadSave();
 const settings = {
   open: false,
@@ -313,7 +337,7 @@ k.scene("game", () => {
     }
   }
 
-  function createPlayer(opts) {
+  function createPlayer(opts, mobileP1 = false) {
     const p = k.add([
       k.sprite(opts.sprite),
       k.pos(opts.x, (GROUND_ROW - 3) * TILE),
@@ -388,6 +412,35 @@ k.scene("game", () => {
       }
     });
 
+    if (mobileP1) {
+      const mi = window.__mobileInput;
+      let prevJump = false;
+      let prevWagon = false;
+      k.onUpdate(() => {
+        if (mi.left && !p.ridingWagon) {
+          p.move(-SPEED, 0);
+          if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
+        }
+        if (mi.right && !p.ridingWagon) {
+          p.move(SPEED, 0);
+          if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
+        }
+        if (mi.jumpPressed && !prevJump) {
+          if (p.ridingWagon) {
+            if (p.ridingWagon.isGrounded()) { p.ridingWagon.jump(WAGON_JUMP); audio.jump(); }
+          } else if (p.isGrounded()) {
+            p.jump(JUMP);
+            audio.jump();
+          }
+        }
+        if (mi.wagonPressed && !prevWagon) {
+          spawnWagon();
+        }
+        prevJump = mi.jumpPressed;
+        prevWagon = mi.wagonPressed;
+      });
+    }
+
     return p;
   }
 
@@ -428,7 +481,7 @@ k.scene("game", () => {
 
   const activePlayers = [];
   for (let i = 0; i < settings.numPlayers; i++) {
-    activePlayers.push(createPlayer(PLAYER_CONFIGS[i]));
+    activePlayers.push(createPlayer(PLAYER_CONFIGS[i], i === 0 && isMobile));
   }
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
