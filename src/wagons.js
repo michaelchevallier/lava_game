@@ -71,6 +71,18 @@ export function createWagonSystem({
     return [body, frontRim, backRim, plank1, plank2, trim];
   }
 
+  function catapultWagon(wagon) {
+    wagon.catapulting = true;
+    wagon.catapultAirborne = false;
+    if (wagon.vel) {
+      wagon.vel.y = -800;
+      wagon.vel.x = wagon.speed * 2.5;
+    }
+    audio.combo();
+    audio.boost();
+    k.shake(8);
+  }
+
   function spawnWagon(ghost = false) {
     audio.wagonSpawn();
     const y = (GROUND_ROW - 1) * TILE + 2;
@@ -297,6 +309,46 @@ export function createWagonSystem({
         ]);
       }
 
+      if (wagon.catapulting) {
+        if (!wagon.isGrounded()) {
+          const SPARK_COLORS = [k.rgb(255, 60, 30), k.rgb(255, 200, 40), k.rgb(255, 120, 20)];
+          k.add([
+            k.circle(2 + Math.random() * 3),
+            k.pos(dx + 10 + Math.random() * 40, wagon.pos.y + 20 + Math.random() * 10),
+            k.color(SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)]),
+            k.opacity(0.95),
+            k.lifespan(0.5, { fade: 0.3 }),
+            k.z(13),
+            "particle",
+            { vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 40 },
+          ]);
+        } else if (wagon.catapultAirborne) {
+          wagon.catapulting = false;
+          wagon.catapultAirborne = false;
+          k.shake(12);
+          audio.transform();
+          showPopup(dx + 30, wagon.pos.y - 50, "CATAPULTE !", k.rgb(255, 100, 30), 32);
+          for (let i = 0; i < 16; i++) {
+            const a = (Math.PI * i) / 16;
+            k.add([
+              k.circle(2 + Math.random() * 3),
+              k.pos(dx + 30, wagon.pos.y + 30),
+              k.color(k.rgb(220 + Math.random() * 35, 160 + Math.random() * 60, 80)),
+              k.opacity(1),
+              k.lifespan(0.8, { fade: 0.5 }),
+              k.z(14),
+              "particle-grav",
+              {
+                vx: Math.cos(a) * (80 + Math.random() * 60) * (Math.random() < 0.5 ? 1 : -1),
+                vy: -60 - Math.random() * 80,
+                grav: 180,
+              },
+            ]);
+          }
+        }
+        if (!wagon.isGrounded()) wagon.catapultAirborne = true;
+      }
+
       if (wagon.pos.x > WIDTH + 80) {
         if (wagon.rider) exitWagon(wagon.rider);
         if (wagon.passenger === "human" && !wagon.ghostTrain) {
@@ -451,9 +503,14 @@ export function createWagonSystem({
       }
     });
 
-    wagon.onCollide("trampoline", () => {
+    wagon.onCollide("trampoline", (t) => {
       if (wagon.lastBounce && k.time() - wagon.lastBounce < 0.3) return;
       wagon.lastBounce = k.time();
+      const fanAbove = tileMap.get(gridKey(t.gridCol, t.gridRow - 1));
+      if (fanAbove && fanAbove.tileType === "fan") {
+        catapultWagon(wagon);
+        return;
+      }
       wagon.jump(850);
       audio.boost();
       for (let i = 0; i < 8; i++) {
