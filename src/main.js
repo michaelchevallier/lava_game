@@ -361,6 +361,37 @@ k.scene("game", () => {
     "ground",
   ]);
 
+  function getEntityTile(e, footY = 42) {
+    const col = Math.floor((e.pos.x + 14) / TILE);
+    const row = Math.floor((e.pos.y + footY) / TILE);
+    return tileMap.get(gridKey(col, row)) || null;
+  }
+
+  function applyTileEffectToPlayer(p, tile) {
+    if (!tile) return;
+    const now = k.time();
+    const spam = p._tileSpam || {};
+    if ((spam[tile.tileType] || 0) > now) return;
+    spam[tile.tileType] = now + 0.15;
+    p._tileSpam = spam;
+
+    switch (tile.tileType) {
+      case "lava":
+        if (Math.random() < 0.4) {
+          k.add([
+            k.circle(2 + Math.random() * 3),
+            k.pos(p.pos.x + 6 + Math.random() * 16, p.pos.y + 38),
+            k.color(255, 200, 80),
+            k.opacity(0.9),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(10),
+            k.move(k.UP, 50 + Math.random() * 40),
+          ]);
+        }
+        break;
+    }
+  }
+
   function createPlayer(opts, mobileP1 = false) {
     const p = k.add([
       k.sprite(opts.sprite),
@@ -419,21 +450,7 @@ k.scene("game", () => {
 
     p.onUpdate(() => {
       if (p.ridingWagon) return;
-      const pCol = Math.floor((p.pos.x + 14) / TILE);
-      const pRowFeet = Math.floor((p.pos.y + 42) / TILE);
-      const key = gridKey(pCol, pRowFeet);
-      const tile = tileMap.get(key);
-      if (tile && tile.tileType === "lava" && Math.random() < 0.4) {
-        k.add([
-          k.circle(2 + Math.random() * 3),
-          k.pos(p.pos.x + 6 + Math.random() * 16, p.pos.y + 38),
-          k.color(255, 200, 80),
-          k.opacity(0.9),
-          k.lifespan(0.6, { fade: 0.4 }),
-          k.z(10),
-          k.move(k.UP, 50 + Math.random() * 40),
-        ]);
-      }
+      applyTileEffectToPlayer(p, getEntityTile(p));
     });
 
     if (mobileP1) {
@@ -1531,19 +1548,23 @@ k.scene("game", () => {
           color: k.rgb(220, 80, 80),
         });
       }
-      k.drawText({
+      drawTextOutlined({
         text: item.key,
-        size: 10,
+        size: 13,
         pos: k.vec2(bx + TB_ICON - 4, by + 3),
         anchor: "topright",
         color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_KEY_DIM,
+        outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
+        outlineThickness: 1,
       });
-      k.drawText({
+      drawTextOutlined({
         text: item.label,
-        size: 9,
+        size: 11,
         pos: k.vec2(cx, by + TB_ICON - 10),
         anchor: "center",
         color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_LABEL_DIM,
+        outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
+        outlineThickness: 1,
       });
     }
 
