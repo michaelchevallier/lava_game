@@ -542,7 +542,8 @@ k.scene("game", () => {
     placeTile(34, 13, "lava");
     placeTile(35, 13, "lava");
     placeTile(36, 13, "lava");
-    placeTile(38, 13, "coin");
+    placeTile(3, 8, "portal");
+    placeTile(38, 13, "portal");
   }
 
   const MAX_WAGONS = 3;
