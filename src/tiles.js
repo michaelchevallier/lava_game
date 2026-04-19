@@ -1,4 +1,4 @@
-import { TILE, gridKey } from "./constants.js";
+import { TILE, GROUND_ROW, gridKey } from "./constants.js";
 
 export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
   function checkCoinResonance(col, row) {
@@ -363,6 +363,136 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
       t.extras = [inner];
       tileMap.set(key, t);
       checkCoinResonance(col, row);
+    } else if (type === "wheel") {
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2;
+      const hubR = 8;
+      const armLen = 60;
+      const NACELLE_COLORS = [
+        k.rgb(80, 220, 240),
+        k.rgb(240, 80, 80),
+        k.rgb(255, 210, 50),
+        k.rgb(180, 80, 240),
+      ];
+      const hub = k.add([
+        k.circle(hubR),
+        k.pos(cx, cy),
+        k.anchor("center"),
+        k.color(k.rgb(210, 190, 140)),
+        k.outline(2, k.rgb(120, 100, 60)),
+        k.z(6),
+        "wheel",
+        {
+          gridCol: col,
+          gridRow: row,
+          tileType: "wheel",
+          wheelAngle: 0,
+          nextDrop: k.time() + 7,
+          extras: [],
+        },
+      ]);
+      const structs = [];
+      for (let q = 0; q < 4; q++) {
+        const baseA = (Math.PI / 2) * q;
+        const beam = k.add([
+          k.rect(armLen * 2, 4),
+          k.pos(cx, cy),
+          k.anchor("center"),
+          k.rotate((baseA * 180) / Math.PI),
+          k.color(k.rgb(190, 170, 120)),
+          k.z(5),
+        ]);
+        structs.push(beam);
+      }
+      const outerRing = k.add([
+        k.circle(armLen),
+        k.pos(cx, cy),
+        k.anchor("center"),
+        k.color(k.rgb(0, 0, 0, 0)),
+        k.outline(4, k.rgb(190, 170, 120)),
+        k.z(5),
+      ]);
+      structs.push(outerRing);
+      const nacelles = [];
+      for (let n = 0; n < 4; n++) {
+        const nac = k.add([
+          k.rect(24, 16),
+          k.pos(cx, cy),
+          k.anchor("center"),
+          k.color(NACELLE_COLORS[n]),
+          k.outline(2, k.rgb(30, 30, 30)),
+          k.z(7),
+        ]);
+        nacelles.push(nac);
+        structs.push(nac);
+      }
+      hub.extras = structs;
+      hub.onUpdate(() => {
+        const DEG_PER_SEC = 12;
+        hub.wheelAngle += DEG_PER_SEC * k.dt();
+        if (hub.wheelAngle >= 360) hub.wheelAngle -= 360;
+        const rad = (hub.wheelAngle * Math.PI) / 180;
+        for (let n = 0; n < 4; n++) {
+          const a = rad + (Math.PI / 2) * n;
+          nacelles[n].pos.x = cx + Math.cos(a) * armLen;
+          nacelles[n].pos.y = cy + Math.sin(a) * armLen;
+        }
+        const now = k.time();
+        if (now >= hub.nextDrop) {
+          hub.nextDrop = now + 7;
+          const isVIP = Math.random() < 1 / 15;
+          if (isVIP) {
+            showPopup(cx, cy - armLen - 30, "VIP +200pts", k.rgb(255, 210, 50), 22);
+            gameState.score += 200;
+            const vip = k.add([
+              k.rect(10, 18),
+              k.pos(cx, cy - armLen),
+              k.anchor("center"),
+              k.color(k.rgb(255, 210, 50)),
+              k.outline(1, k.rgb(180, 140, 20)),
+              k.opacity(1),
+              k.lifespan(3, { fade: 1 }),
+              k.z(8),
+              { vy: -80, vx: (Math.random() - 0.5) * 60 },
+            ]);
+            vip.onUpdate(() => {
+              vip.vy += 400 * k.dt();
+              vip.pos.y += vip.vy * k.dt();
+              vip.pos.x += vip.vx * k.dt();
+            });
+          } else {
+            for (let d = 0; d < 3; d++) {
+              const dc = k.add([
+                k.circle(9),
+                k.pos(cx + (d - 1) * 18, cy - armLen),
+                k.anchor("center"),
+                k.color(k.rgb(255, 210, 50)),
+                k.outline(2, k.rgb(160, 110, 0)),
+                k.opacity(1),
+                k.z(8),
+                "wheel-coin",
+                { vy: -60 - Math.random() * 40, vx: (d - 1) * 30 + (Math.random() - 0.5) * 20 },
+              ]);
+              dc.onUpdate(() => {
+                dc.vy += 400 * k.dt();
+                dc.pos.y += dc.vy * k.dt();
+                dc.pos.x += dc.vx * k.dt();
+                if (dc.pos.y > (GROUND_ROW + 1) * TILE) { k.destroy(dc); return; }
+                for (const w of k.get("wagon")) {
+                  if (Math.abs(w.pos.x + 16 - dc.pos.x) < 26 && Math.abs(w.pos.y + 20 - dc.pos.y) < 26) {
+                    gameState.coins++;
+                    gameState.score += 10;
+                    audio.coin();
+                    k.destroy(dc);
+                    return;
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+      tileMap.set(key, hub);
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
       const cx = col * TILE + TILE / 2;

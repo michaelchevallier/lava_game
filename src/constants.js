@@ -27,7 +27,7 @@ export const WAGON_THEMES = [
 export const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
-  ice: "I", magnet: "M", bridge: "N",
+  ice: "I", magnet: "M", bridge: "N", wheel: "Y",
 };
 export const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -49,6 +49,7 @@ export const TOOLBAR_ORDER = [
   { tool: "ice", key: "G", label: "Glace" },
   { tool: "magnet", key: "A", label: "Aimant" },
   { tool: "bridge", key: "V", label: "Pont" },
+  { tool: "wheel", key: "Y", label: "Roue" },
   { tool: "erase", key: "3", label: "Gomme" },
 ];
 export const TB_ICON = 52;
