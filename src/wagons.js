@@ -235,6 +235,22 @@ export function createWagonSystem({
         wagon._fastAccum = 0;
       }
 
+      // Boost trail: orange sparks behind wagon when boosted
+      if (boosted && Math.random() < 0.45 && k.get("particle").length < 280) {
+        const ang = Math.PI + (Math.random() - 0.5) * 0.6;
+        const sp = 80 + Math.random() * 60;
+        k.add([
+          k.rect(3 + Math.random() * 2, 3 + Math.random() * 2),
+          k.pos(wagon.pos.x + 2, wagon.pos.y + 30 + Math.random() * 4),
+          k.color(k.rgb(255, 160 + Math.random() * 60, 40)),
+          k.opacity(0.95),
+          k.lifespan(0.5, { fade: 0.35 }),
+          k.z(2),
+          "particle",
+          { vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 30 },
+        ]);
+      }
+
       const wBaseX = wagon.pos.x;
       const candidates = [
         getRailSlopeYAt(wBaseX + 10),
@@ -483,6 +499,7 @@ export function createWagonSystem({
                 k.lifespan(0.45, { fade: 0.3 }),
                 k.z(4),
                 "particle",
+                { vx: Math.cos(ang + Math.PI / 2) * 30, vy: Math.sin(ang + Math.PI / 2) * 30 },
               ]);
             }
           }
