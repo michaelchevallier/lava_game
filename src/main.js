@@ -819,6 +819,8 @@ k.scene("game", () => {
     const offsets = [
       [-thickness, -thickness], [thickness, -thickness],
       [-thickness, thickness], [thickness, thickness],
+      [-thickness, 0], [thickness, 0],
+      [0, -thickness], [0, thickness],
     ];
     for (const [dx, dy] of offsets) {
       k.drawText({

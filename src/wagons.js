@@ -4,6 +4,24 @@ export function createWagonSystem({
   k, tileMap, gameState, audio, showPopup, registerKill, registerCoin, launchFirework,
   placeTile,
 }) {
+  function getRailSlopeYAt(worldX) {
+    const col = Math.floor(worldX / TILE);
+    const localX = Math.max(0, Math.min(1, (worldX - col * TILE) / TILE));
+    for (let r = 0; r < GROUND_ROW; r++) {
+      const rt = tileMap.get(gridKey(col, r));
+      if (!rt) continue;
+      if (rt.tileType === "rail") {
+        return r * TILE + 22;
+      }
+      if (rt.tileType === "rail_up") {
+        return r * TILE + 22 - localX * TILE;
+      }
+      if (rt.tileType === "rail_down") {
+        return r * TILE - 10 + localX * TILE;
+      }
+    }
+    return null;
+  }
   function drawWagonBody(x, y, theme) {
     const body = k.add([
       k.rect(60, 30),
