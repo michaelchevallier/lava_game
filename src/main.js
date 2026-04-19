@@ -12,6 +12,7 @@ import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
 import { createHUD } from "./hud.js";
 import { createDuckSystem } from "./ducks.js";
+import { showInteractionsModal } from "./help-modal.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -198,7 +199,7 @@ k.scene("game", () => {
     fpsBuffer, fpsState, entityState,
     persistSave,
   });
-  const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, toolbarHit } = hud;
+  const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, toolbarHit } = hud;
 
   const { placeTile, checkCoinResonance } = createTileSystem({
     k, tileMap, gameState, audio,
@@ -689,6 +690,12 @@ k.scene("game", () => {
         showExportModal(code, (pasted) => {
           loadParkFromCode(pasted);
         });
+        return;
+      }
+      if (inHelpBtn(m)) {
+        settings.open = false;
+        settingsOverlay.hide();
+        showInteractionsModal();
         return;
       }
       return;

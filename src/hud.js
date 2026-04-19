@@ -83,6 +83,12 @@ export function createHUD({
     return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
   }
 
+  function inHelpBtn(m) {
+    const bx = WIDTH / 2 - 120;
+    const by = HEIGHT / 2 + 192;
+    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
+  }
+
   function toolbarHit(m) {
     if (m.y < TB_Y || m.y > TB_Y + TB_ICON) return null;
     for (let i = 0; i < TOOLBAR_ORDER.length; i++) {
@@ -643,7 +649,7 @@ export function createHUD({
           opacity: 0.75,
         });
         const panelW = 440;
-        const panelH = 380;
+        const panelH = 430;
         const panelX = WIDTH / 2 - panelW / 2;
         const panelY = HEIGHT / 2 - panelH / 2;
         k.drawRect({
@@ -751,6 +757,21 @@ export function createHUD({
           anchor: "center",
           color: k.WHITE,
         });
+        const helpBx = WIDTH / 2 - 120;
+        const helpBy = HEIGHT / 2 + 192;
+        k.drawRect({
+          pos: k.vec2(helpBx, helpBy),
+          width: 240,
+          height: 36,
+          color: k.rgb(80, 140, 200),
+        });
+        k.drawText({
+          text: "Aide / Interactions",
+          size: 16,
+          pos: k.vec2(WIDTH / 2, helpBy + 18),
+          anchor: "center",
+          color: k.WHITE,
+        });
         k.drawText({
           text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
           size: 12,
@@ -843,6 +864,7 @@ export function createHUD({
     inAutoModeBtn,
     inBuildTestBtn,
     inExportBtn,
+    inHelpBtn,
     toolbarHit,
   };
 }
