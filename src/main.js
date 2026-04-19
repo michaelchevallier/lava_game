@@ -616,6 +616,41 @@ k.scene("game", () => {
     },
   ]);
 
+  k.add([
+    k.pos(0, 0),
+    k.z(-9),
+    {
+      draw() {
+        if (isNight) return;
+        const sx = 110;
+        const sy = 80 + Math.sin(k.time() * 0.7) * 4;
+        // Sun corona
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2 + k.time() * 0.4;
+          k.drawRect({
+            pos: k.vec2(sx + Math.cos(a) * 38 - 2, sy + Math.sin(a) * 38 - 6),
+            width: 4,
+            height: 12,
+            color: k.rgb(255, 230, 100),
+            opacity: 0.7,
+            angle: (a * 180) / Math.PI,
+            anchor: "center",
+          });
+        }
+        k.drawCircle({ pos: k.vec2(sx, sy), radius: 26, color: k.rgb(255, 235, 120) });
+        k.drawCircle({ pos: k.vec2(sx - 8, sy - 4), radius: 2.4, color: k.rgb(60, 50, 20) });
+        k.drawCircle({ pos: k.vec2(sx + 8, sy - 4), radius: 2.4, color: k.rgb(60, 50, 20) });
+        // smile arc using small dots
+        for (let i = -3; i <= 3; i++) {
+          const t = i / 3;
+          const mx = sx + i * 3;
+          const my = sy + 7 + (1 - t * t) * 4;
+          k.drawCircle({ pos: k.vec2(mx, my), radius: 1.4, color: k.rgb(60, 50, 20) });
+        }
+      },
+    },
+  ]);
+
   const FLAG_COLORS = [
     [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
     [230, 100, 200], [255, 140, 40], [120, 100, 230], [255, 255, 255],
