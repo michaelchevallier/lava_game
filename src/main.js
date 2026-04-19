@@ -32,7 +32,24 @@ const k = kaplay({
     const r = _canvas.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return _origMousePos();
     const raw = _origMousePos();
-    return k.vec2(raw.x * (WIDTH / r.width), raw.y * (HEIGHT / r.height));
+    const cssRatio = r.width / r.height;
+    const gameRatio = WIDTH / HEIGHT;
+    let renderW, renderH, offsetX, offsetY;
+    if (cssRatio > gameRatio) {
+      renderH = r.height;
+      renderW = r.height * gameRatio;
+      offsetX = (r.width - renderW) / 2;
+      offsetY = 0;
+    } else {
+      renderW = r.width;
+      renderH = r.width / gameRatio;
+      offsetX = 0;
+      offsetY = (r.height - renderH) / 2;
+    }
+    return k.vec2(
+      (raw.x - offsetX) * (WIDTH / renderW),
+      (raw.y - offsetY) * (HEIGHT / renderH),
+    );
   };
 }
 
