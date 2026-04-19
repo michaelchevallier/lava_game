@@ -1189,10 +1189,15 @@ k.scene("game", () => {
 
   k.loop(0.1, () => {
     const PARTICLE_TAGS = ["particle", "particle-grav", "particle-x", "particle-debris", "particle-firework", "fan-puff", "steam"];
+    const CAP_PER_TYPE = { "particle-grav": 20, "particle-firework": 24, "particle": 20 };
+    for (const [tag, cap] of Object.entries(CAP_PER_TYPE)) {
+      const batch = k.get(tag);
+      if (batch.length > cap) batch.slice(0, batch.length - cap).forEach(p => k.destroy(p));
+    }
     let total = 0;
     for (const tag of PARTICLE_TAGS) total += k.get(tag).length;
-    if (total <= 100) return;
-    const excess = total - 100;
+    if (total <= 60) return;
+    const excess = total - 60;
     let destroyed = 0;
     for (const tag of PARTICLE_TAGS) {
       if (destroyed >= excess) break;
@@ -1264,6 +1269,7 @@ k.scene("game", () => {
         k.lifespan(0.9, { fade: 0.5 }),
         k.z(5),
         k.move(k.UP, 30 + Math.random() * 40),
+        "particle",
       ]);
     }
   });
