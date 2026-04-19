@@ -193,10 +193,11 @@ export function createHUD({
         pos: k.vec2(WIDTH - 320, 6),
         color: C_SCORE,
       });
+      const wagonCount = k.get("wagon").length;
       k.drawText({
-        text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
+        text: `Wagons ${wagonCount}  Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
         size: 16,
-        pos: k.vec2(WIDTH - 320, 32),
+        pos: k.vec2(WIDTH - 380, 32),
         color: C_STATS,
       });
       k.drawText({
