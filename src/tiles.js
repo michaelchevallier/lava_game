@@ -649,8 +649,11 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
       const cx = col * TILE + TILE / 2;
-      const cy = row * TILE + 6;
-      const len = TILE * Math.SQRT2 + 4;
+      // Centered so the diagonal endpoints land on the horizontal rail surface
+      // of the cell at row (left for rail_up, right for rail_down) and the row
+      // above (right for rail_up, left for rail_down). Surface offset = TILE-10.
+      const cy = row * TILE + (TILE - 10) - TILE / 2;
+      const len = TILE * Math.SQRT2;
       const rad = (angle * Math.PI) / 180;
       const ties = [];
       for (let i = 0; i < 3; i++) {

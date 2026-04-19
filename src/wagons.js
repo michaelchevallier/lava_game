@@ -23,11 +23,13 @@ export function createWagonSystem({
     for (let r = 0; r < GROUND_ROW; r++) {
       const rt = tileMap.get(gridKey(col, r));
       if (!rt) continue;
+      // RAIL_SURFACE = TILE - 10 (=54 for TILE=64), aligned with the visual top
+      // of the horizontal rail rect (y = row*TILE + TILE - 10 in tiles.js)
       if (rt.tileType === "rail") {
-        return r * TILE + 22;
+        return r * TILE + (TILE - 10);
       }
       if (rt.tileType === "rail_up") {
-        return r * TILE + 22 - localX * TILE;
+        return r * TILE + (TILE - 10) - localX * TILE;
       }
       if (rt.tileType === "rail_down") {
         return r * TILE - 10 + localX * TILE;
