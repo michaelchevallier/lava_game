@@ -21,9 +21,24 @@ const k = kaplay({
   global: false,
   pixelDensity: 1,
   letterbox: true,
+  crisp: true,
+  maxFPS: 60,
 });
 
 k.setGravity(1600);
+
+(() => {
+  const c = document.getElementById("game");
+  c.width = WIDTH;
+  c.height = HEIGHT;
+  c.style.imageRendering = "pixelated";
+  const observer = new MutationObserver(() => {
+    if (c.width !== WIDTH) c.width = WIDTH;
+    if (c.height !== HEIGHT) c.height = HEIGHT;
+  });
+  observer.observe(c, { attributes: true, attributeFilter: ["width", "height"] });
+  console.log("canvas locked to", WIDTH, "x", HEIGHT, "dpr=", window.devicePixelRatio);
+})();
 
 loadAllSprites(k).then(() => {
   console.log("sprites loaded, starting scene");

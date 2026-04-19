@@ -54,6 +54,11 @@
         height: 576px;
         max-width: 100vw;
         max-height: 100vh;
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+        transform: translateZ(0);
+        will-change: transform;
       }
     </style>
   </head>
@@ -100,7 +105,8 @@
 
     <script>
       const c = document.getElementById('game');
-      c.width = 1280; c.height = 576;
+      c.width = 1280;
+      c.height = 576;
     </script>
     <script type="module" src="/src/main.js"></script>
   </body>
