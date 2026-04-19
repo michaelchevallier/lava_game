@@ -26,6 +26,13 @@ const k = kaplay({
 });
 
 k.setGravity(1600);
+window.__k = k;
+window.__getStats = () => {
+  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge"];
+  const out = { total: k.get("*").length };
+  for (const t of tags) out[t] = k.get(t).length;
+  return out;
+};
 
 loadAllSprites(k).then(() => {
   console.log("sprites loaded, starting scene");
