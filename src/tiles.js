@@ -672,6 +672,26 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     return fields;
   }
 
+  function detectMagnetPortals() {
+    const result = [];
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "portal") continue;
+      let hasMagnetNearby = false;
+      outer: for (let dc = -2; dc <= 2; dc++) {
+        for (let dr = -2; dr <= 2; dr++) {
+          if (Math.abs(dc) + Math.abs(dr) > 2) continue;
+          if (dc === 0 && dr === 0) continue;
+          const neighbor = tileMap.get(gridKey(t.gridCol + dc, t.gridRow + dr));
+          if (neighbor?.tileType === "magnet") { hasMagnetNearby = true; break outer; }
+        }
+      }
+      if (hasMagnetNearby) {
+        result.push({ col: t.gridCol, row: t.gridRow, x: t.pos.x, y: t.pos.y, portalRef: t });
+      }
+    }
+    return result;
+  }
+
   function detectIceRinks() {
     const rinks = [];
     const visited = new Set();
@@ -693,5 +713,5 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     return rinks;
   }
 
-  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks };
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals };
 }

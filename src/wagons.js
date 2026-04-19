@@ -447,6 +447,34 @@ export function createWagonSystem({
         }
       }
 
+      // Téléport magnétique: portail adjacent à un magnet attire les wagons (vortex)
+      {
+        for (const mp of gameState.magnetPortals || []) {
+          const dx = (mp.x + TILE / 2) - (wagon.pos.x + 30);
+          const dy = (mp.y + TILE / 2) - (wagon.pos.y + 15);
+          const dist = Math.hypot(dx, dy);
+          const range = 3 * TILE;
+          if (dist < range && dist > TILE * 0.4) {
+            const force = (1 - dist / range) * 320;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            wagon.move(nx * force * k.dt(), ny * force * k.dt());
+            if (Math.random() < 0.18 && k.get("particle").length < 280) {
+              const ang = Math.random() * Math.PI * 2;
+              k.add([
+                k.rect(3, 3),
+                k.pos(wagon.pos.x + 30 + Math.cos(ang) * 18, wagon.pos.y + 15 + Math.sin(ang) * 18),
+                k.color(k.rgb(180, 80, 240)),
+                k.opacity(0.9),
+                k.lifespan(0.45, { fade: 0.3 }),
+                k.z(4),
+                "particle",
+              ]);
+            }
+          }
+        }
+      }
+
       // Loop-the-loop detection: track distinct rail tiles visited
       {
         const wCol = Math.floor((wagon.pos.x + 30) / TILE);

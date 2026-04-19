@@ -229,7 +229,7 @@ k.scene("game", () => {
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
   window.__spectres = spectres;
 
-  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals } = createTileSystem({
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
   });
@@ -244,6 +244,8 @@ k.scene("game", () => {
   k.loop(0.5, () => { gameState.geysers = detectGeysers(); });
   gameState.iceRinks = [];
   k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
+  gameState.magnetPortals = [];
+  k.loop(0.5, () => { gameState.magnetPortals = detectMagnetPortals(); });
 
   k.onUpdate(() => {
     for (const g of gameState.geysers) {
@@ -311,6 +313,27 @@ k.scene("game", () => {
             const y = ay + (by - ay) * p;
             k.drawCircle({ pos: k.vec2(x, y - 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
             k.drawCircle({ pos: k.vec2(x, y + 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
+          }
+        }
+        for (const mp of gameState.magnetPortals || []) {
+          const cx = mp.x + TILE / 2;
+          const cy = mp.y + TILE / 2;
+          const pulse = 0.5 + 0.5 * Math.sin(k.time() * 4);
+          k.drawCircle({
+            pos: k.vec2(cx, cy),
+            radius: 3 * TILE * (0.85 + 0.15 * pulse),
+            color: k.rgb(180, 80, 240),
+            opacity: 0.05 + 0.1 * pulse,
+          });
+          for (let i = 0; i < 6; i++) {
+            const ang = (i / 6) * Math.PI * 2 + k.time() * 1.5;
+            const r = 2 * TILE + Math.sin(k.time() * 3 + i) * 8;
+            k.drawCircle({
+              pos: k.vec2(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r),
+              radius: 4,
+              color: k.rgb(220, 140, 255),
+              opacity: 0.7,
+            });
           }
         }
       },
