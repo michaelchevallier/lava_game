@@ -15,6 +15,7 @@ import { createDuckSystem } from "./ducks.js";
 import { showInteractionsModal } from "./help-modal.js";
 import { createCrowdSystem } from "./crowd.js";
 import { createJuice } from "./juice.js";
+import { createSpectresSystem } from "./spectres.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -196,6 +197,12 @@ k.scene("game", () => {
   gameState.comboExpire = 0;
   gameState.milestoneIdx = 0;
   gameState.bulletTimeUntil = 0;
+  gameState.lastTilePlaced = k.time();
+  gameState.tilesPlacedThisGame = 0;
+  gameState.trampolinesThisGame = 0;
+  gameState.vipStreak = 0;
+  gameState.portalUses = 0;
+  gameState.bulletTimeUnlocked = false;
 
   let _playerConfigs = null;
   let crowdHooks = null;
@@ -206,7 +213,10 @@ k.scene("game", () => {
     fpsBuffer, fpsState, entityState,
     persistSave,
   });
-  const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, toolbarHit } = hud;
+  const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, inCarnetBtn, toolbarHit } = hud;
+
+  const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
+  window.__spectres = spectres;
 
   const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers } = createTileSystem({
     k, tileMap, gameState, audio,
@@ -325,6 +335,7 @@ k.scene("game", () => {
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;
     save.totalSkeletons = (save.totalSkeletons || 0) + 1;
     persistSave(save);
+    if (save.totalSkeletons >= 100) spectres.unlock(6);
   }
 
   function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
@@ -344,9 +355,12 @@ k.scene("game", () => {
       triggerApocalypse();
     }
     if (vip) {
+      gameState.vipStreak = (gameState.vipStreak || 0) + 1;
+      if (gameState.vipStreak >= 3) spectres.unlock(1);
       audio.combo();
       showPopup(x, y - 30, `VIP +${pts}!`, k.rgb(255, 230, 80), 28);
     } else if (gameState.comboCount >= 2) {
+      gameState.vipStreak = 0;
       audio.combo();
       showPopup(
         x,
@@ -356,6 +370,7 @@ k.scene("game", () => {
         20 + gameState.comboCount * 2,
       );
     } else {
+      gameState.vipStreak = 0;
       showPopup(x, y - 30, `+${pts}`, k.rgb(255, 180, 60), 22);
     }
     updatePersistence();
@@ -630,6 +645,27 @@ k.scene("game", () => {
   }
   k.wait(0.05, () => startGhostTrain());
 
+  let inverseTrainCooldown = 0;
+  function spawnInverseTrain() {
+    spawnWagon(false, true);
+  }
+  function triggerInverseTrain() {
+    showPopup(WIDTH / 2, 100, "ATTENTION TRAIN INVERSE !", k.rgb(255, 60, 60), 32);
+    audio.transform();
+    juice.dirShake(-1, 0, 8, 0.25);
+    k.wait(2, () => {
+      spawnInverseTrain();
+    });
+  }
+  k.loop(2, () => {
+    if (k.time() < inverseTrainCooldown) return;
+    if (k.time() - gameState.lastTilePlaced < 20) return;
+    if (k.get("wagon").filter((w) => w.inverseTrain).length > 0) return;
+    triggerInverseTrain();
+    inverseTrainCooldown = k.time() + 30;
+    gameState.lastTilePlaced = k.time();
+  });
+
   let isNight = false;
   const moon = k.add([
     k.circle(24),
@@ -759,6 +795,12 @@ k.scene("game", () => {
         showInteractionsModal();
         return;
       }
+      if (inCarnetBtn(m)) {
+        settings.open = false;
+        settingsOverlay.hide();
+        spectres.showCarnet();
+        return;
+      }
       return;
     }
 
@@ -781,6 +823,7 @@ k.scene("game", () => {
     const row = Math.floor(w.y / TILE);
     if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
+    gameState.lastTilePlaced = k.time();
     audio.place();
   });
 
@@ -798,6 +841,7 @@ k.scene("game", () => {
     if (key === lastPlacedKey) return;
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
+    gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
 
