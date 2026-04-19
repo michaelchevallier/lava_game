@@ -161,8 +161,19 @@ export function createPlayerSystem({
         normalSprite: opts.sprite,
         skelSprite: opts.skelSprite,
         playerName: opts.name,
+        nameColor: opts.color || k.rgb(255, 255, 255),
       },
     ]);
+    p.onDraw(() => {
+      if (p.ridingWagon) return;
+      const nx = 14;
+      const ny = -10;
+      // outline
+      for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        k.drawText({ text: opts.name, size: 9, pos: k.vec2(nx + dx, ny + dy), anchor: "center", color: k.rgb(0, 0, 0) });
+      }
+      k.drawText({ text: opts.name, size: 9, pos: k.vec2(nx, ny), anchor: "center", color: opts.color });
+    });
 
     function playerSpeedMult() {
       const now = k.time();
