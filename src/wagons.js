@@ -15,7 +15,7 @@ function hueToRgb(k, h) {
 
 export function createWagonSystem({
   k, tileMap, gameState, audio, showPopup, registerKill, registerCoin, launchFirework,
-  placeTile,
+  placeTile, onSkeletonTransform,
 }) {
   function getRailSlopeYAt(worldX) {
     const col = Math.floor(worldX / TILE);
@@ -825,6 +825,7 @@ export function createWagonSystem({
     window.__juice?.dirShake(wagon.vel?.x || 1, 0, 6, 0.2);
     gameState.skeletons += 1;
     audio.transform();
+    if (onSkeletonTransform) onSkeletonTransform();
     const dark = wagon.darkPassenger || 0;
     if (wagon.inverseTrain) {
       gameState.score += 500;

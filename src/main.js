@@ -216,6 +216,7 @@ k.scene("game", () => {
 
   let _playerConfigs = null;
   let crowdHooks = null;
+  let tutorial = null;
   const hud = createHUD({
     k, gameState, save, settings, settingsOverlay,
     getCurrentTool: () => selectedTool,
@@ -494,6 +495,7 @@ k.scene("game", () => {
     registerCoin: (...args) => registerCoin(...args),
     launchFirework: (...args) => launchFirework(...args),
     placeTile,
+    onSkeletonTransform: () => { if (tutorial) tutorial.notifyFirstSkeleton(); },
   });
 
   for (let i = 0; i < 6; i++) {
@@ -590,7 +592,7 @@ k.scene("game", () => {
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
     exitWagon: (...args) => exitWagon(...args),
-    spawnWagon: (...args) => spawnWagon(...args),
+    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); },
   });
   _playerConfigs = PLAYER_CONFIGS;
 
@@ -621,7 +623,7 @@ k.scene("game", () => {
     settings.open = false;
     k.go("game");
   });
-  k.onKeyPress("x", () => spawnWagon());
+  k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); });
   k.onKeyPress("m", () => audio.toggleMute());
   k.onKeyPress(["p", "escape"], () => {
     const root = k.getTreeRoot();
@@ -873,6 +875,7 @@ k.scene("game", () => {
     const row = Math.floor(w.y / TILE);
     if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
+    if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -891,6 +894,7 @@ k.scene("game", () => {
     if (key === lastPlacedKey) return;
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
+    if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
@@ -1291,6 +1295,6 @@ k.scene("game", () => {
 
   hud.setup();
 
-  const tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
+  tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
   tutorial.setup();
 });
