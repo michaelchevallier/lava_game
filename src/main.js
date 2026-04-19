@@ -1613,6 +1613,17 @@ k.scene("game", () => {
 
       if (wagon.pos.x > WIDTH + 80) {
         if (wagon.rider) exitWagon(wagon.rider);
+        if (wagon.passenger === "human" && !wagon.ghostTrain) {
+          gameState.missed = (gameState.missed || 0) + 1;
+          showPopup(
+            WIDTH - 120,
+            HEIGHT / 2 - 40,
+            "RATE !",
+            k.rgb(255, 70, 70),
+            40,
+          );
+          audio.splash();
+        }
         wagon.parts.forEach((p) => k.destroy(p));
         k.destroy(wagon);
       }
@@ -2235,7 +2246,7 @@ k.scene("game", () => {
       color: k.rgb(255, 230, 80),
     });
     k.drawText({
-      text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}`,
+      text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
       size: 12,
       pos: k.vec2(WIDTH - 300, 30),
       color: k.rgb(220, 220, 220),
