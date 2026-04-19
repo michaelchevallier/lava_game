@@ -229,6 +229,27 @@ export function createPlayerSystem({
 
     p.onUpdate(() => {
       if (p.ridingWagon) return;
+
+      // Landing dust puff: detect transition airborne -> grounded
+      const grounded = p.isGrounded();
+      if (grounded && p._wasAirborne && p._airTime > 0.18) {
+        for (let i = 0; i < 5; i++) {
+          const sgn = i < 2 ? -1 : (i > 2 ? 1 : 0);
+          k.add([
+            k.circle(2 + Math.random() * 1.5),
+            k.pos(p.pos.x + 14 + sgn * (4 + Math.random() * 6), p.pos.y + 40),
+            k.color(220, 200, 170),
+            k.opacity(0.7),
+            k.lifespan(0.35, { fade: 0.25 }),
+            k.z(4),
+            "particle",
+            { vx: sgn * (30 + Math.random() * 20), vy: -10 - Math.random() * 15 },
+          ]);
+        }
+      }
+      p._wasAirborne = !grounded;
+      p._airTime = grounded ? 0 : (p._airTime || 0) + k.dt();
+
       const footTile = getEntityTile(p);
       const centerTile = getEntityTile(p, 22);
       const activeTile = (centerTile?.tileType === "portal") ? centerTile : footTile;
