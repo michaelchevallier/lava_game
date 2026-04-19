@@ -16,6 +16,7 @@ import { showInteractionsModal } from "./help-modal.js";
 import { createCrowdSystem } from "./crowd.js";
 import { createJuice } from "./juice.js";
 import { createSpectresSystem } from "./spectres.js";
+import { createAchievements } from "./achievements.js";
 import { createSplash } from "./splash.js";
 import { createTutorial } from "./tutorial.js";
 
@@ -228,6 +229,7 @@ k.scene("game", () => {
 
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
   window.__spectres = spectres;
+  createAchievements({ k, spectres, audio });
 
   const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals } = createTileSystem({
     k, tileMap, gameState, audio,

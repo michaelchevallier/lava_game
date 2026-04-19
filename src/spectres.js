@@ -26,6 +26,12 @@ export const SPECTRES = [
 ];
 
 export function createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH }) {
+  const unlockListeners = [];
+
+  function onUnlock(cb) {
+    unlockListeners.push(cb);
+  }
+
   function unlock(id) {
     const mask = 1 << id;
     if ((save.spectres & mask) !== 0) return;
@@ -34,6 +40,7 @@ export function createSpectresSystem({ save, persistSave, audio, showPopup, k, W
     audio.combo();
     const spec = SPECTRES[id];
     showPopup(WIDTH / 2, 200, `NOUVEAU SPECTRE : ${spec.name}`, k.rgb(255, 200, 80), 22);
+    unlockListeners.forEach(cb => cb(id, spec));
   }
 
   function hasUnlocked(id) {
@@ -73,5 +80,5 @@ export function createSpectresSystem({ save, persistSave, audio, showPopup, k, W
     modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
   }
 
-  return { unlock, hasUnlocked, showCarnet };
+  return { unlock, hasUnlocked, showCarnet, onUnlock };
 }

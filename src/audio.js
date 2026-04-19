@@ -82,5 +82,11 @@ export const audio = (() => {
       beep(523, 0.06, "square", 0.1);
       setTimeout(() => beep(784, 0.08, "square", 0.1), 60);
     },
+    achievement: () => {
+      beep(523, 0.1, "triangle", 0.14);
+      setTimeout(() => beep(659, 0.1, "triangle", 0.14), 90);
+      setTimeout(() => beep(784, 0.14, "triangle", 0.16), 180);
+      setTimeout(() => beep(1047, 0.22, "triangle", 0.14), 290);
+    },
   };
 })();
