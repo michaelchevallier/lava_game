@@ -1298,9 +1298,9 @@ k.scene("game", () => {
       ? k.rgb(255, 200, 40)
       : k.rgb(255, 80, 80);
     drawTextOutlined({
-      text: `${fpsValue} FPS  E:${entityCount}`,
-      size: 13,
-      pos: k.vec2(12, 46),
+      text: `${fpsValue}fps E${entityCount}`,
+      size: 11,
+      pos: k.vec2(WIDTH - 90, HEIGHT - 16),
       color: fpsColor,
     });
 
