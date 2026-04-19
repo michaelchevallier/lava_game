@@ -87,8 +87,11 @@ const gameState = {
   comboCount: 0,
   comboExpire: 0,
   milestoneIdx: 0,
+  bulletTimeUntil: 0,
+  wagonSpeedMult: save.wagonSpeedMult ?? 1,
 };
 
+audio.setMasterVolume(save.volume ?? 0.7);
 
 const fpsBuffer = [];
 let fpsLastSec = 0;
@@ -105,6 +108,7 @@ k.scene("game", () => {
   gameState.comboCount = 0;
   gameState.comboExpire = 0;
   gameState.milestoneIdx = 0;
+  gameState.bulletTimeUntil = 0;
 
   const { placeTile, checkCoinResonance } = createTileSystem({
     k, tileMap, gameState, audio,
@@ -203,6 +207,7 @@ k.scene("game", () => {
   }
 
   function triggerApocalypse() {
+    gameState.bulletTimeUntil = k.time() + 3;
     audio.combo();
     setTimeout(() => audio.transform(), 100);
     k.shake(22);
@@ -637,6 +642,7 @@ k.scene("game", () => {
   k.onKeyPress("8", () => (selectedTool = "coin"));
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("0", () => (selectedTool = "fan"));
+  k.onKeyPress("y", () => (selectedTool = "wheel"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -1019,7 +1025,8 @@ k.scene("game", () => {
       v.crown = [hat, hatBrim, hatBand];
     }
     v.onUpdate(() => {
-      v.move(v.walkSpeed, 0);
+      const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
+      v.move(vSpeed, 0);
       if (v.crown) {
         v.crown[0].pos.x = v.pos.x + 5;
         v.crown[0].pos.y = v.pos.y - 6;
@@ -1363,6 +1370,7 @@ k.scene("game", () => {
     ice: "GLACE",
     magnet: "AIMANT",
     bridge: "PONT",
+    wheel: "GRANDE ROUE",
   };
   const TOOL_COLORS = {
     lava: k.rgb(255, 120, 60),
@@ -1379,6 +1387,7 @@ k.scene("game", () => {
     ice: k.rgb(200, 235, 255),
     magnet: k.rgb(220, 80, 60),
     bridge: k.rgb(160, 100, 40),
+    wheel: k.rgb(80, 220, 240),
   };
 
   k.onDraw(() => {
@@ -1651,6 +1660,27 @@ k.scene("game", () => {
           });
         }
         k.drawCircle({ pos: k.vec2(cx, cy), radius: 3, color: k.rgb(40, 40, 50) });
+      } else if (item.tool === "wheel") {
+        k.drawCircle({
+          pos: k.vec2(cx, cy),
+          radius: TB_ICON / 2 - 8,
+          color: k.rgb(0, 0, 0, 0),
+          outline: { width: 2, color: k.rgb(190, 170, 120) },
+        });
+        const wRot = k.time() * 12 * (Math.PI / 180);
+        const NCOL = [k.rgb(80, 220, 240), k.rgb(240, 80, 80), k.rgb(255, 210, 50), k.rgb(180, 80, 240)];
+        const wR = TB_ICON / 2 - 8;
+        for (let n = 0; n < 4; n++) {
+          const a = wRot + (Math.PI / 2) * n;
+          k.drawRect({
+            pos: k.vec2(cx + Math.cos(a) * wR, cy + Math.sin(a) * wR),
+            width: 8,
+            height: 5,
+            anchor: "center",
+            color: NCOL[n],
+          });
+        }
+        k.drawCircle({ pos: k.vec2(cx, cy), radius: 3, color: k.rgb(210, 190, 140) });
       } else if (item.tool === "erase") {
         k.drawText({
           text: "X",
@@ -1725,7 +1755,13 @@ k.scene("game", () => {
                       ? k.rgb(255, 80, 130)
                       : selectedTool === "erase"
                         ? k.rgb(220, 80, 80)
-                        : k.rgb(210, 210, 225);
+                        : selectedTool === "wheel"
+                          ? k.rgb(80, 220, 240)
+                          : k.rgb(210, 210, 225);
+          const ghostW = selectedTool === "wheel" ? TILE * 3 : TILE;
+          const ghostH = selectedTool === "wheel" ? TILE * 3 : TILE;
+          const ghostOx = selectedTool === "wheel" ? -TILE : 0;
+          const ghostOy = selectedTool === "wheel" ? -TILE : 0;
           k.drawRect({
             pos: k.vec2(col * TILE, row * TILE),
             width: TILE,

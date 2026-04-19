@@ -85,7 +85,7 @@ export function createWagonSystem({
       "wagon",
       {
         passenger: "human",
-        speed: ghost ? 180 : 140,
+        speed: (ghost ? 180 : 140) * (gameState.wagonSpeedMult ?? 1),
         parts: [],
         rider: null,
         ghostTrain: ghost,
@@ -188,6 +188,7 @@ export function createWagonSystem({
       let speedMult = 1;
       if (boosted) speedMult = 2.2;
       else if (iced) speedMult = 1.6;
+      if (gameState.bulletTimeUntil > k.time()) speedMult *= 0.3;
       const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
