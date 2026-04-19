@@ -631,6 +631,18 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     }
   });
 
+  function detectGeysers() {
+    const geysers = [];
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "fan") continue;
+      const above = tileMap.get(gridKey(t.gridCol, t.gridRow - 1));
+      if (above && above.tileType === "water") {
+        geysers.push({ col: t.gridCol, row: t.gridRow - 1, fanRow: t.gridRow });
+      }
+    }
+    return geysers;
+  }
+
   function detectMagnetFields() {
     const fields = [];
     const magnets = [];
@@ -654,5 +666,5 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     return fields;
   }
 
-  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields };
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers };
 }

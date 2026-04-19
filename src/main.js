@@ -123,6 +123,7 @@ const gameState = {
   bulletTimeUntil: 0,
   wagonSpeedMult: save.wagonSpeedMult ?? 1,
   magnetFields: [],
+  geysers: [],
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
@@ -207,7 +208,7 @@ k.scene("game", () => {
   });
   const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, toolbarHit } = hud;
 
-  const { placeTile, checkCoinResonance, detectMagnetFields } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers } = createTileSystem({
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
   });
@@ -219,6 +220,34 @@ k.scene("game", () => {
   startDuckLoop();
 
   k.loop(1, () => { gameState.magnetFields = detectMagnetFields(); });
+  k.loop(0.5, () => { gameState.geysers = detectGeysers(); });
+
+  k.onUpdate(() => {
+    for (const g of gameState.geysers) {
+      if (k.get("particle").length > 120) break;
+      if (Math.random() < 0.7) {
+        const cx = g.col * TILE + TILE / 2;
+        const cy = g.row * TILE;
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.5;
+        const sp = 80 + Math.random() * 80;
+        const p = k.add([
+          k.circle(2 + Math.random() * 2),
+          k.pos(cx + (Math.random() - 0.5) * 14, cy),
+          k.color(k.rgb(80, 200, 255)),
+          k.opacity(0.85),
+          k.lifespan(0.6, { fade: 0.3 }),
+          k.z(8),
+          "particle",
+          { vx: Math.cos(angle) * sp, vy: Math.sin(angle) * sp, grav: 200 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+          p.vy += p.grav * k.dt();
+        });
+      }
+    }
+  });
 
   k.add([
     k.pos(0, 0),
