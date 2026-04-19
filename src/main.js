@@ -63,8 +63,10 @@ const k = kaplay({
 
 k.setGravity(1600);
 const juice = createJuice({ k });
+const entityCounts = { particle: 0 };
 window.__juice = juice;
 window.__k = k;
+window.__entityCounts = entityCounts;
 window.__getStats = () => {
   const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part","crowd"];
   const out = { total: k.get("*").length };
@@ -220,6 +222,9 @@ k.scene("game", () => {
   gameState.lastConstellationAt = 0;
   gameState.constellationActive = false;
 
+  entityCounts.particle = 0;
+  k.onAdd("particle", () => { entityCounts.particle++; });
+  k.onDestroy("particle", () => { entityCounts.particle--; });
   let _playerConfigs = null;
   let crowdHooks = null;
   let tutorial = null;
@@ -237,7 +242,7 @@ k.scene("game", () => {
   createAchievements({ k, spectres, audio });
 
   const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals } = createTileSystem({
-    k, tileMap, gameState, audio,
+    k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
   });
 
@@ -258,7 +263,7 @@ k.scene("game", () => {
 
   k.onUpdate(() => {
     for (const g of gameState.geysers) {
-      if (k.get("particle").length > 120) break;
+      if (entityCounts.particle > 120) break;
       if (Math.random() < 0.7) {
         const cx = g.col * TILE + TILE / 2;
         const cy = g.row * TILE;
@@ -284,7 +289,7 @@ k.scene("game", () => {
   });
 
   k.loop(0.3, () => {
-    if (k.get("particle").length > 120) return;
+    if (entityCounts.particle > 120) return;
     for (const r of gameState.iceRinks) {
       if (Math.random() < 0.5) {
         const x = (r.startCol + Math.random() * r.len) * TILE;
@@ -592,7 +597,7 @@ k.scene("game", () => {
     drawWagonBody, spawnWagon, transformToSkeleton,
     reviveFromSkeleton, collectCoin, tryBoardWagon, exitWagon,
   } = createWagonSystem({
-    k, tileMap, gameState, audio,
+    k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
     registerKill: (...args) => registerKill(...args),
     registerCoin: (...args) => registerCoin(...args),
@@ -602,7 +607,7 @@ k.scene("game", () => {
   });
 
   const constellation = createConstellationSystem({
-    k, tileMap, gameState, audio,
+    k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
     checkMilestone: (...args) => checkMilestone(...args),
     drawWagonBody, juice,

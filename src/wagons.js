@@ -14,7 +14,7 @@ function hueToRgb(k, h) {
 }
 
 export function createWagonSystem({
-  k, tileMap, gameState, audio, showPopup, registerKill, registerCoin, launchFirework,
+  k, tileMap, gameState, audio, entityCounts, showPopup, registerKill, registerCoin, launchFirework,
   placeTile, onSkeletonTransform,
 }) {
   function getRailSlopeYAt(worldX) {
@@ -136,7 +136,7 @@ export function createWagonSystem({
       showPopup(WIDTH / 2, 180, "WAGON DOR\u00c9 ! 2x points", k.rgb(255, 220, 60), 22);
       // Sparkle aura around wagon every frame
       wagon.onUpdate(() => {
-        if (Math.random() < 0.25 && k.get("particle").length < 270) {
+        if (Math.random() < 0.25 && entityCounts.particle < 270) {
           k.add([
             k.circle(1.5),
             k.pos(wagon.pos.x + Math.random() * 60, wagon.pos.y + Math.random() * 30),
@@ -262,7 +262,7 @@ export function createWagonSystem({
       }
 
       // Boost trail: orange sparks behind wagon when boosted
-      if (boosted && Math.random() < 0.45 && k.get("particle").length < 280) {
+      if (boosted && Math.random() < 0.45 && entityCounts.particle < 280) {
         const ang = Math.PI + (Math.random() - 0.5) * 0.6;
         const sp = 80 + Math.random() * 60;
         k.add([
@@ -278,7 +278,7 @@ export function createWagonSystem({
       }
 
       // Color trail when going fast (boosted/iced/looping)
-      if ((boosted || iced || wagon.looping) && Math.random() < 0.3 && k.get("particle").length < 260) {
+      if ((boosted || iced || wagon.looping) && Math.random() < 0.3 && entityCounts.particle < 260) {
         k.add([
           k.rect(36, 18),
           k.pos(wagon.pos.x + 12, wagon.pos.y + 4),
@@ -529,7 +529,7 @@ export function createWagonSystem({
             const nx = dx / dist;
             const ny = dy / dist;
             wagon.move(nx * force * k.dt(), ny * force * k.dt());
-            if (Math.random() < 0.18 && k.get("particle").length < 280) {
+            if (Math.random() < 0.18 && entityCounts.particle < 280) {
               const ang = Math.random() * Math.PI * 2;
               k.add([
                 k.rect(3, 3),

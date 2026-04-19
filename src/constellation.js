@@ -3,7 +3,7 @@
 // Extracted from main.js to keep that file under 1500 lines.
 
 export function createConstellationSystem({
-  k, tileMap, gameState, audio, showPopup, checkMilestone,
+  k, tileMap, gameState, audio, entityCounts, showPopup, checkMilestone,
   drawWagonBody, juice, WIDTH, HEIGHT, TILE, GROUND_ROW,
 }) {
   function spawnSpectralWagon(portalTile) {
@@ -115,7 +115,7 @@ export function createConstellationSystem({
       }
 
       // Sparkle doré + halo violet
-      if (Math.random() < 0.3 && k.get("particle").length < 245) {
+      if (Math.random() < 0.3 && entityCounts.particle < 245) {
         const useGold = Math.random() < 0.5;
         k.add([
           k.circle(1.5 + Math.random() * 2),
@@ -287,7 +287,7 @@ export function createConstellationSystem({
 
       // 32 particules explosion
       for (let pi = 0; pi < 32; pi++) {
-        if (k.get("particle").length + pi >= 250) break;
+        if (entityCounts.particle + pi >= 250) break;
         const a = (Math.PI * 2 * pi) / 32;
         const useGold = pi % 2 === 0;
         k.add([
@@ -330,7 +330,7 @@ export function createConstellationSystem({
     if (v.vel) v.vel = k.vec2(0, 0);
     if (age < 1) {
       // Phase 1 : aura pulsante — mouvement arrêté, particules violettes
-      if (Math.random() < 0.15 && k.get("particle").length < 245) {
+      if (Math.random() < 0.15 && entityCounts.particle < 245) {
         const a = Math.random() * Math.PI * 2;
         const r = 8 + Math.random() * 12;
         k.add([
@@ -352,7 +352,7 @@ export function createConstellationSystem({
       v._spiralAngle += 4 * k.dt();
       v.pos.x = v._constTargetX + Math.cos(v._spiralAngle) * radius - 14;
       v.pos.y = v._constTargetY + Math.sin(v._spiralAngle) * radius * 0.5 - 20;
-      if (Math.random() < 0.2 && k.get("particle").length < 245) {
+      if (Math.random() < 0.2 && entityCounts.particle < 245) {
         k.add([
           k.circle(1.5),
           k.pos(v.pos.x + 14, v.pos.y + 20),

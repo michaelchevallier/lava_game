@@ -1,6 +1,6 @@
 import { TILE, GROUND_ROW, gridKey } from "./constants.js";
 
-export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
+export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, showPopup }) {
   function spawnSteamBurst(col, row) {
     const cx = col * TILE + TILE / 2;
     const cy = row * TILE + TILE / 2;
@@ -144,7 +144,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         t._bubbleCd -= k.dt();
         if (t._bubbleCd > 0) return;
         t._bubbleCd = 0.6 + Math.random() * 1.4;
-        if (k.get("particle").length > 260) return;
+        if (entityCounts.particle > 260) return;
         const bx = t.pos.x + 8 + Math.random() * (TILE - 16);
         const by = t.pos.y + TILE * 0.4;
         k.add([
@@ -499,7 +499,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         t._sparkleCd -= k.dt();
         if (t._sparkleCd > 0) return;
         t._sparkleCd = 1.5 + Math.random() * 2;
-        if (k.get("particle").length > 250) return;
+        if (entityCounts.particle > 250) return;
         k.add([
           k.rect(2, 2),
           k.pos(t.pos.x + (Math.random() - 0.5) * 16, t.pos.y + (Math.random() - 0.5) * 16),
