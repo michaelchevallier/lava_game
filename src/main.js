@@ -82,6 +82,12 @@ const gameState = {
 };
 
 
+const fpsBuffer = [];
+let fpsLastSec = 0;
+let fpsValue = 0;
+let entityCount = 0;
+let entityCountStamp = 0;
+
 k.scene("game", () => {
   const tileMap = new Map();
   gameState.skeletons = 0;
@@ -1261,6 +1267,29 @@ k.scene("game", () => {
       size: 13,
       pos: k.vec2(WIDTH - 320, 50),
       color: C_RECORD,
+    });
+
+    const now = performance.now();
+    fpsBuffer.push(now);
+    while (fpsBuffer.length && fpsBuffer[0] < now - 1000) fpsBuffer.shift();
+    if (now - fpsLastSec > 250) {
+      fpsValue = fpsBuffer.length;
+      fpsLastSec = now;
+    }
+    if (now - entityCountStamp > 500) {
+      entityCount = k.get("*").length;
+      entityCountStamp = now;
+    }
+    const fpsColor = fpsValue >= 55
+      ? k.rgb(124, 220, 80)
+      : fpsValue >= 35
+      ? k.rgb(255, 200, 40)
+      : k.rgb(255, 80, 80);
+    drawTextOutlined({
+      text: `${fpsValue} FPS  E:${entityCount}`,
+      size: 13,
+      pos: k.vec2(12, 46),
+      color: fpsColor,
     });
 
     for (let i = 0; i < TOOLBAR_ORDER.length; i++) {
