@@ -1,5 +1,18 @@
 import { TILE, GROUND_ROW, WIDTH, HEIGHT, WAGON_THEMES, gridKey } from "./constants.js";
 
+function hueToRgb(k, h) {
+  h = ((h % 360) + 360) % 360;
+  const x = 1 - Math.abs(((h / 60) % 2) - 1);
+  let r, g, b;
+  if (h < 60)       [r, g, b] = [1, x, 0];
+  else if (h < 120) [r, g, b] = [x, 1, 0];
+  else if (h < 180) [r, g, b] = [0, 1, x];
+  else if (h < 240) [r, g, b] = [0, x, 1];
+  else if (h < 300) [r, g, b] = [x, 0, 1];
+  else               [r, g, b] = [1, 0, x];
+  return k.rgb(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
+}
+
 export function createWagonSystem({
   k, tileMap, gameState, audio, showPopup, registerKill, registerCoin, launchFirework,
   placeTile,
@@ -376,6 +389,92 @@ export function createWagonSystem({
           }
         } else {
           wagon._cascadedKey = null;
+        }
+      }
+
+      // Loop-the-loop detection: track distinct rail tiles visited
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        const wRow = Math.floor((wagon.pos.y + 30) / TILE);
+        const railTile = tileMap.get(gridKey(wCol, wRow));
+        const isOnRailTile = railTile && (
+          railTile.tileType === "rail" ||
+          railTile.tileType === "rail_up" ||
+          railTile.tileType === "rail_down"
+        );
+
+        if (isOnRailTile) {
+          wagon._loopOffRailSince = null;
+          if (!wagon._loopVisited) wagon._loopVisited = [];
+          const tileKey = `${wCol},${wRow}`;
+
+          if (!wagon.looping) {
+            const visitedSet = wagon._loopVisitedSet || (wagon._loopVisitedSet = new Set());
+            const alreadySeen = visitedSet.has(tileKey);
+            if (!alreadySeen) {
+              visitedSet.add(tileKey);
+              wagon._loopVisited.push(tileKey);
+            } else if (wagon._loopVisited.length >= 6) {
+              wagon.looping = true;
+              wagon.loopCount = 0;
+              wagon._loopStartTile = tileKey;
+              wagon._loopLapKey = null;
+              wagon.speed *= 1.3;
+              audio.combo();
+              window.__juice?.dirShake(0, -1, 5, 0.15);
+            }
+          } else {
+            if (!wagon._loopLapKey) {
+              wagon._loopLapKey = tileKey;
+            } else if (tileKey === wagon._loopLapKey && wagon._loopLapPassed) {
+              wagon._loopLapPassed = false;
+              wagon.loopCount += 1;
+              const pts = 20;
+              gameState.score += pts;
+              showPopup(wagon.pos.x + 30, wagon.pos.y - 50, `LOOP x${wagon.loopCount}`, k.rgb(255, 80, 220), 36);
+              audio.combo();
+              window.__juice?.dirShake(0, -1, 6, 0.15);
+              if (wagon.loopCount >= 3) {
+                wagon.looping = false;
+                wagon.speed /= 1.3;
+                wagon._loopVisited = [];
+                wagon._loopVisitedSet = new Set();
+                wagon._loopLapKey = null;
+                wagon._loopLapPassed = false;
+              }
+            } else if (tileKey !== wagon._loopLapKey) {
+              wagon._loopLapPassed = true;
+            }
+
+            if (wagon.looping && Math.random() < 0.5) {
+              const hue = (k.time() * 200) % 360;
+              const col = hueToRgb(k, hue);
+              k.add([
+                k.circle(2 + Math.random() * 2),
+                k.pos(wagon.pos.x + Math.random() * 60, wagon.pos.y + 28 + Math.random() * 6),
+                k.color(col),
+                k.opacity(0.9),
+                k.lifespan(0.5, { fade: 0.35 }),
+                k.z(2),
+                "particle",
+              ]);
+            }
+          }
+        } else {
+          if (wagon.looping) {
+            wagon.looping = false;
+            wagon.speed /= 1.3;
+            wagon._loopVisited = [];
+            wagon._loopVisitedSet = new Set();
+            wagon._loopLapKey = null;
+            wagon._loopLapPassed = false;
+          }
+          if (!wagon._loopOffRailSince) wagon._loopOffRailSince = k.time();
+          else if (k.time() - wagon._loopOffRailSince > 1.0) {
+            wagon._loopVisited = [];
+            wagon._loopVisitedSet = new Set();
+            wagon._loopOffRailSince = null;
+          }
         }
       }
 
