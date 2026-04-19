@@ -176,27 +176,12 @@ export function createWagonSystem({
       wagon.move(currentSpeed, 0);
 
       const wCenterX = wagon.pos.x + 30;
-      const wCol = Math.floor(wCenterX / TILE);
-      for (let r = 0; r < GROUND_ROW; r++) {
-        const rt = tileMap.get(gridKey(wCol, r));
-        if (
-          rt &&
-          (rt.tileType === "rail_up" || rt.tileType === "rail_down")
-        ) {
-          const localX = Math.max(
-            0,
-            Math.min(1, (wCenterX - wCol * TILE) / TILE),
-          );
-          const slopeY =
-            rt.tileType === "rail_up"
-              ? r * TILE + 22 - localX * TILE
-              : r * TILE - 10 + localX * TILE;
-          const wagonBottom = wagon.pos.y + 30;
-          if (Math.abs(wagonBottom - slopeY) < 28) {
-            wagon.pos.y = slopeY - 30;
-            if (wagon.vel) wagon.vel.y = 0;
-            break;
-          }
+      const slopeY = getRailSlopeYAt(wCenterX);
+      if (slopeY !== null) {
+        const wagonBottom = wagon.pos.y + 30;
+        if (Math.abs(wagonBottom - slopeY) < 28) {
+          wagon.pos.y = slopeY - 30;
+          if (wagon.vel) wagon.vel.y = 0;
         }
       }
       if (boosted && Math.random() < 0.6) {
