@@ -172,6 +172,8 @@ export function createHUD({
   let tipIdx = Math.floor(Math.random() * TIPS.length);
   let tipChangedAt = 0;
 
+  let displayScore = 0;
+
   function setup() {
     k.onDraw(() => {
       const selectedTool = getCurrentTool();
@@ -205,9 +207,14 @@ export function createHUD({
         pos: k.vec2(78, 8),
         color: TOOL_COLORS[selectedTool],
       });
+      const targetScore = gameState.score;
+      const diff = targetScore - displayScore;
+      if (Math.abs(diff) < 1) displayScore = targetScore;
+      else displayScore += diff * 0.18;
+      const scorePulse = Math.abs(diff) > 1 ? 1 + Math.min(0.3, Math.abs(diff) / 100) : 1;
       drawTextOutlined({
-        text: `SCORE ${gameState.score}`,
-        size: 22,
+        text: `SCORE ${Math.round(displayScore)}`,
+        size: 22 * scorePulse,
         pos: k.vec2(WIDTH - 320, 6),
         color: C_SCORE,
       });
