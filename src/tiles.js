@@ -46,6 +46,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
       k.rgb(80, 180, 230),
       18,
     );
+    window.__spectres?.unlock(9);
     const bottomTile = tileMap.get(gridKey(col, r));
     if (bottomTile?.tileType === "lava") {
       placeTile(col, r, "bridge");
@@ -124,6 +125,9 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
       tileMap.delete(key);
     }
     if (type === "erase") return;
+
+    gameState.tilesPlacedThisGame = (gameState.tilesPlacedThisGame || 0) + 1;
+    if (gameState.tilesPlacedThisGame >= 50) window.__spectres?.unlock(18);
 
     if (type === "lava") {
       const t = k.add([
@@ -450,6 +454,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
       tileMap.set(key, t);
       checkCoinResonance(col, row);
     } else if (type === "wheel") {
+      window.__spectres?.unlock(12);
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
       const hubR = 8;
@@ -661,6 +666,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         }
         if (!clear) continue;
         fields.push({ a, b, len: dx });
+        window.__spectres?.unlock(11);
       }
     }
     return fields;

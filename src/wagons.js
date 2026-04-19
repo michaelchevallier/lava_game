@@ -94,6 +94,7 @@ export function createWagonSystem({
     audio.combo();
     audio.boost();
     window.__juice?.dirShake(0, -1, 8, 0.2);
+    window.__spectres?.unlock(10);
   }
 
   function spawnWagon(ghost = false, inverse = false) {
@@ -463,6 +464,7 @@ export function createWagonSystem({
               audio.combo();
               window.__juice?.dirShake(0, -1, 6, 0.15);
               if (wagon.loopCount >= 3) {
+                window.__spectres?.unlock(16);
                 wagon.looping = false;
                 wagon.speed /= 1.3;
                 wagon._loopVisited = [];
@@ -616,6 +618,7 @@ export function createWagonSystem({
           k.destroy(b);
           tileMap.delete(key2);
           placeTile(b.gridCol, b.gridRow, "lava");
+          window.__spectres?.unlock(15);
         });
       }
     });
@@ -647,6 +650,8 @@ export function createWagonSystem({
       }
       p.cooldownUntil = k.time() + 0.5;
       p.pair.cooldownUntil = k.time() + 0.5;
+      gameState.portalUses = (gameState.portalUses || 0) + 1;
+      if (gameState.portalUses >= 5) window.__spectres?.unlock(3);
       audio.combo();
       window.__juice?.dirShake(1, 0, 3, 0.12);
       for (let i = 0; i < 14; i++) {
@@ -673,6 +678,8 @@ export function createWagonSystem({
         catapultWagon(wagon);
         return;
       }
+      gameState.trampolinesThisGame = (gameState.trampolinesThisGame || 0) + 1;
+      if (gameState.trampolinesThisGame >= 10) window.__spectres?.unlock(0);
       wagon.jump(850);
       window.__juice?.hitStop(80);
       window.__juice?.dirShake(0, -1, 6, 0.15);
