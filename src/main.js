@@ -1,8 +1,7 @@
 import kaplay from "kaplay";
 import {
   TILE, COLS, ROWS, GROUND_ROW, WIDTH, HEIGHT,
-  SPEED, JUMP, WAGON_JUMP,
-  COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES, WAGON_THEMES,
+  COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES,
   TOOLBAR_ORDER, TB_ICON, TB_GAP, TB_TOTAL_W, TB_START_X, TB_Y,
   COG_X, COG_Y, COG_R,
   gridKey,
@@ -12,6 +11,7 @@ import { loadAllSprites } from "./sprites.js";
 import { loadSave, persistSave, serializeTiles, deserializeTiles, showExportModal } from "./serializer.js";
 import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
+import { createPlayerSystem } from "./players.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -427,266 +427,14 @@ k.scene("game", () => {
     "ground",
   ]);
 
-  function getEntityTile(e, footY = 42) {
-    const col = Math.floor((e.pos.x + 14) / TILE);
-    const row = Math.floor((e.pos.y + footY) / TILE);
-    return tileMap.get(gridKey(col, row)) || null;
-  }
+  const { spawnPlayers, getEntityTile, PLAYER_CONFIGS } = createPlayerSystem({
+    k, gameState, audio, tileMap,
+    tryBoardWagon: (...args) => tryBoardWagon(...args),
+    exitWagon: (...args) => exitWagon(...args),
+    spawnWagon: (...args) => spawnWagon(...args),
+  });
 
-  function applyTileEffectToPlayer(p, tile) {
-    if (!tile) return;
-    const now = k.time();
-    const spam = p._tileSpam || {};
-    if ((spam[tile.tileType] || 0) > now) return;
-    spam[tile.tileType] = now + 0.15;
-    p._tileSpam = spam;
-
-    switch (tile.tileType) {
-      case "lava":
-        if (Math.random() < 0.4) {
-          k.add([
-            k.circle(2 + Math.random() * 3),
-            k.pos(p.pos.x + 6 + Math.random() * 16, p.pos.y + 38),
-            k.color(255, 200, 80),
-            k.opacity(0.9),
-            k.lifespan(0.6, { fade: 0.4 }),
-            k.z(10),
-            k.move(k.UP, 50 + Math.random() * 40),
-          ]);
-        }
-        break;
-      case "water":
-        p.refreshUntil = now + 2;
-        audio.splash();
-        break;
-      case "boost":
-        p.boostUntil = now + 0.6;
-        audio.boost();
-        break;
-      case "trampoline":
-        if (p.isGrounded() && !(p._trampCd > now)) {
-          p._trampCd = now + 0.3;
-          p.jump(850);
-          audio.boost();
-          for (let i = 0; i < 6; i++) {
-            const a = (Math.PI * 2 * i) / 6;
-            k.add([
-              k.circle(2 + Math.random() * 2),
-              k.pos(p.pos.x + 14, p.pos.y + 40),
-              k.color(255, 100, 180),
-              k.opacity(1),
-              k.lifespan(0.3, { fade: 0.2 }),
-              k.z(8),
-              "particle",
-              { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 20 },
-            ]);
-          }
-        }
-        break;
-      case "ice":
-        p.iceUntil = now + 0.4;
-        break;
-      case "portal":
-        if (tile.pair && !(tile.cooldownUntil > now)) {
-          tile.cooldownUntil = now + 0.5;
-          tile.pair.cooldownUntil = now + 0.5;
-          p.pos.x = tile.pair.pos.x - TILE / 2 + 8;
-          p.pos.y = tile.pair.pos.y - TILE;
-          audio.combo();
-          k.shake(3);
-          const destX = tile.pair.pos.x;
-          const destY = tile.pair.pos.y;
-          const srcColor = tile.portalColor === "A" ? k.rgb(80, 220, 240) : k.rgb(240, 80, 220);
-          const dstColor = tile.portalColor === "A" ? k.rgb(240, 80, 220) : k.rgb(80, 220, 240);
-          for (let i = 0; i < 10; i++) {
-            const a = (Math.PI * 2 * i) / 10;
-            k.add([
-              k.circle(2 + Math.random() * 2),
-              k.pos(tile.pos.x, tile.pos.y),
-              k.color(srcColor),
-              k.opacity(1),
-              k.lifespan(0.4, { fade: 0.3 }),
-              k.z(12),
-              "particle",
-              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
-            ]);
-            k.add([
-              k.circle(2 + Math.random() * 2),
-              k.pos(destX, destY),
-              k.color(dstColor),
-              k.opacity(1),
-              k.lifespan(0.4, { fade: 0.3 }),
-              k.z(12),
-              "particle",
-              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
-            ]);
-          }
-        }
-        break;
-    }
-  }
-
-  function createPlayer(opts, mobileP1 = false) {
-    const p = k.add([
-      k.sprite(opts.sprite),
-      k.pos(opts.x, (GROUND_ROW - 3) * TILE),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
-      k.body(),
-      k.anchor("topleft"),
-      k.z(6),
-      "player",
-      {
-        facing: "right",
-        isSkeleton: false,
-        ridingWagon: null,
-        normalSprite: opts.sprite,
-        skelSprite: opts.skelSprite,
-        playerName: opts.name,
-      },
-    ]);
-
-    function playerSpeedMult() {
-      const now = k.time();
-      if (p.boostUntil && now < p.boostUntil) return 1.5;
-      if (p.refreshUntil && now < p.refreshUntil) return 1.2;
-      return 1;
-    }
-
-    k.onKeyDown(opts.keys.left, () => {
-      if (p.ridingWagon) return;
-      p.move(-SPEED * playerSpeedMult(), 0);
-      p.lastVx = -SPEED * playerSpeedMult();
-      if (p.facing !== "left") {
-        p.flipX = true;
-        p.facing = "left";
-      }
-    });
-    k.onKeyDown(opts.keys.right, () => {
-      if (p.ridingWagon) return;
-      p.move(SPEED * playerSpeedMult(), 0);
-      p.lastVx = SPEED * playerSpeedMult();
-      if (p.facing !== "right") {
-        p.flipX = false;
-        p.facing = "right";
-      }
-    });
-    k.onKeyPress(opts.keys.jump, () => {
-      if (p.ridingWagon) {
-        if (p.ridingWagon.isGrounded()) {
-          p.ridingWagon.jump(WAGON_JUMP);
-          audio.jump();
-        }
-        return;
-      }
-      if (p.isGrounded()) {
-        p.jump(JUMP);
-        audio.jump();
-      }
-    });
-    k.onKeyPress(opts.keys.board, () => {
-      if (p.ridingWagon) {
-        exitWagon(p);
-      } else {
-        tryBoardWagon(p);
-      }
-    });
-
-    const leftKeys = Array.isArray(opts.keys.left) ? opts.keys.left : [opts.keys.left];
-    const rightKeys = Array.isArray(opts.keys.right) ? opts.keys.right : [opts.keys.right];
-
-    p.onUpdate(() => {
-      if (p.ridingWagon) return;
-      applyTileEffectToPlayer(p, getEntityTile(p));
-      const now2 = k.time();
-      if (p.iceUntil && now2 < p.iceUntil && p.lastVx) {
-        const noInput = leftKeys.every(k2 => !k.isKeyDown(k2)) && rightKeys.every(k2 => !k.isKeyDown(k2));
-        if (noInput) p.move(p.lastVx, 0);
-      }
-      if (p.boostUntil && k.time() < p.boostUntil && Math.random() < 0.5) {
-        k.add([
-          k.circle(2 + Math.random() * 2),
-          k.pos(p.pos.x + 4 + Math.random() * 20, p.pos.y + 30 + Math.random() * 12),
-          k.color(255, 210, 60),
-          k.opacity(0.85),
-          k.lifespan(0.25, { fade: 0.2 }),
-          k.z(5),
-          "particle-x",
-          { vx: (p.facing === "right" ? -1 : 1) * (40 + Math.random() * 30) },
-        ]);
-      }
-    });
-
-    if (mobileP1) {
-      const mi = window.__mobileInput;
-      let prevJump = false;
-      let prevWagon = false;
-      k.onUpdate(() => {
-        if (mi.left && !p.ridingWagon) {
-          p.move(-SPEED * playerSpeedMult(), 0);
-          if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
-        }
-        if (mi.right && !p.ridingWagon) {
-          p.move(SPEED * playerSpeedMult(), 0);
-          if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
-        }
-        if (mi.jumpPressed && !prevJump) {
-          if (p.ridingWagon) {
-            if (p.ridingWagon.isGrounded()) { p.ridingWagon.jump(WAGON_JUMP); audio.jump(); }
-          } else if (p.isGrounded()) {
-            p.jump(JUMP);
-            audio.jump();
-          }
-        }
-        if (mi.wagonPressed && !prevWagon) {
-          spawnWagon();
-        }
-        prevJump = mi.jumpPressed;
-        prevWagon = mi.wagonPressed;
-      });
-    }
-
-    return p;
-  }
-
-  const PLAYER_CONFIGS = [
-    {
-      x: 80,
-      sprite: "player",
-      skelSprite: "player_skel",
-      name: "Mario",
-      color: k.rgb(230, 57, 70),
-      keys: { left: ["a", "q"], right: "d", jump: ["space", "z"], board: "e" },
-    },
-    {
-      x: 180,
-      sprite: "pika",
-      skelSprite: "pika_skel",
-      name: "Pika",
-      color: k.rgb(255, 210, 63),
-      keys: { left: "j", right: "l", jump: "i", board: "o" },
-    },
-    {
-      x: 280,
-      sprite: "luigi",
-      skelSprite: "luigi_skel",
-      name: "Luigi",
-      color: k.rgb(124, 201, 71),
-      keys: { left: "left", right: "right", jump: "up", board: "enter" },
-    },
-    {
-      x: 380,
-      sprite: "toad",
-      skelSprite: "toad_skel",
-      name: "Toad",
-      color: k.rgb(255, 76, 109),
-      keys: { left: "f", right: "h", jump: "t", board: "g" },
-    },
-  ];
-
-  const activePlayers = [];
-  for (let i = 0; i < settings.numPlayers; i++) {
-    activePlayers.push(createPlayer(PLAYER_CONFIGS[i], i === 0 && isMobile));
-  }
+  const activePlayers = spawnPlayers(settings.numPlayers, isMobile);
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
   k.onKeyPress("2", () => (selectedTool = "rail"));
