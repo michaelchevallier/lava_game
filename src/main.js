@@ -1782,6 +1782,27 @@ k.scene("game", () => {
     });
   }
 
+  function drawTextOutlined(opts) {
+    const base = { ...opts };
+    const outlineColor = opts.outlineColor || k.rgb(0, 0, 0);
+    const thickness = opts.outlineThickness || 2;
+    const origColor = opts.color;
+    const offsets = [
+      [-thickness, 0], [thickness, 0],
+      [0, -thickness], [0, thickness],
+      [-thickness, -thickness], [thickness, -thickness],
+      [-thickness, thickness], [thickness, thickness],
+    ];
+    for (const [dx, dy] of offsets) {
+      k.drawText({
+        ...base,
+        pos: k.vec2(opts.pos.x + dx, opts.pos.y + dy),
+        color: outlineColor,
+      });
+    }
+    k.drawText({ ...base, color: origColor });
+  }
+
   function showPopup(x, y, text, color, size = 20) {
     const p = k.add([
       k.text(text, { size }),
@@ -2288,34 +2309,34 @@ k.scene("game", () => {
       height: 2,
       color: k.rgb(255, 210, 63),
     });
-    k.drawText({
+    drawTextOutlined({
       text: "Outil:",
-      size: 16,
+      size: 18,
       pos: k.vec2(12, 8),
       color: k.WHITE,
     });
-    k.drawText({
+    drawTextOutlined({
       text: toolLabels[selectedTool],
-      size: 16,
-      pos: k.vec2(72, 8),
+      size: 18,
+      pos: k.vec2(78, 8),
       color: toolColors[selectedTool],
     });
-    k.drawText({
+    drawTextOutlined({
       text: `SCORE ${gameState.score}`,
-      size: 18,
-      pos: k.vec2(WIDTH - 300, 8),
+      size: 22,
+      pos: k.vec2(WIDTH - 320, 6),
       color: k.rgb(255, 230, 80),
     });
-    k.drawText({
+    drawTextOutlined({
       text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
-      size: 12,
-      pos: k.vec2(WIDTH - 300, 30),
-      color: k.rgb(220, 220, 220),
+      size: 14,
+      pos: k.vec2(WIDTH - 320, 32),
+      color: k.rgb(230, 230, 230),
     });
-    k.drawText({
-      text: `Record ${save.bestScore}  |  Squelettes tot. ${save.totalSkeletons || 0}`,
-      size: 11,
-      pos: k.vec2(WIDTH - 300, 46),
+    drawTextOutlined({
+      text: `Record ${save.bestScore}`,
+      size: 13,
+      pos: k.vec2(WIDTH - 320, 50),
       color: k.rgb(180, 200, 255),
     });
 
@@ -2745,12 +2766,13 @@ k.scene("game", () => {
       const remaining = gameState.comboExpire - k.time();
       const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
       const pulse = 1 + Math.sin(k.time() * 12) * 0.08;
-      k.drawText({
+      drawTextOutlined({
         text: `COMBO x${mult}`,
         size: 32 * pulse,
         pos: k.vec2(WIDTH / 2, 90),
         anchor: "center",
         color: k.rgb(255, 120, 220),
+        outlineThickness: 3,
       });
       k.drawRect({
         pos: k.vec2(WIDTH / 2 - 80, 115),
