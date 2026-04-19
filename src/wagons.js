@@ -361,29 +361,49 @@ export function createWagonSystem({
 
     wagon.onCollide("bridge", (b) => {
       if (b.breaking) return;
-      b.breaking = true;
+      const crossKey = b.gridCol + "," + b.gridRow;
+      const wCd = wagon._bridgeCd || {};
+      if (wCd[crossKey] > k.time()) return;
+      wCd[crossKey] = k.time() + 1.2;
+      wagon._bridgeCd = wCd;
+      b.crossings = (b.crossings || 0) + 1;
       k.shake(2);
       audio.place();
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         k.add([
-          k.rect(4 + Math.random() * 4, 3 + Math.random() * 3),
+          k.rect(3 + Math.random() * 3, 2 + Math.random() * 2),
           k.pos(b.pos.x + Math.random() * TILE, b.pos.y),
           k.color(k.rgb(140, 80, 30)),
-          k.opacity(1),
-          k.lifespan(0.9, { fade: 0.6 }),
+          k.opacity(0.8),
+          k.lifespan(0.5, { fade: 0.3 }),
           k.z(5),
           "particle-debris",
-          { vx: (Math.random() - 0.5) * 120, vy: -20 - Math.random() * 50 },
+          { vx: (Math.random() - 0.5) * 80, vy: -10 - Math.random() * 30 },
         ]);
       }
-      k.wait(0.15, () => {
-        const key2 = gridKey(b.gridCol, b.gridRow);
-        if (!tileMap.has(key2)) return;
-        if (b.extras) b.extras.forEach((e) => k.destroy(e));
-        k.destroy(b);
-        tileMap.delete(key2);
-        placeTile(b.gridCol, b.gridRow, "lava");
-      });
+      if (b.crossings >= 2) {
+        b.breaking = true;
+        for (let i = 0; i < 10; i++) {
+          k.add([
+            k.rect(4 + Math.random() * 4, 3 + Math.random() * 3),
+            k.pos(b.pos.x + Math.random() * TILE, b.pos.y),
+            k.color(k.rgb(140, 80, 30)),
+            k.opacity(1),
+            k.lifespan(0.9, { fade: 0.6 }),
+            k.z(5),
+            "particle-debris",
+            { vx: (Math.random() - 0.5) * 120, vy: -20 - Math.random() * 50 },
+          ]);
+        }
+        k.wait(0.15, () => {
+          const key2 = gridKey(b.gridCol, b.gridRow);
+          if (!tileMap.has(key2)) return;
+          if (b.extras) b.extras.forEach((e) => k.destroy(e));
+          k.destroy(b);
+          tileMap.delete(key2);
+          placeTile(b.gridCol, b.gridRow, "lava");
+        });
+      }
     });
 
     wagon.onCollide("ice", () => {
