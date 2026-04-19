@@ -1297,6 +1297,9 @@ k.scene("game", () => {
     const key = gridKey(col, row);
     const existing = tileMap.get(key);
     if (existing) {
+      if (existing.tileType === "portal" && existing.pair) {
+        existing.pair.pair = null;
+      }
       if (existing.extras) existing.extras.forEach((e) => k.destroy(e));
       k.destroy(existing);
       tileMap.delete(key);
@@ -2428,7 +2431,7 @@ k.scene("game", () => {
     if (k.get("visitor").length < 5) spawnVisitor();
   });
 
-  k.onUpdate(() => {
+  k.loop(0.08, () => {
     const wagons = k.get("wagon");
     for (let i = 0; i < wagons.length; i++) {
       for (let j = i + 1; j < wagons.length; j++) {
@@ -2438,14 +2441,14 @@ k.scene("game", () => {
         const dx = b.pos.x - a.pos.x;
         const dy = b.pos.y - a.pos.y;
         const dist = Math.hypot(dx, dy);
-        if (dist < 55 && dist > 0) {
+        if (dist < 45 && dist > 5) {
           const sign = dx > 0 ? 1 : -1;
           if (a.vel) a.vel.x = -sign * 280;
           if (b.vel) b.vel.x = sign * 280;
           if (a.vel) a.vel.y = -120;
           if (b.vel) b.vel.y = -120;
-          a.bumpCd = k.time() + 0.5;
-          b.bumpCd = k.time() + 0.5;
+          a.bumpCd = k.time() + 0.9;
+          b.bumpCd = k.time() + 0.9;
           const mx = (a.pos.x + b.pos.x) / 2 + 30;
           const my = (a.pos.y + b.pos.y) / 2 + 15;
           gameState.score += 50;
