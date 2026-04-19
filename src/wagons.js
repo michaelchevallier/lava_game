@@ -124,6 +124,7 @@ export function createWagonSystem({
     const theme = (ghost || inverse)
       ? { body: [30, 30, 40], dark: [0, 0, 0], trim: [180, 30, 30] }
       : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
+    wagon.theme = theme;
     const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
     if (ghost || inverse) {
       const eye1 = k.add([
@@ -248,6 +249,20 @@ export function createWagonSystem({
           k.z(2),
           "particle",
           { vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 30 },
+        ]);
+      }
+
+      // Color trail when going fast (boosted/iced/looping)
+      if ((boosted || iced || wagon.looping) && Math.random() < 0.3 && k.get("particle").length < 260) {
+        k.add([
+          k.rect(36, 18),
+          k.pos(wagon.pos.x + 12, wagon.pos.y + 4),
+          k.color(k.rgb(wagon.theme.body[0], wagon.theme.body[1], wagon.theme.body[2])),
+          k.opacity(0.5),
+          k.lifespan(0.3, { fade: 0.25 }),
+          k.z(2),
+          "particle",
+          { vx: 0, vy: 0 },
         ]);
       }
 
