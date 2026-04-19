@@ -2474,6 +2474,41 @@ k.scene("game", () => {
     }
   });
 
+  k.loop(0.25, () => {
+    for (const [key, t] of tileMap) {
+      if (t.tileType !== "lava") continue;
+      const neighbors = [
+        [t.gridCol - 1, t.gridRow],
+        [t.gridCol + 1, t.gridRow],
+        [t.gridCol, t.gridRow - 1],
+        [t.gridCol, t.gridRow + 1],
+      ];
+      for (const [nc, nr] of neighbors) {
+        const n = tileMap.get(gridKey(nc, nr));
+        if (!n || n.tileType !== "water") continue;
+        const sx = (t.pos.x + n.pos.x) / 2 + TILE / 2;
+        const sy = (t.pos.y + n.pos.y) / 2 + TILE / 2;
+        for (let i = 0; i < 3; i++) {
+          const steam = k.add([
+            k.circle(3 + Math.random() * 3),
+            k.pos(sx + (Math.random() - 0.5) * 20, sy),
+            k.color(k.rgb(235, 240, 245)),
+            k.opacity(0.55),
+            k.lifespan(1.1, { fade: 0.8 }),
+            k.z(6),
+            "steam",
+            { vy: -40 - Math.random() * 30, vx: (Math.random() - 0.5) * 15 },
+          ]);
+          steam.onUpdate(() => {
+            steam.pos.y += steam.vy * k.dt();
+            steam.pos.x += steam.vx * k.dt();
+            steam.vy *= 0.97;
+          });
+        }
+      }
+    }
+  });
+
   k.onUpdate("lava", (t) => {
     if (Math.random() < 0.03) {
       k.add([
