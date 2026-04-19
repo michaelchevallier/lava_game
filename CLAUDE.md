@@ -87,7 +87,7 @@ requestAnimationFrame(tick);
 - [ ] Hud.js extraction (puis main.js < 1200 lignes)
 
 ### Features parc d'attractions
-- [ ] Grande Roue 3x3 (4 nacelles tournantes)
+- [x] Grande Roue 3x3 (4 nacelles tournantes)
 - [ ] Pêche aux Canards (mini-jeu clic, 1/10 doré +200pts)
 - [ ] Bullet-Time Combo x8 (timeScale 0.25 pendant 3s + 10 tuiles gratuites)
 - [ ] Manège Magnétique (orbite + relâche tangentiel projectile)
