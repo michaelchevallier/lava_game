@@ -768,6 +768,7 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("portal", (p) => {
+      if (wagon.isSpectral) return;
       if (!p.pair || k.time() < p.cooldownUntil) return;
       const savedVelX = wagon.vel ? wagon.vel.x : 0;
       const savedVelY = wagon.vel ? wagon.vel.y : 0;
