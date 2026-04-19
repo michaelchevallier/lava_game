@@ -705,7 +705,7 @@ k.scene("game", () => {
     });
     tileMap.clear();
   });
-  k.onKeyPress("r", () => k.go("game"));
+  k.onKeyPress("r", () => { settingsOverlay.hide(); settings.open = false; k.go("game"); });
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
   k.onKeyPress(["p", "escape"], () => {
@@ -909,6 +909,8 @@ k.scene("game", () => {
             save.numPlayers = i;
             persistSave(save);
             audio.combo();
+            settingsOverlay.hide();
+            settings.open = false;
             k.go("game");
           }
           return;

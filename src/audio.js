@@ -1,6 +1,7 @@
 export const audio = (() => {
   let ctx = null;
   let muted = false;
+  let masterVolume = 0.7;
   const getCtx = () => {
     if (!ctx) {
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -18,8 +19,9 @@ export const audio = (() => {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, c.currentTime);
       if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime + dur);
-      g.gain.setValueAtTime(vol, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+      const effectiveVol = vol * masterVolume;
+      g.gain.setValueAtTime(effectiveVol, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
       osc.connect(g);
       g.connect(c.destination);
       osc.start();
@@ -38,7 +40,7 @@ export const audio = (() => {
       const src = c.createBufferSource();
       src.buffer = buf;
       const g = c.createGain();
-      g.gain.value = vol;
+      g.gain.value = vol * masterVolume;
       src.connect(g);
       g.connect(c.destination);
       src.start();
@@ -47,6 +49,8 @@ export const audio = (() => {
   return {
     isMuted: () => muted,
     toggleMute: () => { muted = !muted; return muted; },
+    getMasterVolume: () => masterVolume,
+    setMasterVolume: (v) => { masterVolume = Math.max(0, Math.min(1, v)); },
     jump: () => beep(440, 0.1, "square", 0.1, 720),
     coin: () => {
       beep(988, 0.07, "square", 0.1);
