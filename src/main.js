@@ -1667,6 +1667,7 @@ k.scene("game", () => {
         inner.scale = k.vec2(s, 1);
       });
       tileMap.set(key, t);
+      checkCoinResonance(col, row);
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
       const cx = col * TILE + TILE / 2;
@@ -2505,6 +2506,65 @@ k.scene("game", () => {
     w.passenger = "empty";
     if (p.isSkeleton) {
       p.sprite = p.skelSprite;
+    }
+  }
+
+  function checkCoinResonance(col, row) {
+    const isCoinAt = (c, r) => {
+      const t = tileMap.get(gridKey(c, r));
+      return t && t.tileType === "coin";
+    };
+    const checkTriplet = (dx, dy) => {
+      for (let offset = -2; offset <= 0; offset++) {
+        const c0 = col + offset * dx;
+        const r0 = row + offset * dy;
+        if (
+          isCoinAt(c0, r0) &&
+          isCoinAt(c0 + dx, r0 + dy) &&
+          isCoinAt(c0 + 2 * dx, r0 + 2 * dy)
+        ) {
+          return [
+            [c0, r0],
+            [c0 + dx, r0 + dy],
+            [c0 + 2 * dx, r0 + 2 * dy],
+          ];
+        }
+      }
+      return null;
+    };
+    const diag1 = checkTriplet(1, -1);
+    const diag2 = checkTriplet(1, 1);
+    const trio = diag1 || diag2;
+    if (!trio) return;
+    gameState.comboExpire = k.time() + 4;
+    if (gameState.comboCount < 2) gameState.comboCount = 2;
+    audio.combo();
+    showPopup(
+      (trio[1][0] + 0.5) * TILE,
+      (trio[1][1] + 0.5) * TILE - 30,
+      "CHAINE D'OR !",
+      k.rgb(255, 220, 60),
+      22,
+    );
+    for (const [tc, tr] of trio) {
+      const cx = tc * TILE + TILE / 2;
+      const cy = tr * TILE + TILE / 2;
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        const p = k.add([
+          k.circle(3),
+          k.pos(cx, cy),
+          k.color(k.rgb(255, 230, 80)),
+          k.opacity(1),
+          k.lifespan(0.7, { fade: 0.5 }),
+          k.z(15),
+          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+        ]);
+        p.onUpdate(() => {
+          p.pos.x += p.vx * k.dt();
+          p.pos.y += p.vy * k.dt();
+        });
+      }
     }
   }
 
