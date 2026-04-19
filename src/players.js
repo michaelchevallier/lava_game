@@ -229,7 +229,10 @@ export function createPlayerSystem({
 
     p.onUpdate(() => {
       if (p.ridingWagon) return;
-      applyTileEffectToPlayer(p, getEntityTile(p));
+      const footTile = getEntityTile(p);
+      const centerTile = getEntityTile(p, 22);
+      const activeTile = (centerTile?.tileType === "portal") ? centerTile : footTile;
+      applyTileEffectToPlayer(p, activeTile);
       const now2 = k.time();
       if (p.iceUntil && now2 < p.iceUntil && p.lastVx) {
         const noInput = leftKeys.every(k2 => !k.isKeyDown(k2)) && rightKeys.every(k2 => !k.isKeyDown(k2));
