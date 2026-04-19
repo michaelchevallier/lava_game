@@ -810,6 +810,16 @@ k.scene("game", () => {
     else spectres.unlock(20);
   });
 
+  const fireflyData = Array.from({ length: 18 }, () => ({
+    x: Math.random() * WIDTH,
+    y: 220 + Math.random() * 200,
+    phaseX: Math.random() * Math.PI * 2,
+    phaseY: Math.random() * Math.PI * 2,
+    speedX: 0.5 + Math.random() * 0.6,
+    speedY: 0.7 + Math.random() * 0.8,
+    blink: Math.random() * 5,
+  }));
+
   k.add([
     k.pos(0, 0),
     k.z(-11),
@@ -819,6 +829,14 @@ k.scene("game", () => {
         for (const s of starData) {
           const op = s.baseOpacity * (0.5 + Math.sin(k.time() * 2 + s.twinkle) * 0.5);
           k.drawCircle({ pos: k.vec2(s.x, s.y), radius: s.r, color: k.rgb(255, 255, 220), opacity: op });
+        }
+        const t = k.time();
+        for (const f of fireflyData) {
+          const x = f.x + Math.sin(t * f.speedX + f.phaseX) * 80;
+          const y = f.y + Math.cos(t * f.speedY + f.phaseY) * 40;
+          const blink = 0.4 + 0.6 * Math.abs(Math.sin(t * 1.8 + f.blink));
+          k.drawCircle({ pos: k.vec2(x, y), radius: 4, color: k.rgb(255, 230, 120), opacity: 0.18 * blink });
+          k.drawCircle({ pos: k.vec2(x, y), radius: 1.6, color: k.rgb(255, 245, 180), opacity: 0.95 * blink });
         }
       },
     },
