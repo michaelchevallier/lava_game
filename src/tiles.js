@@ -631,5 +631,28 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     }
   });
 
-  return { placeTile, checkCoinResonance, checkCascade };
+  function detectMagnetFields() {
+    const fields = [];
+    const magnets = [];
+    for (const [, t] of tileMap) if (t.tileType === "magnet") magnets.push(t);
+    for (let i = 0; i < magnets.length && fields.length < 3; i++) {
+      for (let j = i + 1; j < magnets.length && fields.length < 3; j++) {
+        const a = magnets[i], b = magnets[j];
+        if (a.gridRow !== b.gridRow) continue;
+        const dx = Math.abs(b.gridCol - a.gridCol);
+        if (dx < 4 || dx > 12) continue;
+        const minCol = Math.min(a.gridCol, b.gridCol);
+        const maxCol = Math.max(a.gridCol, b.gridCol);
+        let clear = true;
+        for (let c = minCol + 1; c < maxCol; c++) {
+          if (tileMap.get(gridKey(c, a.gridRow))) { clear = false; break; }
+        }
+        if (!clear) continue;
+        fields.push({ a, b, len: dx });
+      }
+    }
+    return fields;
+  }
+
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields };
 }

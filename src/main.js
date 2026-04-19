@@ -14,6 +14,7 @@ import { createHUD } from "./hud.js";
 import { createDuckSystem } from "./ducks.js";
 import { showInteractionsModal } from "./help-modal.js";
 import { createCrowdSystem } from "./crowd.js";
+import { createJuice } from "./juice.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -56,6 +57,8 @@ const k = kaplay({
 }
 
 k.setGravity(1600);
+const juice = createJuice({ k });
+window.__juice = juice;
 window.__k = k;
 window.__getStats = () => {
   const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part","crowd"];
@@ -119,6 +122,7 @@ const gameState = {
   milestoneIdx: 0,
   bulletTimeUntil: 0,
   wagonSpeedMult: save.wagonSpeedMult ?? 1,
+  magnetFields: [],
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
@@ -203,7 +207,7 @@ k.scene("game", () => {
   });
   const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, toolbarHit } = hud;
 
-  const { placeTile, checkCoinResonance } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields } = createTileSystem({
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
   });
@@ -213,6 +217,30 @@ k.scene("game", () => {
     showPopup: (...args) => showPopup(...args),
   });
   startDuckLoop();
+
+  k.loop(1, () => { gameState.magnetFields = detectMagnetFields(); });
+
+  k.add([
+    k.pos(0, 0),
+    k.z(8),
+    {
+      draw() {
+        for (const f of gameState.magnetFields) {
+          const ax = f.a.gridCol * TILE + TILE / 2;
+          const ay = f.a.gridRow * TILE + TILE / 2;
+          const bx = f.b.gridCol * TILE + TILE / 2;
+          const by = f.b.gridRow * TILE + TILE / 2;
+          const opacity = 0.3 + Math.sin(k.time() * 3) * 0.2;
+          for (let p = 0.08; p < 1; p += 0.12) {
+            const x = ax + (bx - ax) * p;
+            const y = ay + (by - ay) * p;
+            k.drawCircle({ pos: k.vec2(x, y - 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
+            k.drawCircle({ pos: k.vec2(x, y + 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
+          }
+        }
+      },
+    },
+  ]);
 
   function launchFirework(x, y, color) {
     if (k.get("particle-firework").length > 60) return;
@@ -251,7 +279,7 @@ k.scene("game", () => {
       });
     }
     showPopup(WIDTH / 2, HEIGHT / 2, `PALIER ${target}!`, k.rgb(255, 230, 80), 40);
-    k.shake(10);
+    juice.dirShake(0, 1, 10, 0.2);
   }
 
   function checkMilestone() {
@@ -308,10 +336,11 @@ k.scene("game", () => {
 
   function triggerApocalypse() {
     gameState.bulletTimeUntil = k.time() + 3;
+    window.__juice?.hitStop(200);
     if (crowdHooks) crowdHooks.onApocalypse();
     audio.combo();
     setTimeout(() => audio.transform(), 100);
-    k.shake(22);
+    juice.dirShake(0, 1, 22, 0.35);
     k.add([
       k.rect(WIDTH, HEIGHT),
       k.pos(0, 0),
@@ -331,7 +360,7 @@ k.scene("game", () => {
         v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         gameState.score += 10 * 8;
-        k.shake(4);
+        juice.dirShake(1, 0, 4, 0.12);
         showPopup(v.pos.x + 14, v.pos.y - 10, "+80", k.rgb(255, 80, 80), 18);
         for (let j = 0; j < 10; j++) {
           const a = (Math.PI * 2 * j) / 10;
@@ -564,7 +593,7 @@ k.scene("game", () => {
       if (k.get("wagon").length >= MAX_WAGONS) return;
       showPopup(WIDTH / 2, 120, "TRAIN FANTOME !", k.rgb(255, 40, 40), 46);
       audio.transform();
-      k.shake(5);
+      juice.dirShake(1, 0, 5, 0.2);
       k.wait(2.5, () => {
         if (k.get("wagon").length < MAX_WAGONS) spawnWagon(true);
       });
@@ -819,7 +848,7 @@ k.scene("game", () => {
         v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         audio.transform();
-        k.shake(v.isVIP ? 7 : 3);
+        juice.dirShake(1, 0, v.isVIP ? 7 : 3, 0.15);
         if (crowdHooks) crowdHooks.onSkeletonSpawn(k.vec2(v.pos.x + 14, v.pos.y));
         registerKill(v.pos.x + 14, v.pos.y, v.isVIP ? 50 : 10, v.isVIP);
         const cx = v.pos.x + 14;
@@ -899,9 +928,10 @@ k.scene("game", () => {
           b.bumpCd = k.time() + 0.9;
           const mx = (a.pos.x + b.pos.x) / 2 + 30;
           const my = (a.pos.y + b.pos.y) / 2 + 15;
+          window.__juice?.hitStop(60);
           gameState.score += 50;
           showPopup(mx, my - 20, "CRASH! +50", k.rgb(255, 220, 60), 22);
-          k.shake(6);
+          juice.dirShake(dx, 0, 8, 0.15);
           audio.combo();
           for (let p = 0; p < 18; p++) {
             const ang = (Math.PI * 2 * p) / 18;
