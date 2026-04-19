@@ -1048,6 +1048,12 @@ k.scene("game", () => {
     return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 40;
   }
 
+  function inBuildTestBtn(m) {
+    const bx = WIDTH / 2 - 120;
+    const by = HEIGHT / 2 + 100;
+    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
+  }
+
   const TOOLBAR_ORDER = [
     { tool: "lava", key: "1", label: "Lave" },
     { tool: "rail", key: "2", label: "Rail" },
@@ -1121,6 +1127,12 @@ k.scene("game", () => {
         audio.boost();
         if (settings.autoMode) startAutoMode();
         else stopAutoMode();
+        return;
+      }
+      if (inBuildTestBtn(m)) {
+        buildDemoCircuit();
+        audio.place();
+        settings.open = false;
         return;
       }
       return;
@@ -2608,8 +2620,23 @@ k.scene("game", () => {
         anchor: "center",
         color: k.WHITE,
       });
+      const testBx = WIDTH / 2 - 120;
+      const testBy = HEIGHT / 2 + 100;
+      k.drawRect({
+        pos: k.vec2(testBx, testBy),
+        width: 240,
+        height: 36,
+        color: k.rgb(70, 90, 140),
+      });
       k.drawText({
-        text: "(D) Demo  (T) Circuit test  (M) Son  (N) Nuit  (R) Reset",
+        text: "Construire circuit test",
+        size: 16,
+        pos: k.vec2(WIDTH / 2, testBy + 18),
+        anchor: "center",
+        color: k.WHITE,
+      });
+      k.drawText({
+        text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
         size: 12,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
         anchor: "top",
