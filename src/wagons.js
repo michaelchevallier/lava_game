@@ -180,6 +180,7 @@ export function createWagonSystem({
 
     wagon.railAngle = 0;
     let spokeAngle = 0;
+    let wasOnRail = false;
 
     wagon.onUpdate(() => {
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
@@ -196,7 +197,8 @@ export function createWagonSystem({
         getRailSlopeYAt(wBaseX + 30),
         getRailSlopeYAt(wBaseX + 50),
       ].filter((v) => v !== null);
-      if (candidates.length > 0) {
+      const onRail = candidates.length > 0;
+      if (onRail) {
         const slopeY = Math.min(...candidates);
         const targetY = slopeY - 30;
         const dy = targetY - wagon.pos.y;
@@ -208,7 +210,13 @@ export function createWagonSystem({
           }
           if (wagon.vel) wagon.vel.y = 0;
         }
+      } else if (wasOnRail) {
+        const groundY = GROUND_ROW * TILE;
+        if (wagon.pos.y + 30 < groundY && wagon.vel) {
+          wagon.vel.y = 50;
+        }
       }
+      wasOnRail = onRail;
       if (boosted && Math.random() < 0.6) {
         k.add([
           k.circle(2 + Math.random() * 3),
