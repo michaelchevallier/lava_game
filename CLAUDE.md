@@ -95,7 +95,7 @@ requestAnimationFrame(tick);
 
 ### UX
 - [ ] Volume slider + vitesse wagons slider dans settings
-- [ ] Splash screen sélection nb joueurs avec preview persos
+- [x] Splash screen sélection nb joueurs avec preview persos
 - [ ] Tutoriel interactif (flèches qui pointent les boutons)
 - [ ] Achievements visuels
 
