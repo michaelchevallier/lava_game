@@ -1389,13 +1389,13 @@ k.scene("game", () => {
       height: 2,
       color: C_GOLD,
     });
-    drawTextOutlined({
+    k.drawText({
       text: "Outil:",
       size: 18,
       pos: k.vec2(12, 8),
       color: k.WHITE,
     });
-    drawTextOutlined({
+    k.drawText({
       text: TOOL_LABELS[selectedTool],
       size: 18,
       pos: k.vec2(78, 8),
@@ -1407,13 +1407,13 @@ k.scene("game", () => {
       pos: k.vec2(WIDTH - 320, 6),
       color: C_SCORE,
     });
-    drawTextOutlined({
+    k.drawText({
       text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
       size: 16,
       pos: k.vec2(WIDTH - 320, 32),
       color: C_STATS,
     });
-    drawTextOutlined({
+    k.drawText({
       text: `Record ${save.bestScore}`,
       size: 15,
       pos: k.vec2(WIDTH - 320, 52),
@@ -1436,7 +1436,7 @@ k.scene("game", () => {
       : fpsValue >= 35
       ? k.rgb(255, 200, 40)
       : k.rgb(255, 80, 80);
-    drawTextOutlined({
+    k.drawText({
       text: `${fpsValue}fps E${entityCount}`,
       size: 11,
       pos: k.vec2(WIDTH - 90, HEIGHT - 16),
@@ -1804,7 +1804,7 @@ k.scene("game", () => {
           color: k.rgb(255, 230, 80),
           opacity: alpha,
         });
-        drawTextOutlined({
+        k.drawText({
           text: "Clique sur les outils en bas pour construire.",
           size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 40),
@@ -1812,7 +1812,7 @@ k.scene("game", () => {
           color: k.WHITE,
           opacity: alpha,
         });
-        drawTextOutlined({
+        k.drawText({
           text: "Clique sur le terrain pour poser. X = Spawn wagon.",
           size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 15),
@@ -1820,7 +1820,7 @@ k.scene("game", () => {
           color: k.WHITE,
           opacity: alpha,
         });
-        drawTextOutlined({
+        k.drawText({
           text: "D = Mode auto. Engrenage en haut a droite pour les options.",
           size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 + 10),
@@ -1858,14 +1858,14 @@ k.scene("game", () => {
         height: 4,
         color: k.rgb(255, 210, 63),
       });
-      drawTextOutlined({
+      k.drawText({
         text: "PARAMETRES",
         size: 30,
         pos: k.vec2(WIDTH / 2, panelY + 25),
         anchor: "top",
         color: k.rgb(255, 230, 80),
       });
-      drawTextOutlined({
+      k.drawText({
         text: "Nombre de joueurs",
         size: 18,
         pos: k.vec2(WIDTH / 2, panelY + 70),
@@ -1897,7 +1897,7 @@ k.scene("game", () => {
           color: isSelected ? k.rgb(20, 20, 30) : k.WHITE,
           outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
         });
-        drawTextOutlined({
+        k.drawText({
           text: cfg.name,
           size: 11,
           pos: k.vec2(bx + 35, by + 82),
@@ -1913,7 +1913,7 @@ k.scene("game", () => {
         height: 40,
         color: settings.autoMode ? k.rgb(124, 201, 71) : k.rgb(60, 80, 110),
       });
-      drawTextOutlined({
+      k.drawText({
         text: settings.autoMode ? "MODE DEMO: ON" : "MODE DEMO: OFF",
         size: 18,
         pos: k.vec2(WIDTH / 2, autoBy + 20),
@@ -1928,7 +1928,7 @@ k.scene("game", () => {
         height: 36,
         color: k.rgb(70, 90, 140),
       });
-      drawTextOutlined({
+      k.drawText({
         text: "Construire circuit test",
         size: 16,
         pos: k.vec2(WIDTH / 2, testBy + 18),
@@ -1943,21 +1943,21 @@ k.scene("game", () => {
         height: 36,
         color: k.rgb(186, 120, 220),
       });
-      drawTextOutlined({
+      k.drawText({
         text: "Sauvegarder / Charger parc",
         size: 15,
         pos: k.vec2(WIDTH / 2, expBy + 18),
         anchor: "center",
         color: k.WHITE,
       });
-      drawTextOutlined({
+      k.drawText({
         text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
         size: 12,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
         anchor: "top",
         color: k.rgb(180, 200, 220),
       });
-      drawTextOutlined({
+      k.drawText({
         text: "Clic sur l'engrenage pour fermer",
         size: 11,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 18),
@@ -1984,19 +1984,19 @@ k.scene("game", () => {
         color: k.rgb(255, 120, 220),
       });
     }
-    drawTextOutlined({
+    k.drawText({
       text: "(1)Lave (2)Rail (4)Up (5)Dn (6)Eau (7)Boost (8)Piece (9)Trampo (3)Gomme",
       size: 14,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
     });
-    drawTextOutlined({
+    k.drawText({
       text: "MARIO A/D/Esp/E  PIKA J/L/I/O  LUIGI fleches+Enter  TOAD F/H/T/G",
       size: 14,
       pos: k.vec2(12, 30),
       color: k.rgb(255, 210, 63),
     });
-    drawTextOutlined({
+    k.drawText({
       text: "(X) Wagon  (C) Vider  (R) Reset    (Dans le wagon, saute pour faire sauter le wagon)",
       size: 14,
       pos: k.vec2(12, 46),
