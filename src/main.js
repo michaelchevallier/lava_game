@@ -417,6 +417,9 @@ k.scene("game", () => {
           }
         }
         break;
+      case "ice":
+        p.iceUntil = now + 0.4;
+        break;
       case "portal":
         if (tile.pair && !(tile.cooldownUntil > now)) {
           tile.cooldownUntil = now + 0.5;
@@ -486,6 +489,7 @@ k.scene("game", () => {
     k.onKeyDown(opts.keys.left, () => {
       if (p.ridingWagon) return;
       p.move(-SPEED * playerSpeedMult(), 0);
+      p.lastVx = -SPEED * playerSpeedMult();
       if (p.facing !== "left") {
         p.flipX = true;
         p.facing = "left";
@@ -494,6 +498,7 @@ k.scene("game", () => {
     k.onKeyDown(opts.keys.right, () => {
       if (p.ridingWagon) return;
       p.move(SPEED * playerSpeedMult(), 0);
+      p.lastVx = SPEED * playerSpeedMult();
       if (p.facing !== "right") {
         p.flipX = false;
         p.facing = "right";
@@ -520,9 +525,17 @@ k.scene("game", () => {
       }
     });
 
+    const leftKeys = Array.isArray(opts.keys.left) ? opts.keys.left : [opts.keys.left];
+    const rightKeys = Array.isArray(opts.keys.right) ? opts.keys.right : [opts.keys.right];
+
     p.onUpdate(() => {
       if (p.ridingWagon) return;
       applyTileEffectToPlayer(p, getEntityTile(p));
+      const now2 = k.time();
+      if (p.iceUntil && now2 < p.iceUntil && p.lastVx) {
+        const noInput = leftKeys.every(k2 => !k.isKeyDown(k2)) && rightKeys.every(k2 => !k.isKeyDown(k2));
+        if (noInput) p.move(p.lastVx, 0);
+      }
       if (p.boostUntil && k.time() < p.boostUntil && Math.random() < 0.5) {
         k.add([
           k.circle(2 + Math.random() * 2),
@@ -920,8 +933,6 @@ k.scene("game", () => {
     const offsets = [
       [-thickness, -thickness], [thickness, -thickness],
       [-thickness, thickness], [thickness, thickness],
-      [-thickness, 0], [thickness, 0],
-      [0, -thickness], [0, thickness],
     ];
     for (const [dx, dy] of offsets) {
       k.drawText({
@@ -1060,6 +1071,16 @@ k.scene("game", () => {
             { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 40, grav: 180 },
           ]);
         }
+      }
+      if (tile && tile.tileType === "ice") {
+        if (!(v._iceCd > k.time())) {
+          v._iceCd = k.time() + 0.15;
+          v._iceUntil = k.time() + 0.4;
+          v._iceSpeed = v.walkSpeed * 1.6;
+        }
+      }
+      if (v._iceUntil && k.time() < v._iceUntil) {
+        v.move(v._iceSpeed - v.walkSpeed, 0);
       }
       if (v.pos.x > WIDTH + 40) {
         if (v.crown) v.crown.forEach((e) => k.destroy(e));
