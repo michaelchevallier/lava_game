@@ -389,6 +389,10 @@ k.scene("game", () => {
           ]);
         }
         break;
+      case "water":
+        p.refreshUntil = now + 2;
+        audio.splash();
+        break;
     }
   }
 
@@ -411,9 +415,16 @@ k.scene("game", () => {
       },
     ]);
 
+    function playerSpeedMult() {
+      const now = k.time();
+      if (p.boostUntil && now < p.boostUntil) return 1.5;
+      if (p.refreshUntil && now < p.refreshUntil) return 1.2;
+      return 1;
+    }
+
     k.onKeyDown(opts.keys.left, () => {
       if (p.ridingWagon) return;
-      p.move(-SPEED, 0);
+      p.move(-SPEED * playerSpeedMult(), 0);
       if (p.facing !== "left") {
         p.flipX = true;
         p.facing = "left";
@@ -421,7 +432,7 @@ k.scene("game", () => {
     });
     k.onKeyDown(opts.keys.right, () => {
       if (p.ridingWagon) return;
-      p.move(SPEED, 0);
+      p.move(SPEED * playerSpeedMult(), 0);
       if (p.facing !== "right") {
         p.flipX = false;
         p.facing = "right";
@@ -459,11 +470,11 @@ k.scene("game", () => {
       let prevWagon = false;
       k.onUpdate(() => {
         if (mi.left && !p.ridingWagon) {
-          p.move(-SPEED, 0);
+          p.move(-SPEED * playerSpeedMult(), 0);
           if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
         }
         if (mi.right && !p.ridingWagon) {
-          p.move(SPEED, 0);
+          p.move(SPEED * playerSpeedMult(), 0);
           if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
         }
         if (mi.jumpPressed && !prevJump) {
