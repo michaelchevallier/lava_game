@@ -183,9 +183,14 @@ export function createWagonSystem({
       ].filter((v) => v !== null);
       if (candidates.length > 0) {
         const slopeY = Math.min(...candidates);
-        const wagonBottom = wagon.pos.y + 30;
-        if (Math.abs(wagonBottom - slopeY) < 28) {
-          wagon.pos.y = slopeY - 30;
+        const targetY = slopeY - 30;
+        const dy = targetY - wagon.pos.y;
+        if (Math.abs(dy) < 28) {
+          if (Math.abs(dy) > 24) {
+            wagon.pos.y = targetY;
+          } else {
+            wagon.pos.y += dy * 0.35;
+          }
           if (wagon.vel) wagon.vel.y = 0;
         }
       }
