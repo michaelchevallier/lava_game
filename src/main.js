@@ -17,6 +17,7 @@ import { createCrowdSystem } from "./crowd.js";
 import { createJuice } from "./juice.js";
 import { createSpectresSystem } from "./spectres.js";
 import { createSplash } from "./splash.js";
+import { createTutorial } from "./tutorial.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1289,4 +1290,7 @@ k.scene("game", () => {
   crowdHooks = crowdSystem.setup();
 
   hud.setup();
+
+  const tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
+  tutorial.setup();
 });
