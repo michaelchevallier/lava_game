@@ -342,20 +342,24 @@ k.scene("game", () => {
     k.add([
       k.sprite("ground_top"),
       k.pos(col * TILE, GROUND_ROW * TILE),
-      k.area(),
-      k.body({ isStatic: true }),
-      "ground",
+      k.z(0),
     ]);
     for (let row = GROUND_ROW + 1; row < ROWS; row++) {
       k.add([
         k.sprite("ground"),
         k.pos(col * TILE, row * TILE),
-        k.area(),
-        k.body({ isStatic: true }),
-        "ground",
+        k.z(0),
       ]);
     }
   }
+  k.add([
+    k.rect(WIDTH, (ROWS - GROUND_ROW) * TILE),
+    k.pos(0, GROUND_ROW * TILE),
+    k.area(),
+    k.body({ isStatic: true }),
+    k.opacity(0),
+    "ground",
+  ]);
 
   function createPlayer(opts, mobileP1 = false) {
     const p = k.add([
