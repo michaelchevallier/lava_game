@@ -221,6 +221,20 @@ export function createWagonSystem({
       const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
+      // Track speed states for spectres id 4 (slow 10s) / id 5 (fast 10s)
+      if (speedMult <= 0.6) {
+        wagon._slowAccum = (wagon._slowAccum || 0) + k.dt();
+        wagon._fastAccum = 0;
+        if (wagon._slowAccum >= 10) gameState.onSlowMilestone?.();
+      } else if (speedMult >= 1.8) {
+        wagon._fastAccum = (wagon._fastAccum || 0) + k.dt();
+        wagon._slowAccum = 0;
+        if (wagon._fastAccum >= 10) gameState.onFastMilestone?.();
+      } else {
+        wagon._slowAccum = 0;
+        wagon._fastAccum = 0;
+      }
+
       const wBaseX = wagon.pos.x;
       const candidates = [
         getRailSlopeYAt(wBaseX + 10),

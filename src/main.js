@@ -399,6 +399,9 @@ k.scene("game", () => {
     if (save.totalSkeletons >= 100) spectres.unlock(6);
   }
 
+  gameState.onSlowMilestone = () => spectres.unlock(4);
+  gameState.onFastMilestone = () => spectres.unlock(5);
+
   function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
     const now = k.time();
     const prev = gameState.comboCount;
