@@ -1100,6 +1100,15 @@ k.scene("game", () => {
     v.onUpdate(() => {
       const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
       v.move(vSpeed, 0);
+      // Skeleton dance: when 3+ skeletons + grounded, sync hop via small jump impulse
+      if (v.isSkeleton && gameState.skeletons >= 3 && v.isGrounded()) {
+        const phase = (v._dancePhase ??= Math.random() * 0.4);
+        const beat = Math.floor(k.time() * 1.3 + phase * 4);
+        if (beat !== v._lastDanceBeat) {
+          v._lastDanceBeat = beat;
+          v.jump(80);
+        }
+      }
       if (v.crown) {
         v.crown[0].pos.x = v.pos.x + 5;
         v.crown[0].pos.y = v.pos.y - 6;
