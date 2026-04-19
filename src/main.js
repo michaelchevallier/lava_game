@@ -544,7 +544,7 @@ function persistSave(save) {
 const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
-  ice: "I",
+  ice: "I", magnet: "M",
 };
 const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -1153,6 +1153,7 @@ k.scene("game", () => {
     { tool: "fan", key: "0", label: "Vent" },
     { tool: "portal", key: "P", label: "Portail" },
     { tool: "ice", key: "G", label: "Glace" },
+    { tool: "magnet", key: "A", label: "Aimant" },
     { tool: "erase", key: "3", label: "Gomme" },
   ];
   const TB_ICON = 52;
@@ -1461,6 +1462,44 @@ k.scene("game", () => {
         otherUnpaired.pair = ring;
       }
       tileMap.set(key, ring);
+    } else if (type === "magnet") {
+      const t = k.add([
+        k.rect(TILE, TILE),
+        k.pos(col * TILE, row * TILE),
+        k.color(k.rgb(210, 80, 60)),
+        k.outline(2, k.rgb(110, 30, 20)),
+        k.area(),
+        k.z(1),
+        "tile",
+        "magnet",
+        { gridCol: col, gridRow: row, tileType: "magnet", extras: [] },
+      ]);
+      const leftArm = k.add([
+        k.rect(6, TILE - 10),
+        k.pos(col * TILE + 6, row * TILE + 4),
+        k.color(k.rgb(40, 40, 40)),
+        k.z(2),
+      ]);
+      const rightArm = k.add([
+        k.rect(6, TILE - 10),
+        k.pos(col * TILE + TILE - 12, row * TILE + 4),
+        k.color(k.rgb(40, 40, 40)),
+        k.z(2),
+      ]);
+      const leftTip = k.add([
+        k.rect(6, 4),
+        k.pos(col * TILE + 6, row * TILE + 4),
+        k.color(k.rgb(200, 200, 200)),
+        k.z(3),
+      ]);
+      const rightTip = k.add([
+        k.rect(6, 4),
+        k.pos(col * TILE + TILE - 12, row * TILE + 4),
+        k.color(k.rgb(200, 200, 200)),
+        k.z(3),
+      ]);
+      t.extras = [leftArm, rightArm, leftTip, rightTip];
+      tileMap.set(key, t);
     } else if (type === "ice") {
       const t = k.add([
         k.rect(TILE, TILE),
@@ -2525,6 +2564,43 @@ k.scene("game", () => {
     }
   });
 
+  k.onUpdate("coin", (c) => {
+    if (c.magnetLocked) return;
+    for (const [, m] of tileMap) {
+      if (m.tileType !== "magnet") continue;
+      const mx = m.pos.x + TILE / 2;
+      const my = m.pos.y + TILE / 2;
+      const dx = mx - c.pos.x;
+      const dy = my - c.pos.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 4 * TILE && d > 4) {
+        const force = 180 * (1 - d / (4 * TILE));
+        c.pos.x += (dx / d) * force * k.dt();
+        c.pos.y += (dy / d) * force * k.dt();
+      } else if (d <= 4) {
+        c.magnetLocked = true;
+        collectCoin(c);
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 * i) / 8;
+          const spark = k.add([
+            k.circle(2),
+            k.pos(mx, my),
+            k.color(k.rgb(210, 80, 60)),
+            k.opacity(1),
+            k.lifespan(0.4, { fade: 0.3 }),
+            k.z(14),
+            { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+          ]);
+          spark.onUpdate(() => {
+            spark.pos.x += spark.vx * k.dt();
+            spark.pos.y += spark.vy * k.dt();
+          });
+        }
+        break;
+      }
+    }
+  });
+
   k.loop(0.25, () => {
     for (const [key, t] of tileMap) {
       if (t.tileType !== "lava") continue;
@@ -2588,6 +2664,7 @@ k.scene("game", () => {
       fan: "VENTILATEUR",
       portal: "PORTAIL",
       ice: "GLACE",
+      magnet: "AIMANT",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -2602,6 +2679,7 @@ k.scene("game", () => {
       fan: k.rgb(180, 220, 240),
       portal: k.rgb(200, 150, 240),
       ice: k.rgb(200, 235, 255),
+      magnet: k.rgb(220, 80, 60),
     };
 
     k.drawRect({
@@ -2745,6 +2823,37 @@ k.scene("game", () => {
           width: 3,
           height: 10,
           color: k.rgb(200, 200, 215),
+        });
+      } else if (item.tool === "magnet") {
+        k.drawRect({
+          pos: k.vec2(bx + 10, by + 12),
+          width: 4,
+          height: TB_ICON - 20,
+          color: k.rgb(40, 40, 40),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + TB_ICON - 14, by + 12),
+          width: 4,
+          height: TB_ICON - 20,
+          color: k.rgb(40, 40, 40),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 10, by + 12),
+          width: 4,
+          height: 4,
+          color: k.rgb(210, 80, 60),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + TB_ICON - 14, by + 12),
+          width: 4,
+          height: 4,
+          color: k.rgb(210, 80, 60),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 10, by + TB_ICON - 14),
+          width: TB_ICON - 20,
+          height: 4,
+          color: k.rgb(40, 40, 40),
         });
       } else if (item.tool === "ice") {
         k.drawRect({
