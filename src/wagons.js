@@ -421,6 +421,21 @@ export function createWagonSystem({
         }
       }
 
+      // Ice rink: 3+ ice horizontaux → glide momentum bonus
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        for (const r of gameState.iceRinks || []) {
+          if (wCol >= r.startCol && wCol < r.startCol + r.len && r.row === Math.floor((wagon.pos.y + 40) / TILE)) {
+            wagon.glideUntil = k.time() + 0.8;
+            wagon.glideBonus = (r.len - 2) * 30;
+            break;
+          }
+        }
+        if (wagon.glideUntil > k.time()) {
+          wagon.move(wagon.glideBonus, 0);
+        }
+      }
+
       // Loop-the-loop detection: track distinct rail tiles visited
       {
         const wCol = Math.floor((wagon.pos.x + 30) / TILE);

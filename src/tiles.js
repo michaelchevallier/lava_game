@@ -672,5 +672,26 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     return fields;
   }
 
-  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers };
+  function detectIceRinks() {
+    const rinks = [];
+    const visited = new Set();
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "ice") continue;
+      const k2 = gridKey(t.gridCol, t.gridRow);
+      if (visited.has(k2)) continue;
+      let len = 0;
+      let c = t.gridCol;
+      while (tileMap.get(gridKey(c, t.gridRow))?.tileType === "ice") {
+        visited.add(gridKey(c, t.gridRow));
+        len++;
+        c++;
+      }
+      if (len >= 3) {
+        rinks.push({ startCol: t.gridCol, row: t.gridRow, len });
+      }
+    }
+    return rinks;
+  }
+
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks };
 }

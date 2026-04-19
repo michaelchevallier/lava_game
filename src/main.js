@@ -219,7 +219,7 @@ k.scene("game", () => {
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
   window.__spectres = spectres;
 
-  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks } = createTileSystem({
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
   });
@@ -232,6 +232,8 @@ k.scene("game", () => {
 
   k.loop(1, () => { gameState.magnetFields = detectMagnetFields(); });
   k.loop(0.5, () => { gameState.geysers = detectGeysers(); });
+  gameState.iceRinks = [];
+  k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
 
   k.onUpdate(() => {
     for (const g of gameState.geysers) {
