@@ -39,12 +39,20 @@ export function createCrowdSystem({ k, gameState }) {
 
     k.onUpdate("crowd", (v) => {
       const isPanic = v.panicUntil > k.time();
-      const speed = isPanic ? v.walkSpeed * 1.5 : v.walkSpeed;
+      const isCheering = v.cheerUntil > k.time();
+      const speed = isPanic ? v.walkSpeed * 1.5 : (isCheering ? 0 : v.walkSpeed);
       v.move(v.dir * speed, 0);
 
       if (isPanic) {
         const shake = Math.sin(k.time() * 30) * 1.5;
         v.pos.x += shake * k.dt() * 60;
+      }
+      if (isCheering && v.isGrounded()) {
+        const beat = Math.floor(k.time() * 3);
+        if (beat !== v._lastCheerBeat) {
+          v._lastCheerBeat = beat;
+          v.jump(200);
+        }
       }
 
       if (v.pos.x < -40) v.dir = 1;
@@ -53,10 +61,30 @@ export function createCrowdSystem({ k, gameState }) {
       gameState.score += 0.1 * k.dt();
     });
 
+    k.add([
+      k.pos(0, 0),
+      k.z(40),
+      {
+        draw() {
+          for (const v of k.get("crowd")) {
+            if (!(v.cheerUntil > k.time())) continue;
+            k.drawText({
+              text: "BRAVO!",
+              size: 10,
+              pos: k.vec2(v.pos.x + 14, v.pos.y - 14),
+              anchor: "center",
+              color: k.rgb(255, 230, 80),
+            });
+          }
+        },
+      },
+    ]);
+
     return {
       onApocalypse() {
         for (const v of k.get("crowd")) {
           if (v.isGrounded()) v.jump(400);
+          v.cheerUntil = k.time() + 3;
         }
       },
       onSkeletonSpawn(pos) {
