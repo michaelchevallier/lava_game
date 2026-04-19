@@ -655,6 +655,7 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("lava", () => {
+      if (wagon.isSpectral) return;
       if (wagon.passenger === "human") {
         window.__juice?.hitStop(80);
         wagon.passenger = "skeleton";
@@ -663,6 +664,7 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("water", () => {
+      if (wagon.isSpectral) return;
       if (wagon.passenger === "skeleton") {
         wagon.passenger = "human";
         reviveFromSkeleton(wagon);
@@ -701,6 +703,7 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("bridge", (b) => {
+      if (wagon.isSpectral) return;
       if (b.breaking) return;
       const crossKey = b.gridCol + "," + b.gridRow;
       const wCd = wagon._bridgeCd || {};
@@ -1104,6 +1107,7 @@ export function createWagonSystem({
   }
 
   function tryBoardWagon(p) {
+    if (p._constActive) return;
     const wagons = k.get("wagon").filter((w) => !w.rider);
     let closest = null;
     let best = 90;

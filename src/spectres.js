@@ -23,6 +23,7 @@ export const SPECTRES = [
   { id: 21, emoji: "👥", name: "Le Sociable",      desc: "4 joueurs simultanés" },
   { id: 22, emoji: "📱", name: "Le Mobile",        desc: "Jouer en mode mobile" },
   { id: 23, emoji: "💾", name: "L'Archiviste",     desc: "Exporter un parc" },
+  { id: 24, emoji: "🌌", name: "Le Constellier",  desc: "Declencher une Constellation Spectrale" },
 ];
 
 export function createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH }) {
