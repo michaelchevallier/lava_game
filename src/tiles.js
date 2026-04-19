@@ -468,7 +468,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.z(4),
         "tile",
         "coin",
-        { gridCol: col, gridRow: row, tileType: "coin", baseY: cy, extras: [] },
+        { gridCol: col, gridRow: row, tileType: "coin", baseY: cy, extras: [], coinPhase: Math.random() * Math.PI * 2 },
       ]);
       const inner = k.add([
         k.rect(3, 10),
@@ -478,6 +478,32 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.z(5),
       ]);
       t.extras = [inner];
+      t.onUpdate(() => {
+        // Bobbing animation
+        t.pos.y = t.baseY + Math.sin(k.time() * 2.5 + t.coinPhase) * 3;
+        inner.pos.y = t.pos.y;
+        // Spinning inner bar (width pulse to fake 3D)
+        const w = 2 + Math.abs(Math.cos(k.time() * 4 + t.coinPhase)) * 5;
+        inner.width = w;
+      });
+      // Sparkle every ~2s
+      t._sparkleCd = Math.random() * 2;
+      t.onUpdate(() => {
+        t._sparkleCd -= k.dt();
+        if (t._sparkleCd > 0) return;
+        t._sparkleCd = 1.5 + Math.random() * 2;
+        if (k.get("particle").length > 250) return;
+        k.add([
+          k.rect(2, 2),
+          k.pos(t.pos.x + (Math.random() - 0.5) * 16, t.pos.y + (Math.random() - 0.5) * 16),
+          k.color(k.rgb(255, 250, 150)),
+          k.opacity(1),
+          k.lifespan(0.4, { fade: 0.3 }),
+          k.z(6),
+          "particle",
+          { vx: 0, vy: -10 },
+        ]);
+      });
       tileMap.set(key, t);
       checkCoinResonance(col, row);
     } else if (type === "wheel") {
