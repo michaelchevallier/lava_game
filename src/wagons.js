@@ -164,6 +164,21 @@ export function createWagonSystem({
     wagon.parts = [...parts, wheel1, wheel1Spoke, wheel2, wheel2Spoke, passenger];
     wagon.passengerEntity = passenger;
 
+    const localOffsets = [
+      { x: 0, y: 0 },    // parts[0] body
+      { x: 0, y: -2 },   // parts[1] frontRim
+      { x: 56, y: -2 },  // parts[2] backRim
+      { x: 4, y: 8 },    // parts[3] plank1
+      { x: 4, y: 20 },   // parts[4] plank2
+      { x: 0, y: -3 },   // parts[5] trim
+      { x: 14, y: 30 },  // wheel1
+      { x: 14, y: 30 },  // wheel1Spoke
+      { x: 46, y: 30 },  // wheel2
+      { x: 46, y: 30 },  // wheel2Spoke
+      { x: 16, y: -40 }, // passenger
+    ];
+
+    wagon.railAngle = 0;
     let spokeAngle = 0;
 
     wagon.onUpdate(() => {
@@ -207,22 +222,31 @@ export function createWagonSystem({
         ]);
       }
       const dx = wagon.pos.x;
-      parts[0].pos.x = dx;
-      parts[0].pos.y = wagon.pos.y;
-      parts[1].pos.x = dx;
-      parts[1].pos.y = wagon.pos.y - 2;
-      parts[2].pos.x = dx + 56;
-      parts[2].pos.y = wagon.pos.y - 2;
-      parts[3].pos.x = dx + 4;
-      parts[3].pos.y = wagon.pos.y + 8;
-      parts[4].pos.x = dx + 4;
-      parts[4].pos.y = wagon.pos.y + 20;
-      parts[5].pos.x = dx;
-      parts[5].pos.y = wagon.pos.y - 3;
+      const sy0 = getRailSlopeYAt(dx + 30);
+      const sy1 = getRailSlopeYAt(dx + 31);
+      const targetAngle = (sy0 !== null && sy1 !== null)
+        ? Math.atan2(sy1 - sy0, 1) * (180 / Math.PI)
+        : 0;
+      wagon.railAngle += (targetAngle - wagon.railAngle) * 0.25;
+      const sinA = Math.sin(wagon.railAngle * Math.PI / 180);
+
+      for (let i = 0; i < localOffsets.length && i < parts.length; i++) {
+        parts[i].pos.x = dx + localOffsets[i].x;
+        parts[i].pos.y = wagon.pos.y + localOffsets[i].y + sinA * (localOffsets[i].x - 30);
+      }
+      if (ghost && parts[6] && parts[6].off !== undefined) {
+        parts[6].pos.x = dx + parts[6].off;
+        parts[6].pos.y = wagon.pos.y + 10 + sinA * (parts[6].off - 30);
+      }
+      if (ghost && parts[7] && parts[7].off !== undefined) {
+        parts[7].pos.x = dx + parts[7].off;
+        parts[7].pos.y = wagon.pos.y + 10 + sinA * (parts[7].off - 30);
+      }
+
       wheel1.pos.x = dx + 14;
-      wheel1.pos.y = wagon.pos.y + 30;
+      wheel1.pos.y = wagon.pos.y + 30 + sinA * (14 - 30);
       wheel2.pos.x = dx + 46;
-      wheel2.pos.y = wagon.pos.y + 30;
+      wheel2.pos.y = wagon.pos.y + 30 + sinA * (46 - 30);
       spokeAngle += wagon.speed * 2 * k.dt();
       wheel1Spoke.pos.x = wheel1.pos.x;
       wheel1Spoke.pos.y = wheel1.pos.y;
@@ -233,12 +257,12 @@ export function createWagonSystem({
 
       if (wagon.passengerEntity) {
         wagon.passengerEntity.pos.x = dx + 16;
-        wagon.passengerEntity.pos.y = wagon.pos.y - 40;
+        wagon.passengerEntity.pos.y = wagon.pos.y - 40 + sinA * (16 - 30);
       }
 
       if (wagon.rider) {
         wagon.rider.pos.x = dx + 16;
-        wagon.rider.pos.y = wagon.pos.y - 44;
+        wagon.rider.pos.y = wagon.pos.y - 44 + sinA * (16 - 30);
       }
 
       if (wagon.isGrounded() && Math.random() < 0.12) {
