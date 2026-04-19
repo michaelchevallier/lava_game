@@ -818,6 +818,44 @@ k.scene("game", () => {
     ]);
   }
 
+  const FLAG_COLORS = [
+    [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
+    [230, 100, 200], [255, 140, 40], [120, 100, 230], [255, 255, 255],
+  ];
+  for (let i = 0; i < 10; i++) {
+    const fx = 40 + i * 120 + Math.random() * 40;
+    const poleH = 60 + Math.random() * 30;
+    const poleY = GROUND_ROW * TILE - poleH;
+    k.add([
+      k.rect(3, poleH),
+      k.pos(fx, poleY),
+      k.color(k.rgb(80, 70, 60)),
+      k.z(-8),
+      "flag-pole",
+    ]);
+    k.add([
+      k.circle(3),
+      k.pos(fx + 1, poleY),
+      k.color(k.rgb(255, 210, 63)),
+      k.z(-7),
+      "flag-pole",
+    ]);
+    const col = FLAG_COLORS[i % FLAG_COLORS.length];
+    const flag = k.add([
+      k.rect(22, 14),
+      k.pos(fx + 3, poleY + 2),
+      k.color(k.rgb(col[0], col[1], col[2])),
+      k.z(-7),
+      "flag-deco",
+      { baseX: fx + 3, baseY: poleY + 2, phase: Math.random() * 6 },
+    ]);
+    flag.onUpdate(() => {
+      const w = Math.sin(k.time() * 3 + flag.phase);
+      flag.pos.x = flag.baseX + w * 1.5;
+      flag.pos.y = flag.baseY + Math.abs(w) * 1;
+    });
+  }
+
   k.onUpdate("cloud", (c) => {
     c.pos.x += c.speed * k.dt();
     if (c.pos.x > WIDTH + 100) c.pos.x = -200;
