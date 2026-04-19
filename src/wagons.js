@@ -349,6 +349,24 @@ export function createWagonSystem({
         if (!wagon.isGrounded()) wagon.catapultAirborne = true;
       }
 
+      // Cascade combo: wagon dans une water tile cascade active
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        const wRow = Math.floor((wagon.pos.y + 15) / TILE);
+        const wTile = tileMap.get(gridKey(wCol, wRow));
+        if (wTile?.tileType === "water" && wTile.cascadeActive) {
+          const cascadeKey = gridKey(wCol, wRow);
+          if (!wagon._cascadedKey || wagon._cascadedKey !== cascadeKey) {
+            wagon._cascadedKey = cascadeKey;
+            gameState.comboCount = Math.min(5, gameState.comboCount + 1);
+            gameState.comboExpire = k.time() + 2;
+            audio.combo();
+          }
+        } else {
+          wagon._cascadedKey = null;
+        }
+      }
+
       if (wagon.pos.x > WIDTH + 80) {
         if (wagon.rider) exitWagon(wagon.rider);
         if (wagon.passenger === "human" && !wagon.ghostTrain) {

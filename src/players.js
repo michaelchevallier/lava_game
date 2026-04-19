@@ -54,6 +54,7 @@ export function createPlayerSystem({
 
     switch (tile.tileType) {
       case "lava":
+        if (p.cascadeUntil && now < p.cascadeUntil) break;
         if (Math.random() < 0.4) {
           k.add([
             k.circle(2 + Math.random() * 3),
@@ -68,6 +69,9 @@ export function createPlayerSystem({
         break;
       case "water":
         p.refreshUntil = now + 2;
+        if (tile.cascadeActive) {
+          p.cascadeUntil = now + 2;
+        }
         audio.splash();
         break;
       case "boost":
@@ -159,6 +163,7 @@ export function createPlayerSystem({
     function playerSpeedMult() {
       const now = k.time();
       if (p.boostUntil && now < p.boostUntil) return 1.5;
+      if (p.cascadeUntil && now < p.cascadeUntil) return 1.4;
       if (p.refreshUntil && now < p.refreshUntil) return 1.2;
       return 1;
     }

@@ -1,6 +1,60 @@
 import { TILE, GROUND_ROW, gridKey } from "./constants.js";
 
 export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
+  function spawnSteamBurst(col, row) {
+    const cx = col * TILE + TILE / 2;
+    const cy = row * TILE + TILE / 2;
+    for (let i = 0; i < 12; i++) {
+      const p = k.add([
+        k.circle(3 + Math.random() * 3),
+        k.pos(cx + (Math.random() - 0.5) * TILE, cy),
+        k.color(k.rgb(210, 230, 240)),
+        k.opacity(0.75),
+        k.lifespan(0.9, { fade: 0.6 }),
+        k.z(4),
+        "steam",
+        { vy: -60 - Math.random() * 60, vx: (Math.random() - 0.5) * 40 },
+      ]);
+      p.onUpdate(() => {
+        p.pos.x += p.vx * k.dt();
+        p.pos.y += p.vy * k.dt();
+      });
+    }
+  }
+
+  function checkCascade(col, row) {
+    let topRow = row;
+    while (tileMap.get(gridKey(col, topRow - 1))?.tileType === "water") topRow--;
+    let h = 0, r = topRow;
+    while (tileMap.get(gridKey(col, r))?.tileType === "water") { h++; r++; }
+    if (h < 3) {
+      // Nettoyer le flag sur toute la colonne si plus valide
+      for (let i = topRow; i < r; i++) {
+        const t = tileMap.get(gridKey(col, i));
+        if (t) t.cascadeActive = false;
+      }
+      return;
+    }
+    for (let i = 0; i < h; i++) {
+      const t = tileMap.get(gridKey(col, topRow + i));
+      if (t) t.cascadeActive = true;
+    }
+    showPopup(
+      col * TILE + TILE / 2,
+      topRow * TILE - 16,
+      "CASCADE !",
+      k.rgb(80, 180, 230),
+      18,
+    );
+    const bottomTile = tileMap.get(gridKey(col, r));
+    if (bottomTile?.tileType === "lava") {
+      placeTile(col, r, "bridge");
+      const newBridge = tileMap.get(gridKey(col, r));
+      if (newBridge) newBridge.temporary = k.time() + 8;
+      spawnSteamBurst(col, r);
+    }
+  }
+
   function checkCoinResonance(col, row) {
     const isCoinAt = (c, r) => {
       const t = tileMap.get(gridKey(c, r));
@@ -90,9 +144,41 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.z(1),
         "tile",
         "water",
-        { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, extras: [] },
+        { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, cascadeActive: false, extras: [] },
       ]);
       tileMap.set(key, t);
+      t.onUpdate(() => {
+        if (!t.cascadeActive) return;
+        if (Math.random() < 0.3) {
+          const drop = k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(t.pos.x + Math.random() * TILE, t.pos.y),
+            k.color(k.rgb(80, 180, 230)),
+            k.opacity(0.8),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(2),
+            "particle",
+            { vy: 200 + Math.random() * 100 },
+          ]);
+          drop.onUpdate(() => {
+            drop.pos.y += drop.vy * k.dt();
+          });
+        }
+        // Splash en bas de la cascade (tuile du bas de la colonne)
+        const botRow = t.gridRow + 1;
+        const botTile = tileMap.get(gridKey(t.gridCol, botRow));
+        if (!botTile && Math.random() < 0.08) {
+          k.add([
+            k.circle(4 + Math.random() * 3),
+            k.pos(t.pos.x + Math.random() * TILE, t.pos.y + TILE - 4),
+            k.color(k.rgb(80, 210, 240)),
+            k.opacity(0.7),
+            k.lifespan(0.5, { fade: 0.3 }),
+            k.z(3),
+          ]);
+        }
+      });
+      checkCascade(col, row);
     } else if (type === "rail") {
       const x = col * TILE;
       const y = row * TILE + TILE - 10;
@@ -531,5 +617,19 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
     }
   }
 
-  return { placeTile, checkCoinResonance };
+  k.loop(1, () => {
+    for (const [key, b] of tileMap.entries()) {
+      if (b.tileType === "bridge" && b.temporary && k.time() > b.temporary) {
+        const col2 = b.gridCol;
+        const row2 = b.gridRow;
+        if (b.extras) b.extras.forEach((e) => k.destroy(e));
+        k.destroy(b);
+        tileMap.delete(key);
+        placeTile(col2, row2, "lava");
+        spawnSteamBurst(col2, row2);
+      }
+    }
+  });
+
+  return { placeTile, checkCoinResonance, checkCascade };
 }
