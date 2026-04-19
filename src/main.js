@@ -338,6 +338,21 @@ k.scene("game", () => {
             });
           }
         }
+        // Crown on leading wagon (when 2+ wagons exist)
+        const allWagons = k.get("wagon").filter((w) => !w.inverseTrain);
+        if (allWagons.length >= 2) {
+          let leader = allWagons[0];
+          for (const w of allWagons) {
+            if (w.pos.x > leader.pos.x) leader = w;
+          }
+          const cx = leader.pos.x + 30;
+          const cy = leader.pos.y - 18 + Math.sin(k.time() * 4) * 2;
+          k.drawText({
+            text: "👑",
+            pos: k.vec2(cx - 12, cy),
+            size: 20,
+          });
+        }
       },
     },
   ]);
