@@ -121,10 +121,33 @@ export function createWagonSystem({
       },
     ]);
 
+    const isGolden = !ghost && !inverse && Math.random() < 0.07;
     const theme = (ghost || inverse)
       ? { body: [30, 30, 40], dark: [0, 0, 0], trim: [180, 30, 30] }
+      : isGolden
+      ? { body: [255, 200, 30], dark: [180, 130, 0], trim: [255, 255, 200] }
       : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
     wagon.theme = theme;
+    wagon.isGolden = isGolden;
+    if (isGolden) {
+      audio.combo();
+      showPopup(WIDTH / 2, 180, "WAGON DOR\u00c9 ! 2x points", k.rgb(255, 220, 60), 22);
+      // Sparkle aura around wagon every frame
+      wagon.onUpdate(() => {
+        if (Math.random() < 0.25 && k.get("particle").length < 270) {
+          k.add([
+            k.circle(1.5),
+            k.pos(wagon.pos.x + Math.random() * 60, wagon.pos.y + Math.random() * 30),
+            k.color(k.rgb(255, 240, 100)),
+            k.opacity(1),
+            k.lifespan(0.4, { fade: 0.3 }),
+            k.z(5),
+            "particle",
+            { vx: 0, vy: -20 },
+          ]);
+        }
+      });
+    }
     const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
     if (ghost || inverse) {
       const eye1 = k.add([
@@ -922,8 +945,9 @@ export function createWagonSystem({
         ]);
       }
     } else {
-      const base = wagon.ghostTrain ? 100 : 10;
-      registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain, dark);
+      let base = wagon.ghostTrain ? 100 : 10;
+      if (wagon.isGolden) base *= 2;
+      registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain || wagon.isGolden, dark);
     }
     if (dark > 0) wagon.darkPassenger = 0;
     if (wagon.ghostTrain) {
