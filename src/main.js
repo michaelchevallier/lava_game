@@ -393,6 +393,10 @@ k.scene("game", () => {
         p.refreshUntil = now + 2;
         audio.splash();
         break;
+      case "boost":
+        p.boostUntil = now + 0.6;
+        audio.boost();
+        break;
     }
   }
 
@@ -462,6 +466,18 @@ k.scene("game", () => {
     p.onUpdate(() => {
       if (p.ridingWagon) return;
       applyTileEffectToPlayer(p, getEntityTile(p));
+      if (p.boostUntil && k.time() < p.boostUntil && Math.random() < 0.5) {
+        k.add([
+          k.circle(2 + Math.random() * 2),
+          k.pos(p.pos.x + 4 + Math.random() * 20, p.pos.y + 30 + Math.random() * 12),
+          k.color(255, 210, 60),
+          k.opacity(0.85),
+          k.lifespan(0.25, { fade: 0.2 }),
+          k.z(5),
+          "particle-x",
+          { vx: (p.facing === "right" ? -1 : 1) * (40 + Math.random() * 30) },
+        ]);
+      }
     });
 
     if (mobileP1) {
