@@ -137,9 +137,27 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.z(1),
         "tile",
         "lava",
-        { gridCol: col, gridRow: row, tileType: "lava", lavaPhase: 0, extras: [] },
+        { gridCol: col, gridRow: row, tileType: "lava", lavaPhase: 0, extras: [], _bubbleCd: Math.random() * 2 },
       ]);
       tileMap.set(key, t);
+      t.onUpdate(() => {
+        t._bubbleCd -= k.dt();
+        if (t._bubbleCd > 0) return;
+        t._bubbleCd = 0.6 + Math.random() * 1.4;
+        if (k.get("particle").length > 260) return;
+        const bx = t.pos.x + 8 + Math.random() * (TILE - 16);
+        const by = t.pos.y + TILE * 0.4;
+        k.add([
+          k.circle(2 + Math.random() * 2),
+          k.pos(bx, by),
+          k.color(k.rgb(255, 200 + Math.random() * 30, 80)),
+          k.opacity(0.85),
+          k.lifespan(1.1, { fade: 0.7 }),
+          k.z(2),
+          "particle",
+          { vx: (Math.random() - 0.5) * 8, vy: -22 - Math.random() * 18 },
+        ]);
+      });
     } else if (type === "water") {
       const t = k.add([
         k.sprite("water1"),
