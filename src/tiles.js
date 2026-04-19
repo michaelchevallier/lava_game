@@ -263,6 +263,15 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         { gridCol: col, gridRow: row, tileType: "trampoline", extras: [base, spring1, spring2] },
       ]);
       tileMap.set(key, t);
+      t.onDraw(() => {
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 5);
+        k.drawCircle({
+          pos: k.vec2(TILE / 2, 6),
+          radius: TILE * 0.45 * (0.85 + 0.15 * pulse),
+          color: k.rgb(255, 100, 160),
+          opacity: 0.12 + 0.1 * pulse,
+        });
+      });
     } else if (type === "boost") {
       const t = k.add([
         k.sprite("boost"),
