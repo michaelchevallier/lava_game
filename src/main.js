@@ -20,7 +20,8 @@ const k = kaplay({
   background: [92, 148, 252],
   global: false,
   pixelDensity: 1,
-  letterbox: true,
+  letterbox: false,
+  stretch: false,
   maxFPS: 60,
 });
 
