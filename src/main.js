@@ -904,7 +904,6 @@ k.scene("game", () => {
     root.paused = !root.paused;
   });
 
-  k.onKeyPress("t", () => buildDemoCircuit());
 
   function buildDemoCircuit() {
     tileMap.forEach((t) => {
@@ -936,13 +935,15 @@ k.scene("game", () => {
     placeTile(38, 13, "coin");
   }
 
+  const MAX_WAGONS = 3;
+
   let autoSpawnTimer = null;
   function startAutoMode() {
+    if (autoSpawnTimer) return;
     buildDemoCircuit();
-    spawnWagon();
-    if (autoSpawnTimer) autoSpawnTimer.cancel();
-    autoSpawnTimer = k.loop(2.8, () => {
-      if (k.get("wagon").length < 5) spawnWagon();
+    if (k.get("wagon").length === 0) spawnWagon();
+    autoSpawnTimer = k.loop(3.2, () => {
+      if (k.get("wagon").length < MAX_WAGONS) spawnWagon();
     });
   }
   function stopAutoMode() {
@@ -954,21 +955,16 @@ k.scene("game", () => {
   function startGhostTrain() {
     if (ghostTrainInterval) return;
     ghostTrainInterval = k.loop(45, () => {
+      if (k.get("wagon").length >= MAX_WAGONS) return;
       showPopup(WIDTH / 2, 120, "TRAIN FANTOME !", k.rgb(255, 40, 40), 46);
       audio.transform();
       k.shake(5);
-      k.wait(2.5, () => spawnWagon(true));
+      k.wait(2.5, () => {
+        if (k.get("wagon").length < MAX_WAGONS) spawnWagon(true);
+      });
     });
   }
   k.wait(0.05, () => startGhostTrain());
-
-  k.onKeyPress("d", () => {
-    settings.autoMode = !settings.autoMode;
-    save.autoMode = settings.autoMode;
-    persistSave(save);
-    if (settings.autoMode) startAutoMode();
-    else stopAutoMode();
-  });
 
   let isNight = false;
   const stars = [];
@@ -1577,13 +1573,13 @@ k.scene("game", () => {
         wagon.rider.pos.y = wagon.pos.y - 44;
       }
 
-      if (wagon.isGrounded() && Math.random() < 0.4) {
+      if (wagon.isGrounded() && Math.random() < 0.12) {
         const dust = k.add([
           k.circle(1.5 + Math.random() * 1.5),
           k.pos(dx + 6 + Math.random() * 48, wagon.pos.y + 34 + Math.random() * 2),
           k.color(180, 160, 120),
           k.opacity(0.7),
-          k.lifespan(0.35, { fade: 0.25 }),
+          k.lifespan(0.3, { fade: 0.2 }),
           k.z(2),
           { vx: -20 - Math.random() * 30, vy: -15 - Math.random() * 15 },
         ]);
@@ -1592,7 +1588,7 @@ k.scene("game", () => {
           dust.pos.y += dust.vy * k.dt();
         });
       }
-      if (!wagon.isGrounded() && Math.random() < 0.5) {
+      if (!wagon.isGrounded() && Math.random() < 0.18) {
         k.add([
           k.circle(1 + Math.random()),
           k.pos(dx + 10 + Math.random() * 40, wagon.pos.y + 32),
@@ -2153,8 +2149,8 @@ k.scene("game", () => {
     return v;
   }
 
-  k.loop(3, () => {
-    if (k.get("visitor").length < 6) spawnVisitor();
+  k.loop(4, () => {
+    if (k.get("visitor").length < 5) spawnVisitor();
   });
 
   k.onUpdate("lava", (t) => {
