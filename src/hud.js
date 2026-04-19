@@ -158,9 +158,27 @@ export function createHUD({
     return p;
   }
 
+  const TIPS = [
+    "Astuce : aligne 3 pieces en diagonale = chaine d'or",
+    "Astuce : eau au-dessus d'un ventilateur = geyser",
+    "Astuce : magnet voisin d'un portail = vortex",
+    "Astuce : 3 glaces alignees = patinoire glissante",
+    "Astuce : 5 pieces en moins de 2s = pluie d'or +50",
+    "Astuce : trampoline + ventilateur = catapulte",
+    "Astuce : cog en haut a droite pour les options",
+    "Astuce : N pour basculer mode nuit/jour",
+    "Astuce : 7% de wagons sont dores (2x points)",
+  ];
+  let tipIdx = Math.floor(Math.random() * TIPS.length);
+  let tipChangedAt = 0;
+
   function setup() {
     k.onDraw(() => {
       const selectedTool = getCurrentTool();
+      if (k.time() - tipChangedAt > 12) {
+        tipIdx = (tipIdx + 1) % TIPS.length;
+        tipChangedAt = k.time();
+      }
 
       k.drawRect({
         pos: k.vec2(0, 0),
@@ -231,6 +249,18 @@ export function createHUD({
           height: 6,
           color: k.rgb(255, 200, 100),
           radius: 3,
+        });
+      }
+      // Rotating tip in HUD bottom band
+      if (!settings.open) {
+        const tipAge = k.time() - tipChangedAt;
+        const fade = tipAge < 0.4 ? tipAge / 0.4 : (12 - tipAge < 0.4 ? (12 - tipAge) / 0.4 : 1);
+        drawTextOutlined({
+          text: TIPS[tipIdx],
+          size: 12,
+          pos: k.vec2(12, HEIGHT - 100),
+          color: k.rgb(200, 220, 255),
+          opacity: Math.max(0, Math.min(1, fade)) * 0.85,
         });
       }
 
