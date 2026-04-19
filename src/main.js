@@ -13,6 +13,7 @@ import { createPlayerSystem } from "./players.js";
 import { createHUD } from "./hud.js";
 import { createDuckSystem } from "./ducks.js";
 import { showInteractionsModal } from "./help-modal.js";
+import { createCrowdSystem } from "./crowd.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -57,7 +58,7 @@ const k = kaplay({
 k.setGravity(1600);
 window.__k = k;
 window.__getStats = () => {
-  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part"];
+  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part","crowd"];
   const out = { total: k.get("*").length };
   for (const t of tags) out[t] = k.get(t).length;
   return out;
@@ -192,6 +193,7 @@ k.scene("game", () => {
   gameState.bulletTimeUntil = 0;
 
   let _playerConfigs = null;
+  let crowdHooks = null;
   const hud = createHUD({
     k, gameState, save, settings, settingsOverlay,
     getCurrentTool: () => selectedTool,
@@ -306,6 +308,7 @@ k.scene("game", () => {
 
   function triggerApocalypse() {
     gameState.bulletTimeUntil = k.time() + 3;
+    if (crowdHooks) crowdHooks.onApocalypse();
     audio.combo();
     setTimeout(() => audio.transform(), 100);
     k.shake(22);
@@ -817,6 +820,7 @@ k.scene("game", () => {
         gameState.skeletons += 1;
         audio.transform();
         k.shake(v.isVIP ? 7 : 3);
+        if (crowdHooks) crowdHooks.onSkeletonSpawn(k.vec2(v.pos.x + 14, v.pos.y));
         registerKill(v.pos.x + 14, v.pos.y, v.isVIP ? 50 : 10, v.isVIP);
         const cx = v.pos.x + 14;
         const cy = v.pos.y + 10;
@@ -1128,6 +1132,9 @@ k.scene("game", () => {
     p.pos.x += p.vx * k.dt();
     p.vy *= 0.98;
   });
+
+  const crowdSystem = createCrowdSystem({ k, gameState });
+  crowdHooks = crowdSystem.setup();
 
   hud.setup();
 });
