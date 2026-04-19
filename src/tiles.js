@@ -81,13 +81,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         "lava",
         { gridCol: col, gridRow: row, tileType: "lava", lavaPhase: 0, extras: [] },
       ]);
-      t.onUpdate(() => {
-        const f = Math.floor(k.time() * 3 + col * 0.5) % 2;
-        if (f !== t.lavaPhase) {
-          t.lavaPhase = f;
-          t.sprite = f === 0 ? "lava1" : "lava2";
-        }
-      });
       tileMap.set(key, t);
     } else if (type === "water") {
       const t = k.add([
@@ -99,13 +92,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         "water",
         { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, extras: [] },
       ]);
-      t.onUpdate(() => {
-        const f = Math.floor(k.time() * 2 + col * 0.3) % 2;
-        if (f !== t.waterPhase) {
-          t.waterPhase = f;
-          t.sprite = f === 0 ? "water1" : "water2";
-        }
-      });
       tileMap.set(key, t);
     } else if (type === "rail") {
       const x = col * TILE;
@@ -179,9 +165,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         "boost",
         { gridCol: col, gridRow: row, tileType: "boost", extras: [] },
       ]);
-      t.onUpdate(() => {
-        t.angle = Math.sin(k.time() * 8 + col) * 3;
-      });
       tileMap.set(key, t);
     } else if (type === "portal") {
       const unpairedA = [...tileMap.values()].find(
@@ -335,20 +318,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
       ]);
       t.onUpdate(() => {
         if (Math.random() < 0.25) {
-          const puff = k.add([
+          k.add([
             k.circle(2 + Math.random() * 2),
             k.pos(col * TILE + 6 + Math.random() * 20, row * TILE + 2),
             k.color(k.rgb(230, 240, 255)),
             k.opacity(0.7),
             k.lifespan(0.6, { fade: 0.4 }),
             k.z(2),
+            "fan-puff",
             { vy: -60 - Math.random() * 50, vx: (Math.random() - 0.5) * 20 },
           ]);
-          puff.onUpdate(() => {
-            puff.pos.y += puff.vy * k.dt();
-            puff.pos.x += puff.vx * k.dt();
-            puff.vy *= 0.98;
-          });
         }
         const cx = col * TILE + TILE / 2;
         for (const w of k.get("wagon")) {
@@ -382,13 +361,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.z(5),
       ]);
       t.extras = [inner];
-      t.onUpdate(() => {
-        t.pos.y = t.baseY + Math.sin(k.time() * 3 + col * 0.4) * 4;
-        inner.pos.x = t.pos.x;
-        inner.pos.y = t.pos.y;
-        const s = Math.abs(Math.cos(k.time() * 4 + col * 0.4));
-        inner.scale = k.vec2(s, 1);
-      });
       tileMap.set(key, t);
       checkCoinResonance(col, row);
     } else if (type === "rail_up" || type === "rail_down") {
