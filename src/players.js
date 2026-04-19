@@ -108,7 +108,7 @@ export function createPlayerSystem({
           p.pos.x = tile.pair.pos.x - TILE / 2 + 8;
           p.pos.y = tile.pair.pos.y - TILE;
           audio.combo();
-          k.shake(3);
+          window.__juice?.dirShake(1, 0, 3, 0.12);
           const destX = tile.pair.pos.x;
           const destY = tile.pair.pos.y;
           const srcColor = tile.portalColor === "A" ? k.rgb(80, 220, 240) : k.rgb(240, 80, 220);

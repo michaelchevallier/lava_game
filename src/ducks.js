@@ -229,7 +229,7 @@ export function createDuckSystem({ k, tileMap, gameState, audio, showPopup }) {
       audio.coin();
       if (duck.gold) {
         showPopup(duck.pos.x + 9, duck.pos.y - 10, "JACKPOT! +200", k.rgb(255, 215, 0), 26);
-        k.shake(4);
+        window.__juice?.dirShake(0, -1, 4, 0.15);
       } else {
         showPopup(duck.pos.x + 9, duck.pos.y - 10, "QUACK! +30", k.rgb(255, 230, 80), 20);
       }

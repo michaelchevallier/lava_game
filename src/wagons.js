@@ -80,7 +80,7 @@ export function createWagonSystem({
     }
     audio.combo();
     audio.boost();
-    k.shake(8);
+    window.__juice?.dirShake(0, -1, 8, 0.2);
   }
 
   function spawnWagon(ghost = false) {
@@ -230,6 +230,18 @@ export function createWagonSystem({
         }
       }
       wasOnRail = onRail;
+
+      if (gameState.magnetFields && gameState.magnetFields.length > 0) {
+        for (const f of gameState.magnetFields) {
+          const minX = Math.min(f.a.gridCol, f.b.gridCol) * TILE;
+          const maxX = Math.max(f.a.gridCol, f.b.gridCol) * TILE + TILE;
+          const fieldY = f.a.gridRow * TILE + TILE / 2;
+          if (wagon.pos.x + 30 > minX && wagon.pos.x + 30 < maxX && Math.abs(wagon.pos.y + 30 - fieldY) < 60) {
+            wagon.pos.y += Math.sin(wagon.pos.x * 0.05) * 0.5;
+          }
+        }
+      }
+
       if (boosted && Math.random() < 0.6) {
         k.add([
           k.circle(2 + Math.random() * 3),
@@ -325,7 +337,7 @@ export function createWagonSystem({
         } else if (wagon.catapultAirborne) {
           wagon.catapulting = false;
           wagon.catapultAirborne = false;
-          k.shake(12);
+          window.__juice?.dirShake(0, 1, 12, 0.2);
           audio.transform();
           showPopup(dx + 30, wagon.pos.y - 50, "CATAPULTE !", k.rgb(255, 100, 30), 32);
           for (let i = 0; i < 16; i++) {
@@ -387,6 +399,7 @@ export function createWagonSystem({
 
     wagon.onCollide("lava", () => {
       if (wagon.passenger === "human") {
+        window.__juice?.hitStop(80);
         wagon.passenger = "skeleton";
         transformToSkeleton(wagon);
       }
@@ -406,7 +419,7 @@ export function createWagonSystem({
     wagon.onCollide("ghost", (g) => {
       wagon.darkPassenger = (wagon.darkPassenger || 0) + 1;
       k.destroy(g);
-      k.shake(4);
+      window.__juice?.dirShake(-1, 0, 4, 0.12);
       audio.coin();
       showPopup(
         wagon.pos.x + 30,
@@ -438,7 +451,7 @@ export function createWagonSystem({
       wCd[crossKey] = k.time() + 1.2;
       wagon._bridgeCd = wCd;
       b.crossings = (b.crossings || 0) + 1;
-      k.shake(2);
+      window.__juice?.dirShake(0, 1, 2, 0.1);
       audio.place();
       for (let i = 0; i < 5; i++) {
         k.add([
@@ -504,7 +517,7 @@ export function createWagonSystem({
       p.cooldownUntil = k.time() + 0.5;
       p.pair.cooldownUntil = k.time() + 0.5;
       audio.combo();
-      k.shake(3);
+      window.__juice?.dirShake(1, 0, 3, 0.12);
       for (let i = 0; i < 14; i++) {
         const a = (Math.PI * 2 * i) / 14;
         const col = p.color;
@@ -530,6 +543,8 @@ export function createWagonSystem({
         return;
       }
       wagon.jump(850);
+      window.__juice?.hitStop(80);
+      window.__juice?.dirShake(0, -1, 6, 0.15);
       audio.boost();
       for (let i = 0; i < 8; i++) {
         const a = (Math.PI * 2 * i) / 8;
@@ -642,7 +657,8 @@ export function createWagonSystem({
   }
 
   function transformToSkeleton(wagon) {
-    k.shake(6);
+    window.__juice?.hitStop(120);
+    window.__juice?.dirShake(wagon.vel?.x || 1, 0, 6, 0.2);
     gameState.skeletons += 1;
     audio.transform();
     const dark = wagon.darkPassenger || 0;
