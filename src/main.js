@@ -1714,25 +1714,25 @@ k.scene("game", () => {
           color: k.rgb(255, 230, 80),
           opacity: alpha,
         });
-        k.drawText({
+        drawTextOutlined({
           text: "Clique sur les outils en bas pour construire.",
-          size: 15,
+          size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 40),
           anchor: "center",
           color: k.WHITE,
           opacity: alpha,
         });
-        k.drawText({
+        drawTextOutlined({
           text: "Clique sur le terrain pour poser. X = Spawn wagon.",
-          size: 15,
+          size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 15),
           anchor: "center",
           color: k.WHITE,
           opacity: alpha,
         });
-        k.drawText({
+        drawTextOutlined({
           text: "D = Mode auto. Engrenage en haut a droite pour les options.",
-          size: 15,
+          size: 17,
           pos: k.vec2(WIDTH / 2, HEIGHT / 2 + 10),
           anchor: "center",
           color: k.WHITE,
@@ -1893,21 +1893,21 @@ k.scene("game", () => {
         color: k.rgb(255, 120, 220),
       });
     }
-    k.drawText({
+    drawTextOutlined({
       text: "(1)Lave (2)Rail (4)Up (5)Dn (6)Eau (7)Boost (8)Piece (9)Trampo (3)Gomme",
-      size: 12,
+      size: 14,
       pos: k.vec2(180, 10),
       color: k.rgb(220, 220, 220),
     });
-    k.drawText({
+    drawTextOutlined({
       text: "MARIO A/D/Esp/E  PIKA J/L/I/O  LUIGI fleches+Enter  TOAD F/H/T/G",
-      size: 12,
+      size: 14,
       pos: k.vec2(12, 30),
       color: k.rgb(255, 210, 63),
     });
-    k.drawText({
+    drawTextOutlined({
       text: "(X) Wagon  (C) Vider  (R) Reset    (Dans le wagon, saute pour faire sauter le wagon)",
-      size: 12,
+      size: 14,
       pos: k.vec2(12, 46),
       color: k.rgb(180, 220, 255),
     });
