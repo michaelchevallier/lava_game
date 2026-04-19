@@ -1653,23 +1653,19 @@ k.scene("game", () => {
           color: k.rgb(220, 80, 80),
         });
       }
-      drawTextOutlined({
+      k.drawText({
         text: item.key,
         size: 13,
         pos: k.vec2(bx + TB_ICON - 4, by + 3),
         anchor: "topright",
         color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_KEY_DIM,
-        outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
-        outlineThickness: 1,
       });
-      drawTextOutlined({
+      k.drawText({
         text: item.label,
         size: 11,
         pos: k.vec2(cx, by + TB_ICON - 10),
         anchor: "center",
         color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_LABEL_DIM,
-        outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
-        outlineThickness: 1,
       });
     }
 
