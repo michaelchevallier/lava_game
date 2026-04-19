@@ -74,10 +74,12 @@ export function createPlayerSystem({
         }
         audio.splash();
         break;
-      case "boost":
-        p.boostUntil = now + 0.6;
+      case "boost": {
+        const base = Math.max(p.boostUntil || 0, now);
+        p.boostUntil = Math.min(base + 0.6, now + 3);
         audio.boost();
         break;
+      }
       case "trampoline":
         if (p.isGrounded() && !(p._trampCd > now)) {
           p._trampCd = now + 0.3;
@@ -98,9 +100,11 @@ export function createPlayerSystem({
           }
         }
         break;
-      case "ice":
-        p.iceUntil = now + 0.4;
+      case "ice": {
+        const iceBase = Math.max(p.iceUntil || 0, now);
+        p.iceUntil = Math.min(iceBase + 0.4, now + 2);
         break;
+      }
       case "portal":
         if (tile.pair && !(tile.cooldownUntil > now)) {
           tile.cooldownUntil = now + 0.5;
@@ -197,6 +201,19 @@ export function createPlayerSystem({
       if (p.isGrounded()) {
         p.jump(JUMP);
         audio.jump();
+      } else if (p.geyserJump) {
+        p.geyserJump = false;
+        p.jump(JUMP);
+        audio.jump();
+        k.add([
+          k.circle(6),
+          k.pos(p.pos.x + 14, p.pos.y + 44),
+          k.anchor("center"),
+          k.color(k.rgb(80, 200, 255)),
+          k.opacity(0.8),
+          k.lifespan(0.3, { fade: 0.25 }),
+          k.z(9),
+        ]);
       }
     });
     k.onKeyPress(opts.keys.board, () => {

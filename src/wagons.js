@@ -96,12 +96,14 @@ export function createWagonSystem({
     window.__juice?.dirShake(0, -1, 8, 0.2);
   }
 
-  function spawnWagon(ghost = false) {
+  function spawnWagon(ghost = false, inverse = false) {
     audio.wagonSpawn();
     const y = (GROUND_ROW - 1) * TILE + 2;
+    const startX = inverse ? WIDTH + 80 : 0;
+    const baseSpeed = (ghost || inverse) ? 180 : 140;
     const wagon = k.add([
       k.rect(60, 30),
-      k.pos(0, y),
+      k.pos(startX, y),
       k.opacity(0),
       k.area({ shape: new k.Rect(k.vec2(0, -10), 60, 50) }),
       k.body(),
@@ -110,18 +112,19 @@ export function createWagonSystem({
       "wagon",
       {
         passenger: "human",
-        speed: (ghost ? 180 : 140) * (gameState.wagonSpeedMult ?? 1),
+        speed: (inverse ? -1 : 1) * baseSpeed * (gameState.wagonSpeedMult ?? 1),
         parts: [],
         rider: null,
         ghostTrain: ghost,
+        inverseTrain: inverse,
       },
     ]);
 
-    const theme = ghost
+    const theme = (ghost || inverse)
       ? { body: [30, 30, 40], dark: [0, 0, 0], trim: [180, 30, 30] }
       : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
     const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
-    if (ghost) {
+    if (ghost || inverse) {
       const eye1 = k.add([
         k.circle(4),
         k.pos(wagon.pos.x + 12, wagon.pos.y + 10),
@@ -255,6 +258,18 @@ export function createWagonSystem({
         }
       }
 
+      if (inverse && Math.random() < 0.5) {
+        k.add([
+          k.circle(4 + Math.random() * 5),
+          k.pos(wagon.pos.x + 60 + Math.random() * 10, wagon.pos.y + 5 + Math.random() * 20),
+          k.color(k.rgb(140 + Math.floor(Math.random() * 60), 30 + Math.floor(Math.random() * 40), 200 + Math.floor(Math.random() * 55))),
+          k.opacity(0.75),
+          k.lifespan(0.7, { fade: 0.5 }),
+          k.z(2),
+          "particle-x",
+          { vx: 30 + Math.random() * 50 },
+        ]);
+      }
       if (boosted && Math.random() < 0.6) {
         k.add([
           k.circle(2 + Math.random() * 3),
@@ -280,11 +295,11 @@ export function createWagonSystem({
         parts[i].pos.x = dx + localOffsets[i].x;
         parts[i].pos.y = wagon.pos.y + localOffsets[i].y + sinA * (localOffsets[i].x - 30);
       }
-      if (ghost && parts[6] && parts[6].off !== undefined) {
+      if ((ghost || inverse) && parts[6] && parts[6].off !== undefined) {
         parts[6].pos.x = dx + parts[6].off;
         parts[6].pos.y = wagon.pos.y + 10 + sinA * (parts[6].off - 30);
       }
-      if (ghost && parts[7] && parts[7].off !== undefined) {
+      if ((ghost || inverse) && parts[7] && parts[7].off !== undefined) {
         parts[7].pos.x = dx + parts[7].off;
         parts[7].pos.y = wagon.pos.y + 10 + sinA * (parts[7].off - 30);
       }
@@ -392,6 +407,19 @@ export function createWagonSystem({
         }
       }
 
+      // Geyser combo: wagon dans la colonne fan+water -> pousse vers le haut
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        for (const g of gameState.geysers || []) {
+          if (g.col === wCol) {
+            const wRow = Math.floor((wagon.pos.y + 15) / TILE);
+            if (wRow >= g.fanRow - 3 && wRow <= g.row) {
+              if (wagon.vel) wagon.vel.y = -300;
+            }
+          }
+        }
+      }
+
       // Loop-the-loop detection: track distinct rail tiles visited
       {
         const wCol = Math.floor((wagon.pos.x + 30) / TILE);
@@ -478,9 +506,12 @@ export function createWagonSystem({
         }
       }
 
-      if (wagon.pos.x > WIDTH + 80) {
+      const outOfBounds = wagon.inverseTrain
+        ? wagon.pos.x < -80
+        : wagon.pos.x > WIDTH + 80;
+      if (outOfBounds) {
         if (wagon.rider) exitWagon(wagon.rider);
-        if (wagon.passenger === "human" && !wagon.ghostTrain) {
+        if (wagon.passenger === "human" && !wagon.ghostTrain && !wagon.inverseTrain) {
           gameState.missed = (gameState.missed || 0) + 1;
           showPopup(
             WIDTH - 120,
@@ -590,7 +621,8 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("ice", () => {
-      wagon.iceUntil = k.time() + 0.35;
+      const iceBase = Math.max(wagon.iceUntil || 0, k.time());
+      wagon.iceUntil = Math.min(iceBase + 0.35, k.time() + 2);
       if (Math.random() < 0.5) {
         const sparkle = k.add([
           k.circle(1.5),
@@ -661,8 +693,8 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("boost", () => {
-      if (wagon.boostUntil && k.time() < wagon.boostUntil) return;
-      wagon.boostUntil = k.time() + 1.5;
+      const base = Math.max(wagon.boostUntil || 0, k.time());
+      wagon.boostUntil = Math.min(base + 1.5, k.time() + 5);
       audio.boost();
       for (let i = 0; i < 12; i++) {
         const a = (Math.PI * 2 * i) / 12;
@@ -761,8 +793,30 @@ export function createWagonSystem({
     gameState.skeletons += 1;
     audio.transform();
     const dark = wagon.darkPassenger || 0;
-    const base = wagon.ghostTrain ? 100 : 10;
-    registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain, dark);
+    if (wagon.inverseTrain) {
+      gameState.score += 500;
+      showPopup(wagon.pos.x + 30, wagon.pos.y - 50, "+500 INVERSE!", k.rgb(160, 60, 220), 36);
+      for (let i = 0; i < 24; i++) {
+        const a = (Math.PI * 2 * i) / 24;
+        k.add([
+          k.circle(5 + Math.random() * 5),
+          k.pos(wagon.pos.x + 30, wagon.pos.y + 10),
+          k.color(k.rgb(
+            140 + Math.floor(Math.random() * 80),
+            30 + Math.floor(Math.random() * 40),
+            200 + Math.floor(Math.random() * 55),
+          )),
+          k.opacity(1),
+          k.lifespan(1.4, { fade: 0.9 }),
+          k.z(15),
+          "particle",
+          { vx: Math.cos(a) * 220, vy: Math.sin(a) * 220 },
+        ]);
+      }
+    } else {
+      const base = wagon.ghostTrain ? 100 : 10;
+      registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain, dark);
+    }
     if (dark > 0) wagon.darkPassenger = 0;
     if (wagon.ghostTrain) {
       for (let i = 0; i < 20; i++) {
