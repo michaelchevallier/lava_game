@@ -88,5 +88,11 @@ export const audio = (() => {
       setTimeout(() => beep(784, 0.14, "triangle", 0.16), 180);
       setTimeout(() => beep(1047, 0.22, "triangle", 0.14), 290);
     },
+    confetti: () => {
+      beep(880, 0.05, "square", 0.1);
+      setTimeout(() => beep(1320, 0.05, "square", 0.1), 40);
+      setTimeout(() => beep(1760, 0.08, "square", 0.1), 80);
+      setTimeout(() => noise(0.18, 0.06), 60);
+    },
   };
 })();

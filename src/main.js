@@ -364,6 +364,7 @@ k.scene("game", () => {
     audio.combo();
     setTimeout(() => audio.coin(), 200);
     setTimeout(() => audio.combo(), 400);
+    setTimeout(() => audio.confetti(), 600);
     const colors = [
       k.rgb(255, 80, 120),
       k.rgb(255, 210, 60),
@@ -378,9 +379,32 @@ k.scene("game", () => {
         launchFirework(x, y, colors[i % colors.length]);
       });
     }
+    // Confetti rain de 30 particules colorées qui tombent
+    for (let i = 0; i < 30; i++) {
+      const cx = Math.random() * WIDTH;
+      const c = colors[i % colors.length];
+      k.add([
+        k.rect(4, 8),
+        k.pos(cx, -10 - Math.random() * 80),
+        k.color(c),
+        k.rotate(Math.random() * 360),
+        k.opacity(1),
+        k.lifespan(3.5, { fade: 1.5 }),
+        k.z(25),
+        "confetti",
+        { vy: 80 + Math.random() * 60, vx: (Math.random() - 0.5) * 30, spin: (Math.random() - 0.5) * 360 },
+      ]);
+    }
     showPopup(WIDTH / 2, HEIGHT / 2, `PALIER ${target}!`, k.rgb(255, 230, 80), 40);
     juice.dirShake(0, 1, 10, 0.2);
   }
+
+  k.onUpdate("confetti", (p) => {
+    p.pos.y += p.vy * k.dt();
+    p.pos.x += p.vx * k.dt();
+    p.angle = (p.angle || 0) + p.spin * k.dt();
+    p.vy += 30 * k.dt();
+  });
 
   function checkMilestone() {
     while (
