@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//Users/mike/.claude/scheduled-tasks/**)",
-      "Read(//Users/mike/.claude/**)",
-      "Bash(xargs ls *)"
-    ]
-  }
-}
