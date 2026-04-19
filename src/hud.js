@@ -2,6 +2,7 @@ import {
   WIDTH, HEIGHT, TILE, COLS, GROUND_ROW,
   TOOLBAR_ORDER, TB_ICON, TB_GAP, TB_START_X, TB_Y,
   COG_X, COG_Y, COG_R, COMBO_WINDOW, COMBO_MULTIPLIERS,
+  MILESTONES,
 } from "./constants.js";
 
 export function createHUD({
@@ -204,6 +205,16 @@ export function createHUD({
         pos: k.vec2(WIDTH - 320, 52),
         color: C_RECORD,
       });
+      const nextMile = MILESTONES.find((m) => m > gameState.score);
+      if (nextMile != null) {
+        const remain = nextMile - gameState.score;
+        drawTextOutlined({
+          text: `Prochain palier ${nextMile} (-${remain})`,
+          size: 13,
+          pos: k.vec2(WIDTH - 320, 70),
+          color: k.rgb(255, 200, 100),
+        });
+      }
 
       const now = performance.now();
       fpsBuffer.push(now);
