@@ -247,6 +247,23 @@ export function createPlayerSystem({
           { vx: (p.facing === "right" ? -1 : 1) * (40 + Math.random() * 30) },
         ]);
       }
+      // Geyser: arme double-jump si joueur dans la colonne du geyser
+      {
+        const pCol = Math.floor((p.pos.x + 14) / TILE);
+        const pRow = Math.floor((p.pos.y + 22) / TILE);
+        let inGeyser = false;
+        for (const g of gameState.geysers || []) {
+          if (g.col === pCol && pRow >= g.fanRow - 3 && pRow <= g.row) {
+            inGeyser = true;
+            break;
+          }
+        }
+        if (inGeyser && !p.isGrounded()) {
+          p.geyserJump = true;
+        } else if (!inGeyser) {
+          p.geyserJump = false;
+        }
+      }
     });
 
     if (mobileP1) {
@@ -266,6 +283,10 @@ export function createPlayerSystem({
           if (p.ridingWagon) {
             if (p.ridingWagon.isGrounded()) { p.ridingWagon.jump(WAGON_JUMP); audio.jump(); }
           } else if (p.isGrounded()) {
+            p.jump(JUMP);
+            audio.jump();
+          } else if (p.geyserJump) {
+            p.geyserJump = false;
             p.jump(JUMP);
             audio.jump();
           }
