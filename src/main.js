@@ -112,8 +112,9 @@ k.scene("game", () => {
   });
 
   function launchFirework(x, y, color) {
-    for (let i = 0; i < 24; i++) {
-      const a = (Math.PI * 2 * i) / 24 + Math.random() * 0.1;
+    if (k.get("particle-firework").length > 60) return;
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 * i) / 12 + Math.random() * 0.2;
       const sp = 150 + Math.random() * 120;
       k.add([
         k.circle(3 + Math.random() * 2),
@@ -1190,8 +1191,8 @@ k.scene("game", () => {
     const PARTICLE_TAGS = ["particle", "particle-grav", "particle-x", "particle-debris", "particle-firework", "fan-puff", "steam"];
     let total = 0;
     for (const tag of PARTICLE_TAGS) total += k.get(tag).length;
-    if (total <= 300) return;
-    const excess = total - 300;
+    if (total <= 100) return;
+    const excess = total - 100;
     let destroyed = 0;
     for (const tag of PARTICLE_TAGS) {
       if (destroyed >= excess) break;
