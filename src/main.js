@@ -417,6 +417,43 @@ k.scene("game", () => {
           }
         }
         break;
+      case "portal":
+        if (tile.pair && !(tile.cooldownUntil > now)) {
+          tile.cooldownUntil = now + 0.5;
+          tile.pair.cooldownUntil = now + 0.5;
+          p.pos.x = tile.pair.pos.x - TILE / 2 + 8;
+          p.pos.y = tile.pair.pos.y - TILE;
+          audio.combo();
+          k.shake(3);
+          const destX = tile.pair.pos.x;
+          const destY = tile.pair.pos.y;
+          const srcColor = tile.portalColor === "A" ? k.rgb(80, 220, 240) : k.rgb(240, 80, 220);
+          const dstColor = tile.portalColor === "A" ? k.rgb(240, 80, 220) : k.rgb(80, 220, 240);
+          for (let i = 0; i < 10; i++) {
+            const a = (Math.PI * 2 * i) / 10;
+            k.add([
+              k.circle(2 + Math.random() * 2),
+              k.pos(tile.pos.x, tile.pos.y),
+              k.color(srcColor),
+              k.opacity(1),
+              k.lifespan(0.4, { fade: 0.3 }),
+              k.z(12),
+              "particle",
+              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+            ]);
+            k.add([
+              k.circle(2 + Math.random() * 2),
+              k.pos(destX, destY),
+              k.color(dstColor),
+              k.opacity(1),
+              k.lifespan(0.4, { fade: 0.3 }),
+              k.z(12),
+              "particle",
+              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+            ]);
+          }
+        }
+        break;
     }
   }
 
