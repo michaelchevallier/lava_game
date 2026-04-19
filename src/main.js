@@ -397,6 +397,26 @@ k.scene("game", () => {
         p.boostUntil = now + 0.6;
         audio.boost();
         break;
+      case "trampoline":
+        if (p.isGrounded() && !(p._trampCd > now)) {
+          p._trampCd = now + 0.3;
+          p.jump(850);
+          audio.boost();
+          for (let i = 0; i < 6; i++) {
+            const a = (Math.PI * 2 * i) / 6;
+            k.add([
+              k.circle(2 + Math.random() * 2),
+              k.pos(p.pos.x + 14, p.pos.y + 40),
+              k.color(255, 100, 180),
+              k.opacity(1),
+              k.lifespan(0.3, { fade: 0.2 }),
+              k.z(8),
+              "particle",
+              { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 20 },
+            ]);
+          }
+        }
+        break;
     }
   }
 
