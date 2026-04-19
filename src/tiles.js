@@ -357,6 +357,15 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         { gridCol: col, gridRow: row, tileType: "bridge", extras: [plank1, plank2, support] },
       ]);
       tileMap.set(key, t);
+      t.onUpdate(() => {
+        // Pulse red when crossings == 1 (one more pass and bridge breaks)
+        if ((t.crossings || 0) >= 1 && !t.breaking) {
+          const pulse = 0.5 + 0.5 * Math.sin(k.time() * 8);
+          plank1.color.r = 200 + 55 * pulse;
+          plank1.color.g = 60 - 30 * pulse;
+          plank1.color.b = 30 - 20 * pulse;
+        }
+      });
     } else if (type === "magnet") {
       const t = k.add([
         k.rect(TILE, TILE),
