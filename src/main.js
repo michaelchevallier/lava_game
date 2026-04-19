@@ -792,8 +792,6 @@ k.scene("game", () => {
     const thickness = opts.outlineThickness || 2;
     const origColor = opts.color;
     const offsets = [
-      [-thickness, 0], [thickness, 0],
-      [0, -thickness], [0, thickness],
       [-thickness, -thickness], [thickness, -thickness],
       [-thickness, thickness], [thickness, thickness],
     ];
@@ -1024,6 +1022,24 @@ k.scene("game", () => {
     p.pos.y += p.vy * k.dt();
   });
 
+  k.loop(0.1, () => {
+    const PARTICLE_TAGS = ["particle", "particle-grav", "particle-x", "particle-debris", "particle-firework", "fan-puff", "steam"];
+    let total = 0;
+    for (const tag of PARTICLE_TAGS) total += k.get(tag).length;
+    if (total <= 300) return;
+    const excess = total - 300;
+    let destroyed = 0;
+    for (const tag of PARTICLE_TAGS) {
+      if (destroyed >= excess) break;
+      const batch = k.get(tag);
+      for (const p of batch) {
+        if (destroyed >= excess) break;
+        k.destroy(p);
+        destroyed++;
+      }
+    }
+  });
+
   k.loop(0.25, () => {
     for (const [key, t] of tileMap) {
       if (t.tileType !== "lava") continue;
@@ -1066,7 +1082,15 @@ k.scene("game", () => {
       t.lavaPhase = f;
       t.sprite = f === 0 ? "lava1" : "lava2";
     }
-    if (Math.random() < 0.03) {
+  });
+
+  k.loop(0.18, () => {
+    const lavas = k.get("lava");
+    if (lavas.length === 0) return;
+    const cap = Math.min(lavas.length, 4);
+    for (let i = 0; i < cap; i++) {
+      const t = lavas[Math.floor(Math.random() * lavas.length)];
+      if (!t || !t.exists()) continue;
       k.add([
         k.circle(2 + Math.random() * 2),
         k.pos(t.pos.x + 4 + Math.random() * 24, t.pos.y),
@@ -1143,52 +1167,63 @@ k.scene("game", () => {
     p.vy *= 0.98;
   });
 
+  const C_BLACK = k.rgb(0, 0, 0);
+  const C_GOLD = k.rgb(255, 210, 63);
+  const C_DARK_BG = k.rgb(25, 35, 55);
+  const C_TOOLBAR_BORDER = k.rgb(80, 100, 130);
+  const C_TOOLBAR_KEY_DIM = k.rgb(150, 170, 200);
+  const C_TOOLBAR_LABEL_DIM = k.rgb(180, 200, 220);
+  const C_SCORE = k.rgb(255, 230, 80);
+  const C_STATS = k.rgb(230, 230, 230);
+  const C_RECORD = k.rgb(180, 200, 255);
+
+  const TOOL_LABELS = {
+    lava: "LAVE",
+    rail: "RAIL --",
+    erase: "GOMME",
+    rail_up: "RAIL /",
+    rail_down: "RAIL Dn",
+    water: "EAU",
+    coin: "PIECE",
+    boost: "BOOST",
+    trampoline: "TRAMPOLINE",
+    fan: "VENTILATEUR",
+    portal: "PORTAIL",
+    ice: "GLACE",
+    magnet: "AIMANT",
+    bridge: "PONT",
+  };
+  const TOOL_COLORS = {
+    lava: k.rgb(255, 120, 60),
+    rail: k.rgb(220, 220, 230),
+    erase: k.rgb(200, 200, 200),
+    rail_up: k.rgb(150, 220, 255),
+    rail_down: k.rgb(150, 220, 255),
+    water: k.rgb(80, 180, 230),
+    coin: k.rgb(255, 210, 50),
+    boost: k.rgb(255, 210, 63),
+    trampoline: k.rgb(255, 100, 160),
+    fan: k.rgb(180, 220, 240),
+    portal: k.rgb(200, 150, 240),
+    ice: k.rgb(200, 235, 255),
+    magnet: k.rgb(220, 80, 60),
+    bridge: k.rgb(160, 100, 40),
+  };
+
   k.onDraw(() => {
-    const toolLabels = {
-      lava: "LAVE",
-      rail: "RAIL --",
-      erase: "GOMME",
-      rail_up: "RAIL /",
-      rail_down: "RAIL Dn",
-      water: "EAU",
-      coin: "PIECE",
-      boost: "BOOST",
-      trampoline: "TRAMPOLINE",
-      fan: "VENTILATEUR",
-      portal: "PORTAIL",
-      ice: "GLACE",
-      magnet: "AIMANT",
-      bridge: "PONT",
-    };
-    const toolColors = {
-      lava: k.rgb(255, 120, 60),
-      rail: k.rgb(220, 220, 230),
-      erase: k.rgb(200, 200, 200),
-      rail_up: k.rgb(150, 220, 255),
-      rail_down: k.rgb(150, 220, 255),
-      water: k.rgb(80, 180, 230),
-      coin: k.rgb(255, 210, 50),
-      boost: k.rgb(255, 210, 63),
-      trampoline: k.rgb(255, 100, 160),
-      fan: k.rgb(180, 220, 240),
-      portal: k.rgb(200, 150, 240),
-      ice: k.rgb(200, 235, 255),
-      magnet: k.rgb(220, 80, 60),
-      bridge: k.rgb(160, 100, 40),
-    };
 
     k.drawRect({
       pos: k.vec2(0, 0),
       width: WIDTH,
       height: 62,
-      color: k.rgb(0, 0, 0),
+      color: C_BLACK,
       opacity: 0.7,
     });
     k.drawRect({
       pos: k.vec2(0, 62),
       width: WIDTH,
       height: 2,
-      color: k.rgb(255, 210, 63),
+      color: C_GOLD,
     });
     drawTextOutlined({
       text: "Outil:",
@@ -1197,28 +1232,28 @@ k.scene("game", () => {
       color: k.WHITE,
     });
     drawTextOutlined({
-      text: toolLabels[selectedTool],
+      text: TOOL_LABELS[selectedTool],
       size: 18,
       pos: k.vec2(78, 8),
-      color: toolColors[selectedTool],
+      color: TOOL_COLORS[selectedTool],
     });
     drawTextOutlined({
       text: `SCORE ${gameState.score}`,
       size: 22,
       pos: k.vec2(WIDTH - 320, 6),
-      color: k.rgb(255, 230, 80),
+      color: C_SCORE,
     });
     drawTextOutlined({
       text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
       size: 14,
       pos: k.vec2(WIDTH - 320, 32),
-      color: k.rgb(230, 230, 230),
+      color: C_STATS,
     });
     drawTextOutlined({
       text: `Record ${save.bestScore}`,
       size: 13,
       pos: k.vec2(WIDTH - 320, 50),
-      color: k.rgb(180, 200, 255),
+      color: C_RECORD,
     });
 
     for (let i = 0; i < TOOLBAR_ORDER.length; i++) {
@@ -1230,13 +1265,13 @@ k.scene("game", () => {
         pos: k.vec2(bx, by),
         width: TB_ICON,
         height: TB_ICON,
-        color: isSelected ? k.rgb(255, 210, 63) : k.rgb(25, 35, 55),
+        color: isSelected ? C_GOLD : C_DARK_BG,
       });
       k.drawRect({
         pos: k.vec2(bx, by),
         width: TB_ICON,
         height: 3,
-        color: isSelected ? k.WHITE : k.rgb(80, 100, 130),
+        color: isSelected ? k.WHITE : C_TOOLBAR_BORDER,
       });
       const cx = bx + TB_ICON / 2;
       const cy = by + TB_ICON / 2;
@@ -1436,14 +1471,14 @@ k.scene("game", () => {
         size: 10,
         pos: k.vec2(bx + TB_ICON - 4, by + 3),
         anchor: "topright",
-        color: isSelected ? k.rgb(30, 30, 40) : k.rgb(150, 170, 200),
+        color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_KEY_DIM,
       });
       k.drawText({
         text: item.label,
         size: 9,
         pos: k.vec2(cx, by + TB_ICON - 10),
         anchor: "center",
-        color: isSelected ? k.rgb(30, 30, 40) : k.rgb(180, 200, 220),
+        color: isSelected ? k.rgb(30, 30, 40) : C_TOOLBAR_LABEL_DIM,
       });
     }
 
