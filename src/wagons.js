@@ -175,9 +175,14 @@ export function createWagonSystem({
       const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
-      const wCenterX = wagon.pos.x + 30;
-      const slopeY = getRailSlopeYAt(wCenterX);
-      if (slopeY !== null) {
+      const wBaseX = wagon.pos.x;
+      const candidates = [
+        getRailSlopeYAt(wBaseX + 10),
+        getRailSlopeYAt(wBaseX + 30),
+        getRailSlopeYAt(wBaseX + 50),
+      ].filter((v) => v !== null);
+      if (candidates.length > 0) {
+        const slopeY = Math.min(...candidates);
         const wagonBottom = wagon.pos.y + 30;
         if (Math.abs(wagonBottom - slopeY) < 28) {
           wagon.pos.y = slopeY - 30;

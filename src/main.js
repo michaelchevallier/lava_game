@@ -833,20 +833,35 @@ k.scene("game", () => {
   }
 
   function showPopup(x, y, text, color, size = 20) {
+    const born = k.time();
+    const lifespan = 1.0;
+    const fadeStart = 0.4;
     const p = k.add([
-      k.text(text, { size }),
       k.pos(x, y),
-      k.anchor("center"),
-      k.color(color),
-      k.opacity(1),
-      k.lifespan(1, { fade: 0.6 }),
       k.z(20),
-      { vy: -70, vx: (Math.random() - 0.5) * 30 },
+      { vy: -70, vx: (Math.random() - 0.5) * 30, born, lifespan, fadeStart, popText: text, popColor: color, popSize: size },
     ]);
     p.onUpdate(() => {
+      const age = k.time() - p.born;
+      if (age >= p.lifespan) { p.destroy(); return; }
       p.pos.y += p.vy * k.dt();
       p.pos.x += p.vx * k.dt();
       p.vy *= 0.97;
+    });
+    p.onDraw(() => {
+      const age = k.time() - p.born;
+      const fadeAge = p.lifespan - p.fadeStart;
+      const opacity = age > fadeAge ? 1 - (age - fadeAge) / p.fadeStart : 1;
+      drawTextOutlined({
+        text: p.popText,
+        size: p.popSize,
+        pos: k.vec2(0, 0),
+        anchor: "center",
+        color: k.rgb(p.popColor.r, p.popColor.g, p.popColor.b),
+        outlineColor: k.rgb(0, 0, 0),
+        outlineThickness: 2,
+        opacity,
+      });
     });
     return p;
   }
