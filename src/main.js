@@ -2428,6 +2428,52 @@ k.scene("game", () => {
     if (k.get("visitor").length < 5) spawnVisitor();
   });
 
+  k.onUpdate(() => {
+    const wagons = k.get("wagon");
+    for (let i = 0; i < wagons.length; i++) {
+      for (let j = i + 1; j < wagons.length; j++) {
+        const a = wagons[i];
+        const b = wagons[j];
+        if ((a.bumpCd || 0) > k.time() || (b.bumpCd || 0) > k.time()) continue;
+        const dx = b.pos.x - a.pos.x;
+        const dy = b.pos.y - a.pos.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 55 && dist > 0) {
+          const sign = dx > 0 ? 1 : -1;
+          if (a.vel) a.vel.x = -sign * 280;
+          if (b.vel) b.vel.x = sign * 280;
+          if (a.vel) a.vel.y = -120;
+          if (b.vel) b.vel.y = -120;
+          a.bumpCd = k.time() + 0.5;
+          b.bumpCd = k.time() + 0.5;
+          const mx = (a.pos.x + b.pos.x) / 2 + 30;
+          const my = (a.pos.y + b.pos.y) / 2 + 15;
+          gameState.score += 50;
+          showPopup(mx, my - 20, "CRASH! +50", k.rgb(255, 220, 60), 22);
+          k.shake(6);
+          audio.combo();
+          for (let p = 0; p < 18; p++) {
+            const ang = (Math.PI * 2 * p) / 18;
+            const part = k.add([
+              k.rect(3, 3),
+              k.pos(mx, my),
+              k.color(k.rgb(255, 230, 80)),
+              k.opacity(1),
+              k.lifespan(0.6, { fade: 0.4 }),
+              k.z(14),
+              { vx: Math.cos(ang) * 200, vy: Math.sin(ang) * 200 - 50 },
+            ]);
+            part.onUpdate(() => {
+              part.pos.x += part.vx * k.dt();
+              part.pos.y += part.vy * k.dt();
+              part.vy += 300 * k.dt();
+            });
+          }
+        }
+      }
+    }
+  });
+
   k.onUpdate("lava", (t) => {
     if (Math.random() < 0.03) {
       k.add([
