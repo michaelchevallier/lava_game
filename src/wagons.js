@@ -1,4 +1,4 @@
-import { TILE, GROUND_ROW, WIDTH, WAGON_THEMES, gridKey } from "./constants.js";
+import { TILE, GROUND_ROW, WIDTH, HEIGHT, WAGON_THEMES, gridKey } from "./constants.js";
 
 export function createWagonSystem({
   k, tileMap, gameState, audio, showPopup, registerKill, registerCoin, launchFirework,
