@@ -1768,14 +1768,14 @@ k.scene("game", () => {
         height: 4,
         color: k.rgb(255, 210, 63),
       });
-      k.drawText({
+      drawTextOutlined({
         text: "PARAMETRES",
         size: 30,
         pos: k.vec2(WIDTH / 2, panelY + 25),
         anchor: "top",
         color: k.rgb(255, 230, 80),
       });
-      k.drawText({
+      drawTextOutlined({
         text: "Nombre de joueurs",
         size: 18,
         pos: k.vec2(WIDTH / 2, panelY + 70),
@@ -1799,14 +1799,15 @@ k.scene("game", () => {
           height: 4,
           color: isSelected ? k.rgb(255, 255, 255) : k.rgb(90, 110, 140),
         });
-        k.drawText({
+        drawTextOutlined({
           text: String(i),
           size: 36,
           pos: k.vec2(bx + 35, by + 32),
           anchor: "center",
           color: isSelected ? k.rgb(20, 20, 30) : k.WHITE,
+          outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
         });
-        k.drawText({
+        drawTextOutlined({
           text: cfg.name,
           size: 11,
           pos: k.vec2(bx + 35, by + 82),
@@ -1822,7 +1823,7 @@ k.scene("game", () => {
         height: 40,
         color: settings.autoMode ? k.rgb(124, 201, 71) : k.rgb(60, 80, 110),
       });
-      k.drawText({
+      drawTextOutlined({
         text: settings.autoMode ? "MODE DEMO: ON" : "MODE DEMO: OFF",
         size: 18,
         pos: k.vec2(WIDTH / 2, autoBy + 20),
@@ -1837,7 +1838,7 @@ k.scene("game", () => {
         height: 36,
         color: k.rgb(70, 90, 140),
       });
-      k.drawText({
+      drawTextOutlined({
         text: "Construire circuit test",
         size: 16,
         pos: k.vec2(WIDTH / 2, testBy + 18),
@@ -1852,21 +1853,21 @@ k.scene("game", () => {
         height: 36,
         color: k.rgb(186, 120, 220),
       });
-      k.drawText({
+      drawTextOutlined({
         text: "Sauvegarder / Charger parc",
         size: 15,
         pos: k.vec2(WIDTH / 2, expBy + 18),
         anchor: "center",
         color: k.WHITE,
       });
-      k.drawText({
+      drawTextOutlined({
         text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
         size: 12,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
         anchor: "top",
         color: k.rgb(180, 200, 220),
       });
-      k.drawText({
+      drawTextOutlined({
         text: "Clic sur l'engrenage pour fermer",
         size: 11,
         pos: k.vec2(WIDTH / 2, panelY + panelH - 18),
