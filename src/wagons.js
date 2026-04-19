@@ -433,6 +433,17 @@ export function createWagonSystem({
         }
         if (wagon.glideUntil > k.time()) {
           wagon.move(wagon.glideBonus, 0);
+          if (Math.random() < 0.4) {
+            k.add([
+              k.rect(8, 2),
+              k.pos(wagon.pos.x + 8 + Math.random() * 40, wagon.pos.y + 32),
+              k.color(k.rgb(220, 240, 255)),
+              k.opacity(0.7),
+              k.lifespan(0.3, { fade: 0.2 }),
+              k.z(2),
+              "particle",
+            ]);
+          }
         }
       }
 

@@ -16,6 +16,7 @@ import { showInteractionsModal } from "./help-modal.js";
 import { createCrowdSystem } from "./crowd.js";
 import { createJuice } from "./juice.js";
 import { createSpectresSystem } from "./spectres.js";
+import { createSplash } from "./splash.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -69,8 +70,15 @@ window.__getStats = () => {
 };
 
 loadAllSprites(k).then(() => {
-  console.log("sprites loaded, starting scene");
-  try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
+  const splash = createSplash({ save, persistSave, settings, onStart: () => {
+    try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
+  }});
+  const recent = save.lastPlayed && (Date.now() - save.lastPlayed < 120000);
+  if (recent) {
+    try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
+  } else {
+    splash.show();
+  }
 }).catch(e => console.error("Promise.all failed", e));
 
 window.addEventListener("error", (e) => console.error("global error:", e.message, e.filename, e.lineno));
@@ -257,6 +265,29 @@ k.scene("game", () => {
           p.pos.x += p.vx * k.dt();
           p.pos.y += p.vy * k.dt();
           p.vy += p.grav * k.dt();
+        });
+      }
+    }
+  });
+
+  k.loop(0.3, () => {
+    if (k.get("particle").length > 120) return;
+    for (const r of gameState.iceRinks) {
+      if (Math.random() < 0.5) {
+        const x = (r.startCol + Math.random() * r.len) * TILE;
+        const cry = k.add([
+          k.rect(2 + Math.random() * 2, 2 + Math.random() * 2),
+          k.pos(x, r.row * TILE - 80 - Math.random() * 40),
+          k.color(k.rgb(180, 220, 255)),
+          k.opacity(0.7),
+          k.lifespan(2, { fade: 1.5 }),
+          k.z(3),
+          "particle",
+          { vx: (Math.random() - 0.5) * 10, vy: 50 + Math.random() * 30 },
+        ]);
+        cry.onUpdate(() => {
+          cry.pos.x += cry.vx * k.dt();
+          cry.pos.y += cry.vy * k.dt();
         });
       }
     }
