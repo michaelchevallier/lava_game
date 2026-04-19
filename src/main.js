@@ -1287,14 +1287,14 @@ k.scene("game", () => {
     });
     drawTextOutlined({
       text: `Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
-      size: 14,
+      size: 16,
       pos: k.vec2(WIDTH - 320, 32),
       color: C_STATS,
     });
     drawTextOutlined({
       text: `Record ${save.bestScore}`,
-      size: 13,
-      pos: k.vec2(WIDTH - 320, 50),
+      size: 15,
+      pos: k.vec2(WIDTH - 320, 52),
       color: C_RECORD,
     });
 
