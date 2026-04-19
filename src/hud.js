@@ -215,6 +215,23 @@ export function createHUD({
           pos: k.vec2(WIDTH - 320, 70),
           color: k.rgb(255, 200, 100),
         });
+        const idx = MILESTONES.indexOf(nextMile);
+        const prevMile = idx > 0 ? MILESTONES[idx - 1] : 0;
+        const progress = Math.max(0, Math.min(1, (gameState.score - prevMile) / (nextMile - prevMile)));
+        k.drawRect({
+          pos: k.vec2(WIDTH - 320, 90),
+          width: 200,
+          height: 6,
+          color: k.rgb(40, 50, 70),
+          radius: 3,
+        });
+        k.drawRect({
+          pos: k.vec2(WIDTH - 320, 90),
+          width: 200 * progress,
+          height: 6,
+          color: k.rgb(255, 200, 100),
+          radius: 3,
+        });
       }
 
       const now = performance.now();
