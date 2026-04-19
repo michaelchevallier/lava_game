@@ -282,6 +282,7 @@ k.scene("game", () => {
         if (!v.exists() || v.isSkeleton) return;
         v.isSkeleton = true;
         v.sprite = "skeleton";
+        v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         gameState.score += 10 * 8;
         k.shake(4);
@@ -1044,18 +1045,25 @@ k.scene("game", () => {
     return p;
   }
 
+  const VISITOR_TINTS = [
+    [255, 180, 180], [180, 255, 180], [180, 180, 255], [255, 255, 180],
+    [255, 180, 255], [180, 255, 255], [255, 200, 150], [200, 180, 255],
+  ];
+
   function spawnVisitor() {
     const speed = 40 + Math.random() * 40;
     const isVIP = Math.random() < 0.12;
+    const tint = VISITOR_TINTS[Math.floor(Math.random() * VISITOR_TINTS.length)];
     const v = k.add([
       k.sprite("human"),
       k.pos(-40, (GROUND_ROW - 3) * TILE),
       k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
       k.body(),
       k.anchor("topleft"),
+      k.color(k.rgb(tint[0], tint[1], tint[2])),
       k.z(5),
       "visitor",
-      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null },
+      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint },
     ]);
     if (isVIP) {
       const hat = k.add([
@@ -1100,6 +1108,7 @@ k.scene("game", () => {
       if (tile && tile.tileType === "lava" && !v.isSkeleton) {
         v.isSkeleton = true;
         v.sprite = "skeleton";
+        v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         audio.transform();
         k.shake(v.isVIP ? 7 : 3);
