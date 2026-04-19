@@ -754,7 +754,21 @@ k.scene("game", () => {
     k.go("game");
   });
   k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); });
-  k.onKeyPress("m", () => audio.toggleMute());
+  k.onKeyPress("m", () => {
+    const m = audio.toggleMute();
+    showPopup(WIDTH / 2, 80, m ? "SON COUPE (M)" : "SON ACTIF (M)", k.rgb(200, 220, 255), 18);
+  });
+
+  k.add([
+    k.pos(0, 0),
+    k.z(40),
+    {
+      draw() {
+        if (!audio.isMuted()) return;
+        k.drawText({ text: "🔇", size: 22, pos: k.vec2(WIDTH - 60, HEIGHT - 40) });
+      },
+    },
+  ]);
   k.onKeyPress(["p", "escape"], () => {
     const root = k.getTreeRoot();
     root.paused = !root.paused;
