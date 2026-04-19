@@ -544,7 +544,7 @@ function persistSave(save) {
 const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
-  ice: "I", magnet: "M",
+  ice: "I", magnet: "M", bridge: "N",
 };
 const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -1154,6 +1154,7 @@ k.scene("game", () => {
     { tool: "portal", key: "P", label: "Portail" },
     { tool: "ice", key: "G", label: "Glace" },
     { tool: "magnet", key: "A", label: "Aimant" },
+    { tool: "bridge", key: "V", label: "Pont" },
     { tool: "erase", key: "3", label: "Gomme" },
   ];
   const TB_ICON = 52;
@@ -1462,6 +1463,39 @@ k.scene("game", () => {
         otherUnpaired.pair = ring;
       }
       tileMap.set(key, ring);
+    } else if (type === "bridge") {
+      const plank1 = k.add([
+        k.rect(TILE, 10),
+        k.pos(col * TILE, row * TILE + TILE - 14),
+        k.color(k.rgb(160, 100, 40)),
+        k.outline(1, k.rgb(80, 50, 20)),
+        k.z(2),
+      ]);
+      const plank2 = k.add([
+        k.rect(TILE, 8),
+        k.pos(col * TILE, row * TILE + TILE - 4),
+        k.color(k.rgb(130, 80, 30)),
+        k.z(2),
+      ]);
+      const support = k.add([
+        k.rect(4, TILE),
+        k.pos(col * TILE + TILE / 2 - 2, row * TILE),
+        k.color(k.rgb(100, 60, 20)),
+        k.z(1),
+      ]);
+      const t = k.add([
+        k.rect(TILE, 6),
+        k.pos(col * TILE, row * TILE + TILE - 10),
+        k.color(k.rgb(0, 0, 0)),
+        k.opacity(0),
+        k.area(),
+        k.body({ isStatic: true }),
+        k.z(3),
+        "tile",
+        "bridge",
+        { gridCol: col, gridRow: row, tileType: "bridge", extras: [plank1, plank2, support] },
+      ]);
+      tileMap.set(key, t);
     } else if (type === "magnet") {
       const t = k.add([
         k.rect(TILE, TILE),
@@ -1949,6 +1983,37 @@ k.scene("game", () => {
           p.pos.y += p.vy * k.dt();
         });
       }
+    });
+
+    wagon.onCollide("bridge", (b) => {
+      if (b.breaking) return;
+      b.breaking = true;
+      k.shake(2);
+      audio.place();
+      for (let i = 0; i < 10; i++) {
+        const debris = k.add([
+          k.rect(4 + Math.random() * 4, 3 + Math.random() * 3),
+          k.pos(b.pos.x + Math.random() * TILE, b.pos.y),
+          k.color(k.rgb(140, 80, 30)),
+          k.opacity(1),
+          k.lifespan(0.9, { fade: 0.6 }),
+          k.z(5),
+          { vx: (Math.random() - 0.5) * 120, vy: -20 - Math.random() * 50 },
+        ]);
+        debris.onUpdate(() => {
+          debris.pos.x += debris.vx * k.dt();
+          debris.pos.y += debris.vy * k.dt();
+          debris.vy += 400 * k.dt();
+        });
+      }
+      k.wait(0.15, () => {
+        const key2 = gridKey(b.gridCol, b.gridRow);
+        if (!tileMap.has(key2)) return;
+        if (b.extras) b.extras.forEach((e) => k.destroy(e));
+        k.destroy(b);
+        tileMap.delete(key2);
+        placeTile(b.gridCol, b.gridRow, "lava");
+      });
     });
 
     wagon.onCollide("ice", () => {
@@ -2665,6 +2730,7 @@ k.scene("game", () => {
       portal: "PORTAIL",
       ice: "GLACE",
       magnet: "AIMANT",
+      bridge: "PONT",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -2680,6 +2746,7 @@ k.scene("game", () => {
       portal: k.rgb(200, 150, 240),
       ice: k.rgb(200, 235, 255),
       magnet: k.rgb(220, 80, 60),
+      bridge: k.rgb(160, 100, 40),
     };
 
     k.drawRect({
@@ -2823,6 +2890,25 @@ k.scene("game", () => {
           width: 3,
           height: 10,
           color: k.rgb(200, 200, 215),
+        });
+      } else if (item.tool === "bridge") {
+        k.drawRect({
+          pos: k.vec2(bx + 6, cy),
+          width: TB_ICON - 12,
+          height: 6,
+          color: k.rgb(160, 100, 40),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 6, cy + 6),
+          width: TB_ICON - 12,
+          height: 4,
+          color: k.rgb(120, 70, 30),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + TB_ICON / 2 - 2, cy - 6),
+          width: 3,
+          height: 18,
+          color: k.rgb(100, 60, 20),
         });
       } else if (item.tool === "magnet") {
         k.drawRect({
