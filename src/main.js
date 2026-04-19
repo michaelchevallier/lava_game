@@ -820,6 +820,19 @@ k.scene("game", () => {
     blink: Math.random() * 5,
   }));
 
+  const shootingStars = [];
+  k.loop(7, () => {
+    if (!isNight || shootingStars.length > 2) return;
+    if (Math.random() > 0.5) return;
+    shootingStars.push({
+      x: Math.random() * WIDTH * 0.7,
+      y: Math.random() * 150,
+      vx: 280 + Math.random() * 120,
+      vy: 90 + Math.random() * 60,
+      life: 0,
+    });
+  });
+
   k.add([
     k.pos(0, 0),
     k.z(-11),
@@ -837,6 +850,22 @@ k.scene("game", () => {
           const blink = 0.4 + 0.6 * Math.abs(Math.sin(t * 1.8 + f.blink));
           k.drawCircle({ pos: k.vec2(x, y), radius: 4, color: k.rgb(255, 230, 120), opacity: 0.18 * blink });
           k.drawCircle({ pos: k.vec2(x, y), radius: 1.6, color: k.rgb(255, 245, 180), opacity: 0.95 * blink });
+        }
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          const s = shootingStars[i];
+          s.life += k.dt();
+          s.x += s.vx * k.dt();
+          s.y += s.vy * k.dt();
+          if (s.life > 1.5 || s.x > WIDTH + 30) {
+            shootingStars.splice(i, 1);
+            continue;
+          }
+          const a = 1 - s.life / 1.5;
+          for (let j = 0; j < 8; j++) {
+            const tx = s.x - s.vx * j * 0.013;
+            const ty = s.y - s.vy * j * 0.013;
+            k.drawCircle({ pos: k.vec2(tx, ty), radius: 1.6 - j * 0.15, color: k.rgb(255, 255, 230), opacity: a * (1 - j / 8) });
+          }
         }
       },
     },
