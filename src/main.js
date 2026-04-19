@@ -36,7 +36,12 @@ let selectedTool = "lava";
 
 window.__mobileInput = { left: false, right: false, jumpPressed: false, wagonPressed: false };
 
-const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const urlForceMobile = new URLSearchParams(location.search).get('mobile') === '1';
+const urlForceDesktop = new URLSearchParams(location.search).get('mobile') === '0';
+const touchCapable = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const narrowScreen = window.innerWidth < 900;
+const coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+const isMobile = urlForceDesktop ? false : (urlForceMobile || touchCapable || narrowScreen || coarsePointer);
 if (isMobile) {
   document.getElementById('mobile-controls').style.display = 'block';
 
