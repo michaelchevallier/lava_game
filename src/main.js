@@ -28,7 +28,7 @@ const k = kaplay({
 k.setGravity(1600);
 window.__k = k;
 window.__getStats = () => {
-  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge"];
+  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin"];
   const out = { total: k.get("*").length };
   for (const t of tags) out[t] = k.get(t).length;
   return out;
@@ -92,6 +92,60 @@ const gameState = {
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
+
+const settingsOverlay = (() => {
+  const div = document.createElement("div");
+  div.id = "settings-sliders";
+  div.style.cssText = [
+    "position:fixed", "z-index:9999", "pointer-events:none",
+    "top:0", "left:0", "width:100%", "height:100%",
+    "display:none", "align-items:center", "justify-content:center",
+  ].join(";");
+
+  div.innerHTML = `
+    <div style="pointer-events:auto;background:rgba(18,24,40,0.97);border:1px solid rgba(255,210,63,0.3);border-radius:6px;padding:18px 28px;min-width:280px;margin-top:220px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <label style="color:#c8d8f0;font-family:monospace;font-size:13px;flex:1">Volume</label>
+        <input id="sl-volume" type="range" min="0" max="100" step="1"
+          value="${Math.round((save.volume ?? 0.7) * 100)}"
+          style="flex:2;accent-color:#ffd23f;cursor:pointer">
+        <span id="sl-volume-val" style="color:#ffd23f;font-family:monospace;font-size:13px;width:38px;text-align:right">${Math.round((save.volume ?? 0.7) * 100)}%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="color:#c8d8f0;font-family:monospace;font-size:13px;flex:1">Vitesse wagons</label>
+        <input id="sl-speed" type="range" min="50" max="200" step="5"
+          value="${Math.round((save.wagonSpeedMult ?? 1) * 100)}"
+          style="flex:2;accent-color:#7cd647;cursor:pointer">
+        <span id="sl-speed-val" style="color:#7cd647;font-family:monospace;font-size:13px;width:38px;text-align:right">${Math.round((save.wagonSpeedMult ?? 1) * 100)}%</span>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+
+  const slVol = div.querySelector("#sl-volume");
+  const slVolVal = div.querySelector("#sl-volume-val");
+  const slSpd = div.querySelector("#sl-speed");
+  const slSpdVal = div.querySelector("#sl-speed-val");
+
+  slVol.addEventListener("input", () => {
+    const v = parseInt(slVol.value) / 100;
+    slVolVal.textContent = slVol.value + "%";
+    audio.setMasterVolume(v);
+    save.volume = v;
+    persistSave(save);
+  });
+  slSpd.addEventListener("input", () => {
+    const v = parseInt(slSpd.value) / 100;
+    slSpdVal.textContent = slSpd.value + "%";
+    gameState.wagonSpeedMult = v;
+    save.wagonSpeedMult = v;
+    persistSave(save);
+  });
+
+  return {
+    show() { div.style.display = "flex"; },
+    hide() { div.style.display = "none"; },
+  };
+})();
 
 const fpsBuffer = [];
 let fpsLastSec = 0;
@@ -181,7 +235,8 @@ k.scene("game", () => {
     }
     gameState.comboExpire = now + COMBO_WINDOW;
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
-    const pts = base * mult * (1 + darkBonus);
+    const btMult = gameState.bulletTimeUntil > now ? 2 : 1;
+    const pts = base * mult * btMult * (1 + darkBonus);
     gameState.score += pts;
     if (prev < 5 && gameState.comboCount === 5) {
       triggerApocalypse();
@@ -834,6 +889,7 @@ k.scene("game", () => {
     const m = k.mousePos();
     if (inCog(m)) {
       settings.open = !settings.open;
+      settings.open ? settingsOverlay.show() : settingsOverlay.hide();
       audio.place();
       return;
     }
@@ -871,6 +927,7 @@ k.scene("game", () => {
         buildDemoCircuit();
         audio.place();
         settings.open = false;
+        settingsOverlay.hide();
         return;
       }
       if (inExportBtn(m)) {
@@ -1295,7 +1352,18 @@ k.scene("game", () => {
 
   k.onUpdate("coin", (t) => {
     if (t.magnetLocked) return;
-    t.pos.y = t.baseY + Math.sin(k.time() * 3 + t.gridCol * 0.4) * 4;
+    const btActive = gameState.bulletTimeUntil > k.time();
+    const bobAmp = btActive ? 8 : 4;
+    const bobFreq = btActive ? 6 : 3;
+    t.pos.y = t.baseY + Math.sin(k.time() * bobFreq + t.gridCol * 0.4) * bobAmp;
+    if (btActive) {
+      const pScale = 1 + Math.sin(k.time() * 10 + t.gridCol) * 0.18;
+      t.scale = k.vec2(pScale, pScale);
+      t.color = k.rgb(255, 210 + Math.sin(k.time() * 8) * 40, 30);
+    } else {
+      t.scale = k.vec2(1, 1);
+      t.color = k.rgb(255, 210, 0);
+    }
     if (t.extras && t.extras[0] && t.extras[0].exists()) {
       const inner = t.extras[0];
       inner.pos.x = t.pos.x;
@@ -1664,7 +1732,7 @@ k.scene("game", () => {
         k.drawCircle({
           pos: k.vec2(cx, cy),
           radius: TB_ICON / 2 - 8,
-          color: k.rgb(0, 0, 0, 0),
+          color: k.rgb(25, 35, 55),
           outline: { width: 2, color: k.rgb(190, 170, 120) },
         });
         const wRot = k.time() * 12 * (Math.PI / 180);
@@ -1763,34 +1831,34 @@ k.scene("game", () => {
           const ghostOx = selectedTool === "wheel" ? -TILE : 0;
           const ghostOy = selectedTool === "wheel" ? -TILE : 0;
           k.drawRect({
-            pos: k.vec2(col * TILE, row * TILE),
-            width: TILE,
-            height: TILE,
+            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
+            width: ghostW,
+            height: ghostH,
             color: ghostColor,
             opacity: 0.3 + Math.sin(k.time() * 6) * 0.1,
           });
           k.drawRect({
-            pos: k.vec2(col * TILE, row * TILE),
-            width: TILE,
+            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
+            width: ghostW,
             height: 2,
             color: ghostColor,
           });
           k.drawRect({
-            pos: k.vec2(col * TILE, row * TILE + TILE - 2),
-            width: TILE,
+            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy + ghostH - 2),
+            width: ghostW,
             height: 2,
             color: ghostColor,
           });
           k.drawRect({
-            pos: k.vec2(col * TILE, row * TILE),
+            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
             width: 2,
-            height: TILE,
+            height: ghostH,
             color: ghostColor,
           });
           k.drawRect({
-            pos: k.vec2(col * TILE + TILE - 2, row * TILE),
+            pos: k.vec2(col * TILE + ghostOx + ghostW - 2, row * TILE + ghostOy),
             width: 2,
-            height: TILE,
+            height: ghostH,
             color: ghostColor,
           });
         }
@@ -2006,6 +2074,31 @@ k.scene("game", () => {
         pos: k.vec2(WIDTH / 2, panelY + panelH - 18),
         anchor: "top",
         color: k.rgb(140, 160, 190),
+      });
+    }
+    if (gameState.bulletTimeUntil > k.time()) {
+      k.drawRect({
+        pos: k.vec2(0, 0),
+        width: WIDTH,
+        height: HEIGHT,
+        color: k.rgb(20, 30, 80),
+        opacity: 0.25,
+      });
+      const pulse = 1 + Math.sin(k.time() * 8) * 0.1;
+      drawTextOutlined({
+        text: "BULLET TIME",
+        size: 60 * pulse,
+        pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 80),
+        anchor: "center",
+        color: k.rgb(180, 220, 255),
+        outlineThickness: 3,
+      });
+      const btRemaining = gameState.bulletTimeUntil - k.time();
+      k.drawRect({
+        pos: k.vec2(WIDTH / 2 - 100, HEIGHT / 2 - 30),
+        width: 200 * (btRemaining / 3),
+        height: 5,
+        color: k.rgb(100, 180, 255),
       });
     }
     if (gameState.comboCount >= 2 && k.time() < gameState.comboExpire) {
