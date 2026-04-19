@@ -221,8 +221,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.pos(x, y),
         k.color(k.rgb(210, 210, 225)),
         k.outline(2, k.rgb(70, 70, 90)),
-        k.area(),
-        k.body({ isStatic: true }),
         k.z(3),
         "tile",
         "rail",
