@@ -543,7 +543,7 @@ function persistSave(save) {
 
 const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
-  coin: "C", boost: "B", trampoline: "T", fan: "F",
+  coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
 };
 const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -1150,6 +1150,7 @@ k.scene("game", () => {
     { tool: "coin", key: "8", label: "Piece" },
     { tool: "trampoline", key: "9", label: "Tramp" },
     { tool: "fan", key: "0", label: "Vent" },
+    { tool: "portal", key: "P", label: "Portail" },
     { tool: "erase", key: "3", label: "Gomme" },
   ];
   const TB_ICON = 52;
@@ -1414,6 +1415,47 @@ k.scene("game", () => {
         t.angle = Math.sin(k.time() * 8 + col) * 3;
       });
       tileMap.set(key, t);
+    } else if (type === "portal") {
+      const unpairedA = [...tileMap.values()].find(
+        (t) => t.tileType === "portal" && !t.pair && t.portalColor === "A",
+      );
+      const unpairedB = [...tileMap.values()].find(
+        (t) => t.tileType === "portal" && !t.pair && t.portalColor === "B",
+      );
+      const colorKind = unpairedA ? "B" : "A";
+      const rgbCore = colorKind === "A" ? k.rgb(80, 220, 240) : k.rgb(240, 80, 220);
+      const rgbGlow = colorKind === "A" ? k.rgb(200, 250, 255) : k.rgb(255, 200, 250);
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2;
+      const ring = k.add([
+        k.circle(TILE / 2 - 2),
+        k.pos(cx, cy),
+        k.color(rgbCore),
+        k.outline(2, rgbGlow),
+        k.area({ shape: new k.Rect(k.vec2(-TILE / 2 + 2, -TILE / 2 + 2), TILE - 4, TILE - 4) }),
+        k.z(2),
+        k.anchor("center"),
+        "tile",
+        "portal",
+        {
+          gridCol: col,
+          gridRow: row,
+          tileType: "portal",
+          portalColor: colorKind,
+          pair: null,
+          cooldownUntil: 0,
+          extras: [],
+        },
+      ]);
+      ring.onUpdate(() => {
+        ring.angle = (ring.angle || 0) + 120 * k.dt();
+      });
+      const otherUnpaired = colorKind === "A" ? unpairedB : unpairedA;
+      if (otherUnpaired) {
+        ring.pair = otherUnpaired;
+        otherUnpaired.pair = ring;
+      }
+      tileMap.set(key, ring);
     } else if (type === "fan") {
       const t = k.add([
         k.sprite("fan"),
@@ -1829,6 +1871,39 @@ k.scene("game", () => {
         p.onUpdate(() => {
           p.pos.x += p.vx * k.dt();
           p.pos.y += p.vy * k.dt();
+        });
+      }
+    });
+
+    wagon.onCollide("portal", (p) => {
+      if (!p.pair || k.time() < p.cooldownUntil) return;
+      const savedVelX = wagon.vel ? wagon.vel.x : 0;
+      const savedVelY = wagon.vel ? wagon.vel.y : 0;
+      wagon.pos.x = p.pair.pos.x - 30;
+      wagon.pos.y = p.pair.pos.y - 30;
+      if (wagon.vel) {
+        wagon.vel.x = savedVelX;
+        wagon.vel.y = savedVelY;
+      }
+      p.cooldownUntil = k.time() + 0.5;
+      p.pair.cooldownUntil = k.time() + 0.5;
+      audio.combo();
+      k.shake(3);
+      for (let i = 0; i < 14; i++) {
+        const a = (Math.PI * 2 * i) / 14;
+        const col = p.color;
+        const part = k.add([
+          k.circle(3 + Math.random() * 2),
+          k.pos(p.pair.pos.x, p.pair.pos.y),
+          k.color(col),
+          k.opacity(1),
+          k.lifespan(0.5, { fade: 0.3 }),
+          k.z(13),
+          { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
+        ]);
+        part.onUpdate(() => {
+          part.pos.x += part.vx * k.dt();
+          part.pos.y += part.vy * k.dt();
         });
       }
     });
@@ -2379,6 +2454,7 @@ k.scene("game", () => {
       boost: "BOOST",
       trampoline: "TRAMPOLINE",
       fan: "VENTILATEUR",
+      portal: "PORTAIL",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -2391,6 +2467,7 @@ k.scene("game", () => {
       boost: k.rgb(255, 210, 63),
       trampoline: k.rgb(255, 100, 160),
       fan: k.rgb(180, 220, 240),
+      portal: k.rgb(200, 150, 240),
     };
 
     k.drawRect({
@@ -2534,6 +2611,19 @@ k.scene("game", () => {
           width: 3,
           height: 10,
           color: k.rgb(200, 200, 215),
+        });
+      } else if (item.tool === "portal") {
+        k.drawCircle({
+          pos: k.vec2(cx - 7, cy),
+          radius: TB_ICON / 2 - 10,
+          color: k.rgb(80, 220, 240),
+          outline: { width: 1, color: k.rgb(200, 250, 255) },
+        });
+        k.drawCircle({
+          pos: k.vec2(cx + 7, cy),
+          radius: TB_ICON / 2 - 10,
+          color: k.rgb(240, 80, 220),
+          outline: { width: 1, color: k.rgb(255, 200, 250) },
         });
       } else if (item.tool === "fan") {
         k.drawCircle({
