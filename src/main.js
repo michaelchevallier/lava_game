@@ -549,6 +549,34 @@ k.scene("game", () => {
     persistSave(save);
     if (save.totalCoins >= 100) spectres.unlock(17);
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
+
+    // Coin streak: 5 coins in <2s → +50 bonus + golden flash
+    if (now - (gameState._lastCoinAt || 0) < 2) {
+      gameState._coinStreak = (gameState._coinStreak || 1) + 1;
+    } else {
+      gameState._coinStreak = 1;
+    }
+    gameState._lastCoinAt = now;
+    if (gameState._coinStreak === 5) {
+      gameState.score += 50;
+      audio.combo();
+      showPopup(WIDTH / 2, 240, "PLUIE D'OR ! +50", k.rgb(255, 215, 0), 28);
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        const sp = 100 + Math.random() * 100;
+        k.add([
+          k.circle(3),
+          k.pos(x, y),
+          k.color(k.rgb(255, 220, 60)),
+          k.opacity(1),
+          k.lifespan(1, { fade: 0.7 }),
+          k.z(20),
+          "particle-firework",
+          { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 20, grav: 80 },
+        ]);
+      }
+      gameState._coinStreak = 0;
+    }
     checkMilestone();
   }
 
