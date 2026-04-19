@@ -392,19 +392,16 @@ export function createWagonSystem({
       audio.boost();
       for (let i = 0; i < 8; i++) {
         const a = (Math.PI * 2 * i) / 8;
-        const p = k.add([
+        k.add([
           k.circle(2 + Math.random() * 2),
           k.pos(wagon.pos.x + 30, wagon.pos.y + 30),
           k.color(k.rgb(255, 120, 180)),
           k.opacity(1),
           k.lifespan(0.3, { fade: 0.2 }),
           k.z(14),
+          "particle",
           { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
         ]);
-        p.onUpdate(() => {
-          p.pos.x += p.vx * k.dt();
-          p.pos.y += p.vy * k.dt();
-        });
       }
     });
 
@@ -414,19 +411,16 @@ export function createWagonSystem({
       audio.boost();
       for (let i = 0; i < 12; i++) {
         const a = (Math.PI * 2 * i) / 12;
-        const p = k.add([
+        k.add([
           k.circle(3 + Math.random() * 3),
           k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
           k.color(k.rgb(255, 230, 60)),
           k.opacity(1),
           k.lifespan(0.4, { fade: 0.3 }),
           k.z(14),
+          "particle",
           { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
         ]);
-        p.onUpdate(() => {
-          p.pos.x += p.vx * k.dt();
-          p.pos.y += p.vy * k.dt();
-        });
       }
     });
   }
@@ -443,24 +437,20 @@ export function createWagonSystem({
     registerCoin(cx, cy);
     for (let i = 0; i < 10; i++) {
       const angle = (Math.PI * 2 * i) / 10;
-      const spark = k.add([
+      k.add([
         k.rect(3, 3),
         k.pos(cx, cy),
         k.color(k.rgb(255, 230, 80)),
         k.opacity(1),
         k.lifespan(0.5, { fade: 0.3 }),
         k.z(15),
+        "particle-grav",
         {
           vx: Math.cos(angle) * 120,
           vy: Math.sin(angle) * 120 - 40,
           grav: 250,
         },
       ]);
-      spark.onUpdate(() => {
-        spark.pos.x += spark.vx * k.dt();
-        spark.pos.y += spark.vy * k.dt();
-        spark.vy += spark.grav * k.dt();
-      });
     }
   }
 
@@ -471,24 +461,20 @@ export function createWagonSystem({
     for (let i = 0; i < 20; i++) {
       const angle = (Math.PI * 2 * i) / 20;
       const r = 40 + Math.random() * 30;
-      const drop = k.add([
+      k.add([
         k.circle(3 + Math.random() * 3),
         k.pos(cx, cy),
         k.color(k.rgb(90 + Math.random() * 100, 180, 230)),
         k.opacity(1),
         k.lifespan(0.8, { fade: 0.5 }),
         k.z(14),
+        "particle-grav",
         {
           vx: Math.cos(angle) * r,
           vy: Math.sin(angle) * r - 60,
           grav: 200,
         },
       ]);
-      drop.onUpdate(() => {
-        drop.pos.x += drop.vx * k.dt();
-        drop.pos.y += drop.vy * k.dt();
-        drop.vy += drop.grav * k.dt();
-      });
     }
     k.wait(0.05, () => {
       if (wagon.passengerEntity && wagon.passengerEntity.exists()) {
@@ -523,21 +509,18 @@ export function createWagonSystem({
     registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain, dark);
     if (dark > 0) wagon.darkPassenger = 0;
     if (wagon.ghostTrain) {
-      for (let i = 0; i < 30; i++) {
-        const a = (Math.PI * 2 * i) / 30;
-        const p = k.add([
+      for (let i = 0; i < 20; i++) {
+        const a = (Math.PI * 2 * i) / 20;
+        k.add([
           k.circle(4 + Math.random() * 4),
           k.pos(wagon.pos.x + 30, wagon.pos.y + 10),
           k.color(k.rgb(180, 100, 255)),
           k.opacity(1),
           k.lifespan(1.2, { fade: 0.8 }),
           k.z(15),
+          "particle",
           { vx: Math.cos(a) * 200, vy: Math.sin(a) * 200 },
         ]);
-        p.onUpdate(() => {
-          p.pos.x += p.vx * k.dt();
-          p.pos.y += p.vy * k.dt();
-        });
       }
     }
 
@@ -583,8 +566,8 @@ export function createWagonSystem({
       ]);
     }
 
-    for (let i = 0; i < 24; i++) {
-      const angle = (Math.PI * 2 * i) / 24;
+    for (let i = 0; i < 16; i++) {
+      const angle = (Math.PI * 2 * i) / 16;
       const r = 50 + Math.random() * 30;
       const tiers = [
         k.rgb(255, 230, 60),
@@ -592,62 +575,51 @@ export function createWagonSystem({
         k.rgb(230, 60, 30),
       ];
       const color = tiers[Math.floor(Math.random() * 3)];
-      const flame = k.add([
+      k.add([
         k.circle(4 + Math.random() * 5),
         k.pos(cx, cy),
         k.color(color),
         k.opacity(1),
         k.lifespan(0.7 + Math.random() * 0.4, { fade: 0.5 }),
         k.z(14),
+        "particle-grav",
         {
           vx: Math.cos(angle) * r,
           vy: Math.sin(angle) * r - 40,
           grav: 80,
         },
       ]);
-      flame.onUpdate(() => {
-        flame.pos.x += flame.vx * k.dt();
-        flame.pos.y += flame.vy * k.dt();
-        flame.vy += flame.grav * k.dt();
-      });
     }
 
-    for (let i = 0; i < 15; i++) {
-      const spark = k.add([
+    for (let i = 0; i < 10; i++) {
+      k.add([
         k.rect(2 + Math.random() * 3, 2 + Math.random() * 3),
         k.pos(cx, cy),
         k.color(k.rgb(255, 255, 180)),
         k.opacity(1),
         k.lifespan(0.9 + Math.random() * 0.5, { fade: 0.5 }),
         k.z(15),
+        "particle-grav",
         {
           vx: (Math.random() - 0.5) * 300,
           vy: -60 - Math.random() * 120,
           grav: 200,
         },
       ]);
-      spark.onUpdate(() => {
-        spark.pos.x += spark.vx * k.dt();
-        spark.pos.y += spark.vy * k.dt();
-        spark.vy += spark.grav * k.dt();
-      });
     }
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 8; i++) {
       k.wait(0.3 + Math.random() * 0.3, () => {
-        const smoke = k.add([
+        k.add([
           k.circle(6 + Math.random() * 6),
           k.pos(cx + (Math.random() - 0.5) * 40, cy),
           k.color(k.rgb(80, 80, 80)),
           k.opacity(0.6),
           k.lifespan(1.2, { fade: 0.9 }),
           k.z(13),
+          "particle",
           { vy: -30 - Math.random() * 30, vx: (Math.random() - 0.5) * 30 },
         ]);
-        smoke.onUpdate(() => {
-          smoke.pos.y += smoke.vy * k.dt();
-          smoke.pos.x += smoke.vx * k.dt();
-        });
       });
     }
 
@@ -683,17 +655,6 @@ export function createWagonSystem({
         "ghost",
         { vx: -60 - Math.random() * 40, vy: -30, born: k.time() },
       ]);
-      ghost.onUpdate(() => {
-        ghost.pos.x += ghost.vx * k.dt();
-        ghost.pos.y += ghost.vy * k.dt();
-        ghost.vy += 100 * k.dt();
-        if (ghost.pos.y > (GROUND_ROW - 2) * TILE) {
-          ghost.pos.y = (GROUND_ROW - 2) * TILE;
-          ghost.vy = 0;
-        }
-        ghost.opacity = Math.max(0, 0.55 - (k.time() - ghost.born) / 4);
-        if (k.time() - ghost.born > 3.5 || ghost.pos.x < -60) k.destroy(ghost);
-      });
     });
   }
 

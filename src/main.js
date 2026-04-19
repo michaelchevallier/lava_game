@@ -68,24 +68,19 @@ k.scene("game", () => {
   });
 
   function launchFirework(x, y, color) {
-    for (let i = 0; i < 40; i++) {
-      const a = (Math.PI * 2 * i) / 40 + Math.random() * 0.1;
+    for (let i = 0; i < 24; i++) {
+      const a = (Math.PI * 2 * i) / 24 + Math.random() * 0.1;
       const sp = 150 + Math.random() * 120;
-      const p = k.add([
+      k.add([
         k.circle(3 + Math.random() * 2),
         k.pos(x, y),
         k.color(color),
         k.opacity(1),
         k.lifespan(1.5, { fade: 1 }),
         k.z(20),
+        "particle-firework",
         { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, grav: 180 },
       ]);
-      p.onUpdate(() => {
-        p.pos.x += p.vx * k.dt();
-        p.pos.y += p.vy * k.dt();
-        p.vy += p.grav * k.dt();
-        p.vx *= 0.98;
-      });
     }
   }
 
@@ -841,19 +836,16 @@ k.scene("game", () => {
         const cy = v.pos.y + 10;
         for (let i = 0; i < 12; i++) {
           const a = (Math.PI * 2 * i) / 12;
-          const fl = k.add([
+          k.add([
             k.circle(3 + Math.random() * 3),
             k.pos(cx, cy),
             k.color(k.rgb(255, 150 + Math.random() * 80, 40)),
             k.opacity(1),
             k.lifespan(0.5, { fade: 0.3 }),
             k.z(14),
+            "particle",
             { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30 },
           ]);
-          fl.onUpdate(() => {
-            fl.pos.x += fl.vx * k.dt();
-            fl.pos.y += fl.vy * k.dt();
-          });
         }
       }
       if (tile && tile.tileType === "water" && v.isSkeleton) {
@@ -863,20 +855,16 @@ k.scene("game", () => {
         audio.splash();
         for (let i = 0; i < 8; i++) {
           const a = (Math.PI * 2 * i) / 8;
-          const drop = k.add([
+          k.add([
             k.circle(2 + Math.random() * 2),
             k.pos(v.pos.x + 14, v.pos.y + 20),
             k.color(k.rgb(100, 180, 230)),
             k.opacity(0.9),
             k.lifespan(0.5, { fade: 0.3 }),
             k.z(10),
-            { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 40 },
+            "particle-grav",
+            { vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 - 40, grav: 180 },
           ]);
-          drop.onUpdate(() => {
-            drop.pos.x += drop.vx * k.dt();
-            drop.pos.y += drop.vy * k.dt();
-            drop.vy += 180 * k.dt();
-          });
         }
       }
       if (v.pos.x > WIDTH + 40) {
@@ -917,20 +905,16 @@ k.scene("game", () => {
           audio.combo();
           for (let p = 0; p < 18; p++) {
             const ang = (Math.PI * 2 * p) / 18;
-            const part = k.add([
+            k.add([
               k.rect(3, 3),
               k.pos(mx, my),
               k.color(k.rgb(255, 230, 80)),
               k.opacity(1),
               k.lifespan(0.6, { fade: 0.4 }),
               k.z(14),
-              { vx: Math.cos(ang) * 200, vy: Math.sin(ang) * 200 - 50 },
+              "particle-grav",
+              { vx: Math.cos(ang) * 200, vy: Math.sin(ang) * 200 - 50, grav: 300 },
             ]);
-            part.onUpdate(() => {
-              part.pos.x += part.vx * k.dt();
-              part.pos.y += part.vy * k.dt();
-              part.vy += 300 * k.dt();
-            });
           }
         }
       }
@@ -1063,6 +1047,47 @@ k.scene("game", () => {
       inner.pos.y = t.pos.y;
       inner.scale = k.vec2(Math.abs(Math.cos(k.time() * 4 + t.gridCol * 0.4)), 1);
     }
+  });
+
+  k.onUpdate("particle-grav", (p) => {
+    p.pos.x += p.vx * k.dt();
+    p.pos.y += p.vy * k.dt();
+    p.vy += p.grav * k.dt();
+  });
+
+  k.onUpdate("particle-x", (p) => {
+    p.pos.x += p.vx * k.dt();
+  });
+
+  k.onUpdate("particle-debris", (p) => {
+    p.pos.x += p.vx * k.dt();
+    p.pos.y += p.vy * k.dt();
+    p.vy += 400 * k.dt();
+  });
+
+  k.onUpdate("ghost", (g) => {
+    g.pos.x += g.vx * k.dt();
+    g.pos.y += g.vy * k.dt();
+    g.vy += 100 * k.dt();
+    if (g.pos.y > (GROUND_ROW - 2) * TILE) {
+      g.pos.y = (GROUND_ROW - 2) * TILE;
+      g.vy = 0;
+    }
+    g.opacity = Math.max(0, 0.55 - (k.time() - g.born) / 4);
+    if (k.time() - g.born > 3.5 || g.pos.x < -60) k.destroy(g);
+  });
+
+  k.onUpdate("particle-firework", (p) => {
+    p.pos.x += p.vx * k.dt();
+    p.pos.y += p.vy * k.dt();
+    p.vy += p.grav * k.dt();
+    p.vx *= 0.98;
+  });
+
+  k.onUpdate("fan-puff", (p) => {
+    p.pos.y += p.vy * k.dt();
+    p.pos.x += p.vx * k.dt();
+    p.vy *= 0.98;
   });
 
   k.onDraw(() => {
