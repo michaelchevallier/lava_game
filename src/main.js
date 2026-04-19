@@ -439,6 +439,25 @@ const SPR_BOOST = [
   "YYYYYYYYYYYYYYYY",
 ];
 
+const SPR_FAN = [
+  "nnnnnnnnnnnnnnnn",
+  "nAAAAAAAAAAAAAAn",
+  "nAaaaaaaaaaaaaAn",
+  "nAaCaaaaaaaaCaAn",
+  "nAaaCaaaaaaCaaAn",
+  "nAaaaCCCCCCaaaAn",
+  "nAaaaaaCCaaaaaAn",
+  "nAaaaCCCCCCaaaAn",
+  "nAaaCaaaaaaCaaAn",
+  "nAaCaaaaaaaaCaAn",
+  "nAaaaaaaaaaaaaAn",
+  "nAAAAAAAAAAAAAAn",
+  "nnnnKKKKKKKKnnnn",
+  "nnnKKKKKKKKKKnnn",
+  "nnKKKKKKKKKKKKnn",
+  "nnnnnnnnnnnnnnnn",
+];
+
 const SPR_CLOUD = [
   ".....cccccc.........",
   "...ccCCCCCCcc.......",
@@ -486,6 +505,7 @@ Promise.all([
   k.loadSprite("water1", makeSpriteUrl(SPR_WATER, 2)),
   k.loadSprite("water2", makeSpriteUrl(SPR_WATER2, 2)),
   k.loadSprite("boost", makeSpriteUrl(SPR_BOOST, 2)),
+  k.loadSprite("fan", makeSpriteUrl(SPR_FAN, 2)),
   k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
   k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
 ]).then(() => {
@@ -889,6 +909,7 @@ k.scene("game", () => {
   k.onKeyPress("7", () => (selectedTool = "boost"));
   k.onKeyPress("8", () => (selectedTool = "coin"));
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
+  k.onKeyPress("0", () => (selectedTool = "fan"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -1063,6 +1084,7 @@ k.scene("game", () => {
     { tool: "boost", key: "7", label: "Boost" },
     { tool: "coin", key: "8", label: "Piece" },
     { tool: "trampoline", key: "9", label: "Tramp" },
+    { tool: "fan", key: "0", label: "Vent" },
     { tool: "erase", key: "3", label: "Gomme" },
   ];
   const TB_ICON = 52;
@@ -1293,6 +1315,43 @@ k.scene("game", () => {
       ]);
       t.onUpdate(() => {
         t.angle = Math.sin(k.time() * 8 + col) * 3;
+      });
+      tileMap.set(key, t);
+    } else if (type === "fan") {
+      const t = k.add([
+        k.sprite("fan"),
+        k.pos(col * TILE, row * TILE),
+        k.area(),
+        k.z(1),
+        "tile",
+        "fan",
+        { gridCol: col, gridRow: row, tileType: "fan", extras: [] },
+      ]);
+      t.onUpdate(() => {
+        if (Math.random() < 0.25) {
+          const puff = k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(col * TILE + 6 + Math.random() * 20, row * TILE + 2),
+            k.color(k.rgb(230, 240, 255)),
+            k.opacity(0.7),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(2),
+            { vy: -60 - Math.random() * 50, vx: (Math.random() - 0.5) * 20 },
+          ]);
+          puff.onUpdate(() => {
+            puff.pos.y += puff.vy * k.dt();
+            puff.pos.x += puff.vx * k.dt();
+            puff.vy *= 0.98;
+          });
+        }
+        const cx = col * TILE + TILE / 2;
+        for (const w of k.get("wagon")) {
+          const dx = Math.abs(w.pos.x + 30 - cx);
+          const dy = w.pos.y + 30 - (row * TILE);
+          if (dx < 60 && dy < 0 && dy > -220) {
+            if (w.vel) w.vel.y -= 600 * k.dt();
+          }
+        }
       });
       tileMap.set(key, t);
     } else if (type === "coin") {
@@ -2201,6 +2260,7 @@ k.scene("game", () => {
       coin: "PIECE",
       boost: "BOOST",
       trampoline: "TRAMPOLINE",
+      fan: "VENTILATEUR",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -2212,6 +2272,7 @@ k.scene("game", () => {
       coin: k.rgb(255, 210, 50),
       boost: k.rgb(255, 210, 63),
       trampoline: k.rgb(255, 100, 160),
+      fan: k.rgb(180, 220, 240),
     };
 
     k.drawRect({
@@ -2356,6 +2417,25 @@ k.scene("game", () => {
           height: 10,
           color: k.rgb(200, 200, 215),
         });
+      } else if (item.tool === "fan") {
+        k.drawCircle({
+          pos: k.vec2(cx, cy),
+          radius: TB_ICON / 2 - 6,
+          color: k.rgb(180, 210, 230),
+        });
+        const rot = k.time() * 4;
+        for (let b = 0; b < 4; b++) {
+          const a = rot + (Math.PI / 2) * b;
+          k.drawRect({
+            pos: k.vec2(cx, cy),
+            width: TB_ICON - 14,
+            height: 4,
+            anchor: "center",
+            angle: (a * 180) / Math.PI,
+            color: k.rgb(100, 140, 180),
+          });
+        }
+        k.drawCircle({ pos: k.vec2(cx, cy), radius: 3, color: k.rgb(40, 40, 50) });
       } else if (item.tool === "erase") {
         k.drawText({
           text: "X",
