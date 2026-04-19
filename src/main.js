@@ -544,6 +544,7 @@ function persistSave(save) {
 const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
+  ice: "I",
 };
 const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -1151,6 +1152,7 @@ k.scene("game", () => {
     { tool: "trampoline", key: "9", label: "Tramp" },
     { tool: "fan", key: "0", label: "Vent" },
     { tool: "portal", key: "P", label: "Portail" },
+    { tool: "ice", key: "G", label: "Glace" },
     { tool: "erase", key: "3", label: "Gomme" },
   ];
   const TB_ICON = 52;
@@ -1459,6 +1461,34 @@ k.scene("game", () => {
         otherUnpaired.pair = ring;
       }
       tileMap.set(key, ring);
+    } else if (type === "ice") {
+      const t = k.add([
+        k.rect(TILE, TILE),
+        k.pos(col * TILE, row * TILE),
+        k.color(k.rgb(180, 230, 255)),
+        k.outline(2, k.rgb(100, 170, 220)),
+        k.area(),
+        k.z(1),
+        "tile",
+        "ice",
+        { gridCol: col, gridRow: row, tileType: "ice", extras: [] },
+      ]);
+      const shine1 = k.add([
+        k.rect(TILE - 8, 2),
+        k.pos(col * TILE + 4, row * TILE + 6),
+        k.color(k.rgb(255, 255, 255)),
+        k.opacity(0.8),
+        k.z(2),
+      ]);
+      const shine2 = k.add([
+        k.rect(TILE / 2 - 4, 2),
+        k.pos(col * TILE + 4, row * TILE + TILE - 8),
+        k.color(k.rgb(255, 255, 255)),
+        k.opacity(0.6),
+        k.z(2),
+      ]);
+      t.extras = [shine1, shine2];
+      tileMap.set(key, t);
     } else if (type === "fan") {
       const t = k.add([
         k.sprite("fan"),
@@ -1710,7 +1740,11 @@ k.scene("game", () => {
 
     wagon.onUpdate(() => {
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
-      const currentSpeed = boosted ? wagon.speed * 2.2 : wagon.speed;
+      const iced = wagon.iceUntil && k.time() < wagon.iceUntil;
+      let speedMult = 1;
+      if (boosted) speedMult = 2.2;
+      else if (iced) speedMult = 1.6;
+      const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
       const wCenterX = wagon.pos.x + 30;
@@ -1875,6 +1909,20 @@ k.scene("game", () => {
           p.pos.x += p.vx * k.dt();
           p.pos.y += p.vy * k.dt();
         });
+      }
+    });
+
+    wagon.onCollide("ice", () => {
+      wagon.iceUntil = k.time() + 0.35;
+      if (Math.random() < 0.5) {
+        const sparkle = k.add([
+          k.circle(1.5),
+          k.pos(wagon.pos.x + Math.random() * 60, wagon.pos.y + 28),
+          k.color(k.rgb(200, 240, 255)),
+          k.opacity(1),
+          k.lifespan(0.3, { fade: 0.2 }),
+          k.z(2),
+        ]);
       }
     });
 
@@ -2539,6 +2587,7 @@ k.scene("game", () => {
       trampoline: "TRAMPOLINE",
       fan: "VENTILATEUR",
       portal: "PORTAIL",
+      ice: "GLACE",
     };
     const toolColors = {
       lava: k.rgb(255, 120, 60),
@@ -2552,6 +2601,7 @@ k.scene("game", () => {
       trampoline: k.rgb(255, 100, 160),
       fan: k.rgb(180, 220, 240),
       portal: k.rgb(200, 150, 240),
+      ice: k.rgb(200, 235, 255),
     };
 
     k.drawRect({
@@ -2695,6 +2745,27 @@ k.scene("game", () => {
           width: 3,
           height: 10,
           color: k.rgb(200, 200, 215),
+        });
+      } else if (item.tool === "ice") {
+        k.drawRect({
+          pos: k.vec2(bx + 8, by + 10),
+          width: TB_ICON - 16,
+          height: TB_ICON - 18,
+          color: k.rgb(180, 230, 255),
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 12, cy - 6),
+          width: TB_ICON - 24,
+          height: 2,
+          color: k.rgb(255, 255, 255),
+          opacity: 0.9,
+        });
+        k.drawRect({
+          pos: k.vec2(bx + 12, cy + 4),
+          width: (TB_ICON - 24) / 2,
+          height: 2,
+          color: k.rgb(255, 255, 255),
+          opacity: 0.7,
         });
       } else if (item.tool === "portal") {
         k.drawCircle({
