@@ -3,12 +3,13 @@ import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, GROUND_ROW } from "./constants
 export function loadSave() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2 };
+    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0 };
     const parsed = JSON.parse(raw);
     if (!parsed.numPlayers) parsed.numPlayers = 2;
+    if (!parsed.spectres) parsed.spectres = 0;
     return parsed;
   } catch (e) {
-    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2 };
+    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0 };
   }
 }
 

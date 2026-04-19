@@ -6,7 +6,7 @@ import {
 
 export function createHUD({
   k, gameState, save, settings, settingsOverlay, getPlayerConfigs,
-  getCurrentTool, fpsBuffer, fpsState, entityState, persistSave,
+  getCurrentTool, fpsBuffer, fpsState, entityState, persistSave, onCarnetBtn,
 }) {
   const C_BLACK = k.rgb(0, 0, 0);
   const C_GOLD = k.rgb(255, 210, 63);
@@ -86,6 +86,12 @@ export function createHUD({
   function inHelpBtn(m) {
     const bx = WIDTH / 2 - 120;
     const by = HEIGHT / 2 + 192;
+    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
+  }
+
+  function inCarnetBtn(m) {
+    const bx = WIDTH / 2 - 120;
+    const by = HEIGHT / 2 + 238;
     return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
   }
 
@@ -649,7 +655,7 @@ export function createHUD({
           opacity: 0.75,
         });
         const panelW = 440;
-        const panelH = 430;
+        const panelH = 480;
         const panelX = WIDTH / 2 - panelW / 2;
         const panelY = HEIGHT / 2 - panelH / 2;
         k.drawRect({
@@ -772,6 +778,21 @@ export function createHUD({
           anchor: "center",
           color: k.WHITE,
         });
+        const carnetBx = WIDTH / 2 - 120;
+        const carnetBy = HEIGHT / 2 + 238;
+        k.drawRect({
+          pos: k.vec2(carnetBx, carnetBy),
+          width: 240,
+          height: 36,
+          color: k.rgb(120, 60, 180),
+        });
+        k.drawText({
+          text: "Carnet des Spectres",
+          size: 15,
+          pos: k.vec2(WIDTH / 2, carnetBy + 18),
+          anchor: "center",
+          color: k.WHITE,
+        });
         k.drawText({
           text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
           size: 12,
@@ -865,6 +886,7 @@ export function createHUD({
     inBuildTestBtn,
     inExportBtn,
     inHelpBtn,
+    inCarnetBtn,
     toolbarHit,
   };
 }

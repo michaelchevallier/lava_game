@@ -203,6 +203,7 @@ k.scene("game", () => {
   gameState.vipStreak = 0;
   gameState.portalUses = 0;
   gameState.bulletTimeUnlocked = false;
+  gameState._ducksCaught = 0;
 
   let _playerConfigs = null;
   let crowdHooks = null;
@@ -380,6 +381,10 @@ k.scene("game", () => {
 
   function triggerApocalypse() {
     gameState.bulletTimeUntil = k.time() + 3;
+    spectres.unlock(8);
+    save.apocalypseCount = (save.apocalypseCount || 0) + 1;
+    persistSave(save);
+    if (save.apocalypseCount >= 5) spectres.unlock(7);
     window.__juice?.hitStop(200);
     if (crowdHooks) crowdHooks.onApocalypse();
     audio.combo();
@@ -440,6 +445,7 @@ k.scene("game", () => {
     save.totalCoins = (save.totalCoins || 0) + 1;
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;
     persistSave(save);
+    if (save.totalCoins >= 100) spectres.unlock(17);
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
     checkMilestone();
   }
@@ -555,6 +561,7 @@ k.scene("game", () => {
   _playerConfigs = PLAYER_CONFIGS;
 
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile);
+  if (isMobile) spectres.unlock(22);
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
   k.onKeyPress("2", () => (selectedTool = "rail"));
@@ -574,7 +581,12 @@ k.scene("game", () => {
     });
     tileMap.clear();
   });
-  k.onKeyPress("r", () => { settingsOverlay.hide(); settings.open = false; k.go("game"); });
+  k.onKeyPress("r", () => {
+    if (gameState.score === 0 && save.plays > 0) spectres.unlock(2);
+    settingsOverlay.hide();
+    settings.open = false;
+    k.go("game");
+  });
   k.onKeyPress("x", () => spawnWagon());
   k.onKeyPress("m", () => audio.toggleMute());
   k.onKeyPress(["p", "escape"], () => {
@@ -706,6 +718,8 @@ k.scene("game", () => {
     moon.opacity = isNight ? 1 : 0;
     moonCrater.opacity = isNight ? 1 : 0;
     nightTint.opacity = isNight ? 0.35 : 0;
+    if (isNight) spectres.unlock(19);
+    else spectres.unlock(20);
   });
 
   k.add([
@@ -759,6 +773,7 @@ k.scene("game", () => {
             save.numPlayers = i;
             persistSave(save);
             audio.combo();
+            if (i === 4) spectres.unlock(21);
             settingsOverlay.hide();
             settings.open = false;
             k.go("game");
@@ -784,6 +799,7 @@ k.scene("game", () => {
       }
       if (inExportBtn(m)) {
         const code = serializeTiles(tileMap);
+        spectres.unlock(23);
         showExportModal(code, (pasted) => {
           loadParkFromCode(pasted);
         });
