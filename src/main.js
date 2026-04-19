@@ -11,6 +11,7 @@ import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
 import { createHUD } from "./hud.js";
+import { createDuckSystem } from "./ducks.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -24,10 +25,21 @@ const k = kaplay({
   maxFPS: 60,
 });
 
+{
+  const _canvas = document.getElementById("game");
+  const _origMousePos = k.mousePos.bind(k);
+  k.mousePos = () => {
+    const r = _canvas.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) return _origMousePos();
+    const raw = _origMousePos();
+    return k.vec2(raw.x * (WIDTH / r.width), raw.y * (HEIGHT / r.height));
+  };
+}
+
 k.setGravity(1600);
 window.__k = k;
 window.__getStats = () => {
-  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin"];
+  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part"];
   const out = { total: k.get("*").length };
   for (const t of tags) out[t] = k.get(t).length;
   return out;
@@ -175,6 +187,12 @@ k.scene("game", () => {
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
   });
+
+  const { startDuckLoop } = createDuckSystem({
+    k, tileMap, gameState, audio,
+    showPopup: (...args) => showPopup(...args),
+  });
+  startDuckLoop();
 
   function launchFirework(x, y, color) {
     if (k.get("particle-firework").length > 60) return;
