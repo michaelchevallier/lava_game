@@ -79,35 +79,47 @@ requestAnimationFrame(tick);
 
 ## Backlog (cocher quand fait)
 
-### Polish (en cours)
-- [ ] Physique transition rail horizontal ↔ diagonal (lissage Y, rotation visuelle)
-- [ ] Règles de passage tile/entité (tableau cohérent, comportements documentés)
-- [ ] Lisibilité textes (contour, taille, font custom ?)
-- [ ] Players.js extraction
-- [ ] Hud.js extraction (puis main.js < 1200 lignes)
+### Polish
+- [x] Physique transition rail horizontal ↔ diagonal (lissage Y, rotation visuelle)
+- [x] Règles de passage tile/entité
+- [x] Lisibilité textes (drawTextOutlined 8 offsets)
+- [x] Players.js extraction
+- [x] Hud.js extraction
+- [ ] main.js < 1200 lignes (à 1499, refactor sky/* à venir)
 
 ### Features parc d'attractions
-- [x] Grande Roue 3x3 (4 nacelles tournantes)
-- [ ] Pêche aux Canards (mini-jeu clic, 1/10 doré +200pts)
-- [ ] Bullet-Time Combo x8 (timeScale 0.25 pendant 3s + 10 tuiles gratuites)
-- [ ] Manège Magnétique (orbite + relâche tangentiel projectile)
-- [ ] Carnet des Spectres (24 collectibles localStorage bitmask)
+- [x] Grande Roue 3x3
+- [x] Pêche aux Canards
+- [x] Bullet-Time Combo
+- [x] Manège Magnétique (Téléport Magnétique combo)
+- [x] Carnet des Spectres (24 collectibles bitmask, all unlocks wired)
+- [ ] Roue de fortune
+- [ ] Pluie de pièces aléatoire
+- [ ] Mini-jeu chamboule-tout
 
 ### UX
-- [ ] Volume slider + vitesse wagons slider dans settings
+- [x] Volume slider + vitesse wagons slider dans settings
 - [x] Splash screen sélection nb joueurs avec preview persos
-- [ ] Tutoriel interactif (flèches qui pointent les boutons)
-- [ ] Achievements visuels
+- [x] Tutoriel interactif (flèches animées)
+- [x] Achievements visuels (badges popup zoom-bounce)
+- [x] Tips rotation HUD bottom
+- [x] Score ticker animé
+- [x] Progress bar palier suivant
 
 ## Done (référence)
 
 - ✅ 4 joueurs sur 1 clavier (Mario QSDE, Pika JLI O, Luigi flèches Enter, Toad FHTG)
 - ✅ Mobile touch controls (4 boutons overlay, ?mobile=1 override)
 - ✅ Tiles : lava, water, rail, rail_up/down, coin, boost, trampoline, fan, portal, ice, magnet, bridge, erase
-- ✅ Mécaniques émergentes : auto-tamponneuses, Dette Fantôme, Chaîne d'Or 3 pièces diag, vapeur eau+lave
-- ✅ APOCALYPSE combo x5 cascade transforms
+- ✅ Mécaniques émergentes : auto-tamponneuses, Dette Fantôme, Chaîne d'Or 3 pièces diag, vapeur eau+lave, Téléport Magnétique, Pluie d'Or
+- ✅ APOCALYPSE combo x5 cascade transforms + Crowd cheer "BRAVO!"
 - ✅ Train Fantôme noir +100pts toutes 45s
+- ✅ Inverse Apocalypse Train anti-AFK 20s, +500pts kill
+- ✅ Wagon doré 7% spawn, 2x points
 - ✅ Cog settings + Mode Démo récursif (portails fin → début airborne)
 - ✅ Export/Import parc par code (modal HTML)
 - ✅ Service Worker v4 network-first + auto-update reload
 - ✅ Fix perf monumentale : 160 ground bodies → 1 collider unique (4 → 71 FPS)
+- ✅ Ambiance jour : soleil souriant, nuages parallax
+- ✅ Ambiance nuit : lune, étoiles, lucioles, étoiles filantes
+- ✅ Visuels tile : trampoline pulse, bridge danger, lava bubbles, coin spin/bob/sparkle
