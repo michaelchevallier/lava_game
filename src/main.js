@@ -287,13 +287,17 @@ k.scene("game", () => {
     ]);
   }
 
-  for (let i = 0; i < 4; i++) {
-    k.add([
-      k.sprite("hill"),
-      k.pos(i * 330 - 50, GROUND_ROW * TILE - 64),
-      k.z(-9),
-    ]);
-  }
+  k.add([
+    k.pos(0, 0),
+    k.z(-20),
+    {
+      draw() {
+        for (let i = 0; i < 4; i++) {
+          k.drawSprite({ sprite: "hill", pos: k.vec2(i * 330 - 50, GROUND_ROW * TILE - 64) });
+        }
+      },
+    },
+  ]);
 
   const FLAG_COLORS = [
     [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
@@ -339,20 +343,20 @@ k.scene("game", () => {
     if (c.pos.x > WIDTH + 100) c.pos.x = -200;
   });
 
-  for (let col = 0; col < COLS; col++) {
-    k.add([
-      k.sprite("ground_top"),
-      k.pos(col * TILE, GROUND_ROW * TILE),
-      k.z(0),
-    ]);
-    for (let row = GROUND_ROW + 1; row < ROWS; row++) {
-      k.add([
-        k.sprite("ground"),
-        k.pos(col * TILE, row * TILE),
-        k.z(0),
-      ]);
-    }
-  }
+  k.add([
+    k.pos(0, 0),
+    k.z(-10),
+    {
+      draw() {
+        for (let col = 0; col < COLS; col++) {
+          k.drawSprite({ sprite: "ground_top", pos: k.vec2(col * TILE, GROUND_ROW * TILE) });
+          for (let row = GROUND_ROW + 1; row < ROWS; row++) {
+            k.drawSprite({ sprite: "ground", pos: k.vec2(col * TILE, row * TILE) });
+          }
+        }
+      },
+    },
+  ]);
   k.add([
     k.rect(WIDTH, (ROWS - GROUND_ROW) * TILE),
     k.pos(0, GROUND_ROW * TILE),
@@ -712,7 +716,6 @@ k.scene("game", () => {
   k.wait(0.05, () => startGhostTrain());
 
   let isNight = false;
-  const stars = [];
   const moon = k.add([
     k.circle(24),
     k.pos(WIDTH - 140, 90),
@@ -739,37 +742,34 @@ k.scene("game", () => {
     "night-deco",
   ]);
 
-  for (let i = 0; i < 40; i++) {
-    const s = k.add([
-      k.circle(1 + Math.random()),
-      k.pos(Math.random() * WIDTH, Math.random() * (GROUND_ROW * TILE - 80) + 20),
-      k.color(k.rgb(255, 255, 220)),
-      k.opacity(0),
-      k.z(-10),
-      "night-deco",
-      { twinkle: Math.random() * 10 },
-    ]);
-    stars.push(s);
-  }
+  const starData = Array.from({ length: 40 }, () => ({
+    x: Math.random() * WIDTH,
+    y: Math.random() * (GROUND_ROW * TILE - 80) + 20,
+    r: 1 + Math.random(),
+    twinkle: Math.random() * 10,
+    baseOpacity: 0.7 + Math.random() * 0.3,
+  }));
 
   k.onKeyPress("n", () => {
     isNight = !isNight;
-    const targetOpacity = isNight ? 1 : 0;
-    for (const s of stars) {
-      s.opacity = targetOpacity * (0.7 + Math.random() * 0.3);
-    }
-    moon.opacity = targetOpacity;
-    moonCrater.opacity = targetOpacity;
-    nightTint.opacity = targetOpacity * 0.35;
+    moon.opacity = isNight ? 1 : 0;
+    moonCrater.opacity = isNight ? 1 : 0;
+    nightTint.opacity = isNight ? 0.35 : 0;
   });
 
-  k.onUpdate(() => {
-    if (isNight) {
-      for (const s of stars) {
-        s.opacity = 0.5 + Math.sin(k.time() * 2 + s.twinkle) * 0.5;
-      }
-    }
-  });
+  k.add([
+    k.pos(0, 0),
+    k.z(-11),
+    {
+      draw() {
+        if (!isNight) return;
+        for (const s of starData) {
+          const op = s.baseOpacity * (0.5 + Math.sin(k.time() * 2 + s.twinkle) * 0.5);
+          k.drawCircle({ pos: k.vec2(s.x, s.y), radius: s.r, color: k.rgb(255, 255, 220), opacity: op });
+        }
+      },
+    },
+  ]);
 
 
   function inCog(m) {
