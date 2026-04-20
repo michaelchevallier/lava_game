@@ -282,6 +282,15 @@ export function createHUD({
         draw() { renderHud(); },
       },
     ]);
+    // Ghost cursor preview drawn in WORLD-SPACE (not fixed) so coords match
+    // tile placement under any zoom level. Without this it drifts when camScale != 1.
+    k.add([
+      k.pos(0, 0),
+      k.z(39),
+      {
+        draw() { renderGhostCursor(); },
+      },
+    ]);
   }
 
   function renderHud() {
@@ -310,65 +319,7 @@ export function createHUD({
         color: fpsColor,
       });
 
-      if (!settings.open && !k.getTreeRoot().paused) {
-        const sm = k.mousePos();
-        const wm = k.toWorld(sm);
-        const col = Math.floor(wm.x / TILE);
-        const row = Math.floor(wm.y / TILE);
-        if (col >= 0 && col < COLS && row >= 0 && row < GROUND_ROW) {
-          const ghostColor =
-            selectedTool === "lava"
-              ? k.rgb(255, 107, 28)
-              : selectedTool === "water"
-                ? k.rgb(79, 184, 232)
-                : selectedTool === "coin"
-                  ? k.rgb(255, 210, 50)
-                  : selectedTool === "boost"
-                    ? k.rgb(255, 210, 63)
-                    : selectedTool === "trampoline"
-                      ? k.rgb(255, 80, 130)
-                      : selectedTool === "erase"
-                        ? k.rgb(220, 80, 80)
-                        : selectedTool === "wheel"
-                          ? k.rgb(80, 220, 240)
-                          : k.rgb(210, 210, 225);
-          const ghostW = selectedTool === "wheel" ? TILE * 3 : TILE;
-          const ghostH = selectedTool === "wheel" ? TILE * 3 : TILE;
-          const ghostOx = selectedTool === "wheel" ? -TILE : 0;
-          const ghostOy = selectedTool === "wheel" ? -TILE : 0;
-          k.drawRect({
-            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
-            width: ghostW,
-            height: ghostH,
-            color: ghostColor,
-            opacity: 0.3 + Math.sin(k.time() * 6) * 0.1,
-          });
-          k.drawRect({
-            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
-            width: ghostW,
-            height: 2,
-            color: ghostColor,
-          });
-          k.drawRect({
-            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy + ghostH - 2),
-            width: ghostW,
-            height: 2,
-            color: ghostColor,
-          });
-          k.drawRect({
-            pos: k.vec2(col * TILE + ghostOx, row * TILE + ghostOy),
-            width: 2,
-            height: ghostH,
-            color: ghostColor,
-          });
-          k.drawRect({
-            pos: k.vec2(col * TILE + ghostOx + ghostW - 2, row * TILE + ghostOy),
-            width: 2,
-            height: ghostH,
-            color: ghostColor,
-          });
-        }
-      }
+      // Ghost cursor moved out of fixed HUD entity (see renderGhostCursor below)
 
       const isPaused = k.getTreeRoot().paused;
       if (isPaused) {
@@ -496,6 +447,41 @@ export function createHUD({
         });
       }
 
+  }
+
+  function renderGhostCursor() {
+    if (settings.open || k.getTreeRoot().paused) return;
+    const selectedTool = getCurrentTool();
+    const sm = k.mousePos();
+    const wm = k.toWorld(sm);
+    const col = Math.floor(wm.x / TILE);
+    const row = Math.floor(wm.y / TILE);
+    if (col < 0 || row < 0 || row >= GROUND_ROW) return;
+    if (col >= 30 && col < 35 && row >= 2 && row < 4) return; // skull stand zone
+    const COLORS = {
+      lava: k.rgb(255, 107, 28), water: k.rgb(79, 184, 232),
+      coin: k.rgb(255, 210, 50), boost: k.rgb(255, 210, 63),
+      trampoline: k.rgb(255, 80, 130), erase: k.rgb(220, 80, 80),
+      wheel: k.rgb(80, 220, 240), rail: k.rgb(220, 220, 230),
+      rail_up: k.rgb(150, 220, 255), rail_down: k.rgb(150, 220, 255),
+      fan: k.rgb(180, 220, 240), portal: k.rgb(200, 150, 240),
+      ice: k.rgb(200, 235, 255), magnet: k.rgb(220, 80, 60),
+      bridge: k.rgb(160, 100, 40), rail_loop: k.rgb(180, 80, 240),
+      sol: k.rgb(160, 100, 50), tunnel: k.rgb(120, 60, 180),
+    };
+    const ghostColor = COLORS[selectedTool] || k.rgb(210, 210, 225);
+    const ghostW = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 3 : TILE);
+    const ghostH = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 2 : TILE);
+    const ghostOx = selectedTool === "wheel" ? -TILE : 0;
+    const ghostOy = selectedTool === "wheel" ? -TILE : 0;
+    const baseX = col * TILE + ghostOx;
+    const baseY = row * TILE + ghostOy;
+    k.drawRect({ pos: k.vec2(baseX, baseY), width: ghostW, height: ghostH, color: ghostColor, opacity: 0.3 + Math.sin(k.time() * 6) * 0.1 });
+    // Frame
+    k.drawRect({ pos: k.vec2(baseX, baseY), width: ghostW, height: 2, color: ghostColor });
+    k.drawRect({ pos: k.vec2(baseX, baseY + ghostH - 2), width: ghostW, height: 2, color: ghostColor });
+    k.drawRect({ pos: k.vec2(baseX, baseY), width: 2, height: ghostH, color: ghostColor });
+    k.drawRect({ pos: k.vec2(baseX + ghostW - 2, baseY), width: 2, height: ghostH, color: ghostColor });
   }
 
   return {

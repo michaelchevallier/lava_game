@@ -235,7 +235,28 @@ export function createTierSystem({ k, save, persistSave, gameState, audio, showP
     onCoin: () => increment("coin"),
     onTilePlace: (type) => {
       increment("tile");
-      if (type === "rail_up" || type === "rail_down") increment("railDiag");
+      // Hooks par type pour les objectifs "Poser 1 X"
+      const TYPE_HOOK = {
+        water: "tileWater",
+        boost: "tileBoost",
+        trampoline: "tileTramp",
+        fan: "tileFan",
+        portal: "tilePortal",
+        ice: "tileIce",
+        magnet: "tileMagnet",
+        bridge: "tileBridge",
+        wheel: "tileWheel",
+        rail_loop: "tileLoop",
+        tunnel: "tileTunnel",
+        coin: "tileCoin",
+        lava: "tileLava",
+        rail: "tileRail",
+        rail_up: "railDiag",
+        rail_down: "railDiag",
+      };
+      const hook = TYPE_HOOK[type];
+      if (hook) increment(hook);
+      // Legacy
       if (type === "trampoline") increment("trampoline");
     },
     onWagonSpawn: () => increment("wagon"),
