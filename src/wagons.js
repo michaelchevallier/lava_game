@@ -463,7 +463,8 @@ export function createWagonSystem({
       for (const cr of gameState.iceCrowns || []) {
         const d = Math.hypot(wagon.pos.x + 30 - cr.cx, wagon.pos.y + 15 - cr.cy);
         if (d < cr.radius) {
-          speedMult *= 0.3;
+          // Slow zone retiré (le user trouvait que ça ressemblait à du bullet time)
+          // speedMult *= 0.3;
           if (Math.random() < 0.4 && entityCounts.particle < 240) {
             k.add([
               k.rect(3, 3),
