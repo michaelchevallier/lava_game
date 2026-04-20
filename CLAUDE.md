@@ -88,8 +88,8 @@ requestAnimationFrame(tick);
 - [ ] main.js < 1200 lignes (à 1499, refactor sky/* à venir)
 
 ### Bugs perf / GC (à fix)
-- [ ] **GC trop agressif côté gauche** : entités qui devraient être despawn ne le sont pas (visiteurs bloqués, particules résiduelles hors viewport gauche). Vérifier `src/gc.js` et conditions de despawn left-side
-- [ ] **Wagons despawn prématuré** : les wagons disparaissent avant d'avoir quitté la zone de jeu visible. Fix : garder une marge de **30% de largeur viewport** (zone "cachée" autour de la zone visible) avant GC — donne du tampon visuel et évite pop-out sec
+- [x] **GC trop agressif côté gauche** (fix fb64c4a) — left cull at -0.3×WIDTH
+- [x] **Wagons despawn prématuré** (fix fb64c4a) — 30% viewport buffer
 
 ### Features parc d'attractions
 - [x] Grande Roue 3x3
@@ -97,9 +97,25 @@ requestAnimationFrame(tick);
 - [x] Bullet-Time Combo
 - [x] Manège Magnétique (Téléport Magnétique combo)
 - [x] Carnet des Spectres (24 collectibles bitmask, all unlocks wired)
-- [ ] Roue de fortune
-- [ ] Pluie de pièces aléatoire
-- [ ] Mini-jeu chamboule-tout
+- [x] Roue de fortune (combo c821926)
+- [x] Pluie de pièces aléatoire (weather.js)
+- [x] Mini-jeu chamboule-tout (combo c821926)
+- [x] Maison Hantée (combo 0a82c1c)
+- [x] Tunnel de l'Amour Maudit (5028227)
+- [x] Course de Wagons 2P (F2)
+
+### Tiles → sprites pré-rendus (perf)
+- [x] Rail Loop (1 sprite au lieu de 90 entités)
+- [x] Magnet, Trampoline (964f472)
+- [x] Bridge, Wheel (9e7b890)
+- [x] Ice, Portal, Tunnel (09f9ffb)
+- [x] Fan (déjà 1 sprite)
+
+### Sprites personnages (20×30)
+- [x] Mario, Luigi, Toad (vue de profil — e31cf54)
+- [x] Pika (front — fe4f4e7)
+- [ ] Sonic, Link, Kirby, Yoshi, Pacman, Bowser, DK, Mega, Samus, Crash, Steve, Pokeball, Tetris, Invader, Chief, Astro (17 à upgrader, hand-crafted lourd — à batcher)
+- [ ] Skeleton variants par avatar (pour l'instant unifié sur player_skel)
 
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings
