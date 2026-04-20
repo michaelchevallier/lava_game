@@ -736,6 +736,7 @@ k.scene("game", () => {
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("0", () => (selectedTool = "fan"));
   k.onKeyPress("y", () => (selectedTool = "wheel"));
+  k.onKeyPress("l", () => (selectedTool = "rail_loop"));
   k.onKeyPress("k", () => (selectedTool = "dig"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
