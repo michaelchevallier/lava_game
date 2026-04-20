@@ -805,7 +805,7 @@ k.scene("game", () => {
   });
   _playerConfigs = PLAYER_CONFIGS;
 
-  const activePlayers = spawnPlayers(settings.numPlayers, isMobile);
+  const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock(22);
 
   k.onKeyPress("1", () => (selectedTool = "lava"));

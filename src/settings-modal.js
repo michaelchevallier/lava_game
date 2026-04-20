@@ -1,3 +1,5 @@
+import { AVATARS, getAvatarById, avatarBadgeHtml } from "./avatars.js";
+
 export function createSettingsModal({ save, persistSave, settings, audio, gameState, onAction }) {
   let modal = null;
 
@@ -40,7 +42,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
 
       <section style="margin-bottom:22px">
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Joueurs</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
           ${[1,2].map(i => `
             <div id="sm-player-${i}" data-n="${i}" style="
               cursor:pointer;border-radius:8px;padding:10px 8px;text-align:center;width:120px;
@@ -57,6 +59,21 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
               <div style="font-size:11px;color:rgba(200,220,255,0.7);margin-top:3px">${Array.from({length:i}).map((_,j)=>CHAR_NAMES[j]).join(", ")}</div>
             </div>
           `).join("")}
+        </div>
+        <div style="font-size:13px;color:#ffd23f;font-weight:bold;margin-bottom:8px;letter-spacing:1px">PERSONNAGES</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          ${[1, 2].map(i => {
+            const slot = `p${i}`;
+            const currentId = (save.avatars && save.avatars[slot]) || (i === 1 ? "mario" : "pika");
+            return `
+              <div>
+                <div style="font-size:11px;color:rgba(180,210,255,0.8);margin-bottom:5px;text-align:center">Joueur ${i}</div>
+                <div class="sm-avatar-grid" data-slot="${slot}" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:260px">
+                  ${AVATARS.map(av => avatarBadgeHtml(av, 44, av.id === currentId)).join("")}
+                </div>
+              </div>
+            `;
+          }).join("")}
         </div>
       </section>
 
@@ -136,6 +153,25 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
         }
       });
     }
+
+    panel.querySelectorAll(".sm-avatar-grid").forEach((grid) => {
+      grid.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-avatar-id]");
+        if (!el) return;
+        const avatarId = el.dataset.avatarId;
+        const slot = grid.dataset.slot;
+        if (!save.avatars) save.avatars = { p1: "mario", p2: "pika" };
+        save.avatars[slot] = avatarId;
+        persistSave(save);
+        grid.querySelectorAll("[data-avatar-id]").forEach((badge) => {
+          const av = getAvatarById(badge.dataset.avatarId);
+          const sel = badge.dataset.avatarId === avatarId;
+          badge.style.border = sel ? "3px solid #ffd23f" : "2px solid rgba(255,255,255,0.25)";
+          badge.style.transform = sel ? "scale(1.05)" : "scale(1)";
+          badge.style.background = sel ? av.color : av.color + "cc";
+        });
+      });
+    });
 
     const slVol = panel.querySelector("#sm-volume");
     const slVolVal = panel.querySelector("#sm-volume-val");

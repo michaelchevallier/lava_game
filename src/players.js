@@ -1,4 +1,5 @@
 import { TILE, GROUND_ROW, SPEED, JUMP, WAGON_JUMP, gridKey } from "./constants.js";
+import { getAvatarById } from "./avatars.js";
 
 export function createPlayerSystem({
   k, gameState, audio, tileMap, tryBoardWagon, exitWagon, spawnWagon,
@@ -337,10 +338,30 @@ export function createPlayerSystem({
     return p;
   }
 
-  function spawnPlayers(numPlayers, mobileP1 = false) {
+  function buildConfigWithAvatar(baseConfig, avatarId) {
+    if (!avatarId) return baseConfig;
+    const avatar = getAvatarById(avatarId);
+    const sprite = avatar.origSprite || "player";
+    const skelSprite = avatar.skelSprite || "player_skel";
+    const colorHex = avatar.color;
+    const r = parseInt(colorHex.slice(1, 3), 16);
+    const g = parseInt(colorHex.slice(3, 5), 16);
+    const b = parseInt(colorHex.slice(5, 7), 16);
+    return {
+      ...baseConfig,
+      sprite,
+      skelSprite,
+      name: avatar.name,
+      color: k.rgb(r, g, b),
+    };
+  }
+
+  function spawnPlayers(numPlayers, mobileP1 = false, avatarIds = {}) {
     const arr = [];
     for (let i = 0; i < numPlayers; i++) {
-      arr.push(createPlayer(PLAYER_CONFIGS[i], mobileP1 && i === 0));
+      const slot = `p${i + 1}`;
+      const config = buildConfigWithAvatar(PLAYER_CONFIGS[i], avatarIds[slot]);
+      arr.push(createPlayer(config, mobileP1 && i === 0));
     }
     return arr;
   }
