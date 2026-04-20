@@ -2,7 +2,7 @@ import kaplay from "kaplay";
 import {
   TILE, COLS, ROWS, GROUND_ROW, WIDTH, HEIGHT,
   COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES,
-  gridKey,
+  gridKey, currentSeason, SEASON_PALETTES,
 } from "./constants.js";
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
@@ -23,12 +23,15 @@ import { createConstellationSystem } from "./constellation.js";
 import { createSettingsModal } from "./settings-modal.js";
 import { createGroundSystem } from "./ground.js";
 import { createCinematicSystem } from "./cinematic.js";
+import { createQuestSystem } from "./quests.js";
+
+const __initialPalette = SEASON_PALETTES[currentSeason()];
 
 const k = kaplay({
   canvas: document.getElementById("game"),
   width: WIDTH,
   height: HEIGHT,
-  background: [92, 148, 252],
+  background: __initialPalette.sky,
   global: false,
   pixelDensity: 1,
   letterbox: false,
@@ -425,6 +428,7 @@ k.scene("game", () => {
   });
 
   function checkMilestone() {
+    window.__quests?.onScore(gameState.score);
     while (
       gameState.milestoneIdx < MILESTONES.length &&
       gameState.score >= MILESTONES[gameState.milestoneIdx]
@@ -444,6 +448,7 @@ k.scene("game", () => {
     if (gameState.sessionSkeletons === 100) cinematic.play("100souls", "100 AMES");
     persistSave(save);
     if (save.totalSkeletons >= 100) spectres.unlock(6);
+    window.__quests?.onSkeleton();
   }
 
   gameState.onSlowMilestone = () => spectres.unlock(4);
@@ -493,6 +498,7 @@ k.scene("game", () => {
     gameState.bulletTimeUntil = k.time() + 3;
     cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock(8);
+    window.__quests?.onCombo5();
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
     if (save.apocalypseCount >= 5) spectres.unlock(7);
@@ -557,6 +563,7 @@ k.scene("game", () => {
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;
     persistSave(save);
     if (save.totalCoins >= 100) spectres.unlock(17);
+    window.__quests?.onCoin();
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
 
     // Coin streak: 5 coins in <2s → +50 bonus + golden flash
@@ -619,6 +626,92 @@ k.scene("game", () => {
       "cloud",
       { speed: 6 + (i % 3) * 3 },
     ]);
+  }
+
+  {
+    const season = currentSeason();
+    const seasonPalette = SEASON_PALETTES[season];
+
+    if (season !== "normal") {
+      k.add([
+        k.rect(WIDTH, HEIGHT),
+        k.pos(0, 0),
+        k.color(k.rgb(seasonPalette.sky[0], seasonPalette.sky[1], seasonPalette.sky[2])),
+        k.opacity(0.18),
+        k.z(-9),
+      ]);
+    }
+
+    k.add([
+      k.pos(WIDTH - 180, HEIGHT - 22),
+      k.z(35),
+      {
+        draw() {
+          const labels = { normal: "Normal", halloween: "Halloween", christmas: "Noel", carnival: "Carnaval" };
+          k.drawText({
+            text: `Saison : ${labels[season]}`,
+            size: 11,
+            pos: k.vec2(0, 0),
+            color: k.rgb(seasonPalette.accent[0], seasonPalette.accent[1], seasonPalette.accent[2]),
+          });
+        },
+      },
+    ]);
+
+    if (season === "halloween") {
+      for (let i = 0; i < 5; i++) {
+        const cx = 100 + i * 230;
+        k.add([
+          k.circle(8),
+          k.pos(cx, GROUND_ROW * TILE - 12),
+          k.color(k.rgb(255, 140, 30)),
+          k.outline(1, k.rgb(80, 30, 0)),
+          k.z(-5),
+        ]);
+        k.add([
+          k.rect(2, 4),
+          k.pos(cx - 1, GROUND_ROW * TILE - 22),
+          k.color(k.rgb(60, 100, 30)),
+          k.z(-5),
+        ]);
+      }
+    } else if (season === "christmas") {
+      for (let i = 0; i < 8; i++) {
+        const flake = k.add([
+          k.circle(2),
+          k.pos(Math.random() * WIDTH, Math.random() * HEIGHT * 0.6),
+          k.color(k.rgb(255, 255, 255)),
+          k.opacity(0.85),
+          k.z(-3),
+          { vy: 25 + Math.random() * 30, drift: Math.random() * Math.PI * 2 },
+        ]);
+        flake.onUpdate(() => {
+          flake.pos.y += flake.vy * k.dt();
+          flake.pos.x += Math.sin(k.time() * 0.5 + flake.drift) * 8 * k.dt();
+          if (flake.pos.y > HEIGHT) flake.pos.y = -10;
+        });
+      }
+    } else if (season === "carnival") {
+      k.loop(2, () => {
+        if (k.get("season-confetti").length > 12) return;
+        const colors = [k.rgb(255, 80, 180), k.rgb(80, 220, 200), k.rgb(255, 220, 80), k.rgb(180, 80, 255)];
+        const c = k.add([
+          k.rect(4, 6),
+          k.pos(Math.random() * WIDTH, -10),
+          k.color(colors[Math.floor(Math.random() * 4)]),
+          k.rotate(Math.random() * 360),
+          k.opacity(0.7),
+          k.z(-3),
+          "season-confetti",
+          { vy: 30 + Math.random() * 20, spin: (Math.random() - 0.5) * 60 },
+        ]);
+        c.onUpdate(() => {
+          c.pos.y += c.vy * k.dt();
+          c.angle = (c.angle || 0) + c.spin * k.dt();
+          if (c.pos.y > HEIGHT) k.destroy(c);
+        });
+      });
+    }
   }
 
   k.add([
@@ -729,7 +822,7 @@ k.scene("game", () => {
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
     exitWagon: (...args) => exitWagon(...args),
-    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); },
+    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); },
   });
   _playerConfigs = PLAYER_CONFIGS;
 
@@ -1046,6 +1139,7 @@ k.scene("game", () => {
     if (row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
+    window.__quests?.onTilePlace(selectedTool);
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1074,6 +1168,7 @@ k.scene("game", () => {
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
+    window.__quests?.onTilePlace(selectedTool);
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
@@ -1487,4 +1582,7 @@ k.scene("game", () => {
 
   tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
   tutorial.setup();
+
+  const quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  window.__quests = quests;
 });
