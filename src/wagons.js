@@ -273,8 +273,10 @@ export function createWagonSystem({
 
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
       const iced = wagon.iceUntil && k.time() < wagon.iceUntil;
+      const sliding = wagon.slideUntil && k.time() < wagon.slideUntil;
       let speedMult = 1;
       if (boosted) speedMult = 2.2;
+      else if (sliding) speedMult = 3;
       else if (iced) speedMult = 1.6;
       if (gameState.bulletTimeUntil > k.time()) speedMult *= 0.3;
       const currentSpeed = wagon.speed * speedMult;
@@ -308,6 +310,60 @@ export function createWagonSystem({
           "particle",
           { vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 30 },
         ]);
+      }
+
+      // Toboggan: detect rail_down ending in cliff (no rail/ground in next col)
+      if (!wagon.slideUntil && !wagon.slideTriggered) {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        const wRow = Math.floor((wagon.pos.y + 30) / TILE);
+        const railTile = tileMap.get(gridKey(wCol, wRow));
+        if (railTile && railTile.tileType === "rail_down") {
+          const nextAny = tileMap.get(gridKey(wCol + 1, wRow + 1))
+            || tileMap.get(gridKey(wCol + 1, wRow))
+            || tileMap.get(gridKey(wCol + 1, wRow - 1));
+          if (!nextAny) {
+            wagon.slideUntil = k.time() + 1.2;
+            wagon.slideTriggered = true;
+            wagon._wasAirborne = false;
+          }
+        }
+      }
+
+      // Slide fire trail
+      if (sliding && entityCounts.particle < 240 && Math.random() < 0.6) {
+        const FIRE = [k.rgb(255, 80, 30), k.rgb(255, 180, 40), k.rgb(255, 220, 60)];
+        k.add([
+          k.rect(3 + Math.random() * 3, 3 + Math.random() * 3),
+          k.pos(wagon.pos.x + Math.random() * 60, wagon.pos.y + 30 + Math.random() * 5),
+          k.color(FIRE[Math.floor(Math.random() * FIRE.length)]),
+          k.opacity(0.9),
+          k.lifespan(0.4, { fade: 0.3 }),
+          k.z(4),
+          "particle",
+          { vx: -50 - Math.random() * 50, vy: -10 - Math.random() * 30 },
+        ]);
+      }
+
+      // Toboggan landing detection
+      if (wagon.slideTriggered) {
+        const isAirborne = !wagon.isGrounded();
+        if (isAirborne) wagon._wasAirborne = true;
+        if (!isAirborne && wagon._wasAirborne) {
+          const landCol = Math.floor((wagon.pos.x + 30) / TILE);
+          const landRow = Math.floor((wagon.pos.y + 35) / TILE) + 1;
+          for (let dc = -1; dc <= 1; dc++) {
+            placeTile(landCol + dc, landRow, "lava");
+            const lavaTile = tileMap.get(gridKey(landCol + dc, landRow));
+            if (lavaTile) lavaTile.temporary = k.time() + 4;
+          }
+          gameState.score += 30;
+          showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "TOBOGGAN ! +30", k.rgb(255, 100, 30), 24);
+          audio.combo();
+          window.__juice?.dirShake(0, 1, 12, 0.25);
+          wagon.slideTriggered = false;
+          wagon.slideUntil = null;
+          wagon._wasAirborne = false;
+        }
       }
 
       // Color trail when going fast (boosted/iced/looping)

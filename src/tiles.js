@@ -742,6 +742,11 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         tileMap.delete(key);
         placeTile(col2, row2, "lava");
         spawnSteamBurst(col2, row2);
+      } else if (b.tileType === "lava" && b.temporary && k.time() > b.temporary) {
+        if (b.extras) b.extras.forEach((e) => k.destroy(e));
+        k.destroy(b);
+        tileMap.delete(key);
+        spawnSteamBurst(b.gridCol, b.gridRow);
       }
     }
   });
