@@ -61,3 +61,23 @@ Magnet entouré de 4 ice cardinales (N/S/E/O dist 1). Magnet → couronne dorée
 - Auto-tamponneuses arena (zone)
 - Saltimbanques jongleurs (déco vivante)
 - Manège enchanté (chevaux qui descendent à des moments aléatoires)
+
+---
+
+# Backlog créatif round 2 (polish + progression)
+
+Sortie des 2 nouveaux opus créatifs lancés mid-cycle.
+
+## Polish / game-feel
+- [x] Slow-Mo Cinématique (TOP — cycle 7) — 100ème âme / record / apocalypse
+- [ ] Squash & Stretch transformation (1 commit, 5/5) — visiteur compresse + bounce + flash blanc
+- [ ] Hésitation visiteur (2 commits, 4/5) — passenger tourne tête vers menace, "?" puis "!"
+- [ ] HUD Living Numbers (1 commit, 4/5) — score roule (déjà partiel : displayScore lerp existe)
+- [x] Wagon Expressif (cycle 8 partiel — overlap avec Wagon-Roi)
+
+## Progression / rétention
+- [x] Almanach du Forain (TOP — cycle 9) — 3 quêtes journalières + streak 7j
+- [x] Saisons du Parc (cycle 10) — Halloween/Noël/Carnaval cycliques 2 semaines
+- [ ] Wagon-Roi évolutif (déjà fait cycle 8) — visuel 7 paliers selon save.plays
+- [ ] Le Conte du Parc (1 commit, 3/5) — 14 phrases lore textuel par palier
+- [ ] Concours du Foyer (2 commits, 4/5) — records par perso (Mario/Pika/Luigi/Toad)
