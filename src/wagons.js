@@ -523,23 +523,22 @@ export function createWagonSystem({
           break;
         }
       }
-      // Quand un joueur pilote : contrôle 100% via input, vitesse symétrique.
-      // Sans input = immobile. Droite = +240px/s. Gauche = -240px/s (même vitesse).
+      // Quand un joueur pilote : contrôle 100% via input. Bypass complet de la physique —
+      // on déplace wagon.pos.x directement, on évite tout side-effect (collisions, dérive).
       let currentSpeed;
       if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral && !wagon.isRace) {
         const RIDER_SPEED = 240;
-        if (wagon._riderInput === "right") {
-          currentSpeed = RIDER_SPEED;
-        } else if (wagon._riderInput === "left") {
-          currentSpeed = -RIDER_SPEED;
-        } else {
-          currentSpeed = 0;
-        }
+        let dx = 0;
+        if (wagon._riderInput === "right") dx = RIDER_SPEED;
+        else if (wagon._riderInput === "left") dx = -RIDER_SPEED;
+        wagon.pos.x += dx * k.dt();
+        if (wagon.vel) wagon.vel.x = 0;
         wagon._riderInput = null;
+        currentSpeed = 0; // on ne délègue pas à wagon.move() pour ce cas
       } else {
         currentSpeed = wagon.speed * speedMult;
+        wagon.move(currentSpeed, 0);
       }
-      wagon.move(currentSpeed, 0);
 
       // Track speed states for spectres id 4 (slow 10s) / id 5 (fast 10s)
       if (speedMult <= 0.6) {
@@ -1463,7 +1462,8 @@ export function createWagonSystem({
         if (wagon.passengers[i].type === "skeleton") {
           wagon.passengers[i].type = "human";
           const ent = wagon.passengerEntities[i];
-          if (ent?.exists()) ent.sprite = "human";
+          // Si c'est un player-rider, revenir à son sprite normal (Mario/Luigi/Toad/Pika)
+          if (ent?.exists()) ent.sprite = ent.normalSprite || "human";
         }
       }
       wagon.passenger = "human";
@@ -1528,7 +1528,9 @@ export function createWagonSystem({
       if (wagon.passengers[i].type === "human") {
         wagon.passengers[i].type = "skeleton";
         const ent = wagon.passengerEntities[i];
-        if (ent?.exists()) ent.sprite = "skeleton";
+        // Si le passager est un joueur (player rider), utiliser son skelSprite dédié
+        // (player_skel / luigi_skel / toad_skel / pika_skel). Sinon, squelette visiteur.
+        if (ent?.exists()) ent.sprite = ent.skelSprite || "skeleton";
         humansCount++;
       }
     }
@@ -1739,7 +1741,7 @@ export function createWagonSystem({
       k.pos(closest.pos.x + 6, closest.pos.y - 40),
       k.z(7),
       "passenger",
-      { wagon: closest, isPlayerRider: true },
+      { wagon: closest, isPlayerRider: true, normalSprite: p.normalSprite, skelSprite: p.skelSprite },
     ]);
     closest.passengerEntity = rider;
     closest.passengerEntities.unshift(rider);
