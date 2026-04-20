@@ -34,6 +34,7 @@ import { createVisitorQuestSystem } from "./visitor-quests.js";
 import { createCoinThiefSystem } from "./coin-thief.js";
 import { createWeatherSystem } from "./weather.js";
 import { createCelebrationSystem } from "./celebration.js";
+import { createRaceSystem } from "./race.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -877,6 +878,16 @@ k.scene("game", () => {
 
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock(22);
+
+  const raceSystem = createRaceSystem({
+    k, gameState, settings, audio, juice, showPopup: (...args) => showPopup(...args),
+    spawnWagon, exitWagon,
+    getActivePlayers: () => activePlayers,
+    WORLD_WIDTH, TILE, GROUND_ROW, WIDTH, HEIGHT,
+  });
+  window.__race = raceSystem;
+  k.onKeyPress("f2", () => raceSystem.start());
+  k.onUpdate(() => raceSystem.check());
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
   k.onKeyPress("2", () => (selectedTool = "rail"));

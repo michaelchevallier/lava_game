@@ -221,7 +221,7 @@ export function createWagonSystem({
       k.rect(60, 30),
       k.pos(startX, y),
       k.opacity(0),
-      k.area({ shape: new k.Rect(k.vec2(0, -10), 60, 50) }),
+      k.area({ shape: new k.Rect(k.vec2(0, -10), 60, 50), collisionIgnore: ["wagon"] }),
       k.body(),
       k.anchor("topleft"),
       k.rotate(0),
@@ -982,6 +982,7 @@ export function createWagonSystem({
       const outOfBounds = wagon.inverseTrain
         ? wagon.pos.x < -80
         : wagon.pos.x > WIDTH + 80;
+      if (outOfBounds && wagon.isRace) return;
       if (outOfBounds) {
         if (wagon.rider) exitWagon(wagon.rider);
         const anyHuman = wagon.passengers.some((p) => p.type === "human");
@@ -996,12 +997,16 @@ export function createWagonSystem({
           );
           audio.splash();
         }
-        wagon.parts.forEach((p) => k.destroy(p));
+        // Détruit toutes les parts + passengerEntities (multi-passagers)
+        wagon.parts?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        wagon.passengerEntities?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        if (wagon.passengerEntity?.exists()) k.destroy(wagon.passengerEntity);
         k.destroy(wagon);
       }
     });
 
     wagon.onCollide("lava", () => {
+      if (wagon.invincible) return;
       if (wagon.isSpectral) return;
       const hasHuman = wagon.passengers.some((p) => p.type === "human");
       if (hasHuman || wagon.inverseTrain) {
@@ -1651,6 +1656,7 @@ export function createWagonSystem({
   function exitWagon(p) {
     const w = p.ridingWagon;
     if (!w) return;
+    if (w.isRace) return;
     p.ridingWagon = null;
     w.rider = null;
     w._riderInput = null;
@@ -1672,7 +1678,7 @@ export function createWagonSystem({
 
   function tryAutoBoardVisitor(wagon, visitor) {
     if (wagon.passengers.length >= 4) return false;
-    if (wagon.inverseTrain || wagon.ghostTrain || wagon.isSpectral) return false;
+    if (wagon.inverseTrain || wagon.ghostTrain || wagon.isSpectral || wagon.isRace) return false;
     wagon.passengers.push({ type: visitor.isSkeleton ? "skeleton" : "human" });
     const idx = wagon.passengers.length - 1;
     const px = wagon.pos.x + 6 + idx * 14;
