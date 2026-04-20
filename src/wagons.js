@@ -1740,6 +1740,11 @@ export function createWagonSystem({
     closest._riderInput = null;
     if (closest.vel) closest.vel.x = 0;
     p.opacity = 0;
+    // Tue totalement la présence physique du joueur pour qu'il ne pousse pas le wagon.
+    p._parkedPos = { x: p.pos.x, y: p.pos.y };
+    p.pos.x = -99999;
+    p.pos.y = -99999;
+    if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
 
     if (closest.passengerEntity?.exists()) {
       const idx = closest.passengerEntities.indexOf(closest.passengerEntity);

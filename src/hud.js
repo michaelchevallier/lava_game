@@ -444,7 +444,7 @@ export function createHUD({
       sol: k.rgb(160, 100, 50), tunnel: k.rgb(120, 60, 180),
     };
     const ghostColor = COLORS[selectedTool] || k.rgb(210, 210, 225);
-    const ghostW = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 3 : TILE);
+    const ghostW = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 2 : TILE);
     const ghostH = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 2 : TILE);
     const ghostOx = selectedTool === "wheel" ? -TILE : 0;
     const ghostOy = selectedTool === "wheel" ? -TILE : 0;
