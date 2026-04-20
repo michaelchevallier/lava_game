@@ -33,6 +33,7 @@ import { createGCSystem } from "./gc.js";
 import { createVisitorQuestSystem } from "./visitor-quests.js";
 import { createCoinThiefSystem } from "./coin-thief.js";
 import { createWeatherSystem } from "./weather.js";
+import { createMinigames } from "./minigames.js";
 import { createCelebrationSystem } from "./celebration.js";
 import { createRaceSystem } from "./race.js";
 
@@ -1451,4 +1452,5 @@ k.scene("game", () => {
   window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
   window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
+  window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
 });
