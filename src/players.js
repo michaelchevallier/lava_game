@@ -23,6 +23,7 @@ export function createPlayerSystem({
       color: k.rgb(255, 210, 63),
       keys: { left: "j", right: "l", jump: "i", board: "o" },
       sizeMult: 1.3,
+      hitbox: [8, 6, 24, 54],
     },
     {
       x: 280,

@@ -5,7 +5,7 @@
 export const AVATARS = [
   { id: "mario",    name: "Mario",     color: "#e63946", origSprite: "player",   skelSprite: "player_skel",      sizeMult: 1.5, hitbox: [8, 6, 24, 54] },
   { id: "luigi",    name: "Luigi",     color: "#7cc947", origSprite: "luigi",    skelSprite: "luigi_skel",       sizeMult: 1.7, hitbox: [8, 6, 24, 54] },
-  { id: "pika",     name: "Pika",      color: "#ffd23f", origSprite: "pika",     skelSprite: "pika_skel",        sizeMult: 1.3 },
+  { id: "pika",     name: "Pika",      color: "#ffd23f", origSprite: "pika",     skelSprite: "pika_skel",        sizeMult: 1.3, hitbox: [8, 6, 24, 54] },
   { id: "toad",     name: "Toad",      color: "#ff4c6d", origSprite: "toad",     skelSprite: "toad_skel",        sizeMult: 1.35, hitbox: [8, 6, 24, 54] },
   { id: "sonic",    name: "Sonic",     color: "#3a7bd5", origSprite: "sonic",    skelSprite: "skeleton_generic", sizeMult: 1.5 },
   { id: "link",     name: "Link",      color: "#3aaa35", origSprite: "link",     skelSprite: "skeleton_generic", sizeMult: 1.6 },
