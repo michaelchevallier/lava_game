@@ -238,6 +238,7 @@ k.scene("game", () => {
   createAchievements({ k, spectres, audio });
 
   const cinematic = createCinematicSystem({ k, audio, WIDTH, HEIGHT });
+  window.__cinematic = cinematic;
   cinematic.reset();
 
   const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes, detectLavaTriangles, detectIceCrowns } = createTileSystem({
@@ -1134,6 +1135,8 @@ k.scene("game", () => {
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
     if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
+    // Bloque placement dans la zone du stand de tir (cols 30-34, rows 2-3)
+    if (col >= 30 && col < 35 && row >= 2 && row < 4) return;
     const key = gridKey(col, row);
     if (selectedTool !== "erase" && selectedTool !== "sol" && window.__tiers && !window.__tiers.isUnlocked(selectedTool)) {
       showPopup(WIDTH / 2, 80, "VERROUILLE - completez les objectifs du tier", k.rgb(255, 80, 80), 18);
@@ -1175,6 +1178,8 @@ k.scene("game", () => {
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
     if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
+    // Bloque placement dans la zone du stand de tir (cols 30-34, rows 2-3)
+    if (col >= 30 && col < 35 && row >= 2 && row < 4) return;
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
     if (selectedTool !== "erase" && selectedTool !== "sol" && window.__tiers && !window.__tiers.isUnlocked(selectedTool)) return;

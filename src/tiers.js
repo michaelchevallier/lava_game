@@ -133,9 +133,16 @@ export function createTierSystem({ k, save, persistSave, gameState, audio, showP
     if (allDone) {
       save.tier = nextIdx;
       const tier = TIERS[save.tier];
-      const newTiles = tier.unlocks.map(t => t.toUpperCase()).join(", ");
-      showPopup?.(WIDTH / 2, 100, `TIER ${save.tier} ! Debloque : ${newTiles}`, k.rgb(255, 200, 80), 18);
+      const newTiles = tier.unlocks.length > 0 ? tier.unlocks.map(t => t.toUpperCase()).join(", ") : "Aucune (TIER MAX)";
+      // Célébration spectaculaire via cinematic system
+      const cinKey = `tier${save.tier}`;
+      window.__cinematic?.play?.(cinKey, `TIER ${save.tier} - ${tier.title || ""}`);
+      // Showpopup secondaire avec liste tuiles
+      setTimeout(() => {
+        showPopup?.(WIDTH / 2, 220, `Debloque : ${newTiles}`, k.rgb(120, 220, 120), 20);
+      }, 800);
       audio.combo?.();
+      audio.gold?.();
       rebuildUnlocked();
       persistSave(save);
     }
