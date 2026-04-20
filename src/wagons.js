@@ -869,7 +869,7 @@ export function createWagonSystem({
             break;
           }
         }
-        if (wagon.glideUntil > k.time()) {
+        if (wagon.glideUntil > k.time() && !wagon.rider) {
           wagon.move(wagon.glideBonus, 0);
           if (Math.random() < 0.4) {
             k.add([
@@ -886,7 +886,8 @@ export function createWagonSystem({
       }
 
       // Téléport magnétique: portail adjacent à un magnet attire les wagons (vortex)
-      {
+      // Skip si rider pour pas overrider le contrôle joueur
+      if (!wagon.rider) {
         for (const mp of gameState.magnetPortals || []) {
           const dx = (mp.x + TILE / 2) - (wagon.pos.x + 30);
           const dy = (mp.y + TILE / 2) - (wagon.pos.y + 15);
