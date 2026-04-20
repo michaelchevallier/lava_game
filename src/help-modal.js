@@ -50,7 +50,6 @@ export function showInteractionsModal() {
 <ul style="margin:0;padding-left:18px;font-size:13px;color:#ccc;line-height:1.8">
   <li>🎯 <b style="color:#ff80e0">Combo ×2 / ×3 / ×5 / ×8</b> &mdash; enchaîner des transformations rapides en moins de 2 s.</li>
   <li>⚡ <b style="color:#ffe060">APOCALYPSE ×5</b> &mdash; cascade qui transforme tous les visiteurs visibles à l'écran.</li>
-  <li>⏱ <b style="color:#80c0ff">BULLET TIME ×8</b> &mdash; ralentit tout pendant 3 s et double le score.</li>
   <li>👻 <b style="color:#aaa">Train Fantôme</b> &mdash; toutes les 45 s, wagon noir aux yeux rouges ; +100 pts si transformé.</li>
   <li>🎩 <b style="color:#fff">VIP</b> &mdash; 1 visiteur sur 8 porte un chapeau haut-de-forme : +50 pts au lieu de +10.</li>
   <li>🎆 <b style="color:#ffa0ff">Feux d'artifice</b> &mdash; déclenchés à chaque palier de score : 50 / 100 / 250 / 500 / 1000 pts.</li>

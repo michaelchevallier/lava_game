@@ -141,7 +141,7 @@ const settings = {
 
 const gameState = {
   skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
-  milestoneIdx:0, bulletTimeUntil:0,
+  milestoneIdx:0,
   wagonSpeedMult: save.wagonSpeedMult ?? 1, zoom: save.zoom ?? 0.5,
   magnetFields:[], geysers:[], lastConstellationAt:0, constellationActive:false,
   metronomes:[], scoreMultiplier:1, scoreMultiplierUntil:0, iceCrowns:[],
@@ -193,9 +193,9 @@ k.scene("game", () => {
   const tileMap = new Map();
   Object.assign(gameState, {
     skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
-    milestoneIdx:0, bulletTimeUntil:0, lastTilePlaced:k.time(),
+    milestoneIdx:0, lastTilePlaced:k.time(),
     tilesPlacedThisGame:0, trampolinesThisGame:0, vipStreak:0, portalUses:0,
-    bulletTimeUnlocked:false, _ducksCaught:0, lastConstellationAt:0,
+    _ducksCaught:0, lastConstellationAt:0,
     constellationActive:false, sessionSkeletons:0,
   });
 
@@ -625,7 +625,7 @@ k.scene("game", () => {
     }
     gameState.comboExpire = now + COMBO_WINDOW;
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
-    const btMult = gameState.bulletTimeUntil > now ? 2 : 1;
+    const btMult = 1;
     const metroMult = (gameState.scoreMultiplier > 1 && now < gameState.scoreMultiplierUntil) ? gameState.scoreMultiplier : 1;
     const pts = base * mult * btMult * metroMult * (1 + darkBonus);
     gameState.score += pts;
@@ -658,7 +658,6 @@ k.scene("game", () => {
 
   function triggerApocalypse() {
     window.__tiers?.onApocalypse?.();
-    gameState.bulletTimeUntil = k.time() + 3;
     cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock(8);
     window.__quests?.onCombo5();
@@ -1444,18 +1443,9 @@ k.scene("game", () => {
 
   k.onUpdate("coin", (t) => {
     if (t.magnetLocked) return;
-    const btActive = gameState.bulletTimeUntil > k.time();
-    const bobAmp = btActive ? 8 : 4;
-    const bobFreq = btActive ? 6 : 3;
-    t.pos.y = t.baseY + Math.sin(k.time() * bobFreq + t.gridCol * 0.4) * bobAmp;
-    if (btActive) {
-      const pScale = 1 + Math.sin(k.time() * 10 + t.gridCol) * 0.18;
-      t.scale = k.vec2(pScale, pScale);
-      t.color = k.rgb(255, 210 + Math.sin(k.time() * 8) * 40, 30);
-    } else {
-      t.scale = k.vec2(1, 1);
-      t.color = k.rgb(255, 210, 0);
-    }
+    t.pos.y = t.baseY + Math.sin(k.time() * 3 + t.gridCol * 0.4) * 4;
+    t.scale = k.vec2(1, 1);
+    t.color = k.rgb(255, 210, 0);
     if (t.extras && t.extras[0] && t.extras[0].exists()) {
       const inner = t.extras[0];
       inner.pos.x = t.pos.x;

@@ -460,7 +460,6 @@ export function createWagonSystem({
         speedMult = stack === 1 ? 2.2 : stack === 2 ? 3.0 : 4.5;
       } else if (sliding) speedMult = 3;
       else if (iced) speedMult = 1.6;
-      if (gameState.bulletTimeUntil > k.time()) speedMult *= 0.3;
       for (const cr of gameState.iceCrowns || []) {
         const d = Math.hypot(wagon.pos.x + 30 - cr.cx, wagon.pos.y + 15 - cr.cy);
         if (d < cr.radius) {

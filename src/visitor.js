@@ -71,8 +71,7 @@ export function createVisitorSystem({
           }
         }
       }
-      const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
-      v.move(vSpeed, 0);
+      v.move(v.walkSpeed, 0);
       // Anti-stuck : si pas bougé depuis 4s, destroy (évite pile-up indéfini)
       if (v._stuckCheckAt === undefined) { v._stuckCheckAt = k.time(); v._stuckLastX = v.pos.x; }
       if (k.time() - v._stuckCheckAt > 4) {

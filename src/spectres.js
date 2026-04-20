@@ -7,7 +7,7 @@ export const SPECTRES = [
   { id: 5,  emoji: "🚀", name: "Le Speedy",        desc: "Wagon vitesse à 200% pendant 10s" },
   { id: 6,  emoji: "🔥", name: "L'Embraseur",      desc: "100 squelettes en cumul" },
   { id: 7,  emoji: "⚡", name: "L'Apocalyptique",  desc: "Déclencher APOCALYPSE 5 fois" },
-  { id: 8,  emoji: "⏱",  name: "Le Temporel",      desc: "Atteindre BULLET TIME une fois" },
+  { id: 8,  emoji: "⏱",  name: "Le Temporel",      desc: "Jouer 5 minutes d'affilee" },
   { id: 9,  emoji: "🌊", name: "L'Hydraulicien",   desc: "Construire une cascade (3+ eau vertical)" },
   { id: 10, emoji: "🌬", name: "L'Aérien",         desc: "Catapulter un wagon (Trampo+Fan)" },
   { id: 11, emoji: "🧲", name: "Le Magnétique",    desc: "Créer un Magnet Field" },

@@ -401,32 +401,6 @@ export function createHUD({
         }
       }
 
-      if (gameState.bulletTimeUntil > k.time()) {
-        k.drawRect({
-          pos: k.vec2(0, 0),
-          width: WIDTH,
-          height: HEIGHT,
-          color: k.rgb(20, 30, 80),
-          opacity: 0.25,
-        });
-        const pulse = 1 + Math.sin(k.time() * 8) * 0.1;
-        drawTextOutlined({
-          text: "BULLET TIME",
-          size: 60 * pulse,
-          pos: k.vec2(WIDTH / 2, HEIGHT / 2 - 80),
-          anchor: "center",
-          color: k.rgb(180, 220, 255),
-          outlineThickness: 3,
-        });
-        const btRemaining = gameState.bulletTimeUntil - k.time();
-        k.drawRect({
-          pos: k.vec2(WIDTH / 2 - 100, HEIGHT / 2 - 30),
-          width: 200 * (btRemaining / 3),
-          height: 5,
-          color: k.rgb(100, 180, 255),
-        });
-      }
-
       if (gameState.comboCount >= 2 && k.time() < gameState.comboExpire) {
         const remaining = gameState.comboExpire - k.time();
         const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
