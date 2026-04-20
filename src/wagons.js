@@ -425,10 +425,17 @@ export function createWagonSystem({
             if (part?.exists?.() && "angle" in part) part.angle = 0;
           }
         } else {
-          const ang = Math.PI + loopT * Math.PI * 2;
+          // Direction logique : wagon venant de la gauche monte en premier (counter-clockwise
+          // en coords screen où y↓). Venant de la droite : monte aussi, mais de l'autre côté.
+          // dir = +1 : ang descend de PI → -PI (en haut d'abord depuis la gauche)
+          // dir = -1 : ang monte de 0 → 2PI (en haut d'abord depuis la droite)
+          const dir = wagon.loopDir || 1;
+          const ang = dir > 0
+            ? Math.PI - loopT * Math.PI * 2
+            : loopT * Math.PI * 2;
           wagon.pos.x = wagon.loopCx + Math.cos(ang) * wagon.loopRx - 30;
           wagon.pos.y = wagon.loopCy + Math.sin(ang) * wagon.loopRy - 15;
-          wagon.angle = loopT * 360;
+          wagon.angle = (dir > 0 ? -1 : 1) * loopT * 360;
           const r = (wagon.angle * Math.PI / 180);
           const cosR = Math.cos(r), sinR = Math.sin(r);
           const cx = wagon.pos.x + 30;
@@ -1317,7 +1324,11 @@ export function createWagonSystem({
       wagon.loopCy = loopTile.loopCy;
       wagon.loopRx = loopTile.loopRx;
       wagon.loopRy = loopTile.loopRy;
-      wagon.loopExitX = loopTile.exitX;
+      // Direction d'approche : venant de la gauche (pos.x < loopCx) = +1, sinon -1.
+      // Détermine aussi la sortie : on sort côté opposé à l'entrée.
+      const fromLeft = wagon.pos.x + 30 < loopTile.loopCx;
+      wagon.loopDir = fromLeft ? 1 : -1;
+      wagon.loopExitX = fromLeft ? loopTile.loopCx + loopTile.loopRx + 30 : loopTile.loopCx - loopTile.loopRx - 30 - 60;
     });
 
     wagon.onCollide("tunnel", (tunnel) => {

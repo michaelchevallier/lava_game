@@ -548,16 +548,37 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       });
       tileMap.set(key, hub);
     } else if (type === "rail_loop") {
-      const cx = (col + 1.5) * TILE;
+      // Loop 2×2 (occupe 2 tiles horizontales, 2 verticales). Ancré sur col/row top-left.
+      const cx = (col + 1) * TILE;
       const cy = (row + 1) * TILE;
-      const rx = TILE * 1.5;
+      const rx = TILE;
       const ry = TILE;
       const extras = [];
-      // Single pre-rendered sprite (bitmap généré 1x au load, évite ~90 entités par loop)
-      // Canvas dims = 2*rx + 16 × 2*ry + 16 = 112×80, anchor center
       extras.push(k.add([
         k.sprite("rail_loop_visual"),
         k.pos(cx, cy),
+        k.anchor("center"),
+        k.z(3),
+      ]));
+      // Raccords avec les rails adjacents (cx-rx-TILE → cx-rx, même pour sortie)
+      // On pose un petit tronçon de rail horizontal visible à chaque extrémité.
+      const RAIL_FILL = k.rgb(210, 210, 225);
+      const RAIL_OUTLINE = k.rgb(70, 70, 90);
+      // Tronçon gauche (entrée sol)
+      extras.push(k.add([
+        k.rect(TILE * 0.4, 6),
+        k.pos(cx - rx - TILE * 0.2, cy + ry - 3),
+        k.color(RAIL_FILL),
+        k.outline(2, RAIL_OUTLINE),
+        k.anchor("center"),
+        k.z(3),
+      ]));
+      // Tronçon droit (sortie sol)
+      extras.push(k.add([
+        k.rect(TILE * 0.4, 6),
+        k.pos(cx + rx + TILE * 0.2, cy + ry - 3),
+        k.color(RAIL_FILL),
+        k.outline(2, RAIL_OUTLINE),
         k.anchor("center"),
         k.z(3),
       ]));

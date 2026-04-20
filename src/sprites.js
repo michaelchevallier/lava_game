@@ -845,10 +845,10 @@ const SPR_SKEL_GENERIC = [
 ];
 
 // Procedural loop sprite: 1 image = toute la boucle (2 rails argentés + 18 traverses bois)
-// Évite de spawner 90+ entités par boucle. TILE=32, rx=48, ry=32 (loop size).
+// Évite de spawner 90+ entités par boucle. TILE=32, loop 2×2 → rx=ry=TILE.
 export function makeLoopSpriteUrl() {
   const TILE = 32;
-  const rx = TILE * 1.5;
+  const rx = TILE;
   const ry = TILE;
   const pad = 8;
   const W = Math.ceil(2 * rx + 2 * pad);
