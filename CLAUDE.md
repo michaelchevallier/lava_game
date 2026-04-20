@@ -87,6 +87,10 @@ requestAnimationFrame(tick);
 - [x] Hud.js extraction
 - [ ] main.js < 1200 lignes (à 1499, refactor sky/* à venir)
 
+### Bugs perf / GC (à fix)
+- [ ] **GC trop agressif côté gauche** : entités qui devraient être despawn ne le sont pas (visiteurs bloqués, particules résiduelles hors viewport gauche). Vérifier `src/gc.js` et conditions de despawn left-side
+- [ ] **Wagons despawn prématuré** : les wagons disparaissent avant d'avoir quitté la zone de jeu visible. Fix : garder une marge de **30% de largeur viewport** (zone "cachée" autour de la zone visible) avant GC — donne du tampon visuel et évite pop-out sec
+
 ### Features parc d'attractions
 - [x] Grande Roue 3x3
 - [x] Pêche aux Canards
