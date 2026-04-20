@@ -538,10 +538,26 @@ export function createWagonSystem({
         let dx = 0;
         if (wagon._riderInput === "right") dx = RIDER_SPEED;
         else if (wagon._riderInput === "left") dx = -RIDER_SPEED;
+        // DEBUG LOG : échantillon 10 Hz
+        const now = k.time();
+        const posBefore = wagon.pos.x;
+        const velBefore = wagon.vel?.x;
         wagon.pos.x += dx * k.dt();
         if (wagon.vel) wagon.vel.x = 0;
+        if (!wagon._lastLog || now - wagon._lastLog > 0.1) {
+          wagon._lastLog = now;
+          console.log("[RIDER]", {
+            input: wagon._riderInput,
+            dx,
+            posBefore: posBefore.toFixed(1),
+            posAfter: wagon.pos.x.toFixed(1),
+            velBefore: velBefore?.toFixed(1),
+            velAfter: wagon.vel?.x?.toFixed(1),
+            grounded: wagon.isGrounded?.(),
+          });
+        }
         wagon._riderInput = null;
-        currentSpeed = 0; // on ne délègue pas à wagon.move() pour ce cas
+        currentSpeed = 0;
       } else {
         currentSpeed = wagon.speed * speedMult;
         wagon.move(currentSpeed, 0);
@@ -877,6 +893,7 @@ export function createWagonSystem({
           }
         }
         if (wagon.glideUntil > k.time() && !wagon.rider) {
+          console.log("[GLIDE]", wagon.glideBonus);
           wagon.move(wagon.glideBonus, 0);
           if (Math.random() < 0.4) {
             k.add([
@@ -1735,12 +1752,12 @@ export function createWagonSystem({
       }
     }
     if (!closest) return;
+    console.log("[BOARD] wagon at", closest.pos.x.toFixed(1), "speed=", closest.speed, "vel.x=", closest.vel?.x?.toFixed(1), "playerX=", p.pos.x.toFixed(1), "playerFacing=", p.facing);
     p.ridingWagon = closest;
     closest.rider = p;
     closest._riderInput = null;
     if (closest.vel) closest.vel.x = 0;
     p.opacity = 0;
-    // Tue totalement la présence physique du joueur pour qu'il ne pousse pas le wagon.
     p._parkedPos = { x: p.pos.x, y: p.pos.y };
     p.pos.x = -99999;
     p.pos.y = -99999;
