@@ -523,14 +523,15 @@ export function createWagonSystem({
           break;
         }
       }
-      // Quand un joueur pilote : contrôle 100% via input (pas de momentum passif).
-      // Sans input → wagon immobile. Droite → plein gaz. Gauche → marche arrière.
+      // Quand un joueur pilote : contrôle 100% via input, vitesse symétrique.
+      // Sans input = immobile. Droite = +240px/s. Gauche = -240px/s (même vitesse).
       let currentSpeed;
-      if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral) {
+      if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral && !wagon.isRace) {
+        const RIDER_SPEED = 240;
         if (wagon._riderInput === "right") {
-          currentSpeed = wagon.speed * 1.2;
+          currentSpeed = RIDER_SPEED;
         } else if (wagon._riderInput === "left") {
-          currentSpeed = -wagon.speed * 0.7;
+          currentSpeed = -RIDER_SPEED;
         } else {
           currentSpeed = 0;
         }
@@ -1722,6 +1723,8 @@ export function createWagonSystem({
     if (!closest) return;
     p.ridingWagon = closest;
     closest.rider = p;
+    closest._riderInput = null;
+    if (closest.vel) closest.vel.x = 0;
     p.opacity = 0;
 
     if (closest.passengerEntity?.exists()) {

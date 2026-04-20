@@ -185,6 +185,23 @@ export function createPlayerSystem({
       k.drawText({ text: opts.name, size: 9, pos: k.vec2(nx, ny), anchor: "center", color: opts.color });
     });
 
+    // Walk animation: squash/stretch bob quand le joueur bouge (horiz), hop subtil en idle.
+    p._walkPhase = 0;
+    p.onUpdate(() => {
+      if (p.ridingWagon) return;
+      const moving = Math.abs(p.lastVx || 0) > 10;
+      if (moving) {
+        p._walkPhase += k.dt() * 14;
+        const bob = Math.sin(p._walkPhase);
+        p.scale = k.vec2(mult * (1 + bob * 0.06), mult * (1 - bob * 0.08));
+      } else {
+        p._walkPhase = 0;
+        const idle = Math.sin(k.time() * 2.5) * 0.015;
+        p.scale = k.vec2(mult, mult * (1 + idle));
+      }
+      p.lastVx = 0;
+    });
+
     function playerSpeedMult() {
       const now = k.time();
       if (p.boostUntil && now < p.boostUntil) return 1.5;
