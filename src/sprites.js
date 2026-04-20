@@ -913,6 +913,89 @@ export function makeTrampolineSpriteUrl() {
   return c.toDataURL();
 }
 
+// Procedural ice sprite 32×32: glace cyan avec shines blancs.
+export function makeIceSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "#b4e6ff";
+  ctx.fillRect(0, 0, T, T);
+  ctx.strokeStyle = "#64aadc";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, T - 2, T - 2);
+  // shines blancs
+  ctx.fillStyle = "#ffffff";
+  ctx.globalAlpha = 0.8;
+  ctx.fillRect(4, 6, T - 8, 2);
+  ctx.globalAlpha = 0.6;
+  ctx.fillRect(4, T - 8, T / 2 - 4, 2);
+  ctx.globalAlpha = 1;
+  return c.toDataURL();
+}
+
+// Procedural portal sprite 32×32, variant A (cyan) ou B (magenta).
+export function makePortalSpriteUrl(variant = "A") {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const core = variant === "A" ? "#50dcf0" : "#f050dc";
+  const glow = variant === "A" ? "#c8faff" : "#ffc8fa";
+  const cx = T / 2, cy = T / 2;
+  // Disque intérieur
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(cx, cy, T / 2 - 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = glow;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Swirl décoratif (suggère la rotation figée — la vraie rotation est via k.rotate)
+  ctx.strokeStyle = glow;
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 3; i++) {
+    const a0 = (i / 3) * Math.PI * 2;
+    const r = T / 2 - 6;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, a0, a0 + Math.PI * 0.4);
+    ctx.stroke();
+  }
+  // Point central
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(cx - 1, cy - 1, 2, 2);
+  return c.toDataURL();
+}
+
+// Procedural tunnel sprite 32×32: entrée sombre + yeux rouges.
+export function makeTunnelSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "#0f0519";
+  ctx.fillRect(0, 0, T, T);
+  ctx.strokeStyle = "#502864";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, T - 2, T - 2);
+  // Yeux rouges
+  ctx.fillStyle = "#dc3232";
+  ctx.beginPath();
+  ctx.arc(T * 0.3, T * 0.4, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(T * 0.7, T * 0.4, 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupilles (petit point noir au centre)
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(T * 0.3 - 1, T * 0.4 - 1, 1, 1);
+  ctx.fillRect(T * 0.7 - 1, T * 0.4 - 1, 1, 1);
+  return c.toDataURL();
+}
+
 // Procedural bridge sprite 32×32: 2 planches bois + support central.
 export function makeBridgeSpriteUrl() {
   const T = 32;
@@ -1104,5 +1187,9 @@ export function loadAllSprites(k) {
     k.loadSprite("trampoline_visual", makeTrampolineSpriteUrl()),
     k.loadSprite("bridge_visual", makeBridgeSpriteUrl()),
     k.loadSprite("wheel_visual", makeWheelSpriteUrl()),
+    k.loadSprite("ice_visual", makeIceSpriteUrl()),
+    k.loadSprite("portal_a_visual", makePortalSpriteUrl("A")),
+    k.loadSprite("portal_b_visual", makePortalSpriteUrl("B")),
+    k.loadSprite("tunnel_visual", makeTunnelSpriteUrl()),
   ]);
 }

@@ -211,6 +211,8 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     } else if (type === "portal") {
+      // Portal : 1 sprite pré-rendu par variant (cyan A / magenta B).
+      // Rotation via k.onUpdate("portal") qui incrément angle — le sprite tourne.
       const unpairedA = [...tileMap.values()].find(
         (t) => t.tileType === "portal" && !t.pair && t.portalColor === "A",
       );
@@ -218,18 +220,15 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         (t) => t.tileType === "portal" && !t.pair && t.portalColor === "B",
       );
       const colorKind = unpairedA ? "B" : "A";
-      const rgbCore = colorKind === "A" ? k.rgb(80, 220, 240) : k.rgb(240, 80, 220);
-      const rgbGlow = colorKind === "A" ? k.rgb(200, 250, 255) : k.rgb(255, 200, 250);
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
       const ring = k.add([
-        k.circle(TILE / 2 - 2),
+        k.sprite(colorKind === "A" ? "portal_a_visual" : "portal_b_visual"),
         k.pos(cx, cy),
-        k.color(rgbCore),
-        k.outline(2, rgbGlow),
+        k.anchor("center"),
+        k.rotate(0),
         k.area({ shape: new k.Rect(k.vec2(-TILE / 2 + 2, -TILE / 2 + 2), TILE - 4, TILE - 4) }),
         k.z(2),
-        k.anchor("center"),
         "tile",
         "portal",
         {
@@ -274,32 +273,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     } else if (type === "ice") {
+      // Ice : 1 sprite pré-rendu (avant : base + 2 shines = 3 entités)
       const t = k.add([
-        k.rect(TILE, TILE),
+        k.sprite("ice_visual"),
         k.pos(col * TILE, row * TILE),
-        k.color(k.rgb(180, 230, 255)),
-        k.outline(2, k.rgb(100, 170, 220)),
         k.area(),
         k.z(1),
         "tile",
         "ice",
         { gridCol: col, gridRow: row, tileType: "ice", extras: [] },
       ]);
-      const shine1 = k.add([
-        k.rect(TILE - 8, 2),
-        k.pos(col * TILE + 4, row * TILE + 6),
-        k.color(k.rgb(255, 255, 255)),
-        k.opacity(0.8),
-        k.z(2),
-      ]);
-      const shine2 = k.add([
-        k.rect(TILE / 2 - 4, 2),
-        k.pos(col * TILE + 4, row * TILE + TILE - 8),
-        k.color(k.rgb(255, 255, 255)),
-        k.opacity(0.6),
-        k.z(2),
-      ]);
-      t.extras = [shine1, shine2];
       tileMap.set(key, t);
     } else if (type === "fan") {
       const t = k.add([
@@ -516,32 +499,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     } else if (type === "tunnel") {
-      const x = col * TILE;
-      const y = row * TILE;
+      // Tunnel : 1 sprite pré-rendu (avant : base + 2 eyes = 3 entités → maintenant 1)
       const t = k.add([
-        k.rect(TILE, TILE),
-        k.pos(x, y),
-        k.color(k.rgb(15, 5, 25)),
-        k.outline(2, k.rgb(80, 40, 100)),
+        k.sprite("tunnel_visual"),
+        k.pos(col * TILE, row * TILE),
         k.area(),
         k.z(2),
         "tile",
         "tunnel",
         { gridCol: col, gridRow: row, tileType: "tunnel", extras: [], cooldownUntil: 0 },
       ]);
-      const eye1 = k.add([
-        k.circle(3),
-        k.pos(x + TILE * 0.3, y + TILE * 0.4),
-        k.color(k.rgb(220, 50, 50)),
-        k.z(3),
-      ]);
-      const eye2 = k.add([
-        k.circle(3),
-        k.pos(x + TILE * 0.7, y + TILE * 0.4),
-        k.color(k.rgb(220, 50, 50)),
-        k.z(3),
-      ]);
-      t.extras = [eye1, eye2];
       tileMap.set(key, t);
     } else if (type === "ground") {
       const top = k.add([
