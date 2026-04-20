@@ -593,7 +593,7 @@ k.scene("game", () => {
     drawWagonBody, spawnWagon, transformToSkeleton,
     reviveFromSkeleton, collectCoin, tryBoardWagon, exitWagon,
   } = createWagonSystem({
-    k, tileMap, gameState, audio, entityCounts,
+    k, tileMap, gameState, audio, entityCounts, save,
     showPopup: (...args) => showPopup(...args),
     registerKill: (...args) => registerKill(...args),
     registerCoin: (...args) => registerCoin(...args),

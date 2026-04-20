@@ -13,9 +13,19 @@ function hueToRgb(k, h) {
   return k.rgb(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
 }
 
+function getRoyalLevel(plays) {
+  if (plays >= 200) return "spectral";
+  if (plays >= 100) return "throne";
+  if (plays >= 50) return "cape";
+  if (plays >= 20) return "crown";
+  if (plays >= 10) return "tophat";
+  if (plays >= 5) return "hat";
+  return "none";
+}
+
 export function createWagonSystem({
   k, tileMap, gameState, audio, entityCounts, showPopup, registerKill, registerCoin, launchFirework,
-  placeTile, onSkeletonTransform,
+  placeTile, onSkeletonTransform, save,
 }) {
   function getRailSlopeYAt(worldX) {
     const col = Math.floor(worldX / TILE);
@@ -86,6 +96,109 @@ export function createWagonSystem({
     return [body, frontRim, backRim, plank1, plank2, trim];
   }
 
+  function drawRoyalOverlay(wagon, level) {
+    const decos = [];
+    if (level === "none") return decos;
+
+    const wx = wagon.pos.x;
+    const wy = wagon.pos.y;
+
+    if (level === "hat") {
+      const brim = k.add([
+        k.rect(16, 3),
+        k.pos(wx + 14, wy - 42),
+        k.color(k.rgb(60, 180, 80)),
+        k.outline(1, k.rgb(0, 0, 0)),
+        k.z(8),
+        "wagon-part",
+        { royalOffX: 14, royalOffY: -42 },
+      ]);
+      const cone = k.add([
+        k.rect(8, 8),
+        k.pos(wx + 18, wy - 50),
+        k.color(k.rgb(60, 180, 80)),
+        k.outline(1, k.rgb(0, 0, 0)),
+        k.z(8),
+        "wagon-part",
+        { royalOffX: 18, royalOffY: -50 },
+      ]);
+      decos.push(brim, cone);
+    }
+
+    if (level === "tophat") {
+      const brim = k.add([
+        k.rect(18, 3),
+        k.pos(wx + 13, wy - 43),
+        k.color(k.rgb(20, 20, 20)),
+        k.outline(1, k.rgb(0, 0, 0)),
+        k.z(8),
+        "wagon-part",
+        { royalOffX: 13, royalOffY: -43 },
+      ]);
+      const cylinder = k.add([
+        k.rect(14, 12),
+        k.pos(wx + 15, wy - 55),
+        k.color(k.rgb(20, 20, 20)),
+        k.outline(1, k.rgb(0, 0, 0)),
+        k.z(8),
+        "wagon-part",
+        { royalOffX: 15, royalOffY: -55 },
+      ]);
+      const band = k.add([
+        k.rect(14, 3),
+        k.pos(wx + 15, wy - 47),
+        k.color(k.rgb(255, 210, 60)),
+        k.z(9),
+        "wagon-part",
+        { royalOffX: 15, royalOffY: -47 },
+      ]);
+      decos.push(brim, cylinder, band);
+    }
+
+    if (level === "crown" || level === "cape" || level === "throne") {
+      for (let i = 0; i < 5; i++) {
+        const h = 4 + (i % 2) * 4;
+        const px = wx + 10 + i * 4;
+        const py = wy - 42 - h;
+        const tooth = k.add([
+          k.rect(3, h),
+          k.pos(px, py),
+          k.color(k.rgb(255, 215, 60)),
+          k.outline(1, k.rgb(180, 130, 0)),
+          k.z(8),
+          "wagon-part",
+          { royalOffX: 10 + i * 4, royalOffY: -42 - h, isCrownTooth: true, toothH: h },
+        ]);
+        decos.push(tooth);
+      }
+      const crownBase = k.add([
+        k.rect(22, 4),
+        k.pos(wx + 10, wy - 42),
+        k.color(k.rgb(255, 215, 60)),
+        k.outline(1, k.rgb(180, 130, 0)),
+        k.z(8),
+        "wagon-part",
+        { royalOffX: 10, royalOffY: -42 },
+      ]);
+      decos.push(crownBase);
+    }
+
+    if (level === "cape" || level === "throne") {
+      const cape = k.add([
+        k.rect(20, 26),
+        k.pos(wx - 8, wy - 10),
+        k.color(k.rgb(180, 30, 30)),
+        k.outline(1, k.rgb(80, 0, 0)),
+        k.z(2),
+        "wagon-part",
+        { isCape: true },
+      ]);
+      decos.push(cape);
+    }
+
+    return decos;
+  }
+
   function catapultWagon(wagon) {
     wagon.catapulting = true;
     wagon.catapultAirborne = false;
@@ -131,6 +244,27 @@ export function createWagonSystem({
       : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
     wagon.theme = theme;
     wagon.isGolden = isGolden;
+
+    const plays = save?.plays || 0;
+    wagon.royalLevel = getRoyalLevel(plays);
+
+    if (wagon.royalLevel === "spectral" && !ghost && !inverse) {
+      wagon.isSpectral = true;
+      wagon.opacity = 0.7;
+      wagon.onDraw(() => {
+        k.drawCircle({
+          pos: k.vec2(30, 15),
+          radius: 40 + Math.sin(k.time() * 5) * 5,
+          color: k.rgb(140, 60, 220),
+          opacity: 0.15 + Math.sin(k.time() * 5) * 0.05,
+        });
+      });
+    }
+
+    if (wagon.royalLevel === "throne" && !ghost && !inverse) {
+      wagon.theme = { body: [255, 200, 30], dark: [180, 130, 0], trim: [255, 255, 200] };
+    }
+
     if (isGolden) {
       audio.gold?.();
       showPopup(WIDTH / 2, 180, "WAGON DOR\u00c9 ! 2x points", k.rgb(255, 220, 60), 22);
@@ -150,7 +284,11 @@ export function createWagonSystem({
         }
       });
     }
-    const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, theme);
+    const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, wagon.theme);
+    if (!ghost && !inverse) {
+      const royalDecos = drawRoyalOverlay(wagon, wagon.royalLevel);
+      wagon.royalDecos = royalDecos;
+    }
     if (ghost || inverse) {
       const eye1 = k.add([
         k.circle(4),
@@ -216,7 +354,7 @@ export function createWagonSystem({
       { wagon, currentType: "human" },
     ]);
 
-    wagon.parts = [...parts, wheel1, wheel1Spoke, wheel2, wheel2Spoke, passenger];
+    wagon.parts = [...parts, wheel1, wheel1Spoke, wheel2, wheel2Spoke, passenger, ...(wagon.royalDecos || [])];
     wagon.passengerEntity = passenger;
 
     const localOffsets = [
@@ -484,6 +622,19 @@ export function createWagonSystem({
       if (wagon.rider) {
         wagon.rider.pos.x = dx + 16;
         wagon.rider.pos.y = wagon.pos.y - 44 + sinA * (16 - 30);
+      }
+
+      if (wagon.royalDecos) {
+        for (const d of wagon.royalDecos) {
+          if (!d.exists()) continue;
+          if (d.isCape) {
+            d.pos.x = dx - 8 + Math.sin(k.time() * 6) * 2;
+            d.pos.y = wagon.pos.y - 10;
+          } else {
+            d.pos.x = dx + (d.royalOffX || 0);
+            d.pos.y = wagon.pos.y + (d.royalOffY || 0) + sinA * ((d.royalOffX || 0) - 30);
+          }
+        }
       }
 
       if (wagon.isGrounded() && Math.random() < 0.12) {
