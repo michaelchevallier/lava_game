@@ -632,134 +632,20 @@ const SPR_BOWSER = [
 ];
 
 // Donkey Kong: brown ape, red tie
-const SPR_DONKEY = [
-  "...MMMMMMMM...",
-  "..MMmmMMMmMM..",
-  ".MMMMmmMMmMM..",
-  "MMMMMMMMmMMM..",
-  "MMMMKKMMMKKMm.",
-  "MMKWKMMMKWKMm.",
-  "MMKKMMMMKKMMm.",
-  "MMMMmmmMMMMM..",
-  "MMMMMMMMMMMMm.",
-  ".MMMmmmmMMM...",
-  "..MMMMMMMMM...",
-  "..MMMRRRMMM...",
-  "..MRRRRRRM....",
-  "..MRRRRRRRM...",
-  "..MRRRRRRM....",
-  "..MMMMMMMM....",
-  "..MMMMMMMM....",
-  "...MMSSSMM....",
-  "...MMSSSM.....",
-  "...MMM.MMM....",
-  "..MMMM.MMMM...",
-  "..MMMM.MMMM...",
-];
+// DK 20×30 — brun (cap M) avec visage blanc (W remplace peau) via substituteSprite.
+const SPR_DONKEY = substituteSprite(SPR_PLAYER, { R: "M", r: "m", O: "M", o: "m", S: "W", s: "W" });
 
-// Mega Man: blue helmet, light blue visor, buster arm
-const SPR_MEGA = [
-  "....OOOOOO....",
-  "...OOoOOoOOO..",
-  "..OOOoooOOOO..",
-  "..OOUUUUUoOO..",
-  ".OOUuuuuuUOO..",
-  ".OOUuEEuuUOO..",
-  ".OOUuEEuuUOO..",
-  ".OOUuuuuuUOO..",
-  ".OOOUUUUUoOO..",
-  "..OOOOOOOOO...",
-  "..OOOOOOOOOO..",
-  ".OOOOOOOOOOO..",
-  ".OOOOoOOOOOO..",
-  "OOOOOOOOOOOOO.",
-  "OOoOoOOOOOOO..",
-  "OOOOOOOOOOOOO.",
-  ".OOOOOOOOOOO..",
-  "..OOOOOOOOO...",
-  "..OOO....OOO..",
-  "..OOO....OOO..",
-  ".OOOO....OOOO.",
-  ".OOOO....OOOO.",
-];
+// Mega Man 20×30 — robot bleu/cyan dérivé de Mario profil (cap→cyan via U, body bleu conservé).
+const SPR_MEGA = substituteSprite(SPR_PLAYER, { R: "U", r: "u" });
 
-// Samus: orange power suit, green visor
-const SPR_SAMUS = [
-  "....LLLLLL....",
-  "...LLllLLLL...",
-  "..LLLllLLLLL..",
-  "..LLHHHHHLll..",
-  ".LLHhhhhhHLL..",
-  ".LLHhGGGhHLL..",
-  ".LLHhGGGhHLL..",
-  ".LLHhhhhhHLL..",
-  "..LLHHHHHlLL..",
-  "...LLLLLLLLL..",
-  "..LLLLLLLLLLL.",
-  ".LLLlLLLLLLL..",
-  ".LLLLLLLLllL..",
-  "LLLLLLLLLLlLL.",
-  "LLllLLLLLLLLL.",
-  "LLLLlllllLLLL.",
-  ".LLLLLLLLllL..",
-  "..LLLLLLLLL...",
-  "..LLL....LLL..",
-  "..LLL....LLL..",
-  ".LLLL....LLLL.",
-  ".LLLL....LLLL.",
-];
+// Samus 20×30 — armure orange avec visor vert, dérivé de Mario profil.
+const SPR_SAMUS = substituteSprite(SPR_PLAYER, { R: "L", r: "l", O: "L", o: "l", S: "G", s: "g" });
 
-// Crash Bandicoot: orange fur, jeans, spiky hair
-const SPR_CRASH = [
-  "....LLLLLL....",
-  "...LLlLLLlLL..",
-  "..LLLlLLLlLLL.",
-  ".LLLLlLLLlLLL.",
-  ".LLLLLLLLLLLl.",
-  "LLLLllllllllLL",
-  "LLlKKlllKKlLL.",
-  "LlKWKlllKWKlL.",
-  "LLlKKlllKKlLL.",
-  "LLlllllllllLL.",
-  ".LLlllKlllLL..",
-  "..LLKKKKlLL...",
-  "..OOOOOOlLL...",
-  ".OOoOOOOlLLL..",
-  ".OOoOOOoOLL...",
-  ".OOOOOOoOOO...",
-  "..OOOOOOOO....",
-  "..OOOOOOO.....",
-  "..KKKK.KKKK...",
-  "..KKKK.KKKK...",
-  ".KKKKK.KKKKK..",
-  ".KKKKK.KKKKK..",
-];
+// Crash 20×30 — fourrure orange (cap→L) + pantalon bleu conservé, dérivé.
+const SPR_CRASH = substituteSprite(SPR_PLAYER, { R: "L", r: "l" });
 
-// Steve (Minecraft): square head, blue shirt, dark jeans
-const SPR_STEVE = [
-  ".....SSSSSS...",
-  "....SSSSSSSS..",
-  "...SSSSSSSSSs.",
-  "...SSSSSSSSSs.",
-  "...SSKSSKSSSs.",
-  "...SSKSSKSSSs.",
-  "...SSSSSSSSs..",
-  "...SSrSSrSSs..",
-  "...SSSSSSSSs..",
-  "....SSSSSSS...",
-  "...UUUUUUUUU..",
-  "..UUuUUUUUUU..",
-  "..UUuUUUUUUU..",
-  ".UUUuUUUUUUUU.",
-  ".UUUUUUUUUUUu.",
-  ".UUUuuuuuUUUu.",
-  "..UUUUUUUUUU..",
-  "..UUUUUUUUUU..",
-  "..OOO....OOO..",
-  "..OOO....OOO..",
-  ".OOOO....OOOO.",
-  ".OOOO....OOOO.",
-];
+// Steve (Minecraft) 20×30 — cheveux bruns (cap→M), chemise cyan (O→U), dérivé.
+const SPR_STEVE = substituteSprite(SPR_PLAYER, { R: "M", r: "m", O: "U", o: "u" });
 
 // Pokeball 20×30 — boule rouge/blanche avec bande noire + bouton central blanc.
 const SPR_POKEBALL = [
@@ -863,57 +749,11 @@ const SPR_INVADER = [
   "....................",
 ];
 
-// Master Chief: dark green armor, gold visor
-const SPR_CHIEF = [
-  "....GGGGGG....",
-  "...GGGGGGGG...",
-  "..GGGGGGGGGg..",
-  "..GGYYYYYYGg..",
-  ".GGYyyyyyYGg..",
-  ".GGYyyyyYYGg..",
-  ".GGYyyyyYYGg..",
-  ".GGYyyyyyYGg..",
-  "..GGYYYYYYGg..",
-  "...GGGGGGGg...",
-  "..GGGGGGGGGG..",
-  ".GGGgGGGGGGG..",
-  ".GGGGGGGGGgG..",
-  "GGGGGGGGGGgGG.",
-  "GGgGGGGGGGGGG.",
-  "GGGGgggggGGGG.",
-  ".GGGGGGGGGGGG.",
-  "..GGGGGGGGGG..",
-  "..GGG....GGG..",
-  "..GGG....GGG..",
-  ".GGGG....GGGG.",
-  ".GGGG....GGGG.",
-];
+// Chief 20×30 — armure vert foncé avec visor jaune, dérivé de Mario profil.
+const SPR_CHIEF = substituteSprite(SPR_PLAYER, { R: "G", r: "g", O: "G", o: "g", S: "Y", s: "y" });
 
-// Astro Boy: white/black suit, red boots, spiky hair
-const SPR_ASTRO = [
-  "....KKKKKK....",
-  "...KKSSSKK....",
-  "..KKSSSSSSKK..",
-  ".KKSSKKSSKKs..",
-  ".KKSSKKSSKKs..",
-  ".KKSSSSSSKKs..",
-  ".KKSSSSSSKKs..",
-  "..KKSSSSSKs...",
-  "...KSSSSSK....",
-  "....KSSSK.....",
-  "..CCCCCCCCCC..",
-  ".CCcCCCCCCCC..",
-  ".CCCCCCCCCcC..",
-  "CCCCCCCCCCcCC.",
-  "CCcCCCCCCCCCC.",
-  "CCCCcccccCCCC.",
-  ".CCCCCCCCCCCC.",
-  "..CCCCCCCCCC..",
-  "..RRR....RRR..",
-  "..RRR....RRR..",
-  ".RRRR....RRRR.",
-  ".RRRR....RRRR.",
-];
+// Astro 20×30 — combinaison blanche avec visor bleu, dérivé.
+const SPR_ASTRO = substituteSprite(SPR_PLAYER, { R: "C", r: "c", O: "C", o: "c", S: "O", s: "o" });
 
 // Generic skeleton for all new avatars
 const SPR_SKEL_GENERIC = [

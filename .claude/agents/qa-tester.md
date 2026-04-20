@@ -1,7 +1,7 @@
 ---
 name: qa-tester
 description: Tests features and bugs on the live deployed game via Chrome MCP. Validates UI rendering, mobile controls, gameplay loops, and edge cases. Reports bugs precisely with reproduction steps. Use after deploying a new feature to confirm it works in production.
-model: sonnet
+model: haiku
 tools: Read, Bash, Grep, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__javascript_tool, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_page, mcp__Claude_in_Chrome__find
 ---
 

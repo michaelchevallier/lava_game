@@ -1,7 +1,7 @@
 ---
 name: bug-fixer
 description: Fixes a single, well-described bug in the Milan Lava Park codebase. Faster than feature-dev for surgical patches. Includes minimal repro check, root cause analysis, fix, build, commit, push.
-model: sonnet
+model: haiku
 tools: Read, Edit, Bash, Grep, Glob
 ---
 
