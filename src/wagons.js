@@ -224,6 +224,7 @@ export function createWagonSystem({
       k.area({ shape: new k.Rect(k.vec2(0, -10), 60, 50) }),
       k.body(),
       k.anchor("topleft"),
+      k.rotate(0),
       k.z(3),
       "wagon",
       {
@@ -389,19 +390,34 @@ export function createWagonSystem({
 
     wagon.onUpdate(() => {
       if (wagon.inLoop) {
-        const loopT = (k.time() - wagon.loopStart) / 0.6;
+        const loopT = (k.time() - wagon.loopStart) / 0.7;
         if (loopT >= 1) {
           wagon.inLoop = false;
+          wagon.angle = 0;
           wagon.pos.x = wagon.loopExitX;
-          wagon.pos.y = wagon.loopExitY;
           gameState.score += 50;
           showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "LOOP +50", k.rgb(180, 80, 240), 22);
           audio.combo();
           window.__juice?.dirShake(0, -1, 6, 0.2);
+          for (const p of (wagon.passengerEntities || [])) {
+            if (p.exists()) p.angle = 0;
+          }
         } else {
-          const angle = -Math.PI / 2 + loopT * Math.PI * 2;
-          wagon.pos.x = wagon.loopCenter.x + Math.cos(angle) * wagon.loopRadius - 30;
-          wagon.pos.y = wagon.loopCenter.y + Math.sin(angle) * wagon.loopRadius - 15;
+          const ang = Math.PI + loopT * Math.PI * 2;
+          wagon.pos.x = wagon.loopCx + Math.cos(ang) * wagon.loopRx - 30;
+          wagon.pos.y = wagon.loopCy + Math.sin(ang) * wagon.loopRy - 15;
+          wagon.angle = loopT * 360;
+          for (let i = 0; i < (wagon.passengerEntities || []).length; i++) {
+            const p = wagon.passengerEntities[i];
+            if (!p?.exists()) continue;
+            p.angle = wagon.angle;
+            const offX = 6 + i * 14 - 30;
+            const offY = -40;
+            const r = (wagon.angle * Math.PI / 180);
+            const cosR = Math.cos(r), sinR = Math.sin(r);
+            p.pos.x = wagon.pos.x + 30 + (offX * cosR - offY * sinR);
+            p.pos.y = wagon.pos.y + 15 + (offX * sinR + offY * cosR);
+          }
           if (wagon.vel) wagon.vel.y = 0;
           if (entityCounts.particle < 240 && Math.random() < 0.4) {
             const hue = (loopT * 360) % 360;
@@ -1179,10 +1195,11 @@ export function createWagonSystem({
       if (wagon.inLoop) return;
       wagon.inLoop = true;
       wagon.loopStart = k.time();
-      wagon.loopCenter = k.vec2(loopTile.pos.x, loopTile.pos.y);
-      wagon.loopRadius = loopTile.loopRadius;
-      wagon.loopExitX = loopTile.pos.x + TILE / 2 + 6;
-      wagon.loopExitY = loopTile.pos.y - wagon.loopRadius - 15;
+      wagon.loopCx = loopTile.loopCx;
+      wagon.loopCy = loopTile.loopCy;
+      wagon.loopRx = loopTile.loopRx;
+      wagon.loopRy = loopTile.loopRy;
+      wagon.loopExitX = loopTile.exitX;
     });
 
     wagon.onCollide("tunnel", (tunnel) => {
