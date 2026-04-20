@@ -6,6 +6,7 @@ export function loadSave() {
     if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 } };
     const parsed = JSON.parse(raw);
     if (!parsed.numPlayers) parsed.numPlayers = 2;
+    if (parsed.numPlayers > 2) parsed.numPlayers = 2;
     if (!parsed.spectres) parsed.spectres = 0;
     if (!parsed.lastPlayed) parsed.lastPlayed = 0;
     if (parsed.tutorialDone === undefined) parsed.tutorialDone = false;

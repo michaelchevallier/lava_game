@@ -41,7 +41,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
       <section style="margin-bottom:22px">
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Joueurs</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          ${[1,2,3,4].map(i => `
+          ${[1,2].map(i => `
             <div id="sm-player-${i}" data-n="${i}" style="
               cursor:pointer;border-radius:8px;padding:10px 8px;text-align:center;width:120px;
               border:2px solid ${settings.numPlayers === i ? '#ffd23f' : 'rgba(255,255,255,0.15)'};
@@ -125,7 +125,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
     });
     panel.querySelector("#sm-close").addEventListener("click", () => hide());
 
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 2; i++) {
       panel.querySelector(`#sm-player-${i}`).addEventListener("click", () => {
         if (settings.numPlayers !== i) {
           settings.numPlayers = i;
@@ -215,7 +215,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
 
   function refreshPlayerCards() {
     if (!modal) return;
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 2; i++) {
       const card = modal.querySelector(`#sm-player-${i}`);
       if (!card) continue;
       const isSelected = settings.numPlayers === i;

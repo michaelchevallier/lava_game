@@ -12,8 +12,6 @@ export function createSplash({ save, persistSave, settings, onStart }) {
     const players = [
       { id: 1, name: "Mario", color: "#e63946" },
       { id: 2, name: "Pika",  color: "#ffd23f" },
-      { id: 3, name: "Luigi", color: "#7cc947" },
-      { id: 4, name: "Toad",  color: "#ff4c6d" },
     ];
 
     const playerCards = players.map((p) => `
@@ -76,7 +74,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
     `;
     document.body.appendChild(splash);
 
-    let chosen = settings.numPlayers || 2;
+    let chosen = Math.min(2, settings.numPlayers || 2);
 
     function highlight() {
       splash.querySelectorAll(".splash-card").forEach((c) => {
