@@ -248,7 +248,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       }
       tileMap.set(key, ring);
     } else if (type === "bridge") {
-      // Bridge : 1 sprite pré-rendu (avant : plank1+plank2+support+t invisible = 4 entités)
+      // Bridge : 1 sprite pré-rendu + overlay danger-pulse sur planche quand abîmé
       const t = k.add([
         k.sprite("bridge_visual"),
         k.pos(col * TILE, row * TILE),
@@ -259,6 +259,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         "bridge",
         { gridCol: col, gridRow: row, tileType: "bridge", extras: [] },
       ]);
+      // Overlay rouge transparent qui pulse quand le bridge est abîmé (crossings>=1).
+      // Position : sur la planche principale (y=16-26 dans le sprite 32×32).
+      const pulseOverlay = k.add([
+        k.rect(TILE, 10),
+        k.pos(col * TILE, row * TILE + 16),
+        k.color(k.rgb(200, 60, 30)),
+        k.opacity(0),
+        k.z(4),
+      ]);
+      t.extras = [pulseOverlay];
       tileMap.set(key, t);
     } else if (type === "magnet") {
       // Magnet : 1 seul sprite (avant : base + 2 arms + 2 tips = 5 entités)
@@ -621,10 +631,9 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         }
       } else if (t.tileType === "bridge" && (t.crossings || 0) >= 1 && !t.breaking) {
         const pulse = 0.5 + 0.5 * Math.sin(k.time() * 8);
-        if (t.extras && t.extras[0]) {
-          t.extras[0].color.r = 200 + 55 * pulse;
-          t.extras[0].color.g = 60 - 30 * pulse;
-          t.extras[0].color.b = 30 - 20 * pulse;
+        if (t.extras && t.extras[0] && t.extras[0].exists?.()) {
+          // Opacity pulse de l'overlay rouge — 0.35 à 0.75 visible danger
+          t.extras[0].opacity = 0.35 + pulse * 0.4;
         }
       }
     }
