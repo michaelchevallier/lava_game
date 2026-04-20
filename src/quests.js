@@ -112,6 +112,7 @@ export function createQuestSystem({ k, save, persistSave, gameState, audio, show
 
   k.add([
     k.pos(0, 0),
+    k.fixed(),
     k.z(40),
     {
       draw() {

@@ -56,6 +56,7 @@ export function createLoreSystem({ k, save, persistSave, WIDTH, HEIGHT }) {
 
   k.add([
     k.pos(0, 0),
+    k.fixed(),
     k.z(45),
     {
       draw() {

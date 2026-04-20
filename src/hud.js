@@ -157,8 +157,20 @@ export function createHUD({
   let lastWagonCountUpdate = 0;
 
   function setup() {
-    k.onDraw(() => {
-      const selectedTool = getCurrentTool();
+    // Wrap the HUD in a fixed-camera entity so it doesn't scale/translate
+    // with k.camScale / k.camPos (zoom + future camera moves).
+    k.add([
+      k.pos(0, 0),
+      k.fixed(),
+      k.z(40),
+      {
+        draw() { renderHud(); },
+      },
+    ]);
+  }
+
+  function renderHud() {
+    const selectedTool = getCurrentTool();
       if (k.time() - tipChangedAt > 12) {
         tipIdx = (tipIdx + 1) % TIPS.length;
         tipChangedAt = k.time();
@@ -762,7 +774,6 @@ export function createHUD({
         pos: k.vec2(12, 46),
         color: k.rgb(180, 220, 255),
       });
-    });
   }
 
   return {

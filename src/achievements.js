@@ -32,6 +32,7 @@ export function createAchievements({ k, spectres, audio }) {
 
   k.add([
     k.pos(0, 0),
+    k.fixed(),
     k.z(60),
     {
       draw() {
