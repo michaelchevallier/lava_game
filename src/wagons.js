@@ -287,6 +287,19 @@ export function createWagonSystem({
         }
       });
     }
+    wagon.onDraw(() => {
+      if (!(wagon.boostUntil && k.time() < wagon.boostUntil)) return;
+      const stack = wagon.boostStack || 1;
+      const cols = [k.rgb(255, 210, 60), k.rgb(255, 180, 40), k.rgb(255, 80, 80)];
+      const col = cols[Math.min(2, stack - 1)];
+      const pulse = 0.3 + Math.sin(k.time() * 8) * 0.2;
+      k.drawCircle({
+        pos: k.vec2(30, 15),
+        radius: 28 + stack * 4,
+        color: col,
+        opacity: pulse * 0.5,
+      });
+    });
     const parts = drawWagonBody(wagon.pos.x, wagon.pos.y, wagon.theme);
     if (!ghost && !inverse) {
       const royalDecos = drawRoyalOverlay(wagon, wagon.royalLevel);
@@ -440,9 +453,12 @@ export function createWagonSystem({
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
       const iced = wagon.iceUntil && k.time() < wagon.iceUntil;
       const sliding = wagon.slideUntil && k.time() < wagon.slideUntil;
+      if (boosted && wagon.boostStackUntil && k.time() > wagon.boostStackUntil) wagon.boostStack = 0;
       let speedMult = 1;
-      if (boosted) speedMult = 2.2;
-      else if (sliding) speedMult = 3;
+      if (boosted) {
+        const stack = wagon.boostStack || 1;
+        speedMult = stack === 1 ? 2.2 : stack === 2 ? 3.0 : 4.5;
+      } else if (sliding) speedMult = 3;
       else if (iced) speedMult = 1.6;
       if (gameState.bulletTimeUntil > k.time()) speedMult *= 0.3;
       for (const cr of gameState.iceCrowns || []) {
@@ -1114,6 +1130,7 @@ export function createWagonSystem({
       p.pair.cooldownUntil = k.time() + 0.5;
       gameState.portalUses = (gameState.portalUses || 0) + 1;
       if (gameState.portalUses >= 5) window.__spectres?.unlock(3);
+      window.__tiers?.onPortalUse?.();
       window.__quests?.onPortal();
       audio.combo();
       window.__juice?.dirShake(1, 0, 3, 0.12);
@@ -1173,21 +1190,65 @@ export function createWagonSystem({
     });
 
     wagon.onCollide("boost", () => {
-      const base = Math.max(wagon.boostUntil || 0, k.time());
-      wagon.boostUntil = Math.min(base + 1.5, k.time() + 5);
-      audio.boost();
-      for (let i = 0; i < 12; i++) {
-        const a = (Math.PI * 2 * i) / 12;
-        k.add([
-          k.circle(3 + Math.random() * 3),
-          k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
-          k.color(k.rgb(255, 230, 60)),
-          k.opacity(1),
-          k.lifespan(0.4, { fade: 0.3 }),
-          k.z(14),
-          "particle",
-          { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
-        ]);
+      const now = k.time();
+      if (!wagon.boostStackUntil || now > wagon.boostStackUntil) {
+        wagon.boostStack = 0;
+      }
+      wagon.boostStack = Math.min(3, (wagon.boostStack || 0) + 1);
+      wagon.boostStackUntil = now + 3;
+      const base = Math.max(wagon.boostUntil || 0, now);
+      wagon.boostUntil = Math.min(base + 1.5, now + 5);
+
+      if (wagon.boostStack === 1) {
+        audio.boost();
+        for (let i = 0; i < 12; i++) {
+          const a = (Math.PI * 2 * i) / 12;
+          k.add([
+            k.circle(3 + Math.random() * 3),
+            k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
+            k.color(k.rgb(255, 230, 60)),
+            k.opacity(1),
+            k.lifespan(0.4, { fade: 0.3 }),
+            k.z(14),
+            "particle",
+            { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
+          ]);
+        }
+      } else if (wagon.boostStack === 2) {
+        audio.boost();
+        setTimeout(() => audio.coin?.(), 60);
+        showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "DOUBLE BOOST !", k.rgb(255, 220, 60), 22);
+        window.__juice?.dirShake(1, 0, 6, 0.15);
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 * i) / 8;
+          k.add([
+            k.circle(3),
+            k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
+            k.color(k.rgb(255, 180, 40)),
+            k.opacity(1),
+            k.lifespan(0.5, { fade: 0.35 }),
+            k.z(8),
+            "particle",
+            { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30 },
+          ]);
+        }
+      } else {
+        audio.combo?.();
+        showPopup(wagon.pos.x + 30, wagon.pos.y - 40, "MEGA BOOST !!!", k.rgb(255, 80, 80), 28);
+        window.__juice?.dirShake(1, 0, 12, 0.3);
+        for (let i = 0; i < 16; i++) {
+          const a = (Math.PI * 2 * i) / 16;
+          k.add([
+            k.circle(3 + Math.random() * 2),
+            k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
+            k.color(k.rgb(255, 80 + Math.random() * 100, 40)),
+            k.opacity(1),
+            k.lifespan(0.7, { fade: 0.5 }),
+            k.z(10),
+            "particle-firework",
+            { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 - 30, grav: 100 },
+          ]);
+        }
       }
     });
 
@@ -1316,6 +1377,7 @@ export function createWagonSystem({
           wagon.passengerEntity.sprite = wagon.rider.normalSprite;
         }
       }
+      window.__tiers?.onRevive?.();
     });
   }
 
