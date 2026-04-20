@@ -147,10 +147,12 @@ export function createPlayerSystem({
   }
 
   function createPlayer(opts, mobileP1 = false) {
+    const mult = opts.sizeMult || 1.5;
     const p = k.add([
       k.sprite(opts.sprite),
       k.pos(opts.x, (GROUND_ROW - 3) * TILE),
       k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+      k.scale(mult),
       k.body(),
       k.anchor("topleft"),
       k.z(6),
@@ -163,6 +165,7 @@ export function createPlayerSystem({
         skelSprite: opts.skelSprite,
         playerName: opts.name,
         nameColor: opts.color || k.rgb(255, 255, 255),
+        sizeMult: mult,
       },
     ]);
     p.onDraw(() => {
@@ -367,6 +370,7 @@ export function createPlayerSystem({
       skelSprite,
       name: avatar.name,
       color: k.rgb(r, g, b),
+      sizeMult: avatar.sizeMult || 1.5,
     };
   }
 

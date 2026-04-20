@@ -824,6 +824,56 @@ const SPR_SKEL_GENERIC = [
   "..XXXX..XXXX..",
 ];
 
+// Procedural loop sprite: 1 image = toute la boucle (2 rails argentés + 18 traverses bois)
+// Évite de spawner 90+ entités par boucle. TILE=32, rx=48, ry=32 (loop size).
+export function makeLoopSpriteUrl() {
+  const TILE = 32;
+  const rx = TILE * 1.5;
+  const ry = TILE;
+  const pad = 8;
+  const W = Math.ceil(2 * rx + 2 * pad);
+  const H = Math.ceil(2 * ry + 2 * pad);
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d");
+  const cx = W / 2;
+  const cy = H / 2;
+  // Brown sleepers (drawn first, behind rails)
+  ctx.fillStyle = "#643c1e";
+  ctx.strokeStyle = "#281408";
+  ctx.lineWidth = 1;
+  const tieCount = 18;
+  for (let i = 0; i < tieCount; i++) {
+    const a = (i / tieCount) * Math.PI * 2;
+    const tx = cx + Math.cos(a) * rx;
+    const ty = cy + Math.sin(a) * ry;
+    const tangent = Math.atan2(Math.cos(a) * ry, -Math.sin(a) * rx) + Math.PI / 2;
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.rotate(tangent);
+    ctx.fillRect(-2.5, -6.5, 5, 13);
+    ctx.strokeRect(-2.5, -6.5, 5, 13);
+    ctx.restore();
+  }
+  // Silver rail bands (inner + outer)
+  ctx.strokeStyle = "#46465a";
+  ctx.lineWidth = 5;
+  for (const dr of [-3, 3]) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx + dr, ry + dr, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "#d2d2e1";
+  ctx.lineWidth = 3;
+  for (const dr of [-3, 3]) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx + dr, ry + dr, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  return c.toDataURL();
+}
+
 // PALETTE additions needed: T=violet for tetris
 // T and t already defined? T="#6b3c1a" — reuse with custom approach
 // We use inline PALETTE overrides via substituteSprite trick:
@@ -870,5 +920,6 @@ export function loadAllSprites(k) {
     k.loadSprite("invader", makeSpriteUrl(SPR_INVADER, 2)),
     k.loadSprite("chief", makeSpriteUrl(SPR_CHIEF, 2)),
     k.loadSprite("astro", makeSpriteUrl(SPR_ASTRO, 2)),
+    k.loadSprite("rail_loop_visual", makeLoopSpriteUrl()),
   ]);
 }
