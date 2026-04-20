@@ -17,16 +17,20 @@ export function createVisitorSystem({
     const tint = VISITOR_TINTS[Math.floor(Math.random() * VISITOR_TINTS.length)];
     const v = k.add([
       k.sprite("human"),
-      k.pos(-40, (GROUND_ROW - 3) * TILE),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd", "player", "skull-target", "skull-part", "ghost", "lava-ghost", "rain-coin"] }),
-      k.body(),
+      k.pos(-40 + (Math.random() - 0.5) * 30, (GROUND_ROW - 3) * TILE),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd", "player", "skull-target", "skull-part", "ghost", "lava-ghost", "rain-coin", "ground_tile", "tile"] }),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
       k.scale(1, 1),
       k.z(5),
       "visitor",
-      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint },
+      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint, _vy: 0, _grounded: false },
     ]);
+    // Manual gravity (no body component → zero physics push between visitors)
+    const FEET_OFFSET = 44;
+    const GRAVITY = 1800;
+    v.isGrounded = () => v._grounded;
+    v.jump = (force) => { v._vy = -force; v._grounded = false; };
     if (isVIP) {
       const hat = k.add([
         k.rect(18, 10),
@@ -55,6 +59,17 @@ export function createVisitorSystem({
     }
     v.onUpdate(() => {
       if (constellation.applyVisitorSpiralUpdate(v)) return;
+      // Manual gravity & ground snap (replaces body component)
+      v._vy += GRAVITY * k.dt();
+      v.pos.y += v._vy * k.dt();
+      const groundY = GROUND_ROW * TILE;
+      if (v.pos.y + FEET_OFFSET >= groundY) {
+        v.pos.y = groundY - FEET_OFFSET;
+        v._vy = 0;
+        v._grounded = true;
+      } else {
+        v._grounded = false;
+      }
       if (boardingFn && (!v._autoBoardCd || k.time() > v._autoBoardCd)) {
         v._autoBoardCd = k.time() + 0.5;
         for (const w of k.get("wagon")) {
