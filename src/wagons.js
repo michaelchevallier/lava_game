@@ -27,6 +27,7 @@ export function createWagonSystem({
   k, tileMap, gameState, audio, entityCounts, showPopup, registerKill, registerCoin, launchFirework,
   placeTile, onSkeletonTransform, save,
 }) {
+  console.log("[WAGON_MODULE] v27af875+ loaded, riderControl=enabled");
   function getRailSlopeYAt(worldX) {
     const col = Math.floor(worldX / TILE);
     const localX = Math.max(0, Math.min(1, (worldX - col * TILE) / TILE));
@@ -1736,6 +1737,7 @@ export function createWagonSystem({
   }
 
   function tryBoardWagon(p) {
+    console.log("[tryBoardWagon] called, player at", p.pos.x.toFixed(1), "_constActive=", p._constActive);
     if (p._constActive) return;
     const wagons = k.get("wagon").filter((w) => !w.rider);
     let closest = null;

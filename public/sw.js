@@ -1,4 +1,4 @@
-const CACHE = "lava-park-v4";
+const CACHE = "lava-park-v6";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
