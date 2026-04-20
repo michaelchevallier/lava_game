@@ -111,11 +111,19 @@ requestAnimationFrame(tick);
 - [x] Ice, Portal, Tunnel (09f9ffb)
 - [x] Fan (déjà 1 sprite)
 
-### Sprites personnages (20×30)
+### Sprites personnages (20×30) — tous upgradés
 - [x] Mario, Luigi, Toad (vue de profil — e31cf54)
-- [x] Pika (front — fe4f4e7)
-- [ ] Sonic, Link, Kirby, Yoshi, Pacman, Bowser, DK, Mega, Samus, Crash, Steve, Pokeball, Tetris, Invader, Chief, Astro (17 à upgrader, hand-crafted lourd — à batcher)
-- [ ] Skeleton variants par avatar (pour l'instant unifié sur player_skel)
+- [x] Pika (fe4f4e7)
+- [x] Sonic, Link, Pacman, Kirby (1cea9db)
+- [x] Yoshi, Bowser, Pokeball, Tetris, Invader (e9a9eac)
+- [x] DK, Mega, Samus, Crash, Steve, Chief, Astro via substituteSprite (02b131d)
+- [ ] Skeleton variants par avatar (unifié sur skeleton_generic pour l'instant)
+
+### Ambient / Décor
+- [x] Gares ENTREE/SORTIE aux bords du monde (9bca3ca/47c3e2e)
+- [x] Diversité visiteurs (scale variation 0.85-1.15 — c84d89c)
+- [x] Ballons flottants ambient toutes 45-70s (f1cc008)
+- [ ] Boss Goret, Réparation Express, Parade Lave QTE, Aire Tir Mobile, Labyrinthe (backlog créatif round 3)
 
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings
