@@ -771,10 +771,9 @@ export function createWagonSystem({
         wagon.passengerEntity.pos.y = wagon.pos.y - 40 + sinA * (6 - 30);
       }
 
-      if (wagon.rider) {
-        wagon.rider.pos.x = dx + 16;
-        wagon.rider.pos.y = wagon.pos.y - 44 + sinA * (16 - 30);
-      }
+      // Ne PAS repositionner wagon.rider chaque frame : le joueur est parqué à (-99999)
+      // pour éviter que sa hitbox physics pousse le wagon. Le passengerEntity sprite
+      // gère la représentation visuelle sur le wagon.
 
       if (wagon.royalDecos) {
         for (const d of wagon.royalDecos) {
