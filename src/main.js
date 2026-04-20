@@ -31,6 +31,7 @@ import { createSkullStand } from "./skull-stand.js";
 import { createVisitorSystem } from "./visitor.js";
 import { createGCSystem } from "./gc.js";
 import { createVisitorQuestSystem } from "./visitor-quests.js";
+import { createCoinThiefSystem } from "./coin-thief.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -998,7 +999,6 @@ k.scene("game", () => {
     root.paused = !root.paused;
   });
 
-
   function buildDemoCircuit() {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -1496,5 +1496,6 @@ k.scene("game", () => {
 
   window.__quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
 });
