@@ -88,6 +88,12 @@ export function createHUD({
     k.drawText({ ...base, color: origColor });
   }
 
+  function drawTextShadow(opts) {
+    const origColor = opts.color;
+    k.drawText({ ...opts, pos: k.vec2(opts.pos.x + 1, opts.pos.y + 1), color: C_BLACK });
+    k.drawText({ ...opts, color: origColor });
+  }
+
   function showPopup(x, y, text, color, size = 20) {
     const born = k.time();
     const lifespan = 1.0;
@@ -137,6 +143,8 @@ export function createHUD({
   let tipChangedAt = 0;
 
   let displayScore = 0;
+  let cachedWagonCount = 0;
+  let lastWagonCountUpdate = 0;
 
   function setup() {
     k.onDraw(() => {
@@ -182,7 +190,11 @@ export function createHUD({
         pos: k.vec2(WIDTH - 320, 6),
         color: C_SCORE,
       });
-      const wagonCount = k.get("wagon").length;
+      if (k.time() - lastWagonCountUpdate > 0.25) {
+        cachedWagonCount = k.get("wagon").length;
+        lastWagonCountUpdate = k.time();
+      }
+      const wagonCount = cachedWagonCount;
       k.drawText({
         text: `Wagons ${wagonCount}  Squelettes ${gameState.skeletons}  Pieces ${gameState.coins}  Rates ${gameState.missed || 0}`,
         size: 16,
@@ -198,7 +210,7 @@ export function createHUD({
       const nextMile = MILESTONES.find((m) => m > gameState.score);
       if (nextMile != null) {
         const remain = nextMile - gameState.score;
-        drawTextOutlined({
+        drawTextShadow({
           text: `Prochain palier ${nextMile} (-${remain})`,
           size: 13,
           pos: k.vec2(WIDTH - 320, 70),
@@ -226,7 +238,7 @@ export function createHUD({
       if (!settings.open) {
         const tipAge = k.time() - tipChangedAt;
         const fade = tipAge < 0.4 ? tipAge / 0.4 : (12 - tipAge < 0.4 ? (12 - tipAge) / 0.4 : 1);
-        drawTextOutlined({
+        drawTextShadow({
           text: TIPS[tipIdx],
           size: 12,
           pos: k.vec2(12, HEIGHT - 100),
