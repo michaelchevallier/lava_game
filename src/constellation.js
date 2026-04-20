@@ -156,14 +156,18 @@ export function createConstellationSystem({
         showPopup(WIDTH / 2, HEIGHT / 2 - 20, "CONSTELLATION TERMINEE", k.rgb(180, 80, 255), 28);
         window.__spectres?.unlock(24);
         gameState.constellationActive = false;
-        wagon.parts.forEach((p) => { if (p.exists()) k.destroy(p); });
+        wagon.parts?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        wagon.passengerEntities?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        if (wagon.passengerEntity?.exists()) k.destroy(wagon.passengerEntity);
         k.destroy(wagon);
       }
 
       // Hors-écran early exit
       if (wagon.pos.x > WIDTH + 100) {
         gameState.constellationActive = false;
-        wagon.parts.forEach((p) => { if (p.exists()) k.destroy(p); });
+        wagon.parts?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        wagon.passengerEntities?.forEach((p) => { if (p.exists()) k.destroy(p); });
+        if (wagon.passengerEntity?.exists()) k.destroy(wagon.passengerEntity);
         k.destroy(wagon);
       }
     });
