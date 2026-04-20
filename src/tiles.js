@@ -546,6 +546,53 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         }
       });
       tileMap.set(key, hub);
+    } else if (type === "rail_loop") {
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2;
+      const radius = TILE * 0.7;
+      const ties = [];
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        ties.push(k.add([
+          k.rect(4, 8),
+          k.pos(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius),
+          k.color(k.rgb(100, 60, 30)),
+          k.outline(1, k.rgb(40, 20, 10)),
+          k.anchor("center"),
+          k.rotate((a * 180 / Math.PI) + 90),
+          k.z(3),
+        ]));
+      }
+      const t = k.add([
+        k.circle(radius),
+        k.pos(cx, cy),
+        k.anchor("center"),
+        k.area({ shape: new k.Rect(k.vec2(-TILE / 2 + 2, -TILE / 2 + 2), TILE - 4, TILE - 4) }),
+        k.color(k.rgb(180, 80, 240)),
+        k.opacity(0),
+        k.outline(4, k.rgb(180, 80, 240)),
+        k.z(2),
+        "tile",
+        "rail_loop",
+        { gridCol: col, gridRow: row, tileType: "rail_loop", loopRadius: radius, extras: ties },
+      ]);
+      t.onDraw(() => {
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 3);
+        k.drawCircle({
+          pos: k.vec2(0, 0),
+          radius: radius,
+          color: k.rgb(180, 80, 240),
+          opacity: 0,
+          outline: { width: 4, color: k.rgb(180, 80, 240) },
+        });
+        k.drawCircle({
+          pos: k.vec2(0, 0),
+          radius: radius * (1 + 0.12 * pulse),
+          color: k.rgb(120, 40, 200),
+          opacity: 0.10 + 0.08 * pulse,
+        });
+      });
+      tileMap.set(key, t);
     } else if (type === "rail_up" || type === "rail_down") {
       const angle = type === "rail_up" ? -45 : 45;
       const cx = col * TILE + TILE / 2;

@@ -21,6 +21,7 @@ import { createSplash } from "./splash.js";
 import { createTutorial } from "./tutorial.js";
 import { createConstellationSystem } from "./constellation.js";
 import { createSettingsModal } from "./settings-modal.js";
+import { createGroundSystem } from "./ground.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -700,27 +701,17 @@ k.scene("game", () => {
     if (c.pos.x > WIDTH + 100) c.pos.x = -200;
   });
 
+  const groundSystem = createGroundSystem({ k, gameState, audio });
+  groundSystem.initColliders();
+
   k.add([
     k.pos(0, 0),
     k.z(-10),
     {
       draw() {
-        for (let col = 0; col < COLS; col++) {
-          k.drawSprite({ sprite: "ground_top", pos: k.vec2(col * TILE, GROUND_ROW * TILE) });
-          for (let row = GROUND_ROW + 1; row < ROWS; row++) {
-            k.drawSprite({ sprite: "ground", pos: k.vec2(col * TILE, row * TILE) });
-          }
-        }
+        groundSystem.drawGround();
       },
     },
-  ]);
-  k.add([
-    k.rect(WIDTH, (ROWS - GROUND_ROW) * TILE),
-    k.pos(0, GROUND_ROW * TILE),
-    k.area(),
-    k.body({ isStatic: true }),
-    k.opacity(0),
-    "ground",
   ]);
 
   const { spawnPlayers, getEntityTile, PLAYER_CONFIGS } = createPlayerSystem({
@@ -745,6 +736,7 @@ k.scene("game", () => {
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("0", () => (selectedTool = "fan"));
   k.onKeyPress("y", () => (selectedTool = "wheel"));
+  k.onKeyPress("k", () => (selectedTool = "dig"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -995,7 +987,7 @@ k.scene("game", () => {
         k.destroy(t);
       });
       tileMap.clear();
-      deserializeTiles(code, placeTile);
+      deserializeTiles(code, placeTile, (pairs) => groundSystem.loadDugMap(pairs));
       audio.combo();
       showPopup(WIDTH / 2, 100, "PARC CHARGE !", k.rgb(124, 201, 71), 32);
     } catch (e) {
@@ -1004,7 +996,7 @@ k.scene("game", () => {
   }
 
   exportActionRef = () => {
-    const code = serializeTiles(tileMap);
+    const code = serializeTiles(tileMap, groundSystem.getDugMap());
     spectres.unlock(23);
     showExportModal(code, (pasted) => { loadParkFromCode(pasted); });
   };
@@ -1033,7 +1025,13 @@ k.scene("game", () => {
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
+    if (col < 0 || col >= COLS || row < 0) return;
+    if (selectedTool === "dig" && row >= GROUND_ROW && row < ROWS) {
+      if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
+      else groundSystem.digGround(col, row);
+      return;
+    }
+    if (row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     gameState.lastTilePlaced = k.time();
@@ -1049,7 +1047,16 @@ k.scene("game", () => {
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= COLS || row < 0 || row >= GROUND_ROW) return;
+    if (col < 0 || col >= COLS || row < 0) return;
+    if (selectedTool === "dig" && row >= GROUND_ROW && row < ROWS) {
+      const key = gridKey(col, row);
+      if (key === lastPlacedKey) return;
+      if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
+      else groundSystem.digGround(col, row);
+      lastPlacedKey = key;
+      return;
+    }
+    if (row >= GROUND_ROW) return;
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;

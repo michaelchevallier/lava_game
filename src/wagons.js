@@ -238,6 +238,39 @@ export function createWagonSystem({
     let wasOnRail = false;
 
     wagon.onUpdate(() => {
+      if (wagon.inLoop) {
+        const loopT = (k.time() - wagon.loopStart) / 0.6;
+        if (loopT >= 1) {
+          wagon.inLoop = false;
+          wagon.pos.x = wagon.loopExitX;
+          wagon.pos.y = wagon.loopExitY;
+          gameState.score += 50;
+          showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "LOOP +50", k.rgb(180, 80, 240), 22);
+          audio.combo();
+          window.__juice?.dirShake(0, -1, 6, 0.2);
+        } else {
+          const angle = -Math.PI / 2 + loopT * Math.PI * 2;
+          wagon.pos.x = wagon.loopCenter.x + Math.cos(angle) * wagon.loopRadius - 30;
+          wagon.pos.y = wagon.loopCenter.y + Math.sin(angle) * wagon.loopRadius - 15;
+          if (wagon.vel) wagon.vel.y = 0;
+          if (entityCounts.particle < 240 && Math.random() < 0.4) {
+            const hue = (loopT * 360) % 360;
+            const loopCol = hueToRgb(k, hue);
+            k.add([
+              k.rect(4, 4),
+              k.pos(wagon.pos.x + 30, wagon.pos.y + 15),
+              k.color(loopCol),
+              k.opacity(0.85),
+              k.lifespan(0.5, { fade: 0.35 }),
+              k.z(4),
+              "particle",
+              { vx: 0, vy: 0 },
+            ]);
+          }
+        }
+        return;
+      }
+
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
       const iced = wagon.iceUntil && k.time() < wagon.iceUntil;
       let speedMult = 1;
@@ -846,6 +879,16 @@ export function createWagonSystem({
           { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 },
         ]);
       }
+    });
+
+    wagon.onCollide("rail_loop", (loopTile) => {
+      if (wagon.inLoop) return;
+      wagon.inLoop = true;
+      wagon.loopStart = k.time();
+      wagon.loopCenter = k.vec2(loopTile.pos.x, loopTile.pos.y);
+      wagon.loopRadius = loopTile.loopRadius;
+      wagon.loopExitX = loopTile.pos.x + TILE / 2 + 6;
+      wagon.loopExitY = loopTile.pos.y - wagon.loopRadius - 15;
     });
   }
 

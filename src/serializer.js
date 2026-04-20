@@ -1,4 +1,4 @@
-import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, GROUND_ROW } from "./constants.js";
+import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, ROWS, GROUND_ROW } from "./constants.js";
 
 export function loadSave() {
   try {
@@ -19,18 +19,38 @@ export function persistSave(save) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(save)); } catch (e) {}
 }
 
-export function serializeTiles(tileMap) {
+export function serializeTiles(tileMap, dugPairs) {
   const parts = [];
   for (const [, t] of tileMap) {
     const c = TILE_CODE[t.tileType];
     if (!c) continue;
     parts.push(`${t.gridCol}.${t.gridRow}.${c}`);
   }
-  return "v1:" + parts.join(",");
+  let code = "v2:" + parts.join(",");
+  if (dugPairs && dugPairs.length > 0) {
+    const dugStr = dugPairs.map(([c, r]) => `${c}.${r}`).join(",");
+    code += "|g:" + dugStr;
+  }
+  return code;
 }
 
-export function deserializeTiles(code, placeTile) {
-  const stripped = code.startsWith("v1:") ? code.slice(3) : code;
+export function deserializeTiles(code, placeTile, loadDugMap) {
+  let tilesSection = code;
+  let dugPairs = [];
+
+  const pipeIdx = code.indexOf("|g:");
+  if (pipeIdx !== -1) {
+    tilesSection = code.slice(0, pipeIdx);
+    const dugSection = code.slice(pipeIdx + 3);
+    dugPairs = dugSection.split(",").filter(Boolean).map((s) => {
+      const [cStr, rStr] = s.split(".");
+      return [parseInt(cStr, 10), parseInt(rStr, 10)];
+    }).filter(([c, r]) => !isNaN(c) && !isNaN(r) && c >= 0 && c < COLS && r >= GROUND_ROW && r < ROWS);
+  }
+
+  const stripped = tilesSection.startsWith("v2:") ? tilesSection.slice(3)
+    : tilesSection.startsWith("v1:") ? tilesSection.slice(3)
+    : tilesSection;
   const parts = stripped.split(",").filter(Boolean);
   for (const p of parts) {
     const [cStr, rStr, tCode] = p.split(".");
@@ -41,6 +61,8 @@ export function deserializeTiles(code, placeTile) {
     if (c < 0 || c >= COLS || r < 0 || r >= GROUND_ROW) continue;
     placeTile(c, r, type);
   }
+
+  if (loadDugMap && dugPairs.length > 0) loadDugMap(dugPairs);
 }
 
 export function showExportModal(code, onImport) {
