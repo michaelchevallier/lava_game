@@ -180,47 +180,24 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     } else if (type === "trampoline") {
+      // Trampoline : 1 seul sprite (avant : base + 2 springs + surface = 4 entités)
       const x = col * TILE;
       const y = row * TILE;
-      const base = k.add([
-        k.rect(TILE, TILE - 8),
-        k.pos(x, y + 8),
-        k.color(k.rgb(60, 40, 60)),
-        k.outline(2, k.rgb(30, 20, 30)),
-        k.z(1),
-      ]);
-      const spring1 = k.add([
-        k.rect(4, TILE - 12),
-        k.pos(x + 6, y + 10),
-        k.color(k.rgb(200, 200, 215)),
-        k.z(2),
-      ]);
-      const spring2 = k.add([
-        k.rect(4, TILE - 12),
-        k.pos(x + TILE - 10, y + 10),
-        k.color(k.rgb(200, 200, 215)),
-        k.z(2),
-      ]);
       const t = k.add([
-        k.rect(TILE, 6),
-        k.pos(x, y + 4),
-        k.color(k.rgb(255, 80, 130)),
-        k.outline(2, k.rgb(140, 20, 60)),
+        k.sprite("trampoline_visual"),
+        k.pos(x, y),
         k.area(),
         k.z(3),
         "tile",
         "trampoline",
-        { gridCol: col, gridRow: row, tileType: "trampoline", extras: [base, spring1, spring2] },
+        { gridCol: col, gridRow: row, tileType: "trampoline", extras: [] },
       ]);
       tileMap.set(key, t);
-      t.onDraw(() => {
+      // Pulse via scale (pas d'entité extra)
+      t.onUpdate(() => {
         const pulse = 0.5 + 0.5 * Math.sin(k.time() * 5);
-        k.drawCircle({
-          pos: k.vec2(TILE / 2, 6),
-          radius: TILE * 0.45 * (0.85 + 0.15 * pulse),
-          color: k.rgb(255, 100, 160),
-          opacity: 0.12 + 0.1 * pulse,
-        });
+        const s = 1 + 0.08 * pulse;
+        t.scale = k.vec2(s, 1 + 0.04 * pulse);
       });
     } else if (type === "boost") {
       const t = k.add([
@@ -305,42 +282,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     } else if (type === "magnet") {
+      // Magnet : 1 seul sprite (avant : base + 2 arms + 2 tips = 5 entités)
       const t = k.add([
-        k.rect(TILE, TILE),
+        k.sprite("magnet_visual"),
         k.pos(col * TILE, row * TILE),
-        k.color(k.rgb(210, 80, 60)),
-        k.outline(2, k.rgb(110, 30, 20)),
         k.area(),
-        k.z(1),
+        k.z(3),
         "tile",
         "magnet",
         { gridCol: col, gridRow: row, tileType: "magnet", extras: [] },
       ]);
-      const leftArm = k.add([
-        k.rect(6, TILE - 10),
-        k.pos(col * TILE + 6, row * TILE + 4),
-        k.color(k.rgb(40, 40, 40)),
-        k.z(2),
-      ]);
-      const rightArm = k.add([
-        k.rect(6, TILE - 10),
-        k.pos(col * TILE + TILE - 12, row * TILE + 4),
-        k.color(k.rgb(40, 40, 40)),
-        k.z(2),
-      ]);
-      const leftTip = k.add([
-        k.rect(6, 4),
-        k.pos(col * TILE + 6, row * TILE + 4),
-        k.color(k.rgb(200, 200, 200)),
-        k.z(3),
-      ]);
-      const rightTip = k.add([
-        k.rect(6, 4),
-        k.pos(col * TILE + TILE - 12, row * TILE + 4),
-        k.color(k.rgb(200, 200, 200)),
-        k.z(3),
-      ]);
-      t.extras = [leftArm, rightArm, leftTip, rightTip];
       tileMap.set(key, t);
     } else if (type === "ice") {
       const t = k.add([

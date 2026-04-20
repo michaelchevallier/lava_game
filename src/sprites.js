@@ -844,6 +844,74 @@ const SPR_SKEL_GENERIC = [
   "..XXXX..XXXX..",
 ];
 
+// Procedural magnet sprite 32×32: horseshoe magnet U-shape.
+export function makeMagnetSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  // Main U-body (rouge magnet classique)
+  ctx.fillStyle = "#c42020";
+  ctx.fillRect(4, 6, 24, 18);       // top bar
+  ctx.fillRect(4, 6, 8, 22);        // left leg
+  ctx.fillRect(20, 6, 8, 22);       // right leg
+  ctx.clearRect(12, 14, 8, 12);     // hollow middle
+  // Dark outline
+  ctx.strokeStyle = "#5a0a0a";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(4, 6, 24, 18);
+  ctx.strokeRect(4, 6, 8, 22);
+  ctx.strokeRect(20, 6, 8, 22);
+  // Tip chrome (acier clair) au bas des pôles
+  ctx.fillStyle = "#c8c8d8";
+  ctx.fillRect(4, 24, 8, 4);
+  ctx.fillRect(20, 24, 8, 4);
+  ctx.strokeRect(4, 24, 8, 4);
+  ctx.strokeRect(20, 24, 8, 4);
+  // Pôles N/S (marquage blanc)
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(6, 26, 2, 1);
+  ctx.fillRect(22, 26, 2, 1);
+  return c.toDataURL();
+}
+
+// Procedural trampoline sprite 32×32: base violet + 2 ressorts blancs + surface rose.
+export function makeTrampolineSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  // Base socle violet foncé
+  ctx.fillStyle = "#3c283c";
+  ctx.fillRect(0, 8, T, 24);
+  ctx.strokeStyle = "#1e141e";
+  ctx.strokeRect(0, 8, T, 24);
+  // Ressorts blancs
+  ctx.fillStyle = "#c8c8d7";
+  ctx.fillRect(6, 10, 4, 20);
+  ctx.fillRect(22, 10, 4, 20);
+  ctx.strokeStyle = "#50505a";
+  ctx.strokeRect(6, 10, 4, 20);
+  ctx.strokeRect(22, 10, 4, 20);
+  // Strips d'anneaux sur les ressorts (effet spirale)
+  ctx.fillStyle = "#5a5a66";
+  for (let y = 12; y <= 26; y += 3) {
+    ctx.fillRect(6, y, 4, 1);
+    ctx.fillRect(22, y, 4, 1);
+  }
+  // Surface rose (top elastic)
+  ctx.fillStyle = "#ff64a0";
+  ctx.fillRect(0, 4, T, 6);
+  ctx.strokeStyle = "#aa3070";
+  ctx.strokeRect(0, 4, T, 6);
+  // Highlight rose clair
+  ctx.fillStyle = "#ff96c0";
+  ctx.fillRect(2, 5, T - 4, 1);
+  return c.toDataURL();
+}
+
 // Procedural loop sprite: 1 image = toute la boucle (2 rails argentés + 18 traverses bois)
 // Évite de spawner 90+ entités par boucle. TILE=32, loop 2×2 → rx=ry=TILE.
 export function makeLoopSpriteUrl() {
@@ -941,5 +1009,7 @@ export function loadAllSprites(k) {
     k.loadSprite("chief", makeSpriteUrl(SPR_CHIEF, 2)),
     k.loadSprite("astro", makeSpriteUrl(SPR_ASTRO, 2)),
     k.loadSprite("rail_loop_visual", makeLoopSpriteUrl()),
+    k.loadSprite("magnet_visual", makeMagnetSpriteUrl()),
+    k.loadSprite("trampoline_visual", makeTrampolineSpriteUrl()),
   ]);
 }
