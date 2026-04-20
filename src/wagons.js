@@ -415,21 +415,58 @@ export function createWagonSystem({
           for (const p of (wagon.passengerEntities || [])) {
             if (p.exists()) p.angle = 0;
           }
+          for (const part of wagon.parts || []) {
+            if (part?.exists?.() && "angle" in part) part.angle = 0;
+          }
         } else {
           const ang = Math.PI + loopT * Math.PI * 2;
           wagon.pos.x = wagon.loopCx + Math.cos(ang) * wagon.loopRx - 30;
           wagon.pos.y = wagon.loopCy + Math.sin(ang) * wagon.loopRy - 15;
           wagon.angle = loopT * 360;
+          const r = (wagon.angle * Math.PI / 180);
+          const cosR = Math.cos(r), sinR = Math.sin(r);
+          const cx = wagon.pos.x + 30;
+          const cy = wagon.pos.y + 15;
+          // Rotate all body parts + wheels around wagon center for visual cohérence
+          for (let i = 0; i < parts.length && i < localOffsets.length; i++) {
+            const off = localOffsets[i];
+            const ox = off.x - 30;
+            const oy = off.y - 15;
+            parts[i].pos.x = cx + (ox * cosR - oy * sinR);
+            parts[i].pos.y = cy + (ox * sinR + oy * cosR);
+            if ("angle" in parts[i]) parts[i].angle = wagon.angle;
+          }
+          // Wheels + spokes (last 4 entries in wagon.parts, indices 6..9 of localOffsets)
+          for (const [w, lo] of [[wheel1, localOffsets[6]], [wheel1Spoke, localOffsets[7]], [wheel2, localOffsets[8]], [wheel2Spoke, localOffsets[9]]]) {
+            if (!w?.exists?.()) continue;
+            const ox = lo.x - 30;
+            const oy = lo.y - 15;
+            w.pos.x = cx + (ox * cosR - oy * sinR);
+            w.pos.y = cy + (ox * sinR + oy * cosR);
+          }
+          // Spokes spin extra during loop for that whirl feel
+          spokeAngle += 720 * k.dt();
+          if (wheel1Spoke?.exists?.()) wheel1Spoke.angle = wagon.angle + spokeAngle;
+          if (wheel2Spoke?.exists?.()) wheel2Spoke.angle = wagon.angle + spokeAngle;
+          // Royal decos follow rotation
+          if (wagon.royalDecos) {
+            for (const d of wagon.royalDecos) {
+              if (!d.exists()) continue;
+              const ox = (d.royalOffX || 0) - 30;
+              const oy = (d.royalOffY || 0) - 15;
+              d.pos.x = cx + (ox * cosR - oy * sinR);
+              d.pos.y = cy + (ox * sinR + oy * cosR);
+              if ("angle" in d) d.angle = wagon.angle;
+            }
+          }
           for (let i = 0; i < (wagon.passengerEntities || []).length; i++) {
             const p = wagon.passengerEntities[i];
             if (!p?.exists()) continue;
             p.angle = wagon.angle;
             const offX = 6 + i * 14 - 30;
             const offY = -40;
-            const r = (wagon.angle * Math.PI / 180);
-            const cosR = Math.cos(r), sinR = Math.sin(r);
-            p.pos.x = wagon.pos.x + 30 + (offX * cosR - offY * sinR);
-            p.pos.y = wagon.pos.y + 15 + (offX * sinR + offY * cosR);
+            p.pos.x = cx + (offX * cosR - offY * sinR);
+            p.pos.y = cy + (offX * sinR + offY * cosR);
           }
           if (wagon.vel) wagon.vel.y = 0;
           if (entityCounts.particle < 240 && Math.random() < 0.4) {

@@ -552,27 +552,62 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       const cy = (row + 1) * TILE;
       const rx = TILE * 1.5;
       const ry = TILE;
-      const ties = [];
-      for (let i = 0; i < 12; i++) {
-        const a = (i / 12) * Math.PI * 2;
+      const extras = [];
+      // Brown sleepers (railroad ties) — same colors/feel as horizontal rail
+      const tieCount = 18;
+      for (let i = 0; i < tieCount; i++) {
+        const a = (i / tieCount) * Math.PI * 2;
         const tx = cx + Math.cos(a) * rx;
         const ty = cy + Math.sin(a) * ry;
-        ties.push(k.add([
-          k.rect(4, 10),
+        const tangent = Math.atan2(Math.cos(a) * ry, -Math.sin(a) * rx);
+        extras.push(k.add([
+          k.rect(5, 13),
           k.pos(tx, ty),
           k.color(k.rgb(100, 60, 30)),
           k.outline(1, k.rgb(40, 20, 10)),
           k.anchor("center"),
-          k.rotate((a * 180 / Math.PI) + 90),
+          k.rotate((tangent * 180 / Math.PI) + 90),
           k.z(2),
         ]));
-        ties.push(k.add([
-          k.rect(8, 4),
-          k.pos(tx + Math.cos(a) * 6, ty + Math.sin(a) * 6),
-          k.color(k.rgb(180, 80, 240)),
-          k.outline(1, k.rgb(80, 30, 120)),
+      }
+      // Two metallic rail bands (inner + outer) — same silver as straight rails
+      const RAIL_FILL = k.rgb(210, 210, 225);
+      const RAIL_OUTLINE = k.rgb(70, 70, 90);
+      const segCount = 36;
+      for (let i = 0; i < segCount; i++) {
+        const a0 = (i / segCount) * Math.PI * 2;
+        const a1 = ((i + 1) / segCount) * Math.PI * 2;
+        for (const dr of [-3, 3]) {
+          const r0x = rx + dr, r0y = ry + dr;
+          const x0 = cx + Math.cos(a0) * r0x;
+          const y0 = cy + Math.sin(a0) * r0y;
+          const x1 = cx + Math.cos(a1) * r0x;
+          const y1 = cy + Math.sin(a1) * r0y;
+          const mx = (x0 + x1) / 2;
+          const my = (y0 + y1) / 2;
+          const len = Math.hypot(x1 - x0, y1 - y0) + 1;
+          const angDeg = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
+          extras.push(k.add([
+            k.rect(len, 3),
+            k.pos(mx, my),
+            k.color(RAIL_FILL),
+            k.outline(1, RAIL_OUTLINE),
+            k.anchor("center"),
+            k.rotate(angDeg),
+            k.z(3),
+          ]));
+        }
+      }
+      // Entry/exit junction studs to visually connect loop to surrounding rails
+      const entryX = cx - rx;
+      const exitX = cx + rx;
+      for (const sx of [entryX, exitX]) {
+        extras.push(k.add([
+          k.rect(8, 6),
+          k.pos(sx, cy + ry - 6),
+          k.color(RAIL_FILL),
+          k.outline(1, RAIL_OUTLINE),
           k.anchor("center"),
-          k.rotate((a * 180 / Math.PI) + 90),
           k.z(3),
         ]));
       }
@@ -584,7 +619,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         k.z(2),
         "tile",
         "rail_loop",
-        { gridCol: col, gridRow: row, tileType: "rail_loop", extras: ties, loopCx: cx, loopCy: cy, loopRx: rx, loopRy: ry, exitX: cx + rx + 30 },
+        { gridCol: col, gridRow: row, tileType: "rail_loop", extras, loopCx: cx, loopCy: cy, loopRx: rx, loopRy: ry, exitX: cx + rx + 30 },
       ]);
       tileMap.set(key, t);
     } else if (type === "rail_up" || type === "rail_down") {
