@@ -828,5 +828,22 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     return rinks;
   }
 
-  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals };
+  function detectMetronomes() {
+    const result = [];
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "boost") continue;
+      const bottomBoost = tileMap.get(gridKey(t.gridCol, t.gridRow + 4));
+      if (!bottomBoost || bottomBoost.tileType !== "boost") continue;
+      let hasLava = false;
+      for (let r = t.gridRow + 1; r <= t.gridRow + 3; r++) {
+        const between = tileMap.get(gridKey(t.gridCol, r));
+        if (between?.tileType === "lava") { hasLava = true; break; }
+      }
+      if (!hasLava) continue;
+      result.push({ col: t.gridCol, topRow: t.gridRow, bottomRow: t.gridRow + 4 });
+    }
+    return result;
+  }
+
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes };
 }

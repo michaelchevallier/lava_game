@@ -148,6 +148,9 @@ const gameState = {
   geysers: [],
   lastConstellationAt: 0,
   constellationActive: false,
+  metronomes: [],
+  scoreMultiplier: 1,
+  scoreMultiplierUntil: 0,
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
@@ -235,7 +238,7 @@ k.scene("game", () => {
   const cinematic = createCinematicSystem({ k, audio, WIDTH, HEIGHT });
   cinematic.reset();
 
-  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes } = createTileSystem({
     k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
   });
@@ -252,6 +255,7 @@ k.scene("game", () => {
   k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
   gameState.magnetPortals = [];
   k.loop(0.5, () => { gameState.magnetPortals = detectMagnetPortals(); });
+  k.loop(0.5, () => { gameState.metronomes = detectMetronomes(); });
 
   k.loop(0.5, () => constellation.check());
 
@@ -467,7 +471,8 @@ k.scene("game", () => {
     gameState.comboExpire = now + COMBO_WINDOW;
     const mult = COMBO_MULTIPLIERS[gameState.comboCount] || 1;
     const btMult = gameState.bulletTimeUntil > now ? 2 : 1;
-    const pts = base * mult * btMult * (1 + darkBonus);
+    const metroMult = (gameState.scoreMultiplier > 1 && now < gameState.scoreMultiplierUntil) ? gameState.scoreMultiplier : 1;
+    const pts = base * mult * btMult * metroMult * (1 + darkBonus);
     gameState.score += pts;
     if (prev < 5 && gameState.comboCount === 5) {
       triggerApocalypse();
@@ -559,7 +564,8 @@ k.scene("game", () => {
     const mult = now < gameState.comboExpire
       ? COMBO_MULTIPLIERS[gameState.comboCount] || 1
       : 1;
-    const pts = 5 * mult;
+    const metroMult = (gameState.scoreMultiplier > 1 && now < gameState.scoreMultiplierUntil) ? gameState.scoreMultiplier : 1;
+    const pts = 5 * mult * metroMult;
     gameState.score += pts;
     save.totalCoins = (save.totalCoins || 0) + 1;
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;

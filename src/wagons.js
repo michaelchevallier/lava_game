@@ -786,6 +786,35 @@ export function createWagonSystem({
         }
       }
 
+      // Métronome Infernal: 2 boosts verticaux (gap 3, lava entre) traversés top→bottom en <0.8s
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        const wRow = Math.floor((wagon.pos.y + 30) / TILE);
+        for (const m of gameState.metronomes || []) {
+          if (m.col !== wCol) continue;
+          if (wRow === m.topRow && !wagon._metroEntry) {
+            wagon._metroEntry = k.time();
+            wagon._metroCol = m.col;
+          } else if (wRow === m.bottomRow && wagon._metroEntry && k.time() - wagon._metroEntry < 0.8) {
+            wagon._metroEntry = null;
+            gameState.scoreMultiplier = 2;
+            gameState.scoreMultiplierUntil = k.time() + 3;
+            for (const w of k.get("wagon")) {
+              w.boostUntil = Math.max(w.boostUntil || 0, k.time() + 3);
+            }
+            for (let i = 0; i < 4; i++) {
+              k.wait(i * 0.083, () => {
+                window.__juice?.dirShake(0, 1, 6, 0.08);
+                audio.combo();
+              });
+            }
+            showPopup(WIDTH / 2, HEIGHT / 2 - 80, "METRONOME INFERNAL ! x2 3s", k.rgb(255, 80, 80), 24);
+          } else if (wRow > m.bottomRow + 1) {
+            wagon._metroEntry = null;
+          }
+        }
+      }
+
       // Loop-the-loop detection: track distinct rail tiles visited
       {
         const wCol = Math.floor((wagon.pos.x + 30) / TILE);
