@@ -81,3 +81,39 @@ Sortie des 2 nouveaux opus créatifs lancés mid-cycle.
 - [ ] Wagon-Roi évolutif (déjà fait cycle 8) — visuel 7 paliers selon save.plays
 - [ ] Le Conte du Parc (1 commit, 3/5) — 14 phrases lore textuel par palier
 - [ ] Concours du Foyer (2 commits, 4/5) — records par perso (Mario/Pika/Luigi/Toad)
+
+---
+
+# Round 3 — Interactions joueur (anti-autopilote)
+
+User feedback : "tout est plus ou moins en autopilote quoi". 8 idées proposées.
+
+## TOP 2 (recommandation forte)
+
+### #3 Quêtes Visiteurs ⭐ (5/5, 2 commits)
+Toutes 45s un visiteur affiche bulle "3 pièces SVP" / "emmène moi à la grande roue" / "veut voir un splash". 30s pour livrer (apporter objet ou escorter dans wagon). +50-150 pts. Combine tous systèmes existants (wagons, grande roue, pêche, stand tir, pièces).
+- Fichiers : nouveau quests.js + extension wagons.js + bulles HUD
+
+### #6 Course de Wagons (5/5, 2 commits)
+Touche R = mode race : 2 wagons rouge/bleu spawnent, chaque joueur boarde le sien, 3 tours du parc, gagnant +500. Tiles posées affectent les 2 (sabotage/coop).
+- Fichiers : mode race main.js + checkpoints invisibles + HUD compteur
+
+## Autres (4-5/5)
+
+### #1 Voleur de Pièces (5/5, 1 commit)
+Toutes 20-30s fantôme violet vole pièces, joueur fonce dessus pour le vaincre (3 PV). Drop "Lanterne Bénie" anti-fantôme 30s.
+
+### #2 Parade Lave QTE (4/5, 1 commit)
+Wagon dans lave = éclaboussure vers joueur, indicateur 0.6s touche à presser, parade flash blanc. Sinon stun 1.5s. Combo x5 = "Surfeur de Lave" 200pts.
+
+### #4 Stand Tir Mobile (4/5, 1 commit)
+Évolution stand : canards défilent en file, click fléchette parabolique. 3 canards = JACKPOT 300pts + cosmétique chapeau random.
+
+### #5 Réparation Express (4/5, 1 commit)
+Rail aléatoire se brise toutes 60s, 10s pour le replacer, sinon wagon déraille -100pts. Streak 5 = bouclier "Maintenance Pro" 90s.
+
+### #7 Météo Capricieuse (4/5, 1 commit)
+Toutes 90s : 3s avertissement puis éclairs/pluie de pièces/vent latéral. Joueur réagit (abri, ramasser, contre-balancer).
+
+### #8 Boss Goret (5/5, 2 commits)
+Tous 4 min : gros cochon rose à lunettes fonce sur wagon le + chargé, joueur jette pièces (touche F) pour le vaincre. 10 pièces = boss vaincu +250pts + 2 tiles rares drop.
