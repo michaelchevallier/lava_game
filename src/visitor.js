@@ -18,7 +18,7 @@ export function createVisitorSystem({
     const v = k.add([
       k.sprite("human"),
       k.pos(-40, (GROUND_ROW - 3) * TILE),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd"] }),
       k.body(),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
