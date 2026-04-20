@@ -6,8 +6,8 @@ import {
 } from "./constants.js";
 
 export function createHUD({
-  k, gameState, save, settings, settingsOverlay, getPlayerConfigs,
-  getCurrentTool, fpsBuffer, fpsState, entityState, persistSave, onCarnetBtn,
+  k, gameState, save, settings,
+  getCurrentTool, fpsBuffer, fpsState, entityState, persistSave,
 }) {
   const C_BLACK = k.rgb(0, 0, 0);
   const C_GOLD = k.rgb(255, 210, 63);
@@ -58,42 +58,6 @@ export function createHUD({
     const dx = m.x - COG_X;
     const dy = m.y - COG_Y;
     return dx * dx + dy * dy < COG_R * COG_R;
-  }
-
-  function inPlayerBtn(m, i) {
-    const bx = WIDTH / 2 - 200 + 20 + (i - 1) * 92;
-    const by = HEIGHT / 2 - 60;
-    return m.x > bx && m.x < bx + 70 && m.y > by && m.y < by + 70;
-  }
-
-  function inAutoModeBtn(m) {
-    const bx = WIDTH / 2 - 120;
-    const by = HEIGHT / 2 + 50;
-    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 40;
-  }
-
-  function inBuildTestBtn(m) {
-    const bx = WIDTH / 2 - 120;
-    const by = HEIGHT / 2 + 100;
-    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
-  }
-
-  function inExportBtn(m) {
-    const bx = WIDTH / 2 - 120;
-    const by = HEIGHT / 2 + 146;
-    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
-  }
-
-  function inHelpBtn(m) {
-    const bx = WIDTH / 2 - 120;
-    const by = HEIGHT / 2 + 192;
-    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
-  }
-
-  function inCarnetBtn(m) {
-    const bx = WIDTH / 2 - 120;
-    const by = HEIGHT / 2 + 238;
-    return m.x > bx && m.x < bx + 240 && m.y > by && m.y < by + 36;
   }
 
   function toolbarHit(m) {
@@ -712,169 +676,6 @@ export function createHUD({
         }
       }
 
-      if (settings.open) {
-        k.drawRect({
-          pos: k.vec2(0, 0),
-          width: WIDTH,
-          height: HEIGHT,
-          color: k.rgb(0, 0, 0),
-          opacity: 0.75,
-        });
-        const panelW = 440;
-        const panelH = 480;
-        const panelX = WIDTH / 2 - panelW / 2;
-        const panelY = HEIGHT / 2 - panelH / 2;
-        k.drawRect({
-          pos: k.vec2(panelX, panelY),
-          width: panelW,
-          height: panelH,
-          color: k.rgb(30, 40, 60),
-        });
-        k.drawRect({
-          pos: k.vec2(panelX, panelY),
-          width: panelW,
-          height: 4,
-          color: k.rgb(255, 210, 63),
-        });
-        k.drawText({
-          text: "PARAMETRES",
-          size: 30,
-          pos: k.vec2(WIDTH / 2, panelY + 25),
-          anchor: "top",
-          color: k.rgb(255, 230, 80),
-        });
-        k.drawText({
-          text: "Nombre de joueurs",
-          size: 18,
-          pos: k.vec2(WIDTH / 2, panelY + 70),
-          anchor: "top",
-          color: k.WHITE,
-        });
-        const playerConfigs = getPlayerConfigs();
-        for (let i = 1; i <= 4; i++) {
-          const bx = panelX + 20 + (i - 1) * 92;
-          const by = panelY + 120;
-          const isSelected = settings.numPlayers === i;
-          const cfg = playerConfigs[i - 1];
-          k.drawRect({
-            pos: k.vec2(bx, by),
-            width: 70,
-            height: 70,
-            color: isSelected ? cfg.color : k.rgb(50, 60, 85),
-          });
-          k.drawRect({
-            pos: k.vec2(bx, by),
-            width: 70,
-            height: 4,
-            color: isSelected ? k.rgb(255, 255, 255) : k.rgb(90, 110, 140),
-          });
-          drawTextOutlined({
-            text: String(i),
-            size: 36,
-            pos: k.vec2(bx + 35, by + 32),
-            anchor: "center",
-            color: isSelected ? k.rgb(20, 20, 30) : k.WHITE,
-            outlineColor: isSelected ? k.rgb(200, 200, 200) : k.rgb(0, 0, 0),
-          });
-          k.drawText({
-            text: cfg.name,
-            size: 11,
-            pos: k.vec2(bx + 35, by + 82),
-            anchor: "top",
-            color: isSelected ? cfg.color : k.rgb(180, 200, 220),
-          });
-        }
-        const autoBx = WIDTH / 2 - 120;
-        const autoBy = HEIGHT / 2 + 50;
-        k.drawRect({
-          pos: k.vec2(autoBx, autoBy),
-          width: 240,
-          height: 40,
-          color: settings.autoMode ? k.rgb(124, 201, 71) : k.rgb(60, 80, 110),
-        });
-        k.drawText({
-          text: settings.autoMode ? "MODE DEMO: ON" : "MODE DEMO: OFF",
-          size: 18,
-          pos: k.vec2(WIDTH / 2, autoBy + 20),
-          anchor: "center",
-          color: k.WHITE,
-        });
-        const testBx = WIDTH / 2 - 120;
-        const testBy = HEIGHT / 2 + 100;
-        k.drawRect({
-          pos: k.vec2(testBx, testBy),
-          width: 240,
-          height: 36,
-          color: k.rgb(70, 90, 140),
-        });
-        k.drawText({
-          text: "Construire circuit test",
-          size: 16,
-          pos: k.vec2(WIDTH / 2, testBy + 18),
-          anchor: "center",
-          color: k.WHITE,
-        });
-        const expBx = WIDTH / 2 - 120;
-        const expBy = HEIGHT / 2 + 146;
-        k.drawRect({
-          pos: k.vec2(expBx, expBy),
-          width: 240,
-          height: 36,
-          color: k.rgb(186, 120, 220),
-        });
-        k.drawText({
-          text: "Sauvegarder / Charger parc",
-          size: 15,
-          pos: k.vec2(WIDTH / 2, expBy + 18),
-          anchor: "center",
-          color: k.WHITE,
-        });
-        const helpBx = WIDTH / 2 - 120;
-        const helpBy = HEIGHT / 2 + 192;
-        k.drawRect({
-          pos: k.vec2(helpBx, helpBy),
-          width: 240,
-          height: 36,
-          color: k.rgb(80, 140, 200),
-        });
-        k.drawText({
-          text: "Aide / Interactions",
-          size: 16,
-          pos: k.vec2(WIDTH / 2, helpBy + 18),
-          anchor: "center",
-          color: k.WHITE,
-        });
-        const carnetBx = WIDTH / 2 - 120;
-        const carnetBy = HEIGHT / 2 + 238;
-        k.drawRect({
-          pos: k.vec2(carnetBx, carnetBy),
-          width: 240,
-          height: 36,
-          color: k.rgb(120, 60, 180),
-        });
-        k.drawText({
-          text: "Carnet des Spectres",
-          size: 15,
-          pos: k.vec2(WIDTH / 2, carnetBy + 18),
-          anchor: "center",
-          color: k.WHITE,
-        });
-        k.drawText({
-          text: "(M) Son  (N) Nuit  (R) Reset  (P) Pause",
-          size: 12,
-          pos: k.vec2(WIDTH / 2, panelY + panelH - 40),
-          anchor: "top",
-          color: k.rgb(180, 200, 220),
-        });
-        k.drawText({
-          text: "Clic sur l'engrenage pour fermer",
-          size: 11,
-          pos: k.vec2(WIDTH / 2, panelY + panelH - 18),
-          anchor: "top",
-          color: k.rgb(140, 160, 190),
-        });
-      }
-
       if (gameState.bulletTimeUntil > k.time()) {
         k.drawRect({
           pos: k.vec2(0, 0),
@@ -947,12 +748,6 @@ export function createHUD({
     showPopup,
     drawTextOutlined,
     inCog,
-    inPlayerBtn,
-    inAutoModeBtn,
-    inBuildTestBtn,
-    inExportBtn,
-    inHelpBtn,
-    inCarnetBtn,
     toolbarHit,
   };
 }

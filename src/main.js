@@ -20,6 +20,7 @@ import { createAchievements } from "./achievements.js";
 import { createSplash } from "./splash.js";
 import { createTutorial } from "./tutorial.js";
 import { createConstellationSystem } from "./constellation.js";
+import { createSettingsModal } from "./settings-modal.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -136,6 +137,7 @@ const gameState = {
   milestoneIdx: 0,
   bulletTimeUntil: 0,
   wagonSpeedMult: save.wagonSpeedMult ?? 1,
+  zoom: save.zoom ?? 1,
   magnetFields: [],
   geysers: [],
   lastConstellationAt: 0,
@@ -144,59 +146,40 @@ const gameState = {
 
 audio.setMasterVolume(save.volume ?? 0.7);
 
-const settingsOverlay = (() => {
-  const div = document.createElement("div");
-  div.id = "settings-sliders";
-  div.style.cssText = [
-    "position:fixed", "z-index:9999", "pointer-events:none",
-    "top:0", "left:0", "width:100%", "height:100%",
-    "display:none", "align-items:center", "justify-content:center",
-  ].join(";");
+const settingsModal = createSettingsModal({
+  save,
+  persistSave,
+  settings,
+  audio,
+  gameState,
+  onAction: (name, payload) => {
+    if (name === "changeNumPlayers") {
+      audio.combo?.();
+      if (payload === 4) spectresRef?.unlock?.(21);
+      k.go("game");
+    }
+    if (name === "buildTest") buildTestCircuitRef?.();
+    if (name === "export") exportActionRef?.();
+    if (name === "help") showInteractionsModal?.();
+    if (name === "carnet") spectresRef?.showCarnet?.();
+    if (name === "resetScore") {
+      save.bestScore = 0;
+      save.totalSkeletons = 0;
+      persistSave(save);
+    }
+    if (name === "toggleDemo") toggleDemoRef?.();
+    if (name === "toggleNight") toggleNightRef?.();
+    if (name === "zoom") {
+      try { k.camScale(payload); } catch (e) {}
+    }
+  },
+});
 
-  div.innerHTML = `
-    <div style="pointer-events:auto;background:rgba(18,24,40,0.97);border:1px solid rgba(255,210,63,0.3);border-radius:6px;padding:18px 28px;min-width:280px;margin-top:220px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <label style="color:#c8d8f0;font-family:monospace;font-size:13px;flex:1">Volume</label>
-        <input id="sl-volume" type="range" min="0" max="100" step="1"
-          value="${Math.round((save.volume ?? 0.7) * 100)}"
-          style="flex:2;accent-color:#ffd23f;cursor:pointer">
-        <span id="sl-volume-val" style="color:#ffd23f;font-family:monospace;font-size:13px;width:38px;text-align:right">${Math.round((save.volume ?? 0.7) * 100)}%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <label style="color:#c8d8f0;font-family:monospace;font-size:13px;flex:1">Vitesse wagons</label>
-        <input id="sl-speed" type="range" min="50" max="200" step="5"
-          value="${Math.round((save.wagonSpeedMult ?? 1) * 100)}"
-          style="flex:2;accent-color:#7cd647;cursor:pointer">
-        <span id="sl-speed-val" style="color:#7cd647;font-family:monospace;font-size:13px;width:38px;text-align:right">${Math.round((save.wagonSpeedMult ?? 1) * 100)}%</span>
-      </div>
-    </div>`;
-  document.body.appendChild(div);
-
-  const slVol = div.querySelector("#sl-volume");
-  const slVolVal = div.querySelector("#sl-volume-val");
-  const slSpd = div.querySelector("#sl-speed");
-  const slSpdVal = div.querySelector("#sl-speed-val");
-
-  slVol.addEventListener("input", () => {
-    const v = parseInt(slVol.value) / 100;
-    slVolVal.textContent = slVol.value + "%";
-    audio.setMasterVolume(v);
-    save.volume = v;
-    persistSave(save);
-  });
-  slSpd.addEventListener("input", () => {
-    const v = parseInt(slSpd.value) / 100;
-    slSpdVal.textContent = slSpd.value + "%";
-    gameState.wagonSpeedMult = v;
-    save.wagonSpeedMult = v;
-    persistSave(save);
-  });
-
-  return {
-    show() { div.style.display = "flex"; },
-    hide() { div.style.display = "none"; },
-  };
-})();
+let spectresRef = null;
+let buildTestCircuitRef = null;
+let exportActionRef = null;
+let toggleDemoRef = null;
+let toggleNightRef = null;
 
 const fpsBuffer = [];
 const fpsState = { lastSec: 0, value: 0 };
@@ -229,15 +212,16 @@ k.scene("game", () => {
   let crowdHooks = null;
   let tutorial = null;
   const hud = createHUD({
-    k, gameState, save, settings, settingsOverlay,
+    k, gameState, save, settings,
     getCurrentTool: () => selectedTool,
     getPlayerConfigs: () => _playerConfigs,
     fpsBuffer, fpsState, entityState,
     persistSave,
   });
-  const { showPopup, inCog, inPlayerBtn, inAutoModeBtn, inBuildTestBtn, inExportBtn, inHelpBtn, inCarnetBtn, toolbarHit } = hud;
+  const { showPopup, inCog, toolbarHit } = hud;
 
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
+  spectresRef = spectres;
   window.__spectres = spectres;
   createAchievements({ k, spectres, audio });
 
@@ -770,7 +754,7 @@ k.scene("game", () => {
   });
   k.onKeyPress("r", () => {
     if (gameState.score === 0 && save.plays > 0) spectres.unlock(2);
-    settingsOverlay.hide();
+    settingsModal.hide();
     settings.open = false;
     k.go("game");
   });
@@ -827,6 +811,8 @@ k.scene("game", () => {
     placeTile(38, 13, "portal");
   }
 
+  buildTestCircuitRef = buildDemoCircuit;
+
   const MAX_WAGONS = 3;
 
   let autoSpawnTimer = null;
@@ -841,6 +827,10 @@ k.scene("game", () => {
   function stopAutoMode() {
     if (autoSpawnTimer) { autoSpawnTimer.cancel(); autoSpawnTimer = null; }
   }
+  toggleDemoRef = () => {
+    if (settings.autoMode) startAutoMode();
+    else stopAutoMode();
+  };
   if (settings.autoMode) k.wait(0.05, () => startAutoMode());
 
   let ghostTrainInterval = null;
@@ -914,14 +904,16 @@ k.scene("game", () => {
     baseOpacity: 0.7 + Math.random() * 0.3,
   }));
 
-  k.onKeyPress("n", () => {
+  function doToggleNight() {
     isNight = !isNight;
     moon.opacity = isNight ? 1 : 0;
     moonCrater.opacity = isNight ? 1 : 0;
     nightTint.opacity = isNight ? 0.35 : 0;
     if (isNight) spectres.unlock(19);
     else spectres.unlock(20);
-  });
+  }
+  toggleNightRef = doToggleNight;
+  k.onKeyPress("n", doToggleNight);
 
   const fireflyData = Array.from({ length: 18 }, () => ({
     x: Math.random() * WIDTH,
@@ -996,91 +988,47 @@ k.scene("game", () => {
   }
   k.onKeyPress(() => tryUnlockAudio());
 
+  function loadParkFromCode(code) {
+    try {
+      tileMap.forEach((t) => {
+        if (t.extras) t.extras.forEach((e) => k.destroy(e));
+        k.destroy(t);
+      });
+      tileMap.clear();
+      deserializeTiles(code, placeTile);
+      audio.combo();
+      showPopup(WIDTH / 2, 100, "PARC CHARGE !", k.rgb(124, 201, 71), 32);
+    } catch (e) {
+      showPopup(WIDTH / 2, 100, "CODE INVALIDE", k.rgb(255, 80, 80), 28);
+    }
+  }
+
+  exportActionRef = () => {
+    const code = serializeTiles(tileMap);
+    spectres.unlock(23);
+    showExportModal(code, (pasted) => { loadParkFromCode(pasted); });
+  };
+
   k.onMousePress("left", () => {
     tryUnlockAudio();
     const m = k.mousePos();
     if (inCog(m)) {
-      settings.open = !settings.open;
-      settings.open ? settingsOverlay.show() : settingsOverlay.hide();
+      if (settingsModal.isVisible()) {
+        settings.open = false;
+        settingsModal.hide();
+      } else {
+        settings.open = true;
+        settingsModal.show();
+      }
       audio.place();
       return;
     }
-    if (!settings.open) {
-      const clickedTool = toolbarHit(m);
-      if (clickedTool) {
-        selectedTool = clickedTool;
-        audio.place();
-        return;
-      }
-    }
-    if (settings.open) {
-      for (let i = 1; i <= 4; i++) {
-        if (inPlayerBtn(m, i)) {
-          if (settings.numPlayers !== i) {
-            settings.numPlayers = i;
-            save.numPlayers = i;
-            persistSave(save);
-            audio.combo();
-            if (i === 4) spectres.unlock(21);
-            settingsOverlay.hide();
-            settings.open = false;
-            k.go("game");
-          }
-          return;
-        }
-      }
-      if (inAutoModeBtn(m)) {
-        settings.autoMode = !settings.autoMode;
-        save.autoMode = settings.autoMode;
-        persistSave(save);
-        audio.boost();
-        if (settings.autoMode) startAutoMode();
-        else stopAutoMode();
-        return;
-      }
-      if (inBuildTestBtn(m)) {
-        buildDemoCircuit();
-        audio.place();
-        settings.open = false;
-        settingsOverlay.hide();
-        return;
-      }
-      if (inExportBtn(m)) {
-        const code = serializeTiles(tileMap);
-        spectres.unlock(23);
-        showExportModal(code, (pasted) => {
-          loadParkFromCode(pasted);
-        });
-        return;
-      }
-      if (inHelpBtn(m)) {
-        settings.open = false;
-        settingsOverlay.hide();
-        showInteractionsModal();
-        return;
-      }
-      if (inCarnetBtn(m)) {
-        settings.open = false;
-        settingsOverlay.hide();
-        spectres.showCarnet();
-        return;
-      }
+    if (settingsModal.isVisible()) return;
+    const clickedTool = toolbarHit(m);
+    if (clickedTool) {
+      selectedTool = clickedTool;
+      audio.place();
       return;
-    }
-
-    function loadParkFromCode(code) {
-      try {
-        tileMap.forEach((t) => {
-          if (t.extras) t.extras.forEach((e) => k.destroy(e));
-          k.destroy(t);
-        });
-        tileMap.clear();
-        deserializeTiles(code, placeTile);
-        audio.combo();
-        showPopup(WIDTH / 2, 100, "PARC CHARGE !", k.rgb(124, 201, 71), 32);
-      } catch (e) {
-        showPopup(WIDTH / 2, 100, "CODE INVALIDE", k.rgb(255, 80, 80), 28);
-      }
     }
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
@@ -1095,7 +1043,7 @@ k.scene("game", () => {
   let lastPlacedKey = null;
 
   k.onMouseDown("left", () => {
-    if (settings.open) return;
+    if (settingsModal.isVisible()) return;
     const screenM = k.mousePos();
     if (inCog(screenM) || toolbarHit(screenM) || screenM.y < 65) return;
     const w = k.toWorld(screenM);
