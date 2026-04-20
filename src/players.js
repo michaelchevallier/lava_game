@@ -185,7 +185,10 @@ export function createPlayerSystem({
     }
 
     k.onKeyDown(opts.keys.left, () => {
-      if (p.ridingWagon) return;
+      if (p.ridingWagon) {
+        p.ridingWagon._riderInput = "left";
+        return;
+      }
       p.move(-SPEED * playerSpeedMult(), 0);
       p.lastVx = -SPEED * playerSpeedMult();
       if (p.facing !== "left") {
@@ -194,7 +197,10 @@ export function createPlayerSystem({
       }
     });
     k.onKeyDown(opts.keys.right, () => {
-      if (p.ridingWagon) return;
+      if (p.ridingWagon) {
+        p.ridingWagon._riderInput = "right";
+        return;
+      }
       p.move(SPEED * playerSpeedMult(), 0);
       p.lastVx = SPEED * playerSpeedMult();
       if (p.facing !== "right") {
@@ -307,13 +313,21 @@ export function createPlayerSystem({
       let prevJump = false;
       let prevWagon = false;
       k.onUpdate(() => {
-        if (mi.left && !p.ridingWagon) {
-          p.move(-SPEED * playerSpeedMult(), 0);
-          if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
+        if (mi.left) {
+          if (p.ridingWagon) {
+            p.ridingWagon._riderInput = "left";
+          } else {
+            p.move(-SPEED * playerSpeedMult(), 0);
+            if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
+          }
         }
-        if (mi.right && !p.ridingWagon) {
-          p.move(SPEED * playerSpeedMult(), 0);
-          if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
+        if (mi.right) {
+          if (p.ridingWagon) {
+            p.ridingWagon._riderInput = "right";
+          } else {
+            p.move(SPEED * playerSpeedMult(), 0);
+            if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
+          }
         }
         if (mi.jumpPressed && !prevJump) {
           if (p.ridingWagon) {

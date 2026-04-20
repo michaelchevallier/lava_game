@@ -448,6 +448,14 @@ export function createWagonSystem({
           break;
         }
       }
+      if (wagon.rider && wagon._riderInput && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral) {
+        if (wagon._riderInput === "right") {
+          speedMult *= 1.5;
+        } else if (wagon._riderInput === "left") {
+          speedMult *= -0.5;
+        }
+        wagon._riderInput = null;
+      }
       const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
@@ -1567,6 +1575,7 @@ export function createWagonSystem({
     if (!w) return;
     p.ridingWagon = null;
     w.rider = null;
+    w._riderInput = null;
     p.opacity = 1;
     p.pos.x = w.pos.x + 70;
     p.pos.y = w.pos.y - 44;
