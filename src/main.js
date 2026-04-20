@@ -32,6 +32,7 @@ import { createVisitorSystem } from "./visitor.js";
 import { createGCSystem } from "./gc.js";
 import { createVisitorQuestSystem } from "./visitor-quests.js";
 import { createCoinThiefSystem } from "./coin-thief.js";
+import { createWeatherSystem } from "./weather.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1498,4 +1499,5 @@ k.scene("game", () => {
   window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
+  window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
 });
