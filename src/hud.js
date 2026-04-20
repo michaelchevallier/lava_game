@@ -12,7 +12,7 @@ const TOOL_ICONS = {
   rail_loop: "⭕", sol: "🪨", tunnel: "🏚",
 };
 
-export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onToolClick, onCogClick, k }) {
+export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onToolClick, onCogClick, k, getTiers }) {
   const elScore = document.getElementById("hud-score");
   const elStats = document.getElementById("hud-stats");
   const elPalier = document.getElementById("hud-palier");
@@ -71,6 +71,61 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   let cachedWagonCount = 0;
   let lastWagonCountUpdate = 0;
   let displayScore = 0;
+  let lastTierUpdate = 0;
+
+  // Conteneur objectifs tiers (injecté dans le DOM au-dessus de la toolbar)
+  const elTierBox = document.createElement("div");
+  elTierBox.id = "tier-objectives";
+  elTierBox.style.cssText = [
+    "position:fixed", "bottom:64px", "left:50%", "transform:translateX(-50%)",
+    "background:rgba(15,20,40,0.88)", "border:1px solid rgba(255,210,63,0.4)",
+    "border-radius:6px", "padding:4px 10px", "display:flex", "gap:12px",
+    "align-items:center", "font-size:12px", "color:#c8d8ff",
+    "font-family:system-ui,sans-serif", "pointer-events:none", "z-index:900",
+    "white-space:nowrap",
+  ].join(";");
+  document.body.appendChild(elTierBox);
+
+  function updateTierBox() {
+    const tiers = getTiers?.();
+    if (!tiers) { elTierBox.style.display = "none"; return; }
+    const objs = tiers.getCurrentObjectives();
+    if (objs.length === 0) {
+      const maxReached = tiers.getCurrentTier() >= tiers.getMaxTier();
+      elTierBox.textContent = maxReached ? "TIER MAX ATTEINT !" : (save.unlockedAll ? "TOUTES LES TUILES DEBLOQUEES" : "");
+      elTierBox.style.display = objs.length === 0 && !maxReached && !save.unlockedAll ? "none" : "flex";
+      return;
+    }
+    elTierBox.style.display = "flex";
+    const tierNum = tiers.getCurrentTier() + 1;
+    let html = `<span style="color:#ffd23f;font-weight:bold">Tier ${tierNum}</span>`;
+    for (const obj of objs) {
+      const done = obj.done;
+      const color = done ? "#7cdc60" : "#c8d8ff";
+      const check = done ? "✓ " : "";
+      html += `<span style="color:${color}">${check}${obj.label} (${obj.progress}/${obj.target})</span>`;
+    }
+    elTierBox.innerHTML = html;
+  }
+
+  function updateToolbarLock() {
+    if (!elToolbar) return;
+    const tiers = getTiers?.();
+    for (const btn of elToolbar.querySelectorAll(".tb-btn")) {
+      const tool = btn.dataset.tool;
+      const locked = tiers && !tiers.isUnlocked(tool);
+      btn.classList.toggle("tb-locked", locked);
+      if (locked) {
+        btn.style.opacity = "0.38";
+        btn.style.filter = "grayscale(0.8)";
+        btn.title = btn.title.replace(" [VERROUILLE]", "") + " [VERROUILLE]";
+      } else {
+        btn.style.opacity = "";
+        btn.style.filter = "";
+        btn.title = btn.title.replace(" [VERROUILLE]", "");
+      }
+    }
+  }
 
   const intervalId = setInterval(() => {
     const now = Date.now();
@@ -120,6 +175,13 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
 
     // Outil sélectionné
     updateSelectedBtn(getCurrentTool());
+
+    // Tiers objectives + toolbar lock (toutes les 500ms)
+    if (now - lastTierUpdate > 500) {
+      lastTierUpdate = now;
+      updateTierBox();
+      updateToolbarLock();
+    }
   }, 100);
 
   return {

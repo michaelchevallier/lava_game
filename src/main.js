@@ -25,6 +25,7 @@ import { createSettingsModal } from "./settings-modal.js";
 import { createGroundSystem } from "./ground.js";
 import { createCinematicSystem } from "./cinematic.js";
 import { createQuestSystem } from "./quests.js";
+import { createTierSystem } from "./tiers.js";
 import { createSkySystem } from "./sky.js";
 import { createSkullStand } from "./skull-stand.js";
 import { createVisitorSystem } from "./visitor.js";
@@ -168,6 +169,7 @@ const settingsModal = createSettingsModal({
     }
     if (name === "toggleDemo") toggleDemoRef?.();
     if (name === "toggleNight") toggleNightRef?.();
+    if (name === "unlockAll") window.__tiers?.unlockAll?.();
     if (name === "zoom") {
       try { k.camScale(payload); } catch (e) {}
     }
@@ -211,11 +213,18 @@ k.scene("game", () => {
 
   setupHtmlHud({
     getCurrentTool: () => selectedTool, gameState, save, settings, k,
-    onToolClick: (tool) => { selectedTool = tool; },
+    onToolClick: (tool) => {
+      if (window.__tiers && !window.__tiers.isUnlocked(tool)) {
+        showPopup?.(WIDTH / 2, 80, `VERROUILLE - completez les objectifs Tier ${window.__tiers.getCurrentTier() + 1}`, k.rgb(255, 80, 80), 18);
+        return;
+      }
+      selectedTool = tool;
+    },
     onCogClick: () => {
       if (settingsModal.isVisible()) { settings.open = false; settingsModal.hide(); }
       else { settings.open = true; settingsModal.show(); }
     },
+    getTiers: () => window.__tiers,
   });
 
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
@@ -559,7 +568,7 @@ k.scene("game", () => {
   });
 
   function checkMilestone() {
-    window.__quests?.onScore(gameState.score);
+    window.__quests?.onScore(gameState.score); window.__tiers?.onScore(gameState.score);
     while (
       gameState.milestoneIdx < MILESTONES.length &&
       gameState.score >= MILESTONES[gameState.milestoneIdx]
@@ -575,19 +584,14 @@ k.scene("game", () => {
       save.bestScore = gameState.score;
     }
     if (!save.heroes) save.heroes = { mario: 0, pika: 0, luigi: 0, toad: 0 };
-    // Crédite le score sur les avatars actuellement choisis (par save.avatars.p1/p2)
-    const activeAvatars = [];
-    if (save.avatars?.p1) activeAvatars.push(save.avatars.p1);
-    if ((settings.numPlayers || 1) >= 2 && save.avatars?.p2) activeAvatars.push(save.avatars.p2);
-    for (const avId of activeAvatars) {
-      if (gameState.score > (save.heroes[avId] || 0)) save.heroes[avId] = gameState.score;
-    }
+    const activeAvatars = [save.avatars?.p1, (settings.numPlayers || 1) >= 2 && save.avatars?.p2].filter(Boolean);
+    for (const avId of activeAvatars) { if (gameState.score > (save.heroes[avId] || 0)) save.heroes[avId] = gameState.score; }
     save.totalSkeletons = (save.totalSkeletons || 0) + 1;
     gameState.sessionSkeletons += 1;
     if (gameState.sessionSkeletons === 100) cinematic.play("100souls", "100 AMES");
     persistSave(save);
     if (save.totalSkeletons >= 100) spectres.unlock(6);
-    window.__quests?.onSkeleton();
+    window.__quests?.onSkeleton(); window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
   }
 
   gameState.onSlowMilestone = () => spectres.unlock(4);
@@ -704,7 +708,7 @@ k.scene("game", () => {
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;
     persistSave(save);
     if (save.totalCoins >= 100) spectres.unlock(17);
-    window.__quests?.onCoin();
+    window.__quests?.onCoin(); window.__tiers?.onCoin();
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
 
     // Coin streak: 5 coins in <2s → +50 bonus + golden flash
@@ -914,21 +918,13 @@ k.scene("game", () => {
   const groundSystem = createGroundSystem({ k, gameState, audio });
   groundSystem.initColliders();
 
-  k.add([
-    k.pos(0, 0),
-    k.z(-10),
-    {
-      draw() {
-        groundSystem.drawGround();
-      },
-    },
-  ]);
+  k.add([k.pos(0, 0), k.z(-10), { draw() { groundSystem.drawGround(); } }]);
 
   const { spawnPlayers, getEntityTile, PLAYER_CONFIGS } = createPlayerSystem({
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
     exitWagon: (...args) => exitWagon(...args),
-    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); },
+    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); window.__tiers?.onWagonSpawn(); },
   });
   _playerConfigs = PLAYER_CONFIGS;
 
@@ -962,7 +958,7 @@ k.scene("game", () => {
     settings.open = false;
     k.go("game");
   });
-  k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); });
+  k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); window.__tiers?.onWagonSpawn(); });
 
   // Respawn player(s) au centre de l'écran (dépanne si tombé hors map)
   k.onKeyPress(",", () => {
@@ -1135,6 +1131,10 @@ k.scene("game", () => {
     const row = Math.floor(w.y / TILE);
     if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
+    if (selectedTool !== "erase" && selectedTool !== "sol" && window.__tiers && !window.__tiers.isUnlocked(selectedTool)) {
+      showPopup(WIDTH / 2, 80, "VERROUILLE - completez les objectifs du tier", k.rgb(255, 80, 80), 18);
+      return;
+    }
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
         if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
@@ -1156,7 +1156,7 @@ k.scene("game", () => {
     if (row >= GROUND_ROW) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
-    window.__quests?.onTilePlace(selectedTool);
+    window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1172,6 +1172,7 @@ k.scene("game", () => {
     if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
+    if (selectedTool !== "erase" && selectedTool !== "sol" && window.__tiers && !window.__tiers.isUnlocked(selectedTool)) return;
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
         if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
@@ -1197,7 +1198,7 @@ k.scene("game", () => {
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
-    window.__quests?.onTilePlace(selectedTool);
+    window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
@@ -1492,4 +1493,7 @@ k.scene("game", () => {
 
   const quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   window.__quests = quests;
+
+  const tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  window.__tiers = tiers;
 });

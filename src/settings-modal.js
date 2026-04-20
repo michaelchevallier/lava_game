@@ -130,6 +130,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
           <button id="sm-help" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(60,130,200,0.9);color:#fff;font-weight:bold">Aide</button>
           <button id="sm-carnet" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(100,40,160,0.9);color:#fff;font-weight:bold">Carnet des Spectres</button>
           <button id="sm-reset" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(180,40,40,0.8);color:#fff;font-weight:bold">Reset score</button>
+          <button id="sm-unlock-all" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(200,160,30,0.9);color:#111;font-weight:bold">Debloquer toutes les tuiles</button>
         </div>
       </section>
     `;
@@ -246,6 +247,14 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
           btn.style.background = "rgba(180,40,40,0.8)";
         }
       }, 1500);
+    });
+
+    panel.querySelector("#sm-unlock-all").addEventListener("click", () => {
+      onAction("unlockAll");
+      const btn = panel.querySelector("#sm-unlock-all");
+      btn.textContent = "Toutes les tuiles debloquees !";
+      btn.style.background = "rgba(80,200,80,0.9)";
+      btn.style.color = "#fff";
     });
   }
 
