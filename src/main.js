@@ -947,10 +947,11 @@ k.scene("game", () => {
   k.onKeyPress("8", () => (selectedTool = "coin"));
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("0", () => (selectedTool = "fan"));
+  // Touches outils — éviter conflits avec touches joueurs :
+  // (Pika L=right, Toad G=board, Mario A=left, Mario E=board)
   k.onKeyPress("y", () => (selectedTool = "wheel"));
-  k.onKeyPress("l", () => (selectedTool = "rail_loop"));
   k.onKeyPress("k", () => (selectedTool = "sol"));
-  k.onKeyPress("b", () => (selectedTool = "tunnel"));
+  // L retiré (conflit Pika right), B retiré (conflit éventuel) — utiliser la toolbar HTML
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));

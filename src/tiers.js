@@ -1,16 +1,17 @@
 // Tier system = tutoriel progressif. Chaque tier ne demande QUE des actions
 // faisables avec les tuiles déjà débloquées (tier courant ou inférieur).
-// Jusqu'à 5 objectifs par tier — focus sur découverte mécaniques + interactions.
+// Focus : MÉCANIQUES de gameplay émergentes (combos, interactions tuiles)
+// au lieu de "atteindre X pts". Le score reste optionnel comme récompense.
 
 const TIERS = [
   {
-    // Tier 0 — DÉCOUVRIR : tools de base + lava + rail + coin disponibles
+    // Tier 0 : tools de base
     title: "Bienvenue !",
     objectives: [],
     unlocks: ["lava", "rail", "rail_up", "rail_down", "erase", "sol", "coin"],
   },
   {
-    // Tier 1 — DÉCOUVRIR LE WAGON : poser tuiles, faire spawner wagon (touche X)
+    // Tier 1 : DÉCOUVRIR le wagon
     title: "Le Premier Wagon",
     objectives: [
       { id: "tile5", label: "Poser 5 tuiles (clic souris)", target: 5, hook: "tile" },
@@ -20,72 +21,72 @@ const TIERS = [
     unlocks: ["water", "boost"],
   },
   {
-    // Tier 2 — DÉCOUVRIR L'EAU : eau revive squelette (water adjacent skeleton)
+    // Tier 2 : DÉCOUVRIR l'eau et le revive
     title: "L'Eau Salvatrice",
     objectives: [
       { id: "tile-water1", label: "Poser 1 tuile EAU", target: 1, hook: "tileWater" },
+      { id: "revive1", label: "Ressusciter 1 squelette (wagon dans eau)", target: 1, hook: "revive" },
       { id: "tile-boost1", label: "Poser 1 tuile BOOST", target: 1, hook: "tileBoost" },
       { id: "skel5", label: "Faire 5 squelettes", target: 5, hook: "skeleton" },
-      { id: "score100", label: "Atteindre 100 pts", target: 100, hook: "score" },
     ],
     unlocks: ["trampoline", "fan"],
   },
   {
-    // Tier 3 — DÉCOUVRIR LE TRAMPOLINE : faire sauter le wagon (trampoline + fan combine)
-    title: "Trampoline & Vent",
+    // Tier 3 : COMBOS trampoline + fan = catapulte ; eau + fan = geyser
+    title: "Trampoline, Vent & Geyser",
     objectives: [
       { id: "tile-tramp1", label: "Poser 1 TRAMPOLINE", target: 1, hook: "tileTramp" },
       { id: "tile-fan1", label: "Poser 1 VENTILATEUR", target: 1, hook: "tileFan" },
-      { id: "skel15cum", label: "15 squelettes cumul", target: 15, hook: "skeletonCum" },
-      { id: "score250", label: "Atteindre 250 pts", target: 250, hook: "score" },
+      { id: "geyser1", label: "Creer un GEYSER (eau au-dessus de fan)", target: 1, hook: "geyser" },
+      { id: "catapult1", label: "Catapulter 1 wagon (trampo + fan)", target: 1, hook: "catapult" },
       { id: "tile15", label: "Poser 15 tuiles au total", target: 15, hook: "tile" },
     ],
     unlocks: ["portal", "ice"],
   },
   {
-    // Tier 4 — DÉCOUVRIR LE PORTAIL : 2 portails créent une paire (téléport)
-    title: "Portails & Glace",
+    // Tier 4 : portail + glace, faire skater + teleporter
+    title: "Portails & Patinoire",
     objectives: [
       { id: "tile-portal2", label: "Poser 2 PORTAILS (paire)", target: 2, hook: "tilePortal" },
-      { id: "tile-ice1", label: "Poser 1 GLACE", target: 1, hook: "tileIce" },
-      { id: "skel30cum", label: "30 squelettes cumul", target: 30, hook: "skeletonCum" },
-      { id: "score500", label: "Atteindre 500 pts", target: 500, hook: "score" },
+      { id: "portal-use", label: "Utiliser un portail (wagon teleporte)", target: 1, hook: "portalUse" },
+      { id: "tile-ice3", label: "Poser 3 GLACES alignees (patinoire)", target: 3, hook: "tileIce" },
+      { id: "skel20cum", label: "20 squelettes cumul", target: 20, hook: "skeletonCum" },
     ],
     unlocks: ["magnet", "bridge"],
   },
   {
-    // Tier 5 — COMBOS : magnet adjacent portal = vortex !
-    title: "Le Vortex Magnetique",
+    // Tier 5 : combo magnet+portal = vortex, casser pont
+    title: "Le Vortex & Pont",
     objectives: [
       { id: "tile-magnet1", label: "Poser 1 AIMANT", target: 1, hook: "tileMagnet" },
+      { id: "vortex1", label: "Creer un VORTEX (aimant voisin portail)", target: 1, hook: "vortex" },
       { id: "tile-bridge1", label: "Poser 1 PONT", target: 1, hook: "tileBridge" },
-      { id: "score1000", label: "Atteindre 1000 pts", target: 1000, hook: "score" },
-      { id: "skel50cum", label: "50 squelettes cumul", target: 50, hook: "skeletonCum" },
-      { id: "tile30", label: "Poser 30 tuiles au total", target: 30, hook: "tile" },
+      { id: "bridge-break1", label: "Casser 1 pont (2 passages wagon)", target: 1, hook: "bridge" },
+      { id: "revive5", label: "Ressusciter 5 squelettes au total", target: 5, hook: "revive" },
     ],
     unlocks: ["wheel", "rail_loop"],
   },
   {
-    // Tier 6 — LOOP & ROUE : enfin disponibles (loop débloqué)
+    // Tier 6 : LOOP + roue + chaine d'or
     title: "Looping & Grande Roue",
     objectives: [
       { id: "tile-wheel1", label: "Poser 1 GRANDE ROUE", target: 1, hook: "tileWheel" },
       { id: "tile-loop1", label: "Poser 1 RAIL LOOP", target: 1, hook: "tileLoop" },
       { id: "loop1", label: "Completer 1 loop (wagon traverse)", target: 1, hook: "loop" },
-      { id: "score2000", label: "Atteindre 2000 pts", target: 2000, hook: "score" },
-      { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
+      { id: "chain1", label: "Faire 1 CHAINE D'OR (3 pieces diagonale)", target: 1, hook: "chain" },
+      { id: "skel50cum", label: "50 squelettes cumul", target: 50, hook: "skeletonCum" },
     ],
     unlocks: ["tunnel"],
   },
   {
-    // Tier 7 — ULTIME : tout débloqué, défis ultimes
+    // Tier 7 : ULTIME — tout débloqué, mécaniques rares
     title: "Maitre Forain",
     objectives: [
       { id: "tile-tunnel1", label: "Poser 1 TUNNEL HANTE", target: 1, hook: "tileTunnel" },
-      { id: "score5000", label: "Atteindre 5000 pts", target: 5000, hook: "score" },
-      { id: "catapult1", label: "Catapulter 1 wagon (trampo+fan)", target: 1, hook: "catapult" },
+      { id: "apocalypse1", label: "Declencher 1 APOCALYPSE (5 transforms <2s)", target: 1, hook: "apocalypse" },
+      { id: "constellation1", label: "Declencher 1 CONSTELLATION (5 skel + portail)", target: 1, hook: "constellation" },
       { id: "duck5", label: "Pecher 5 canards", target: 5, hook: "duck" },
-      { id: "bridge-break1", label: "Casser 1 pont (2 wagons)", target: 1, hook: "bridge" },
+      { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
     ],
     unlocks: [],
   },
@@ -266,6 +267,14 @@ export function createTierSystem({ k, save, persistSave, gameState, audio, showP
     onDuck: () => increment("duck"),
     onScore: setScore,
     onSkeletonCumul: (totalSkel) => setSkeletonCumul(totalSkel),
+    // Nouveaux hooks pour combos/mécaniques émergentes
+    onRevive: () => increment("revive"),
+    onGeyser: () => increment("geyser"),
+    onVortex: () => increment("vortex"),
+    onPortalUse: () => increment("portalUse"),
+    onChain: () => increment("chain"),
+    onApocalypse: () => increment("apocalypse"),
+    onConstellation: () => increment("constellation"),
   };
 }
 
