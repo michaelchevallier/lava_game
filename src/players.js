@@ -12,6 +12,8 @@ export function createPlayerSystem({
       name: "Mario",
       color: k.rgb(230, 57, 70),
       keys: { left: ["a", "q"], right: "d", jump: ["space", "z"], board: "e" },
+      sizeMult: 1.5,
+      hitbox: [8, 6, 24, 54],
     },
     {
       x: 180,
@@ -20,6 +22,7 @@ export function createPlayerSystem({
       name: "Pika",
       color: k.rgb(255, 210, 63),
       keys: { left: "j", right: "l", jump: "i", board: "o" },
+      sizeMult: 1.3,
     },
     {
       x: 280,
@@ -148,10 +151,13 @@ export function createPlayerSystem({
 
   function createPlayer(opts, mobileP1 = false) {
     const mult = opts.sizeMult || 1.5;
+    // Hitbox custom par avatar : les sprites 20×30 (Mario/Luigi/Toad) ont un hitbox plus
+    // grand pour poser les pieds au sol. Les autres (14×22) gardent le default.
+    const hb = opts.hitbox || [2, 4, 24, 40];
     const p = k.add([
       k.sprite(opts.sprite),
       k.pos(opts.x, (GROUND_ROW - 3) * TILE),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+      k.area({ shape: new k.Rect(k.vec2(hb[0], hb[1]), hb[2], hb[3]) }),
       k.scale(mult),
       k.body(),
       k.anchor("topleft"),
@@ -371,6 +377,7 @@ export function createPlayerSystem({
       name: avatar.name,
       color: k.rgb(r, g, b),
       sizeMult: avatar.sizeMult || 1.5,
+      hitbox: avatar.hitbox,
     };
   }
 

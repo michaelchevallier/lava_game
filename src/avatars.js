@@ -1,10 +1,12 @@
 // sizeMult : échelle visuelle du sprite joueur (1 = taille visiteur normal, max 5)
 // Chaque perso a sa propre taille pour le distinguer et l'identifier (plombier court, boss géant, etc.)
+// hitbox : [x, y, w, h] en coords locales du sprite. Les sprites 20×30 (scale 2 = 40×60)
+// utilisent un hitbox plus grand pour coller au sol ; les 14×22 (scale 2 = 28×44) le petit.
 export const AVATARS = [
-  { id: "mario",    name: "Mario",     color: "#e63946", origSprite: "player",   skelSprite: "player_skel",      sizeMult: 1.5 },
-  { id: "luigi",    name: "Luigi",     color: "#7cc947", origSprite: "luigi",    skelSprite: "luigi_skel",       sizeMult: 1.7 },
+  { id: "mario",    name: "Mario",     color: "#e63946", origSprite: "player",   skelSprite: "player_skel",      sizeMult: 1.5, hitbox: [8, 6, 24, 54] },
+  { id: "luigi",    name: "Luigi",     color: "#7cc947", origSprite: "luigi",    skelSprite: "luigi_skel",       sizeMult: 1.7, hitbox: [8, 6, 24, 54] },
   { id: "pika",     name: "Pika",      color: "#ffd23f", origSprite: "pika",     skelSprite: "pika_skel",        sizeMult: 1.3 },
-  { id: "toad",     name: "Toad",      color: "#ff4c6d", origSprite: "toad",     skelSprite: "toad_skel",        sizeMult: 1.35 },
+  { id: "toad",     name: "Toad",      color: "#ff4c6d", origSprite: "toad",     skelSprite: "toad_skel",        sizeMult: 1.35, hitbox: [8, 6, 24, 54] },
   { id: "sonic",    name: "Sonic",     color: "#3a7bd5", origSprite: "sonic",    skelSprite: "skeleton_generic", sizeMult: 1.5 },
   { id: "link",     name: "Link",      color: "#3aaa35", origSprite: "link",     skelSprite: "skeleton_generic", sizeMult: 1.6 },
   { id: "pacman",   name: "Pac-Man",   color: "#ffd700", origSprite: "pacman",   skelSprite: "skeleton_generic", sizeMult: 1.8 },

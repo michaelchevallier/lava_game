@@ -523,15 +523,21 @@ export function createWagonSystem({
           break;
         }
       }
-      if (wagon.rider && wagon._riderInput && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral) {
+      // Quand un joueur pilote : contrôle 100% via input (pas de momentum passif).
+      // Sans input → wagon immobile. Droite → plein gaz. Gauche → marche arrière.
+      let currentSpeed;
+      if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral) {
         if (wagon._riderInput === "right") {
-          speedMult *= 1.5;
+          currentSpeed = wagon.speed * 1.2;
         } else if (wagon._riderInput === "left") {
-          speedMult *= -0.5;
+          currentSpeed = -wagon.speed * 0.7;
+        } else {
+          currentSpeed = 0;
         }
         wagon._riderInput = null;
+      } else {
+        currentSpeed = wagon.speed * speedMult;
       }
-      const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 
       // Track speed states for spectres id 4 (slow 10s) / id 5 (fast 10s)
