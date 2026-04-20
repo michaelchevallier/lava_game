@@ -16,10 +16,12 @@ const CULLABLE_TAGS = [
   "ground-particle",
 ];
 
-export function createGCSystem({ k, WIDTH, HEIGHT, MARGIN = 200 }) {
+export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN = 200 }) {
+  const right = (WORLD_WIDTH || WIDTH) + MARGIN;
+  const left = -(WORLD_WIDTH || WIDTH) - MARGIN;
   function cull() {
-    const minX = -MARGIN;
-    const maxX = WIDTH + MARGIN;
+    const minX = left;
+    const maxX = right;
     const maxY = HEIGHT + MARGIN;
     let killed = 0;
     for (const tag of CULLABLE_TAGS) {

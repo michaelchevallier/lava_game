@@ -2,9 +2,10 @@ export function createVisitorSystem({
   k, gameState, audio, juice, tileMap,
   registerKill, showPopup, checkMilestone,
   constellation, getCrowdHooks,
-  WIDTH, TILE, GROUND_ROW, gridKey,
+  WIDTH, WORLD_WIDTH, TILE, GROUND_ROW, gridKey,
   boardingFn,
 }) {
+  const W_RIGHT = WORLD_WIDTH || WIDTH;
   const VISITOR_TINTS = [
     [255, 180, 180], [180, 255, 180], [180, 180, 255], [255, 255, 180],
     [255, 180, 255], [180, 255, 255], [255, 200, 150], [200, 180, 255],
@@ -227,7 +228,7 @@ export function createVisitorSystem({
       if (v._iceUntil && k.time() < v._iceUntil) {
         v.move(v._iceSpeed - v.walkSpeed, 0);
       }
-      if (v.pos.x > WIDTH + 40) {
+      if (v.pos.x > W_RIGHT + 40 || v.pos.x < -W_RIGHT - 40) {
         if (v.crown) v.crown.forEach((e) => k.destroy(e));
         k.destroy(v);
       }

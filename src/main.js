@@ -1133,7 +1133,7 @@ k.scene("game", () => {
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= WORLD_COLS || row < 0) return;
+    if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
@@ -1169,7 +1169,7 @@ k.scene("game", () => {
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= WORLD_COLS || row < 0) return;
+    if (col < -WORLD_COLS || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
     if (selectedTool === "sol") {
@@ -1216,7 +1216,7 @@ k.scene("game", () => {
     k, gameState, audio, juice, tileMap,
     registerKill, showPopup: (...args) => showPopup(...args), checkMilestone,
     constellation, getCrowdHooks: () => crowdHooks,
-    WIDTH, TILE, GROUND_ROW, gridKey,
+    WIDTH, WORLD_WIDTH, TILE, GROUND_ROW, gridKey,
     boardingFn: (w, v) => tryAutoBoardVisitor(w, v),
   });
 
@@ -1483,7 +1483,7 @@ k.scene("game", () => {
   crowdHooks = crowdSystem.setup();
 
   createSkullStand({ k, gameState, audio, showPopup: (...args) => showPopup(...args), registerCoin: (...args) => registerCoin(...args), WIDTH, TILE });
-  createGCSystem({ k, WIDTH, HEIGHT });
+  createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH });
 
   hud.setup();
 

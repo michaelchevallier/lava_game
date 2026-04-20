@@ -91,15 +91,16 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       elStats.textContent = `Wagons ${cachedWagonCount} | Squelettes ${gameState.skeletons} | Pieces ${gameState.coins} | Rates ${gameState.missed || 0}`;
     }
 
-    // Palier
-    const nextMile = MILESTONES.find((m) => m > gameState.score);
+    // Palier — round score for display + bounds
+    const intScore = Math.floor(gameState.score);
+    const nextMile = MILESTONES.find((m) => m > intScore);
     if (elPalier) {
       if (nextMile != null) {
-        const remain = nextMile - gameState.score;
+        const remain = Math.max(0, nextMile - intScore);
         elPalier.textContent = `Palier ${nextMile} (-${remain})`;
         const milestoneIdx = MILESTONES.indexOf(nextMile);
         const prevMile = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
-        const progress = Math.max(0, Math.min(1, (gameState.score - prevMile) / (nextMile - prevMile)));
+        const progress = Math.max(0, Math.min(1, (intScore - prevMile) / (nextMile - prevMile)));
         if (elPalierBar) elPalierBar.style.width = `${Math.round(progress * 100)}%`;
       } else {
         elPalier.textContent = "MAX SCORE !";
