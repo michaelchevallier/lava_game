@@ -253,11 +253,23 @@ k.scene("game", () => {
   startDuckLoop();
 
   k.loop(1, () => { gameState.magnetFields = detectMagnetFields(); });
-  k.loop(0.5, () => { gameState.geysers = detectGeysers(); });
+  k.loop(0.5, () => {
+    const newG = detectGeysers();
+    if (newG.length > 0 && (gameState.geysers?.length || 0) === 0) {
+      window.__tiers?.onGeyser?.();
+    }
+    gameState.geysers = newG;
+  });
   gameState.iceRinks = [];
   k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
   gameState.magnetPortals = [];
-  k.loop(0.5, () => { gameState.magnetPortals = detectMagnetPortals(); });
+  k.loop(0.5, () => {
+    const newMP = detectMagnetPortals();
+    if (newMP.length > 0 && (gameState.magnetPortals?.length || 0) === 0) {
+      window.__tiers?.onVortex?.();
+    }
+    gameState.magnetPortals = newMP;
+  });
   k.loop(0.5, () => { gameState.metronomes = detectMetronomes(); });
   gameState.lavaTriangles = [];
   k.loop(0.5, () => { gameState.lavaTriangles = detectLavaTriangles(); });
@@ -645,6 +657,7 @@ k.scene("game", () => {
   }
 
   function triggerApocalypse() {
+    window.__tiers?.onApocalypse?.();
     gameState.bulletTimeUntil = k.time() + 3;
     cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock(8);

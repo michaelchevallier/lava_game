@@ -18,7 +18,7 @@ export function createVisitorSystem({
     const v = k.add([
       k.sprite("human"),
       k.pos(-40, (GROUND_ROW - 3) * TILE),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd"] }),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd", "player", "skull-target", "skull-part", "ghost", "lava-ghost", "rain-coin"] }),
       k.body(),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
@@ -73,6 +73,18 @@ export function createVisitorSystem({
       }
       const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
       v.move(vSpeed, 0);
+      // Anti-stuck : si pas bougé depuis 4s, destroy (évite pile-up indéfini)
+      if (v._stuckCheckAt === undefined) { v._stuckCheckAt = k.time(); v._stuckLastX = v.pos.x; }
+      if (k.time() - v._stuckCheckAt > 4) {
+        if (Math.abs(v.pos.x - v._stuckLastX) < 5) {
+          if (v.crown) v.crown.forEach((e) => k.destroy(e));
+          if (v.isSkeleton) gameState.skeletons = Math.max(0, gameState.skeletons - 1);
+          k.destroy(v);
+          return;
+        }
+        v._stuckCheckAt = k.time();
+        v._stuckLastX = v.pos.x;
+      }
       // Hesitation: detect lava ahead (visitors always walk right, dir=+1)
       if (!v.isSkeleton) {
         let danger = null;

@@ -226,6 +226,7 @@ export function createConstellationSystem({
 
     gameState.constellationActive = true;
     gameState.lastConstellationAt = k.time();
+    window.__tiers?.onConstellation?.();
 
     const portalX = activePair.pos.x + TILE / 2;
     const portalY = activePair.pos.y + TILE / 2;
