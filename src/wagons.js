@@ -233,6 +233,8 @@ export function createWagonSystem({
         rider: null,
         ghostTrain: ghost,
         inverseTrain: inverse,
+        _tramHits: [],
+        _carillonCd: 0,
       },
     ]);
 
@@ -1079,6 +1081,16 @@ export function createWagonSystem({
         catapultWagon(wagon);
         return;
       }
+      wagon._tramHits = (wagon._tramHits || []).filter(h => k.time() - h.time < 1.5);
+      wagon._tramHits.push({ col: t.gridCol, row: t.gridRow, time: k.time() });
+      if (wagon._tramHits.length >= 3) {
+        const recent = wagon._tramHits.slice(-3);
+        const allSameRow = recent.every(h => h.row === recent[0].row);
+        const uniqueCols = new Set(recent.map(h => h.col));
+        if (allSameRow && uniqueCols.size >= 3) {
+          triggerCarillon(wagon);
+        }
+      }
       gameState.trampolinesThisGame = (gameState.trampolinesThisGame || 0) + 1;
       if (gameState.trampolinesThisGame >= 10) window.__spectres?.unlock(0);
       wagon.jump(850);
@@ -1203,6 +1215,49 @@ export function createWagonSystem({
       wagon.passengerEntity = passenger;
       wagon.parts.push(passenger);
     });
+  }
+
+  function triggerCarillon(wagon) {
+    if (wagon._carillonCd > k.time()) return;
+    wagon._carillonCd = k.time() + 5;
+    audio.bell?.();
+
+    k.add([
+      k.rect(WIDTH, HEIGHT),
+      k.pos(0, 0),
+      k.color(k.rgb(255, 255, 255)),
+      k.opacity(0.7),
+      k.lifespan(0.2, { fade: 0.18 }),
+      k.z(50),
+    ]);
+
+    const cx = wagon.pos.x + 30;
+    const cy = wagon.pos.y + 15;
+    for (let w = 0; w < 4; w++) {
+      k.wait(w * 0.07, () => {
+        k.add([
+          k.circle(20 + w * 10),
+          k.pos(cx, cy),
+          k.color(k.rgb(255, 255, 220)),
+          k.opacity(0.7),
+          k.lifespan(0.5, { fade: 0.4 }),
+          k.z(15),
+          "particle-firework",
+        ]);
+      });
+    }
+
+    let count = 0;
+    for (const w2 of k.get("wagon")) {
+      if (w2 === wagon) continue;
+      const d = Math.hypot(w2.pos.x + 30 - cx, w2.pos.y + 15 - cy);
+      if (d < 256 && w2.passenger !== "skeleton") {
+        transformToSkeleton(w2);
+        count++;
+      }
+    }
+    showPopup(cx, cy - 40, `CARILLON ! ${count > 0 ? count + " ames" : ""}`, k.rgb(255, 255, 220), 26);
+    window.__juice?.dirShake(0, 1, 14, 0.3);
   }
 
   function transformToSkeleton(wagon) {

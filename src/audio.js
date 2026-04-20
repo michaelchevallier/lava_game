@@ -107,5 +107,11 @@ export const audio = (() => {
       setTimeout(() => beep(1760, 0.06, "triangle", 0.1), 50);
       setTimeout(() => beep(2093, 0.1, "triangle", 0.1), 100);
     },
+    bell: () => {
+      beep(523, 0.3, "sine", 0.1);
+      setTimeout(() => beep(659, 0.3, "sine", 0.1), 100);
+      setTimeout(() => beep(784, 0.5, "sine", 0.12), 220);
+      setTimeout(() => beep(196, 0.6, "triangle", 0.08), 200);
+    },
   };
 })();
