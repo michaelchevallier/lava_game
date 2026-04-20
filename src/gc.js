@@ -46,6 +46,6 @@ export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN = 200 }) 
     return killed;
   }
 
-  k.loop(2, cull);
+  k.loop(1, cull);
   return { cull };
 }

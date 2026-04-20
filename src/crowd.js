@@ -1,6 +1,6 @@
 import { GROUND_ROW, WIDTH, TILE } from "./constants.js";
 
-const MAX_CROWD = 30;
+const MAX_CROWD = 12;
 
 export function createCrowdSystem({ k, gameState }) {
   let lastSpawn = 0;

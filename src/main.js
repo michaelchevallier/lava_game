@@ -1232,8 +1232,8 @@ k.scene("game", () => {
     boardingFn: (w, v) => tryAutoBoardVisitor(w, v),
   });
 
-  k.loop(4, () => {
-    if (k.get("visitor").length < 5) visitorSystem.spawn();
+  k.loop(6, () => {
+    if (k.get("visitor").length < 3) visitorSystem.spawn();
   });
 
   k.loop(0.08, () => {

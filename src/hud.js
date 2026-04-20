@@ -159,20 +159,24 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       elStats.textContent = `Wagons ${cachedWagonCount} | Squelettes ${gameState.skeletons} | Pieces ${gameState.coins} | Rates ${gameState.missed || 0}`;
     }
 
-    // Palier — round score for display + bounds
+    // Palier — hide quand max atteint (au lieu d'afficher MAX inutilement)
     const intScore = Math.floor(gameState.score);
     const nextMile = MILESTONES.find((m) => m > intScore);
     if (elPalier) {
       if (nextMile != null) {
+        elPalier.style.display = "";
         const remain = Math.max(0, nextMile - intScore);
         elPalier.textContent = `Palier ${nextMile} (-${remain})`;
         const milestoneIdx = MILESTONES.indexOf(nextMile);
         const prevMile = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
         const progress = Math.max(0, Math.min(1, (intScore - prevMile) / (nextMile - prevMile)));
-        if (elPalierBar) elPalierBar.style.width = `${Math.round(progress * 100)}%`;
+        if (elPalierBar) {
+          elPalierBar.style.display = "";
+          elPalierBar.style.width = `${Math.round(progress * 100)}%`;
+        }
       } else {
-        elPalier.textContent = "MAX SCORE !";
-        if (elPalierBar) elPalierBar.style.width = "100%";
+        elPalier.style.display = "none";
+        if (elPalierBar) elPalierBar.style.display = "none";
       }
     }
 
