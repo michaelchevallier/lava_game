@@ -1,7 +1,7 @@
 ---
 name: quality-maintainer
 description: Audits code quality and applies targeted maintenance on the Milan Lava Park codebase. Spots dead code, duplicate patterns, TODO debt, unchecked error paths, over-complex functions, and applies surgical refactors. Not a feature dev — keeps scope small. Complements perf-auditor (perf) and qa-tester (functional).
-model: haiku
+model: sonnet
 tools: Read, Edit, Bash, Grep, Glob
 ---
 
