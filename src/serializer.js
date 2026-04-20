@@ -3,15 +3,16 @@ import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, ROWS, GROUND_ROW } from "./con
 export function loadSave() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false };
+    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 } };
     const parsed = JSON.parse(raw);
     if (!parsed.numPlayers) parsed.numPlayers = 2;
     if (!parsed.spectres) parsed.spectres = 0;
     if (!parsed.lastPlayed) parsed.lastPlayed = 0;
     if (parsed.tutorialDone === undefined) parsed.tutorialDone = false;
+    if (!parsed.heroes) parsed.heroes = { mario: 0, pika: 0, luigi: 0, toad: 0 };
     return parsed;
   } catch (e) {
-    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false };
+    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 } };
   }
 }
 

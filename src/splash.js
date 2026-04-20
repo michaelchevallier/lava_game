@@ -37,6 +37,26 @@ export function createSplash({ save, persistSave, settings, onStart }) {
       </div>
     `).join("");
 
+    const heroes = save.heroes || {};
+    const heroEntries = [
+      { name: "Mario", color: "#e63946", score: heroes.mario || 0 },
+      { name: "Pika",  color: "#ffd23f", score: heroes.pika  || 0 },
+      { name: "Luigi", color: "#7cc947", score: heroes.luigi || 0 },
+      { name: "Toad",  color: "#ff4c6d", score: heroes.toad  || 0 },
+    ];
+    const leaderScore = Math.max(...heroEntries.map(h => h.score));
+    const heroBoard = `
+      <div style="margin:18px 0 0 0;padding:12px 16px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid rgba(255,210,63,0.4);max-width:520px;width:100%;box-sizing:border-box">
+        <div style="text-align:center;color:#ffd23f;font-size:13px;font-weight:bold;margin-bottom:10px;letter-spacing:1px">CHAMPIONS DU FOYER</div>
+        <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
+          ${heroEntries.map(h => {
+            const isLeader = leaderScore > 0 && h.score === leaderScore;
+            return `<div style="text-align:center;color:${h.color};font-family:monospace;font-size:${isLeader ? "17px" : "13px"};font-weight:${isLeader ? "bold" : "normal"}">${isLeader ? "👑 " : ""}${h.name}<br><span style="color:#fff">${h.score}</span></div>`;
+          }).join("")}
+        </div>
+      </div>
+    `;
+
     splash.innerHTML = `
       <style>
         @keyframes splashFadeIn { from { opacity:0 } to { opacity:1 } }
@@ -50,7 +70,8 @@ export function createSplash({ save, persistSave, settings, onStart }) {
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:820px;padding:0 16px">
         ${playerCards}
       </div>
-      <button id="splash-play" style="margin-top:28px;padding:14px 36px;font-size:20px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:6px;cursor:pointer;box-shadow:0 4px 0 #4a7a25;transition:background 0.15s">JOUER</button>
+      ${heroBoard}
+      <button id="splash-play" style="margin-top:22px;padding:14px 36px;font-size:20px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:6px;cursor:pointer;box-shadow:0 4px 0 #4a7a25;transition:background 0.15s">JOUER</button>
       <div style="margin-top:16px;color:#aaa;font-size:12px">Engrenage en haut a droite pour changer plus tard</div>
     `;
     document.body.appendChild(splash);

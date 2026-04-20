@@ -451,6 +451,11 @@ k.scene("game", () => {
       cinematic.play("newrecord", "NOUVEAU RECORD");
       save.bestScore = gameState.score;
     }
+    if (!save.heroes) save.heroes = { mario: 0, pika: 0, luigi: 0, toad: 0 };
+    const activeNames = ["mario", "pika", "luigi", "toad"].slice(0, settings.numPlayers || 1);
+    for (const name of activeNames) {
+      if (gameState.score > (save.heroes[name] || 0)) save.heroes[name] = gameState.score;
+    }
     save.totalSkeletons = (save.totalSkeletons || 0) + 1;
     gameState.sessionSkeletons += 1;
     if (gameState.sessionSkeletons === 100) cinematic.play("100souls", "100 AMES");
