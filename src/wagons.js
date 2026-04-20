@@ -27,7 +27,6 @@ export function createWagonSystem({
   k, tileMap, gameState, audio, entityCounts, showPopup, registerKill, registerCoin, launchFirework,
   placeTile, onSkeletonTransform, save,
 }) {
-  console.log("[WAGON_MODULE] v27af875+ loaded, riderControl=enabled");
   function getRailSlopeYAt(worldX) {
     const col = Math.floor(worldX / TILE);
     const localX = Math.max(0, Math.min(1, (worldX - col * TILE) / TILE));
@@ -533,30 +532,15 @@ export function createWagonSystem({
       }
       // Quand un joueur pilote : contrôle 100% via input. Bypass complet de la physique —
       // on déplace wagon.pos.x directement, on évite tout side-effect (collisions, dérive).
+      // Le speedMult ambient (boost, ice, slide) s'applique aussi au rider pour le fun.
       let currentSpeed;
       if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral && !wagon.isRace) {
-        const RIDER_SPEED = 240;
+        const RIDER_SPEED = 240 * speedMult;
         let dx = 0;
         if (wagon._riderInput === "right") dx = RIDER_SPEED;
         else if (wagon._riderInput === "left") dx = -RIDER_SPEED;
-        // DEBUG LOG : échantillon 10 Hz
-        const now = k.time();
-        const posBefore = wagon.pos.x;
-        const velBefore = wagon.vel?.x;
         wagon.pos.x += dx * k.dt();
         if (wagon.vel) wagon.vel.x = 0;
-        if (!wagon._lastLog || now - wagon._lastLog > 0.1) {
-          wagon._lastLog = now;
-          console.log("[RIDER]", {
-            input: wagon._riderInput,
-            dx,
-            posBefore: posBefore.toFixed(1),
-            posAfter: wagon.pos.x.toFixed(1),
-            velBefore: velBefore?.toFixed(1),
-            velAfter: wagon.vel?.x?.toFixed(1),
-            grounded: wagon.isGrounded?.(),
-          });
-        }
         wagon._riderInput = null;
         currentSpeed = 0;
       } else {
@@ -893,7 +877,6 @@ export function createWagonSystem({
           }
         }
         if (wagon.glideUntil > k.time() && !wagon.rider) {
-          console.log("[GLIDE]", wagon.glideBonus);
           wagon.move(wagon.glideBonus, 0);
           if (Math.random() < 0.4) {
             k.add([
@@ -1736,7 +1719,6 @@ export function createWagonSystem({
   }
 
   function tryBoardWagon(p) {
-    console.log("[tryBoardWagon] called, player at", p.pos.x.toFixed(1), "_constActive=", p._constActive);
     if (p._constActive) return;
     const wagons = k.get("wagon").filter((w) => !w.rider);
     let closest = null;
@@ -1753,7 +1735,6 @@ export function createWagonSystem({
       }
     }
     if (!closest) return;
-    console.log("[BOARD] wagon at", closest.pos.x.toFixed(1), "speed=", closest.speed, "vel.x=", closest.vel?.x?.toFixed(1), "playerX=", p.pos.x.toFixed(1), "playerFacing=", p.facing);
     p.ridingWagon = closest;
     closest.rider = p;
     closest._riderInput = null;
@@ -1793,8 +1774,16 @@ export function createWagonSystem({
     w.rider = null;
     w._riderInput = null;
     p.opacity = 1;
-    p.pos.x = w.pos.x + 70;
-    p.pos.y = w.pos.y - 44;
+    // Place le joueur au-dessus du wagon (pas dans). Si wagon en l'air, petit hop vers le haut.
+    p.pos.x = w.pos.x + 14;
+    p.pos.y = w.pos.y - 54;
+    // Reset velocity proprement pour éviter glitch physics à la sortie aérienne
+    if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
+    // Si wagon était en l'air, petit jump pour éjecter au-dessus (pas de chute bizarre au raz wagon)
+    if (!w.isGrounded?.()) {
+      p.jump?.(260);
+    }
+    p._parkedPos = null;
     if (w.passengerEntity?.exists()) {
       const idx = w.passengerEntities.indexOf(w.passengerEntity);
       if (idx !== -1) w.passengerEntities.splice(idx, 1);
