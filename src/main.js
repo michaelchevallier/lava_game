@@ -869,6 +869,66 @@ k.scene("game", () => {
 
   k.add([k.pos(0, 0), k.z(-10), { draw() { groundSystem.drawGround(); } }]);
 
+  // Gares décor aux bords du monde — zéro gameplay, juste visuel "parc d'attractions"
+  // ENTRÉE à gauche (-TILE*4), SORTIE à droite (WORLD_WIDTH + TILE*2)
+  const groundY = GROUND_ROW * TILE;
+  const stationY = groundY - TILE * 3;
+  const stationColor = k.rgb(150, 80, 40);
+  const roofColor = k.rgb(200, 60, 60);
+  for (const side of ["left", "right"]) {
+    const baseX = side === "left" ? -TILE * 4 : WORLD_WIDTH + TILE * 1;
+    const label = side === "left" ? "ENTREE" : "SORTIE";
+    const labelColor = side === "left" ? k.rgb(100, 220, 100) : k.rgb(220, 100, 100);
+    // Toit triangulaire (deux rects angled simulés avec un trapèze)
+    k.add([
+      k.rect(TILE * 3, 10),
+      k.pos(baseX, stationY - 14),
+      k.color(roofColor),
+      k.outline(2, k.rgb(80, 20, 20)),
+      k.z(-9),
+    ]);
+    // Poteaux verticaux
+    k.add([
+      k.rect(6, TILE * 3),
+      k.pos(baseX + 4, stationY - 4),
+      k.color(stationColor),
+      k.outline(1, k.rgb(60, 30, 15)),
+      k.z(-9),
+    ]);
+    k.add([
+      k.rect(6, TILE * 3),
+      k.pos(baseX + TILE * 3 - 10, stationY - 4),
+      k.color(stationColor),
+      k.outline(1, k.rgb(60, 30, 15)),
+      k.z(-9),
+    ]);
+    // Panneau
+    k.add([
+      k.rect(TILE * 2.6, 16),
+      k.pos(baseX + TILE * 0.2, stationY + 4),
+      k.color(k.rgb(255, 240, 200)),
+      k.outline(2, k.rgb(80, 50, 20)),
+      k.z(-8),
+    ]);
+    // Texte sur panneau
+    k.add([
+      k.pos(baseX + TILE * 1.5, stationY + 12),
+      k.anchor("center"),
+      k.z(-7),
+      {
+        draw() {
+          k.drawText({
+            text: label,
+            size: 11,
+            pos: k.vec2(0, 0),
+            anchor: "center",
+            color: labelColor,
+          });
+        },
+      },
+    ]);
+  }
+
   const { spawnPlayers, getEntityTile, PLAYER_CONFIGS } = createPlayerSystem({
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
