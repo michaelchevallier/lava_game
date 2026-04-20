@@ -51,6 +51,7 @@ export function createWagonSystem({
     const body = k.add([
       k.rect(60, 30),
       k.pos(x, y),
+      k.rotate(0),
       k.color(k.rgb(theme.body[0], theme.body[1], theme.body[2])),
       k.outline(2, k.rgb(20, 10, 5)),
       k.z(3),
@@ -59,6 +60,7 @@ export function createWagonSystem({
     const frontRim = k.add([
       k.rect(4, 34),
       k.pos(x, y - 2),
+      k.rotate(0),
       k.color(k.rgb(58, 58, 58)),
       k.outline(1, k.rgb(20, 20, 20)),
       k.z(4),
@@ -67,6 +69,7 @@ export function createWagonSystem({
     const backRim = k.add([
       k.rect(4, 34),
       k.pos(x + 56, y - 2),
+      k.rotate(0),
       k.color(k.rgb(58, 58, 58)),
       k.outline(1, k.rgb(20, 20, 20)),
       k.z(4),
@@ -75,6 +78,7 @@ export function createWagonSystem({
     const plank1 = k.add([
       k.rect(52, 2),
       k.pos(x + 4, y + 8),
+      k.rotate(0),
       k.color(k.rgb(theme.dark[0], theme.dark[1], theme.dark[2])),
       k.z(4),
       "wagon-part",
@@ -82,6 +86,7 @@ export function createWagonSystem({
     const plank2 = k.add([
       k.rect(52, 2),
       k.pos(x + 4, y + 20),
+      k.rotate(0),
       k.color(k.rgb(theme.dark[0], theme.dark[1], theme.dark[2])),
       k.z(4),
       "wagon-part",
@@ -89,6 +94,7 @@ export function createWagonSystem({
     const trim = k.add([
       k.rect(60, 3),
       k.pos(x, y - 3),
+      k.rotate(0),
       k.color(k.rgb(theme.trim[0], theme.trim[1], theme.trim[2])),
       k.z(4),
       "wagon-part",
