@@ -102,7 +102,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
           #splash-play:hover { background:#8fd45a !important; }
           [data-avatar-id]:hover { transform:scale(1.1) !important; }
         </style>
-        <h1 style="color:#ffd23f;font-size:clamp(28px,6vw,52px);margin:0 0 6px 0;text-shadow:3px 3px 0 #000;letter-spacing:2px;text-align:center">FETE FORAINE</h1>
+        <h1 style="color:#ffd23f;font-size:clamp(28px,6vw,52px);margin:0 0 6px 0;text-shadow:3px 3px 0 #000;letter-spacing:2px;text-align:center">FÊTE FORAINE</h1>
         <h2 style="color:#fff;font-size:clamp(16px,3vw,26px);margin:0 0 14px 0;text-shadow:2px 2px 0 #000">EN LAVE</h2>
         <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:820px;padding:0 16px">
           ${playerCards}
@@ -110,7 +110,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
         ${avatarPickerSection}
         ${heroBoard}
         <button id="splash-play" style="margin-top:18px;padding:14px 36px;font-size:20px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:6px;cursor:pointer;box-shadow:0 4px 0 #4a7a25;transition:background 0.15s">JOUER</button>
-        <div style="margin-top:12px;color:#aaa;font-size:12px">Engrenage en haut a droite pour changer plus tard</div>
+        <div style="margin-top:12px;color:#aaa;font-size:12px">Engrenage ⚙ en haut à droite pour changer plus tard</div>
       `;
     }
 
