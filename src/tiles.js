@@ -140,24 +140,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "lava", lavaPhase: 0, extras: [], _bubbleCd: Math.random() * 2 },
       ]);
       tileMap.set(key, t);
-      t.onUpdate(() => {
-        t._bubbleCd -= k.dt();
-        if (t._bubbleCd > 0) return;
-        t._bubbleCd = 0.6 + Math.random() * 1.4;
-        if (entityCounts.particle > 260) return;
-        const bx = t.pos.x + 8 + Math.random() * (TILE - 16);
-        const by = t.pos.y + TILE * 0.4;
-        k.add([
-          k.circle(2 + Math.random() * 2),
-          k.pos(bx, by),
-          k.color(k.rgb(255, 200 + Math.random() * 30, 80)),
-          k.opacity(0.85),
-          k.lifespan(1.1, { fade: 0.7 }),
-          k.z(2),
-          "particle",
-          { vx: (Math.random() - 0.5) * 8, vy: -22 - Math.random() * 18 },
-        ]);
-      });
     } else if (type === "water") {
       const t = k.add([
         k.sprite("water1"),
@@ -169,37 +151,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, cascadeActive: false, extras: [] },
       ]);
       tileMap.set(key, t);
-      t.onUpdate(() => {
-        if (!t.cascadeActive) return;
-        if (Math.random() < 0.3) {
-          const drop = k.add([
-            k.circle(2 + Math.random() * 2),
-            k.pos(t.pos.x + Math.random() * TILE, t.pos.y),
-            k.color(k.rgb(80, 180, 230)),
-            k.opacity(0.8),
-            k.lifespan(0.6, { fade: 0.4 }),
-            k.z(2),
-            "particle",
-            { vy: 200 + Math.random() * 100 },
-          ]);
-          drop.onUpdate(() => {
-            drop.pos.y += drop.vy * k.dt();
-          });
-        }
-        // Splash en bas de la cascade (tuile du bas de la colonne)
-        const botRow = t.gridRow + 1;
-        const botTile = tileMap.get(gridKey(t.gridCol, botRow));
-        if (!botTile && Math.random() < 0.08) {
-          k.add([
-            k.circle(4 + Math.random() * 3),
-            k.pos(t.pos.x + Math.random() * TILE, t.pos.y + TILE - 4),
-            k.color(k.rgb(80, 210, 240)),
-            k.opacity(0.7),
-            k.lifespan(0.5, { fade: 0.3 }),
-            k.z(3),
-          ]);
-        }
-      });
       checkCascade(col, row);
     } else if (type === "rail") {
       const x = col * TILE;
@@ -313,9 +264,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
           extras: [],
         },
       ]);
-      ring.onUpdate(() => {
-        ring.angle = (ring.angle || 0) + 120 * k.dt();
-      });
       const otherUnpaired = colorKind === "A" ? unpairedB : unpairedA;
       if (otherUnpaired) {
         ring.pair = otherUnpaired;
@@ -355,15 +303,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "bridge", extras: [plank1, plank2, support] },
       ]);
       tileMap.set(key, t);
-      t.onUpdate(() => {
-        // Pulse red when crossings == 1 (one more pass and bridge breaks)
-        if ((t.crossings || 0) >= 1 && !t.breaking) {
-          const pulse = 0.5 + 0.5 * Math.sin(k.time() * 8);
-          plank1.color.r = 200 + 55 * pulse;
-          plank1.color.g = 60 - 30 * pulse;
-          plank1.color.b = 30 - 20 * pulse;
-        }
-      });
     } else if (type === "magnet") {
       const t = k.add([
         k.rect(TILE, TILE),
@@ -441,18 +380,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "fan", extras: [] },
       ]);
       t.onUpdate(() => {
-        if (Math.random() < 0.25) {
-          k.add([
-            k.circle(2 + Math.random() * 2),
-            k.pos(col * TILE + 6 + Math.random() * 20, row * TILE + 2),
-            k.color(k.rgb(230, 240, 255)),
-            k.opacity(0.7),
-            k.lifespan(0.6, { fade: 0.4 }),
-            k.z(2),
-            "fan-puff",
-            { vy: -60 - Math.random() * 50, vx: (Math.random() - 0.5) * 20 },
-          ]);
-        }
         const cx = col * TILE + TILE / 2;
         for (const w of k.get("wagon")) {
           const dx = Math.abs(w.pos.x + 30 - cx);
@@ -485,32 +412,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         k.z(5),
       ]);
       t.extras = [inner];
-      t.onUpdate(() => {
-        // Bobbing animation
-        t.pos.y = t.baseY + Math.sin(k.time() * 2.5 + t.coinPhase) * 3;
-        inner.pos.y = t.pos.y;
-        // Spinning inner bar (width pulse to fake 3D)
-        const w = 2 + Math.abs(Math.cos(k.time() * 4 + t.coinPhase)) * 5;
-        inner.width = w;
-      });
-      // Sparkle every ~2s
       t._sparkleCd = Math.random() * 2;
-      t.onUpdate(() => {
-        t._sparkleCd -= k.dt();
-        if (t._sparkleCd > 0) return;
-        t._sparkleCd = 1.5 + Math.random() * 2;
-        if (entityCounts.particle > 250) return;
-        k.add([
-          k.rect(2, 2),
-          k.pos(t.pos.x + (Math.random() - 0.5) * 16, t.pos.y + (Math.random() - 0.5) * 16),
-          k.color(k.rgb(255, 250, 150)),
-          k.opacity(1),
-          k.lifespan(0.4, { fade: 0.3 }),
-          k.z(6),
-          "particle",
-          { vx: 0, vy: -10 },
-        ]);
-      });
       tileMap.set(key, t);
       checkCoinResonance(col, row);
     } else if (type === "wheel") {
@@ -684,6 +586,104 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       tileMap.set(key, t);
     }
   }
+
+  k.onUpdate("portal", (ring) => {
+    ring.angle = (ring.angle || 0) + 120 * k.dt();
+  });
+
+  k.onUpdate("coin", (t) => {
+    t.pos.y = t.baseY + Math.sin(k.time() * 2.5 + t.coinPhase) * 3;
+    if (t.extras && t.extras[0]) {
+      t.extras[0].pos.y = t.pos.y;
+      t.extras[0].width = 2 + Math.abs(Math.cos(k.time() * 4 + t.coinPhase)) * 5;
+    }
+  });
+
+  k.loop(0.2, () => {
+    const pCount = entityCounts.particle;
+    for (const t of tileMap.values()) {
+      if (t.tileType === "lava") {
+        if (pCount < 260 && Math.random() < 0.4) {
+          const bx = t.pos.x + 8 + Math.random() * (TILE - 16);
+          const by = t.pos.y + TILE * 0.4;
+          k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(bx, by),
+            k.color(k.rgb(255, 200 + Math.random() * 30, 80)),
+            k.opacity(0.85),
+            k.lifespan(1.1, { fade: 0.7 }),
+            k.z(2),
+            "particle",
+            { vx: (Math.random() - 0.5) * 8, vy: -22 - Math.random() * 18 },
+          ]);
+        }
+      } else if (t.tileType === "water" && t.cascadeActive) {
+        if (Math.random() < 0.6) {
+          const drop = k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(t.pos.x + Math.random() * TILE, t.pos.y),
+            k.color(k.rgb(80, 180, 230)),
+            k.opacity(0.8),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(2),
+            "particle",
+            { vy: 200 + Math.random() * 100 },
+          ]);
+          drop.onUpdate(() => {
+            drop.pos.y += drop.vy * k.dt();
+          });
+        }
+        const botTile = tileMap.get(gridKey(t.gridCol, t.gridRow + 1));
+        if (!botTile && Math.random() < 0.25) {
+          k.add([
+            k.circle(4 + Math.random() * 3),
+            k.pos(t.pos.x + Math.random() * TILE, t.pos.y + TILE - 4),
+            k.color(k.rgb(80, 210, 240)),
+            k.opacity(0.7),
+            k.lifespan(0.5, { fade: 0.3 }),
+            k.z(3),
+          ]);
+        }
+      } else if (t.tileType === "coin") {
+        t._sparkleCd -= 0.2;
+        if (t._sparkleCd <= 0) {
+          t._sparkleCd = 1.5 + Math.random() * 2;
+          if (pCount < 250) {
+            k.add([
+              k.rect(2, 2),
+              k.pos(t.pos.x + (Math.random() - 0.5) * 16, t.pos.y + (Math.random() - 0.5) * 16),
+              k.color(k.rgb(255, 250, 150)),
+              k.opacity(1),
+              k.lifespan(0.4, { fade: 0.3 }),
+              k.z(6),
+              "particle",
+              { vx: 0, vy: -10 },
+            ]);
+          }
+        }
+      } else if (t.tileType === "fan") {
+        if (pCount < 270 && Math.random() < 0.35) {
+          k.add([
+            k.circle(2 + Math.random() * 2),
+            k.pos(t.pos.x + 6 + Math.random() * 20, t.pos.y + 2),
+            k.color(k.rgb(230, 240, 255)),
+            k.opacity(0.7),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(2),
+            "fan-puff",
+            { vy: -60 - Math.random() * 50, vx: (Math.random() - 0.5) * 20 },
+          ]);
+        }
+      } else if (t.tileType === "bridge" && (t.crossings || 0) >= 1 && !t.breaking) {
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 8);
+        if (t.extras && t.extras[0]) {
+          t.extras[0].color.r = 200 + 55 * pulse;
+          t.extras[0].color.g = 60 - 30 * pulse;
+          t.extras[0].color.b = 30 - 20 * pulse;
+        }
+      }
+    }
+  });
 
   k.loop(1, () => {
     for (const [key, b] of tileMap.entries()) {
