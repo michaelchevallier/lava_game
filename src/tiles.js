@@ -249,36 +249,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       }
       tileMap.set(key, ring);
     } else if (type === "bridge") {
-      const plank1 = k.add([
-        k.rect(TILE, 10),
-        k.pos(col * TILE, row * TILE + TILE - 14),
-        k.color(k.rgb(160, 100, 40)),
-        k.outline(1, k.rgb(80, 50, 20)),
-        k.z(2),
-      ]);
-      const plank2 = k.add([
-        k.rect(TILE, 8),
-        k.pos(col * TILE, row * TILE + TILE - 4),
-        k.color(k.rgb(130, 80, 30)),
-        k.z(2),
-      ]);
-      const support = k.add([
-        k.rect(4, TILE),
-        k.pos(col * TILE + TILE / 2 - 2, row * TILE),
-        k.color(k.rgb(100, 60, 20)),
-        k.z(1),
-      ]);
+      // Bridge : 1 sprite pré-rendu (avant : plank1+plank2+support+t invisible = 4 entités)
       const t = k.add([
-        k.rect(TILE, 6),
-        k.pos(col * TILE, row * TILE + TILE - 10),
-        k.color(k.rgb(0, 0, 0)),
-        k.opacity(0),
-        k.area(),
+        k.sprite("bridge_visual"),
+        k.pos(col * TILE, row * TILE),
+        k.area({ shape: new k.Rect(k.vec2(0, TILE - 14), TILE, 6) }),
         k.body({ isStatic: true }),
         k.z(3),
         "tile",
         "bridge",
-        { gridCol: col, gridRow: row, tileType: "bridge", extras: [plank1, plank2, support] },
+        { gridCol: col, gridRow: row, tileType: "bridge", extras: [] },
       ]);
       tileMap.set(key, t);
     } else if (type === "magnet") {
@@ -371,22 +351,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       window.__spectres?.unlock(12);
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
-      const hubR = 8;
-      const armLen = 60;
-      const NACELLE_COLORS = [
-        k.rgb(80, 220, 240),
-        k.rgb(240, 80, 80),
-        k.rgb(255, 210, 50),
-        k.rgb(180, 80, 240),
-      ];
+      const armLen = 44;
+      // Grande Roue : 1 sprite pré-rendu rotat\u00e9 (avant : hub + 4 beams + outerRing + 4 nacelles = 10 entit\u00e9s)
       const hub = k.add([
-        k.circle(hubR),
+        k.sprite("wheel_visual"),
         k.pos(cx, cy),
         k.anchor("center"),
-        k.color(k.rgb(210, 190, 140)),
-        k.outline(2, k.rgb(120, 100, 60)),
-        k.z(6),
+        k.rotate(0),
+        k.z(5),
         "wheel",
+        "tile",
         {
           gridCol: col,
           gridRow: row,
@@ -396,52 +370,11 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
           extras: [],
         },
       ]);
-      const structs = [];
-      for (let q = 0; q < 4; q++) {
-        const baseA = (Math.PI / 2) * q;
-        const beam = k.add([
-          k.rect(armLen * 2, 4),
-          k.pos(cx, cy),
-          k.anchor("center"),
-          k.rotate((baseA * 180) / Math.PI),
-          k.color(k.rgb(190, 170, 120)),
-          k.z(5),
-        ]);
-        structs.push(beam);
-      }
-      const outerRing = k.add([
-        k.circle(armLen),
-        k.pos(cx, cy),
-        k.anchor("center"),
-        k.color(k.rgb(0, 0, 0, 0)),
-        k.outline(4, k.rgb(190, 170, 120)),
-        k.z(5),
-      ]);
-      structs.push(outerRing);
-      const nacelles = [];
-      for (let n = 0; n < 4; n++) {
-        const nac = k.add([
-          k.rect(24, 16),
-          k.pos(cx, cy),
-          k.anchor("center"),
-          k.color(NACELLE_COLORS[n]),
-          k.outline(2, k.rgb(30, 30, 30)),
-          k.z(7),
-        ]);
-        nacelles.push(nac);
-        structs.push(nac);
-      }
-      hub.extras = structs;
       hub.onUpdate(() => {
         const DEG_PER_SEC = 12;
         hub.wheelAngle += DEG_PER_SEC * k.dt();
         if (hub.wheelAngle >= 360) hub.wheelAngle -= 360;
-        const rad = (hub.wheelAngle * Math.PI) / 180;
-        for (let n = 0; n < 4; n++) {
-          const a = rad + (Math.PI / 2) * n;
-          nacelles[n].pos.x = cx + Math.cos(a) * armLen;
-          nacelles[n].pos.y = cy + Math.sin(a) * armLen;
-        }
+        hub.angle = hub.wheelAngle;
         const now = k.time();
         if (now >= hub.nextDrop) {
           hub.nextDrop = now + 7;

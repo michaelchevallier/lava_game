@@ -913,6 +913,96 @@ export function makeTrampolineSpriteUrl() {
   return c.toDataURL();
 }
 
+// Procedural bridge sprite 32×32: 2 planches bois + support central.
+export function makeBridgeSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  // Poteau de support central
+  ctx.fillStyle = "#643c14";
+  ctx.fillRect(14, 0, 4, T);
+  ctx.strokeStyle = "#2d1a08";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(14, 0, 4, T);
+  // Planche principale (surface de marche)
+  ctx.fillStyle = "#a06428";
+  ctx.fillRect(0, 16, T, 10);
+  ctx.strokeStyle = "#50321a";
+  ctx.strokeRect(0, 16, T, 10);
+  // Lignes de grain bois
+  ctx.strokeStyle = "#7a4a1c";
+  ctx.beginPath();
+  ctx.moveTo(0, 19); ctx.lineTo(T, 19);
+  ctx.moveTo(0, 23); ctx.lineTo(T, 23);
+  ctx.stroke();
+  // Planche inférieure (underside plus foncé)
+  ctx.fillStyle = "#824f20";
+  ctx.fillRect(0, 26, T, 5);
+  ctx.strokeStyle = "#50321a";
+  ctx.strokeRect(0, 26, T, 5);
+  return c.toDataURL();
+}
+
+// Procedural Grande Roue sprite 96×96: ring argenté + 8 rayons + hub + 4 nacelles.
+// L'animation rotation se fait en code via k.rotate dans tile.onUpdate.
+export function makeWheelSpriteUrl() {
+  const S = 96;
+  const c = document.createElement("canvas");
+  c.width = S; c.height = S;
+  const ctx = c.getContext("2d");
+  const cx = S / 2; const cy = S / 2;
+  const armLen = 44;
+  // 8 rayons (4 cardinaux + 4 diagonaux)
+  ctx.strokeStyle = "#beaa78";
+  ctx.lineWidth = 4;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a) * armLen, cy + Math.sin(a) * armLen);
+    ctx.stroke();
+  }
+  // Outer ring
+  ctx.strokeStyle = "#beaa78";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, armLen, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "#6e603c";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, armLen, 0, Math.PI * 2);
+  ctx.stroke();
+  // Hub central
+  ctx.fillStyle = "#d2be8c";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#78643c";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // 4 nacelles cardinales
+  const NAC_COLORS = ["#50dcf0", "#f05050", "#ffd232", "#b450f0"];
+  const nacW = 24; const nacH = 16;
+  const positions = [
+    [cx + armLen, cy],
+    [cx, cy + armLen],
+    [cx - armLen, cy],
+    [cx, cy - armLen],
+  ];
+  for (let i = 0; i < 4; i++) {
+    const [nx, ny] = positions[i];
+    ctx.fillStyle = NAC_COLORS[i];
+    ctx.fillRect(nx - nacW / 2, ny - nacH / 2, nacW, nacH);
+    ctx.strokeStyle = "#1e1e1e";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(nx - nacW / 2, ny - nacH / 2, nacW, nacH);
+  }
+  return c.toDataURL();
+}
+
 // Procedural loop sprite: 1 image = toute la boucle (2 rails argentés + 18 traverses bois)
 // Évite de spawner 90+ entités par boucle. TILE=32, loop 2×2 → rx=ry=TILE.
 export function makeLoopSpriteUrl() {
@@ -1012,5 +1102,7 @@ export function loadAllSprites(k) {
     k.loadSprite("rail_loop_visual", makeLoopSpriteUrl()),
     k.loadSprite("magnet_visual", makeMagnetSpriteUrl()),
     k.loadSprite("trampoline_visual", makeTrampolineSpriteUrl()),
+    k.loadSprite("bridge_visual", makeBridgeSpriteUrl()),
+    k.loadSprite("wheel_visual", makeWheelSpriteUrl()),
   ]);
 }
