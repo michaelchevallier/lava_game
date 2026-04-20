@@ -24,6 +24,10 @@ export const SPECTRES = [
   { id: 22, emoji: "📱", name: "Le Mobile",        desc: "Jouer en mode mobile" },
   { id: 23, emoji: "💾", name: "L'Archiviste",     desc: "Exporter un parc" },
   { id: 24, emoji: "🌌", name: "Le Constellier",  desc: "Declencher une Constellation Spectrale" },
+  { id: 25, emoji: "🎈", name: "Le Popeur",       desc: "Pop 20 ballons flottants" },
+  { id: 26, emoji: "🏚", name: "Le Hanteur",      desc: "Spawn une Maison Hantée (4 sols 2×2)" },
+  { id: 27, emoji: "🎳", name: "Le Lanceur",      desc: "Chamboule-tout triple <3s (+100 bonus)" },
+  { id: 28, emoji: "🎰", name: "Le Spinner",      desc: "JACKPOT à la Roue de Fortune (+500)" },
 ];
 
 export function createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH }) {
