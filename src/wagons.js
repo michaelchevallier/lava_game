@@ -1201,13 +1201,16 @@ export function createWagonSystem({
       window.__quests?.onPortal();
       audio.combo();
       window.__juice?.dirShake(1, 0, 3, 0.12);
+      // Portal est désormais un sprite — plus de p.color. On dérive la couleur du variant.
+      const colR = p.portalColor === "A" ? 80 : 240;
+      const colG = p.portalColor === "A" ? 220 : 80;
+      const colB = p.portalColor === "A" ? 240 : 220;
       for (let i = 0; i < 14; i++) {
         const a = (Math.PI * 2 * i) / 14;
-        const col = p.color;
         k.add([
           k.circle(3 + Math.random() * 2),
           k.pos(p.pair.pos.x, p.pair.pos.y),
-          k.color(col),
+          k.color(colR, colG, colB),
           k.opacity(1),
           k.lifespan(0.5, { fade: 0.3 }),
           k.z(13),
