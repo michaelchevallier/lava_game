@@ -1352,9 +1352,49 @@ export function createWagonSystem({
         if (wagon.passengerEntity?.exists()) wagon.passengerEntity.opacity = 1;
         wagon._inTunnel = false;
 
-        showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "TUNNEL HANTE +50", k.rgb(180, 80, 255), 22);
-        gameState.score += 50;
+        // Tunnel de l'Amour Maudit : tous les humains deviennent squelettes + duplication jusqu'à 4
+        const hadHumans = wagon.passengers.some((p) => p.type === "human");
+        if (hadHumans) transformToSkeleton(wagon);
+
+        let dupCount = 0;
+        while (wagon.passengers.length < 4 && dupCount < 2) {
+          const idx = wagon.passengers.length;
+          wagon.passengers.push({ type: "skeleton" });
+          const px = wagon.pos.x + 6 + idx * 14;
+          const py = wagon.pos.y - 40;
+          const sprite = k.add([
+            k.sprite("skeleton"),
+            k.pos(px, py),
+            k.z(7),
+            "passenger",
+            { wagon, idx },
+          ]);
+          wagon.passengerEntities.push(sprite);
+          wagon.parts.push(sprite);
+          dupCount++;
+          for (let i = 0; i < 8; i++) {
+            const a = (Math.PI * 2 * i) / 8;
+            k.add([
+              k.circle(3),
+              k.pos(px + 8, py + 12),
+              k.color(k.rgb(180, 80, 255)),
+              k.opacity(0.95),
+              k.lifespan(0.5, { fade: 0.35 }),
+              k.z(15),
+              "particle",
+              { vx: Math.cos(a) * 90, vy: Math.sin(a) * 90 },
+            ]);
+          }
+        }
+
+        const bonus = 50 + dupCount * 30;
+        gameState.score += bonus;
+        const label = dupCount > 0
+          ? `TUNNEL MAUDIT +${bonus} (×${dupCount + 1})`
+          : `TUNNEL HANTE +${bonus}`;
+        showPopup(wagon.pos.x + 30, wagon.pos.y - 30, label, k.rgb(180, 80, 255), 22);
         audio.combo();
+        if (dupCount > 0) window.__juice?.dirShake(0, 1, 10, 0.25);
       });
     });
   }

@@ -34,7 +34,7 @@ export function showInteractionsModal() {
     <tr><td>🧲</td><td style="padding:3px 8px;color:#e050a0;font-weight:bold">Aimant</td><td style="padding:3px 0;color:#ccc">Attire les pièces voisines vers le wagon.</td></tr>
     <tr><td>🌉</td><td style="padding:3px 8px;color:#a06428;font-weight:bold">Pont</td><td style="padding:3px 0;color:#ccc">Se casse au 2e passage, devient lave.</td></tr>
     <tr><td>🎡</td><td style="padding:3px 8px;color:#50dce0;font-weight:bold">Grande Roue (3×3)</td><td style="padding:3px 0;color:#ccc">Tourne en continu et lâche pièces ou VIP.</td></tr>
-    <tr><td>🕳</td><td style="padding:3px 8px;color:#a050ff;font-weight:bold">Tunnel</td><td style="padding:3px 0;color:#ccc">Le wagon disparaît un instant et ressort plus loin.</td></tr>
+    <tr><td>🕳</td><td style="padding:3px 8px;color:#a050ff;font-weight:bold">Tunnel Maudit</td><td style="padding:3px 0;color:#ccc">Wagon disparaît, ressort avec humains→squelettes + duplication (max 4 passagers).</td></tr>
     <tr><td>🟫</td><td style="padding:3px 8px;color:#a08060;font-weight:bold">Sol</td><td style="padding:3px 0;color:#ccc">Crée du sol éditable n'importe où.</td></tr>
     <tr><td>❌</td><td style="padding:3px 8px;color:#e05050;font-weight:bold">Gomme</td><td style="padding:3px 0;color:#ccc">Efface la tuile sous le curseur.</td></tr>
   </tbody>
