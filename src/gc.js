@@ -16,9 +16,13 @@ const CULLABLE_TAGS = [
   "ground-particle",
 ];
 
-export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN = 200 }) {
-  const right = (WORLD_WIDTH || WIDTH) + MARGIN;
-  const left = -(WORLD_WIDTH || WIDTH) - MARGIN;
+export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN }) {
+  // Zone tampon = 30% de la largeur viewport. Évite pop-out et laisse le temps aux entités
+  // de revenir naturellement avant GC. Avant : left = -WORLD_WIDTH - 200 (jamais atteint →
+  // entités accumulées à gauche jamais cull).
+  const BUFFER = MARGIN ?? Math.floor(WIDTH * 0.3);
+  const right = (WORLD_WIDTH || WIDTH) + BUFFER;
+  const left = -BUFFER;
   function cull() {
     const minX = left;
     const maxX = right;

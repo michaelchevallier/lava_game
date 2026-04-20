@@ -1039,9 +1039,12 @@ export function createWagonSystem({
         }
       }
 
+      // Despawn wagon uniquement après 30% de viewport au-delà de la zone visible
+      // pour éviter pop-out sec et donner un tampon de "zone cachée"
+      const BUFFER_X = Math.floor(WIDTH * 0.3);
       const outOfBounds = wagon.inverseTrain
-        ? wagon.pos.x < -80
-        : wagon.pos.x > WIDTH + 80;
+        ? wagon.pos.x < -BUFFER_X
+        : wagon.pos.x > WIDTH + BUFFER_X;
       if (outOfBounds && wagon.isRace) return;
       if (outOfBounds) {
         if (wagon.rider) exitWagon(wagon.rider);
