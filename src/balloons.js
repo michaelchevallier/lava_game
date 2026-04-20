@@ -66,13 +66,16 @@ export function createBalloonSystem({ k, gameState, audio, showPopup, WIDTH, GRO
     if (gameState.balloonsPopped === 20) window.__spectres?.unlock(25);
     audio.coin?.();
     showPopup(bal.pos.x, bal.pos.y - 15, "+10", k.rgb(255, 220, 80), 16);
-    const c = bal.color || k.rgb(255, 80, 80);
+    // Extract r,g,b as primitives avant de passer à k.color (qui attend 3 args, pas Color obj)
+    const r = bal.color?.r ?? 255;
+    const g = bal.color?.g ?? 80;
+    const b = bal.color?.b ?? 80;
     for (let i = 0; i < 12; i++) {
       const a = (Math.PI * 2 * i) / 12;
       k.add([
         k.circle(2 + Math.random() * 2),
         k.pos(bal.pos.x, bal.pos.y),
-        k.color(c),
+        k.color(r, g, b),
         k.opacity(1),
         k.lifespan(0.4, { fade: 0.3 }),
         k.z(16),
