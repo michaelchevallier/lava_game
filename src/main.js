@@ -11,7 +11,7 @@ import { loadSave, persistSave, serializeTiles, deserializeTiles, showExportModa
 import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
-import { createHUD } from "./hud.js";
+import { createHUD, setupHtmlHud } from "./hud.js";
 import { createDuckSystem } from "./ducks.js";
 import { showInteractionsModal } from "./help-modal.js";
 import { createCrowdSystem } from "./crowd.js";
@@ -137,24 +137,11 @@ const settings = {
 };
 
 const gameState = {
-  skeletons: 0,
-  coins: 0,
-  rides: 0,
-  score: 0,
-  comboCount: 0,
-  comboExpire: 0,
-  milestoneIdx: 0,
-  bulletTimeUntil: 0,
-  wagonSpeedMult: save.wagonSpeedMult ?? 1,
-  zoom: save.zoom ?? 1,
-  magnetFields: [],
-  geysers: [],
-  lastConstellationAt: 0,
-  constellationActive: false,
-  metronomes: [],
-  scoreMultiplier: 1,
-  scoreMultiplierUntil: 0,
-  iceCrowns: [],
+  skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
+  milestoneIdx:0, bulletTimeUntil:0,
+  wagonSpeedMult: save.wagonSpeedMult ?? 1, zoom: save.zoom ?? 1,
+  magnetFields:[], geysers:[], lastConstellationAt:0, constellationActive:false,
+  metronomes:[], scoreMultiplier:1, scoreMultiplierUntil:0, iceCrowns:[],
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
@@ -200,24 +187,13 @@ const entityState = { count: 0, stamp: 0 };
 
 k.scene("game", () => {
   const tileMap = new Map();
-  gameState.skeletons = 0;
-  gameState.coins = 0;
-  gameState.rides = 0;
-  gameState.score = 0;
-  gameState.comboCount = 0;
-  gameState.comboExpire = 0;
-  gameState.milestoneIdx = 0;
-  gameState.bulletTimeUntil = 0;
-  gameState.lastTilePlaced = k.time();
-  gameState.tilesPlacedThisGame = 0;
-  gameState.trampolinesThisGame = 0;
-  gameState.vipStreak = 0;
-  gameState.portalUses = 0;
-  gameState.bulletTimeUnlocked = false;
-  gameState._ducksCaught = 0;
-  gameState.lastConstellationAt = 0;
-  gameState.constellationActive = false;
-  gameState.sessionSkeletons = 0;
+  Object.assign(gameState, {
+    skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
+    milestoneIdx:0, bulletTimeUntil:0, lastTilePlaced:k.time(),
+    tilesPlacedThisGame:0, trampolinesThisGame:0, vipStreak:0, portalUses:0,
+    bulletTimeUnlocked:false, _ducksCaught:0, lastConstellationAt:0,
+    constellationActive:false, sessionSkeletons:0,
+  });
 
   entityCounts.particle = 0;
   k.onAdd("particle", () => { entityCounts.particle++; });
@@ -232,7 +208,16 @@ k.scene("game", () => {
     fpsBuffer, fpsState, entityState,
     persistSave,
   });
-  const { showPopup, inCog, toolbarHit } = hud;
+  const { showPopup } = hud;
+
+  setupHtmlHud({
+    getCurrentTool: () => selectedTool, gameState, save, settings, k,
+    onToolClick: (tool) => { selectedTool = tool; },
+    onCogClick: () => {
+      if (settingsModal.isVisible()) { settings.open = false; settingsModal.hide(); }
+      else { settings.open = true; settingsModal.show(); }
+    },
+  });
 
   const spectres = createSpectresSystem({ save, persistSave, audio, showPopup, k, WIDTH });
   spectresRef = spectres;
@@ -1146,25 +1131,7 @@ k.scene("game", () => {
 
   k.onMousePress("left", () => {
     tryUnlockAudio();
-    const m = k.mousePos();
-    if (inCog(m)) {
-      if (settingsModal.isVisible()) {
-        settings.open = false;
-        settingsModal.hide();
-      } else {
-        settings.open = true;
-        settingsModal.show();
-      }
-      audio.place();
-      return;
-    }
     if (settingsModal.isVisible()) return;
-    const clickedTool = toolbarHit(m);
-    if (clickedTool) {
-      selectedTool = clickedTool;
-      audio.place();
-      return;
-    }
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
@@ -1201,7 +1168,6 @@ k.scene("game", () => {
   k.onMouseDown("left", () => {
     if (settingsModal.isVisible()) return;
     const screenM = k.mousePos();
-    if (inCog(screenM) || toolbarHit(screenM) || screenM.y < 65) return;
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
