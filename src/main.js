@@ -26,6 +26,7 @@ import { createCinematicSystem } from "./cinematic.js";
 import { createQuestSystem } from "./quests.js";
 import { createLoreSystem } from "./lore.js";
 import { createSkySystem } from "./sky.js";
+import { createSkullStand } from "./skull-stand.js";
 
 const __initialPalette = SEASON_PALETTES[currentSeason()];
 
@@ -1069,6 +1070,7 @@ k.scene("game", () => {
       k.body(),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
+      k.scale(1, 1),
       k.z(5),
       "visitor",
       { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint },
@@ -1112,6 +1114,22 @@ k.scene("game", () => {
           v.jump(80);
         }
       }
+      if (v._squashing) {
+        const dt = k.time() - v._squashStart;
+        if (dt < 0.08) {
+          v.scale = k.vec2(1.6, 0.4);
+        } else if (dt < 0.18) {
+          const t = (dt - 0.08) / 0.1;
+          v.scale = k.vec2(1.6 - 0.9 * t, 0.4 + 0.9 * t);
+        } else if (dt < 0.30) {
+          const t = (dt - 0.18) / 0.12;
+          const eased = 1 - Math.pow(1 - t, 2);
+          v.scale = k.vec2(0.7 + 0.3 * eased, 1.3 - 0.3 * eased);
+        } else {
+          v.scale = k.vec2(1, 1);
+          v._squashing = false;
+        }
+      }
       if (v.crown) {
         v.crown[0].pos.x = v.pos.x + 5;
         v.crown[0].pos.y = v.pos.y - 6;
@@ -1129,9 +1147,16 @@ k.scene("game", () => {
         v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         audio.transform();
+        audio.pop?.();
         juice.dirShake(1, 0, v.isVIP ? 7 : 3, 0.15);
         if (crowdHooks) crowdHooks.onSkeletonSpawn(k.vec2(v.pos.x + 14, v.pos.y));
         registerKill(v.pos.x + 14, v.pos.y, v.isVIP ? 50 : 10, v.isVIP);
+        v._squashing = true;
+        v._squashStart = k.time();
+        const origR = v.tint[0], origG = v.tint[1], origB = v.tint[2];
+        setTimeout(() => {
+          if (v.exists()) { v.color.r = origR; v.color.g = origG; v.color.b = origB; }
+        }, 80);
         const cx = v.pos.x + 14;
         const cy = v.pos.y + 10;
         for (let i = 0; i < 12; i++) {
@@ -1145,6 +1170,21 @@ k.scene("game", () => {
             k.z(14),
             "particle",
             { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30 },
+          ]);
+        }
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI * 2 * i) / 6;
+          k.add([
+            k.rect(3, 4),
+            k.pos(cx, v.pos.y + 20),
+            k.color(k.rgb(240, 240, 220)),
+            k.outline(1, k.rgb(140, 140, 120)),
+            k.opacity(1),
+            k.lifespan(0.6, { fade: 0.4 }),
+            k.z(15),
+            k.rotate(Math.random() * 360),
+            "particle",
+            { vx: Math.cos(a) * (60 + Math.random() * 40), vy: Math.sin(a) * (60 + Math.random() * 40) - 40 },
           ]);
         }
       }
@@ -1447,6 +1487,8 @@ k.scene("game", () => {
 
   const crowdSystem = createCrowdSystem({ k, gameState });
   crowdHooks = crowdSystem.setup();
+
+  createSkullStand({ k, gameState, audio, showPopup: (...args) => showPopup(...args), registerCoin: (...args) => registerCoin(...args), WIDTH, TILE });
 
   hud.setup();
 

@@ -98,6 +98,10 @@ export const audio = (() => {
       noise(0.25, 0.18);
       beep(180, 0.12, "sawtooth", 0.12, 60);
     },
+    pop: () => {
+      beep(2200, 0.04, "square", 0.08);
+      setTimeout(() => beep(1800, 0.05, "square", 0.06), 30);
+    },
     gold: () => {
       beep(1320, 0.06, "triangle", 0.1);
       setTimeout(() => beep(1760, 0.06, "triangle", 0.1), 50);
