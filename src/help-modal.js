@@ -52,6 +52,7 @@ export function showInteractionsModal() {
   <li>🏗 <b style="color:#fff">Cascades de transformations</b> &mdash; Combo ×2/×3/×5/×8 → APOCALYPSE.</li>
   <li>🎳 <b style="color:#ff8060">3 tuiles sol empilées</b> &mdash; "CHAMBOULE-TOUT" : boîtes clic +20 pts, triple &lt;3s = +100 bonus.</li>
   <li>🎰 <b style="color:#ffb040">5 pièces en + (centre+N/S/E/O)</b> &mdash; "ROUE DE FORTUNE" : clic pour spin, récompense +10→+500 pts.</li>
+  <li>🏚️ <b style="color:#c090f0">4 tuiles sol en carré 2×2</b> &mdash; "MAISON HANTÉE" : fantômes flottants, wagon touche = +25 pts.</li>
 </ul>
 
 <h3 style="color:#80e0ff;margin:18px 0 8px 0;font-size:15px;border-bottom:1px solid #333;padding-bottom:6px">🎮 Mécaniques de jeu</h3>

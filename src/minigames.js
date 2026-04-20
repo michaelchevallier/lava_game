@@ -3,12 +3,18 @@
 //   → 3 boîtes apparaissent au sommet, clic pour renverser +20pts, triple <3s = bonus +100pts
 // - Roue de Fortune : 5 tuiles coin en + (centre + 4 cardinaux)
 //   → spawn d'une roue au-dessus, clic pour spin + récompense aléatoire
+// - Maison Hantée : 4 tuiles ground en carré 2×2
+//   → fantômes flottants au-dessus, wagon les touche = +25 pts
 
-import { TILE, gridKey } from "./constants.js";
+import { TILE, WORLD_WIDTH, gridKey } from "./constants.js";
 
 export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
   const chamboules = new Map(); // key = "col,rowTop" → { cans: [e1,e2,e3], lastHitAt, streakStart }
   const roulettes = new Map();  // key = "col,row" → { wheel, spinning, spinStart, result, consumed }
+  const hauntedHouses = new Map(); // key = "col,row" → { ghosts: [], lastSpawnAt }
+  const MAX_HOUSES = 2;
+  const MAX_GHOSTS_PER_HOUSE = 3;
+  const GHOST_RESPAWN_INTERVAL = 6;
 
   function detectChamboule() {
     for (const [, t] of tileMap) {
@@ -281,13 +287,130 @@ export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
     }
   }
 
+  // ============ MAISON HANTÉE ============
+
+  function detectHauntedHouse() {
+    // Scan pour des carrés 2×2 de ground tiles. Limite à MAX_HOUSES actives.
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "ground") continue;
+      if (hauntedHouses.size >= MAX_HOUSES) break;
+      const col = t.gridCol;
+      const row = t.gridRow;
+      const tr = tileMap.get(gridKey(col + 1, row));
+      const bl = tileMap.get(gridKey(col, row + 1));
+      const br = tileMap.get(gridKey(col + 1, row + 1));
+      if (tr?.tileType === "ground" && bl?.tileType === "ground" && br?.tileType === "ground") {
+        const key = `${col},${row}`;
+        if (!hauntedHouses.has(key)) spawnHauntedHouse(col, row, key);
+      }
+    }
+    // Cleanup : si le carré 2×2 est cassé, despawn
+    for (const [key, house] of hauntedHouses) {
+      const [col, row] = key.split(",").map(Number);
+      const tl = tileMap.get(gridKey(col, row));
+      const tr = tileMap.get(gridKey(col + 1, row));
+      const bl = tileMap.get(gridKey(col, row + 1));
+      const br = tileMap.get(gridKey(col + 1, row + 1));
+      const stillValid = tl?.tileType === "ground" && tr?.tileType === "ground" && bl?.tileType === "ground" && br?.tileType === "ground";
+      if (!stillValid) despawnHauntedHouse(key);
+    }
+  }
+
+  function spawnHauntedHouse(col, row, key) {
+    const house = { ghosts: [], lastSpawnAt: 0, col, row };
+    hauntedHouses.set(key, house);
+  }
+
+  function spawnGhost(house) {
+    const cx = (house.col + 1) * TILE;
+    const cy = house.row * TILE - 20;
+    const ghost = k.add([
+      k.sprite("skeleton"),
+      k.pos(cx - 14, cy),
+      k.opacity(0.6),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
+      k.z(9),
+      "ghost-haunt",
+      {
+        houseKey: `${house.col},${house.row}`,
+        bornAt: k.time(),
+        baseY: cy,
+        baseX: cx - 14,
+      },
+    ]);
+    ghost.onUpdate(() => {
+      const age = k.time() - ghost.bornAt;
+      ghost.pos.x += 40 * k.dt();
+      ghost.pos.y = ghost.baseY + Math.sin(age * 3) * 10;
+      if (ghost.pos.x > WORLD_WIDTH) {
+        removeGhost(house, ghost);
+      }
+    });
+    house.ghosts.push(ghost);
+  }
+
+  function removeGhost(house, ghost) {
+    if (!ghost?.exists?.()) return;
+    const idx = house.ghosts.indexOf(ghost);
+    if (idx !== -1) house.ghosts.splice(idx, 1);
+    k.destroy(ghost);
+  }
+
+  function despawnHauntedHouse(key) {
+    const house = hauntedHouses.get(key);
+    if (!house) return;
+    for (const g of house.ghosts) if (g?.exists?.()) k.destroy(g);
+    hauntedHouses.delete(key);
+  }
+
+  function updateHauntedHouses() {
+    const now = k.time();
+    for (const [, house] of hauntedHouses) {
+      // Nettoie les fantômes morts (au cas où)
+      house.ghosts = house.ghosts.filter(g => g?.exists?.());
+      if (house.ghosts.length < MAX_GHOSTS_PER_HOUSE
+          && now - house.lastSpawnAt > GHOST_RESPAWN_INTERVAL) {
+        spawnGhost(house);
+        house.lastSpawnAt = now;
+      }
+    }
+  }
+
+  // Wagon touche un fantôme → kill +25pts
+  k.onCollide("ghost-haunt", "wagon", (ghost) => {
+    const house = hauntedHouses.get(ghost.houseKey);
+    if (!house) { if (ghost.exists()) k.destroy(ghost); return; }
+    const gx = ghost.pos.x + 14;
+    const gy = ghost.pos.y + 20;
+    removeGhost(house, ghost);
+    gameState.score += 25;
+    audio.combo?.();
+    showPopup(gx, gy - 20, "+25", k.rgb(180, 80, 240), 18);
+    window.__juice?.dirShake?.(0, 1, 4, 0.1);
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 * i) / 12;
+      k.add([
+        k.circle(2 + Math.random() * 2),
+        k.pos(gx, gy),
+        k.color(k.rgb(180, 80, 240)),
+        k.opacity(0.95),
+        k.lifespan(0.5, { fade: 0.35 }),
+        k.z(15),
+        "particle",
+        { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 20 },
+      ]);
+    }
+  });
+
   // Detection loops
   k.loop(0.5, () => {
     detectChamboule();
     detectRoulette();
+    detectHauntedHouse();
   });
 
   k.onUpdate(updateRoulettes);
+  k.onUpdate(updateHauntedHouses);
 
   // Click handlers (global canvas click)
   k.onClick("chamboule-can", hitCan);
@@ -296,6 +419,7 @@ export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
   function cleanup() {
     for (const key of Array.from(chamboules.keys())) despawnChamboule(key);
     for (const key of Array.from(roulettes.keys())) despawnRoulette(key);
+    for (const key of Array.from(hauntedHouses.keys())) despawnHauntedHouse(key);
   }
 
   return { cleanup };
