@@ -22,6 +22,7 @@ import { createTutorial } from "./tutorial.js";
 import { createConstellationSystem } from "./constellation.js";
 import { createSettingsModal } from "./settings-modal.js";
 import { createGroundSystem } from "./ground.js";
+import { createCinematicSystem } from "./cinematic.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -205,6 +206,7 @@ k.scene("game", () => {
   gameState._ducksCaught = 0;
   gameState.lastConstellationAt = 0;
   gameState.constellationActive = false;
+  gameState.sessionSkeletons = 0;
 
   entityCounts.particle = 0;
   k.onAdd("particle", () => { entityCounts.particle++; });
@@ -225,6 +227,9 @@ k.scene("game", () => {
   spectresRef = spectres;
   window.__spectres = spectres;
   createAchievements({ k, spectres, audio });
+
+  const cinematic = createCinematicSystem({ k, audio, WIDTH, HEIGHT });
+  cinematic.reset();
 
   const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals } = createTileSystem({
     k, tileMap, gameState, audio, entityCounts,
@@ -430,8 +435,13 @@ k.scene("game", () => {
   }
 
   function updatePersistence() {
-    if (gameState.score > save.bestScore) save.bestScore = gameState.score;
+    if (gameState.score > save.bestScore) {
+      cinematic.play("newrecord", "NOUVEAU RECORD");
+      save.bestScore = gameState.score;
+    }
     save.totalSkeletons = (save.totalSkeletons || 0) + 1;
+    gameState.sessionSkeletons += 1;
+    if (gameState.sessionSkeletons === 100) cinematic.play("100souls", "100 AMES");
     persistSave(save);
     if (save.totalSkeletons >= 100) spectres.unlock(6);
   }
@@ -481,6 +491,7 @@ k.scene("game", () => {
 
   function triggerApocalypse() {
     gameState.bulletTimeUntil = k.time() + 3;
+    cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock(8);
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
