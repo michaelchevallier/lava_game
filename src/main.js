@@ -591,9 +591,12 @@ k.scene("game", () => {
       save.bestScore = gameState.score;
     }
     if (!save.heroes) save.heroes = { mario: 0, pika: 0, luigi: 0, toad: 0 };
-    const activeNames = ["mario", "pika", "luigi", "toad"].slice(0, settings.numPlayers || 1);
-    for (const name of activeNames) {
-      if (gameState.score > (save.heroes[name] || 0)) save.heroes[name] = gameState.score;
+    // Crédite le score sur les avatars actuellement choisis (par save.avatars.p1/p2)
+    const activeAvatars = [];
+    if (save.avatars?.p1) activeAvatars.push(save.avatars.p1);
+    if ((settings.numPlayers || 1) >= 2 && save.avatars?.p2) activeAvatars.push(save.avatars.p2);
+    for (const avId of activeAvatars) {
+      if (gameState.score > (save.heroes[avId] || 0)) save.heroes[avId] = gameState.score;
     }
     save.totalSkeletons = (save.totalSkeletons || 0) + 1;
     gameState.sessionSkeletons += 1;
@@ -976,6 +979,24 @@ k.scene("game", () => {
     k.go("game");
   });
   k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); });
+
+  // Respawn player(s) au centre de l'écran (dépanne si tombé hors map)
+  k.onKeyPress(",", () => {
+    const players = k.get("player");
+    const cx = WIDTH / 2;
+    const cy = (GROUND_ROW - 4) * TILE;
+    let i = 0;
+    for (const p of players) {
+      p.pos.x = cx - 30 + i * 60;
+      p.pos.y = cy;
+      if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
+      i++;
+    }
+    if (players.length > 0) {
+      audio.boost?.();
+      showPopup(WIDTH / 2, 80, "RESPAWN !", k.rgb(120, 220, 255), 22);
+    }
+  });
   k.onKeyPress("m", () => {
     const m = audio.toggleMute();
     showPopup(WIDTH / 2, 80, m ? "SON COUPE (M)" : "SON ACTIF (M)", k.rgb(200, 220, 255), 18);

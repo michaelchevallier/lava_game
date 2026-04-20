@@ -58,20 +58,20 @@ export function createSplash({ save, persistSave, settings, onStart }) {
       `).join("");
 
       const heroes = save.heroes || {};
-      const heroEntries = [
-        { name: "Mario", color: "#e63946", score: heroes.mario || 0 },
-        { name: "Pika",  color: "#ffd23f", score: heroes.pika  || 0 },
-        { name: "Luigi", color: "#7cc947", score: heroes.luigi || 0 },
-        { name: "Toad",  color: "#ff4c6d", score: heroes.toad  || 0 },
-      ];
-      const leaderScore = Math.max(...heroEntries.map(h => h.score));
-      const heroBoard = `
+      // Affiche tous les avatars avec score > 0, triés desc, top 8
+      const heroEntries = AVATARS
+        .map(av => ({ name: av.name, color: av.color, score: heroes[av.id] || 0 }))
+        .filter(h => h.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
+      const leaderScore = heroEntries.length > 0 ? heroEntries[0].score : 0;
+      const heroBoard = heroEntries.length === 0 ? "" : `
         <div style="margin:14px 0 0 0;padding:12px 16px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid rgba(255,210,63,0.4);max-width:520px;width:100%;box-sizing:border-box">
           <div style="text-align:center;color:#ffd23f;font-size:13px;font-weight:bold;margin-bottom:10px;letter-spacing:1px">CHAMPIONS DU FOYER</div>
-          <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
-            ${heroEntries.map(h => {
-              const isLeader = leaderScore > 0 && h.score === leaderScore;
-              return `<div style="text-align:center;color:${h.color};font-family:monospace;font-size:${isLeader ? "17px" : "13px"};font-weight:${isLeader ? "bold" : "normal"}">${isLeader ? "crown " : ""}${h.name}<br><span style="color:#fff">${h.score}</span></div>`;
+          <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap">
+            ${heroEntries.map((h, idx) => {
+              const isLeader = idx === 0;
+              return `<div style="text-align:center;color:${h.color};font-family:monospace;font-size:${isLeader ? "17px" : "13px"};font-weight:${isLeader ? "bold" : "normal"}">${isLeader ? "👑 " : ""}${h.name}<br><span style="color:#fff">${h.score}</span></div>`;
             }).join("")}
           </div>
         </div>

@@ -147,6 +147,7 @@ export function createHUD({
     "Astuce : 5 squelettes vivants + portail = Constellation Spectrale",
     "Astuce : cog en haut a droite pour les options",
     "Astuce : N pour basculer mode nuit/jour",
+    "Astuce : virgule (,) pour respawn ton joueur au centre s'il sort",
     "Astuce : 7% de wagons sont dores (2x points)",
   ];
   let tipIdx = Math.floor(Math.random() * TIPS.length);
