@@ -754,8 +754,8 @@ k.scene("game", () => {
   }
 
   const {
-    drawWagonBody, spawnWagon, transformToSkeleton,
-    reviveFromSkeleton, collectCoin, tryBoardWagon, exitWagon,
+    drawWagonBody, spawnWagon, transformToSkeleton, reviveFromSkeleton,
+    collectCoin, tryBoardWagon, exitWagon, tryAutoBoardVisitor,
   } = createWagonSystem({
     k, tileMap, gameState, audio, entityCounts, save,
     showPopup: (...args) => showPopup(...args),
@@ -1252,6 +1252,7 @@ k.scene("game", () => {
     registerKill, showPopup: (...args) => showPopup(...args), checkMilestone,
     constellation, getCrowdHooks: () => crowdHooks,
     WIDTH, TILE, GROUND_ROW, gridKey,
+    boardingFn: (w, v) => tryAutoBoardVisitor(w, v),
   });
 
   k.loop(4, () => {

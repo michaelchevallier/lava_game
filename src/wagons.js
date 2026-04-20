@@ -348,16 +348,27 @@ export function createWagonSystem({
       "wagon-part",
     ]);
 
-    const passenger = k.add([
-      k.sprite("human"),
-      k.pos(wagon.pos.x + 16, wagon.pos.y - 40),
-      k.z(7),
-      "passenger",
-      { wagon, currentType: "human" },
-    ]);
+    wagon.passengers = [{ type: "human" }];
+    wagon.passengerEntities = [];
+    function addPassengerSprite(idx) {
+      const px = wagon.pos.x + 6 + idx * 14;
+      const py = wagon.pos.y - 40;
+      const sprite = k.add([
+        k.sprite("human"),
+        k.pos(px, py),
+        k.z(7),
+        "passenger",
+        { wagon, idx },
+      ]);
+      wagon.passengerEntities.push(sprite);
+      wagon.parts.push(sprite);
+      return sprite;
+    }
+    addPassengerSprite(0);
+    wagon.passengerEntity = wagon.passengerEntities[0];
+    wagon.passenger = "human";
 
-    wagon.parts = [...parts, wheel1, wheel1Spoke, wheel2, wheel2Spoke, passenger, ...(wagon.royalDecos || [])];
-    wagon.passengerEntity = passenger;
+    wagon.parts = [...parts, wheel1, wheel1Spoke, wheel2, wheel2Spoke, ...(wagon.royalDecos || [])];
 
     const localOffsets = [
       { x: 0, y: 0 },    // parts[0] body
@@ -370,7 +381,6 @@ export function createWagonSystem({
       { x: 14, y: 30 },  // wheel1Spoke
       { x: 46, y: 30 },  // wheel2
       { x: 46, y: 30 },  // wheel2Spoke
-      { x: 16, y: -40 }, // passenger
     ];
 
     wagon.railAngle = 0;
@@ -635,9 +645,15 @@ export function createWagonSystem({
       wheel2Spoke.pos.y = wheel2.pos.y;
       wheel2Spoke.angle = spokeAngle;
 
-      if (wagon.passengerEntity) {
-        wagon.passengerEntity.pos.x = dx + 16;
-        wagon.passengerEntity.pos.y = wagon.pos.y - 40 + sinA * (16 - 30);
+      for (let i = 0; i < wagon.passengerEntities.length; i++) {
+        const ent = wagon.passengerEntities[i];
+        if (!ent.exists()) continue;
+        ent.pos.x = wagon.pos.x + 6 + i * 14;
+        ent.pos.y = wagon.pos.y - 40 + sinA * (6 + i * 14 - 30);
+      }
+      if (wagon.passengerEntity?.exists()) {
+        wagon.passengerEntity.pos.x = wagon.pos.x + 6;
+        wagon.passengerEntity.pos.y = wagon.pos.y - 40 + sinA * (6 - 30);
       }
 
       if (wagon.rider) {
@@ -929,7 +945,8 @@ export function createWagonSystem({
         : wagon.pos.x > WIDTH + 80;
       if (outOfBounds) {
         if (wagon.rider) exitWagon(wagon.rider);
-        if (wagon.passenger === "human" && !wagon.ghostTrain && !wagon.inverseTrain) {
+        const anyHuman = wagon.passengers.some((p) => p.type === "human");
+        if (anyHuman && !wagon.ghostTrain && !wagon.inverseTrain) {
           gameState.missed = (gameState.missed || 0) + 1;
           showPopup(
             WIDTH - 120,
@@ -947,17 +964,17 @@ export function createWagonSystem({
 
     wagon.onCollide("lava", () => {
       if (wagon.isSpectral) return;
-      if (wagon.passenger === "human") {
+      const hasHuman = wagon.passengers.some((p) => p.type === "human");
+      if (hasHuman || wagon.inverseTrain) {
         window.__juice?.hitStop(80);
-        wagon.passenger = "skeleton";
         transformToSkeleton(wagon);
       }
     });
 
     wagon.onCollide("water", () => {
       if (wagon.isSpectral) return;
-      if (wagon.passenger === "skeleton") {
-        wagon.passenger = "human";
+      const hasSkeleton = wagon.passengers.some((p) => p.type === "skeleton");
+      if (hasSkeleton) {
         reviveFromSkeleton(wagon);
       }
     });
@@ -1258,26 +1275,22 @@ export function createWagonSystem({
       ]);
     }
     k.wait(0.05, () => {
-      if (wagon.passengerEntity && wagon.passengerEntity.exists()) {
-        k.destroy(wagon.passengerEntity);
-      }
-      let spr = "human";
-      if (wagon.rider) {
-        spr = wagon.rider.normalSprite;
-        if (wagon.rider.isSkeleton) {
-          wagon.rider.isSkeleton = false;
-          wagon.rider.sprite = wagon.rider.normalSprite;
+      if (!wagon.exists()) return;
+      for (let i = 0; i < wagon.passengers.length; i++) {
+        if (wagon.passengers[i].type === "skeleton") {
+          wagon.passengers[i].type = "human";
+          const ent = wagon.passengerEntities[i];
+          if (ent?.exists()) ent.sprite = "human";
         }
       }
-      const passenger = k.add([
-        k.sprite(spr),
-        k.pos(wagon.pos.x + 16, wagon.pos.y - 40),
-        k.z(7),
-        "passenger",
-        { wagon, currentType: "human" },
-      ]);
-      wagon.passengerEntity = passenger;
-      wagon.parts.push(passenger);
+      wagon.passenger = "human";
+      if (wagon.rider?.isSkeleton) {
+        wagon.rider.isSkeleton = false;
+        wagon.rider.sprite = wagon.rider.normalSprite;
+        if (wagon.passengerEntity?.exists()) {
+          wagon.passengerEntity.sprite = wagon.rider.normalSprite;
+        }
+      }
     });
   }
 
@@ -1315,7 +1328,7 @@ export function createWagonSystem({
     for (const w2 of k.get("wagon")) {
       if (w2 === wagon) continue;
       const d = Math.hypot(w2.pos.x + 30 - cx, w2.pos.y + 15 - cy);
-      if (d < 256 && w2.passenger !== "skeleton") {
+      if (d < 256 && w2.passengers.some((p) => p.type === "human")) {
         transformToSkeleton(w2);
         count++;
       }
@@ -1325,9 +1338,21 @@ export function createWagonSystem({
   }
 
   function transformToSkeleton(wagon) {
+    if (!wagon.exists()) return;
+    let humansCount = 0;
+    for (let i = 0; i < wagon.passengers.length; i++) {
+      if (wagon.passengers[i].type === "human") {
+        wagon.passengers[i].type = "skeleton";
+        const ent = wagon.passengerEntities[i];
+        if (ent?.exists()) ent.sprite = "skeleton";
+        humansCount++;
+      }
+    }
+    if (humansCount === 0 && !wagon.inverseTrain) return;
+    wagon.passenger = "skeleton";
     window.__juice?.hitStop(120);
     window.__juice?.dirShake(wagon.vel?.x || 1, 0, 6, 0.2);
-    gameState.skeletons += 1;
+    gameState.skeletons += humansCount;
     audio.transform();
     if (onSkeletonTransform) onSkeletonTransform();
     const dark = wagon.darkPassenger || 0;
@@ -1354,6 +1379,7 @@ export function createWagonSystem({
     } else {
       let base = wagon.ghostTrain ? 100 : 10;
       if (wagon.isGolden) base *= 2;
+      base *= humansCount;
       registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain || wagon.isGolden, dark);
     }
     if (dark > 0) wagon.darkPassenger = 0;
@@ -1474,26 +1500,13 @@ export function createWagonSystem({
 
     k.wait(0.08, () => {
       if (!wagon.exists()) return;
-      if (wagon.passengerEntity && wagon.passengerEntity.exists()) {
-        k.destroy(wagon.passengerEntity);
-      }
-      let skelSpr = "skeleton";
-      if (wagon.rider) {
-        skelSpr = wagon.rider.skelSprite;
-        if (!wagon.rider.isSkeleton) {
-          wagon.rider.isSkeleton = true;
-          wagon.rider.sprite = wagon.rider.skelSprite;
+      if (wagon.rider && !wagon.rider.isSkeleton) {
+        wagon.rider.isSkeleton = true;
+        wagon.rider.sprite = wagon.rider.skelSprite;
+        if (wagon.passengerEntity?.exists()) {
+          wagon.passengerEntity.sprite = wagon.rider.skelSprite;
         }
       }
-      const skel = k.add([
-        k.sprite(skelSpr),
-        k.pos(wagon.pos.x + 16, wagon.pos.y - 40),
-        k.z(7),
-        "passenger",
-        { wagon, currentType: "skeleton" },
-      ]);
-      wagon.passengerEntity = skel;
-      wagon.parts.push(skel);
 
       const ghost = k.add([
         k.sprite("skeleton"),
@@ -1528,18 +1541,22 @@ export function createWagonSystem({
     closest.rider = p;
     p.opacity = 0;
 
-    if (closest.passengerEntity) {
+    if (closest.passengerEntity?.exists()) {
+      const idx = closest.passengerEntities.indexOf(closest.passengerEntity);
+      if (idx !== -1) closest.passengerEntities.splice(idx, 1);
+      if (closest.passengers[0]) closest.passengers[0].type = p.isSkeleton ? "skeleton" : "human";
       k.destroy(closest.passengerEntity);
     }
     const visibleSprite = p.isSkeleton ? p.skelSprite : p.normalSprite;
     const rider = k.add([
       k.sprite(visibleSprite),
-      k.pos(closest.pos.x + 16, closest.pos.y - 40),
+      k.pos(closest.pos.x + 6, closest.pos.y - 40),
       k.z(7),
       "passenger",
       { wagon: closest, isPlayerRider: true },
     ]);
     closest.passengerEntity = rider;
+    closest.passengerEntities.unshift(rider);
     closest.parts.push(rider);
     closest.passenger = p.isSkeleton ? "skeleton" : "human";
     audio.board();
@@ -1553,14 +1570,57 @@ export function createWagonSystem({
     p.opacity = 1;
     p.pos.x = w.pos.x + 70;
     p.pos.y = w.pos.y - 44;
-    if (w.passengerEntity && w.passengerEntity.exists()) {
+    if (w.passengerEntity?.exists()) {
+      const idx = w.passengerEntities.indexOf(w.passengerEntity);
+      if (idx !== -1) w.passengerEntities.splice(idx, 1);
+      if (w.passengers[0]) w.passengers.splice(0, 1);
       k.destroy(w.passengerEntity);
-      w.passengerEntity = null;
+      w.passengerEntity = w.passengerEntities[0] ?? null;
     }
-    w.passenger = "empty";
+    w.passenger = w.passengers[0]?.type ?? "empty";
     if (p.isSkeleton) {
       p.sprite = p.skelSprite;
     }
+  }
+
+  function tryAutoBoardVisitor(wagon, visitor) {
+    if (wagon.passengers.length >= 4) return false;
+    if (wagon.inverseTrain || wagon.ghostTrain || wagon.isSpectral) return false;
+    wagon.passengers.push({ type: visitor.isSkeleton ? "skeleton" : "human" });
+    const idx = wagon.passengers.length - 1;
+    const px = wagon.pos.x + 6 + idx * 14;
+    const py = wagon.pos.y - 40;
+    const sprite = k.add([
+      k.sprite(visitor.isSkeleton ? "skeleton" : "human"),
+      k.pos(px, py),
+      k.z(7),
+      "passenger",
+      { wagon, idx },
+    ]);
+    wagon.passengerEntities.push(sprite);
+    wagon.parts.push(sprite);
+    if (idx === 0) {
+      wagon.passengerEntity = sprite;
+      wagon.passenger = wagon.passengers[0].type;
+    }
+    audio.board?.();
+    const ec = window.__entityCounts;
+    if (!ec || ec.particle < 270) {
+      for (let p = 0; p < 5; p++) {
+        const a = (Math.PI * 2 * p) / 5;
+        k.add([
+          k.circle(2),
+          k.pos(visitor.pos.x + 14, visitor.pos.y + 10),
+          k.color(k.rgb(180, 220, 255)),
+          k.opacity(0.8),
+          k.lifespan(0.3, { fade: 0.2 }),
+          k.z(10),
+          "particle",
+          { vx: Math.cos(a) * 50, vy: Math.sin(a) * 50 },
+        ]);
+      }
+    }
+    return true;
   }
 
   return {
@@ -1571,5 +1631,6 @@ export function createWagonSystem({
     collectCoin,
     tryBoardWagon,
     exitWagon,
+    tryAutoBoardVisitor,
   };
 }

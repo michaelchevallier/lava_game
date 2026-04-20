@@ -3,6 +3,7 @@ export function createVisitorSystem({
   registerKill, showPopup, checkMilestone,
   constellation, getCrowdHooks,
   WIDTH, TILE, GROUND_ROW, gridKey,
+  boardingFn,
 }) {
   const VISITOR_TINTS = [
     [255, 180, 180], [180, 255, 180], [180, 180, 255], [255, 255, 180],
@@ -53,6 +54,22 @@ export function createVisitorSystem({
     }
     v.onUpdate(() => {
       if (constellation.applyVisitorSpiralUpdate(v)) return;
+      if (boardingFn && (!v._autoBoardCd || k.time() > v._autoBoardCd)) {
+        v._autoBoardCd = k.time() + 0.5;
+        for (const w of k.get("wagon")) {
+          if (!w.passengers || w.passengers.length >= 4) continue;
+          const dx = w.pos.x + 30 - (v.pos.x + 14);
+          const dy = w.pos.y + 15 - (v.pos.y + 20);
+          if (Math.abs(dx) < 28 && Math.abs(dy) < 35) {
+            if (boardingFn(w, v)) {
+              if (v.crown) v.crown.forEach((e) => k.destroy(e));
+              gameState.skeletons -= v.isSkeleton ? 1 : 0;
+              k.destroy(v);
+              return;
+            }
+          }
+        }
+      }
       const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
       v.move(vSpeed, 0);
       // Hesitation: detect lava ahead (visitors always walk right, dir=+1)
