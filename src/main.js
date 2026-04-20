@@ -30,6 +30,7 @@ import { createSkySystem } from "./sky.js";
 import { createSkullStand } from "./skull-stand.js";
 import { createVisitorSystem } from "./visitor.js";
 import { createGCSystem } from "./gc.js";
+import { createVisitorQuestSystem } from "./visitor-quests.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1157,6 +1158,7 @@ k.scene("game", () => {
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
+    window.__vquests?.onTilePlaced(selectedTool);
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1199,6 +1201,7 @@ k.scene("game", () => {
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
+    window.__vquests?.onTilePlaced(selectedTool);
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
@@ -1491,9 +1494,7 @@ k.scene("game", () => {
   tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
   tutorial.setup();
 
-  const quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
-  window.__quests = quests;
-
-  const tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
-  window.__tiers = tiers;
+  window.__quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
 });

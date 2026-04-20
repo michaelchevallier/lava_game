@@ -154,6 +154,7 @@ export function createVisitorSystem({
         v._hesitateState = null;
         v.isSkeleton = true;
         v.sprite = "skeleton";
+        window.__vquests?.onSkeletonTransform(v);
         v.color.r = 255; v.color.g = 255; v.color.b = 255;
         gameState.skeletons += 1;
         audio.transform();
