@@ -1,56 +1,93 @@
+// Tier system = tutoriel progressif. Chaque tier ne demande QUE des actions
+// faisables avec les tuiles déjà débloquées (tier courant ou inférieur).
+// Jusqu'à 5 objectifs par tier — focus sur découverte mécaniques + interactions.
+
 const TIERS = [
   {
-    // Tier 0 : tools de base + COIN (essential pour scoring) + rail_up/down (essentiel pour la diversite)
+    // Tier 0 — DÉCOUVRIR : tools de base + lava + rail + coin disponibles
+    title: "Bienvenue !",
     objectives: [],
     unlocks: ["lava", "rail", "rail_up", "rail_down", "erase", "sol", "coin"],
   },
   {
+    // Tier 1 — DÉCOUVRIR LE WAGON : poser tuiles, faire spawner wagon (touche X)
+    title: "Le Premier Wagon",
     objectives: [
-      { id: "skel5", label: "Faire 5 squelettes", target: 5, hook: "skeleton" },
-      { id: "tile10", label: "Poser 10 tuiles", target: 10, hook: "tile" },
-      { id: "wagon3", label: "Spawner 3 wagons", target: 3, hook: "wagon" },
+      { id: "tile5", label: "Poser 5 tuiles (clic souris)", target: 5, hook: "tile" },
+      { id: "wagon1", label: "Spawner 1 wagon (touche X)", target: 1, hook: "wagon" },
+      { id: "skel1", label: "Faire 1 squelette (wagon dans lava)", target: 1, hook: "skeleton" },
     ],
     unlocks: ["water", "boost"],
   },
   {
+    // Tier 2 — DÉCOUVRIR L'EAU : eau revive squelette (water adjacent skeleton)
+    title: "L'Eau Salvatrice",
     objectives: [
-      { id: "skel15cum", label: "15 squelettes cumul", target: 15, hook: "skeletonCum" },
-      { id: "score200", label: "Atteindre 200 pts", target: 200, hook: "score" },
-      { id: "tile20", label: "Poser 20 tuiles", target: 20, hook: "tile" },
+      { id: "tile-water1", label: "Poser 1 tuile EAU", target: 1, hook: "tileWater" },
+      { id: "tile-boost1", label: "Poser 1 tuile BOOST", target: 1, hook: "tileBoost" },
+      { id: "skel5", label: "Faire 5 squelettes", target: 5, hook: "skeleton" },
+      { id: "score100", label: "Atteindre 100 pts", target: 100, hook: "score" },
     ],
     unlocks: ["trampoline", "fan"],
   },
   {
+    // Tier 3 — DÉCOUVRIR LE TRAMPOLINE : faire sauter le wagon (trampoline + fan combine)
+    title: "Trampoline & Vent",
     objectives: [
-      { id: "score500", label: "Atteindre 500 pts", target: 500, hook: "score" },
-      { id: "skel30cum", label: "30 squelettes cumul", target: 30, hook: "skeletonCum" },
-      { id: "tramp1", label: "Poser 1 trampoline", target: 1, hook: "trampoline" },
+      { id: "tile-tramp1", label: "Poser 1 TRAMPOLINE", target: 1, hook: "tileTramp" },
+      { id: "tile-fan1", label: "Poser 1 VENTILATEUR", target: 1, hook: "tileFan" },
+      { id: "skel15cum", label: "15 squelettes cumul", target: 15, hook: "skeletonCum" },
+      { id: "score250", label: "Atteindre 250 pts", target: 250, hook: "score" },
+      { id: "tile15", label: "Poser 15 tuiles au total", target: 15, hook: "tile" },
     ],
     unlocks: ["portal", "ice"],
   },
   {
+    // Tier 4 — DÉCOUVRIR LE PORTAIL : 2 portails créent une paire (téléport)
+    title: "Portails & Glace",
     objectives: [
-      { id: "score1000", label: "Atteindre 1000 pts", target: 1000, hook: "score" },
-      { id: "tile40", label: "Poser 40 tuiles", target: 40, hook: "tile" },
-      { id: "skel50cum", label: "50 squelettes cumul", target: 50, hook: "skeletonCum" },
+      { id: "tile-portal2", label: "Poser 2 PORTAILS (paire)", target: 2, hook: "tilePortal" },
+      { id: "tile-ice1", label: "Poser 1 GLACE", target: 1, hook: "tileIce" },
+      { id: "skel30cum", label: "30 squelettes cumul", target: 30, hook: "skeletonCum" },
+      { id: "score500", label: "Atteindre 500 pts", target: 500, hook: "score" },
     ],
     unlocks: ["magnet", "bridge"],
   },
   {
+    // Tier 5 — COMBOS : magnet adjacent portal = vortex !
+    title: "Le Vortex Magnetique",
     objectives: [
-      { id: "score2000", label: "Atteindre 2000 pts", target: 2000, hook: "score" },
-      { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
-      { id: "loop1", label: "Completer 1 loop", target: 1, hook: "loop" },
+      { id: "tile-magnet1", label: "Poser 1 AIMANT", target: 1, hook: "tileMagnet" },
+      { id: "tile-bridge1", label: "Poser 1 PONT", target: 1, hook: "tileBridge" },
+      { id: "score1000", label: "Atteindre 1000 pts", target: 1000, hook: "score" },
+      { id: "skel50cum", label: "50 squelettes cumul", target: 50, hook: "skeletonCum" },
+      { id: "tile30", label: "Poser 30 tuiles au total", target: 30, hook: "tile" },
     ],
     unlocks: ["wheel", "rail_loop"],
   },
   {
+    // Tier 6 — LOOP & ROUE : enfin disponibles (loop débloqué)
+    title: "Looping & Grande Roue",
     objectives: [
-      { id: "score5000", label: "Atteindre 5000 pts", target: 5000, hook: "score" },
-      { id: "catapult1", label: "Catapulter 1 wagon", target: 1, hook: "catapult" },
-      { id: "duck5", label: "Pecher 5 canards", target: 5, hook: "duck" },
+      { id: "tile-wheel1", label: "Poser 1 GRANDE ROUE", target: 1, hook: "tileWheel" },
+      { id: "tile-loop1", label: "Poser 1 RAIL LOOP", target: 1, hook: "tileLoop" },
+      { id: "loop1", label: "Completer 1 loop (wagon traverse)", target: 1, hook: "loop" },
+      { id: "score2000", label: "Atteindre 2000 pts", target: 2000, hook: "score" },
+      { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
     ],
     unlocks: ["tunnel"],
+  },
+  {
+    // Tier 7 — ULTIME : tout débloqué, défis ultimes
+    title: "Maitre Forain",
+    objectives: [
+      { id: "tile-tunnel1", label: "Poser 1 TUNNEL HANTE", target: 1, hook: "tileTunnel" },
+      { id: "score5000", label: "Atteindre 5000 pts", target: 5000, hook: "score" },
+      { id: "catapult1", label: "Catapulter 1 wagon (trampo+fan)", target: 1, hook: "catapult" },
+      { id: "duck5", label: "Pecher 5 canards", target: 5, hook: "duck" },
+      { id: "bridge-break1", label: "Casser 1 pont (2 wagons)", target: 1, hook: "bridge" },
+    ],
+    unlocks: [],
   },
 ];
 

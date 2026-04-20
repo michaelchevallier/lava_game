@@ -12,7 +12,13 @@ const TOOL_ICONS = {
   rail_loop: "⭕", sol: "🪨", tunnel: "🏚",
 };
 
+// Module-level handle so we can clear previous interval/listeners on scene reset
+let __hudIntervalId = null;
+let __hudCogHandler = null;
+
 export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onToolClick, onCogClick, k, getTiers }) {
+  // Cleanup previous setup (R reset re-triggers the scene)
+  if (__hudIntervalId) { clearInterval(__hudIntervalId); __hudIntervalId = null; }
   const elScore = document.getElementById("hud-score");
   const elStats = document.getElementById("hud-stats");
   const elPalier = document.getElementById("hud-palier");
@@ -42,8 +48,9 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   let tipChangedAt = Date.now();
   if (elTip) elTip.textContent = TIPS[tipIdx];
 
-  // Génère les boutons toolbar
+  // Génère les boutons toolbar — clear avant pour éviter duplication au scene reset
   if (elToolbar) {
+    elToolbar.innerHTML = "";
     for (const item of TOOLBAR_ORDER) {
       const btn = document.createElement("button");
       btn.className = "tb-btn";
@@ -57,8 +64,13 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   }
 
   if (elCog) {
-    elCog.addEventListener("click", () => onCogClick());
-    elCog.addEventListener("touchstart", (e) => { e.preventDefault(); onCogClick(); }, { passive: false });
+    if (__hudCogHandler) {
+      elCog.removeEventListener("click", __hudCogHandler);
+      elCog.removeEventListener("touchstart", __hudCogHandler);
+    }
+    __hudCogHandler = (e) => { if (e?.preventDefault) e.preventDefault(); onCogClick(); };
+    elCog.addEventListener("click", __hudCogHandler);
+    elCog.addEventListener("touchstart", __hudCogHandler, { passive: false });
   }
 
   function updateSelectedBtn(tool) {
@@ -73,7 +85,8 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   let displayScore = 0;
   let lastTierUpdate = 0;
 
-  // Conteneur objectifs tiers (injecté dans le DOM au-dessus de la toolbar)
+  // Conteneur objectifs tiers — remove l'ancien si présent (scene reset)
+  document.getElementById("tier-objectives")?.remove();
   const elTierBox = document.createElement("div");
   elTierBox.id = "tier-objectives";
   elTierBox.style.cssText = [
@@ -127,7 +140,7 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     }
   }
 
-  const intervalId = setInterval(() => {
+  __hudIntervalId = setInterval(() => {
     const now = Date.now();
 
     // Score animé
@@ -185,7 +198,7 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   }, 100);
 
   return {
-    destroy: () => clearInterval(intervalId),
+    destroy: () => { if (__hudIntervalId) { clearInterval(__hudIntervalId); __hudIntervalId = null; } },
   };
 }
 
