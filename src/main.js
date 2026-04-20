@@ -3,6 +3,7 @@ import {
   TILE, COLS, ROWS, GROUND_ROW, WIDTH, HEIGHT,
   COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES,
   gridKey, currentSeason, SEASON_PALETTES,
+  WORLD_COLS, WORLD_WIDTH,
 } from "./constants.js";
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
@@ -1167,7 +1168,7 @@ k.scene("game", () => {
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= COLS || row < 0) return;
+    if (col < 0 || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
@@ -1204,7 +1205,7 @@ k.scene("game", () => {
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
-    if (col < 0 || col >= COLS || row < 0) return;
+    if (col < 0 || col >= WORLD_COLS || row < 0) return;
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
     if (selectedTool === "sol") {

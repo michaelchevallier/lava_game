@@ -1,4 +1,4 @@
-import { TILE, COLS, ROWS, GROUND_ROW } from "./constants.js";
+import { TILE, COLS, ROWS, GROUND_ROW, WORLD_COLS } from "./constants.js";
 
 export function createGroundSystem({ k, gameState, audio }) {
   // single global handler for all ground-particle objects
@@ -11,7 +11,7 @@ export function createGroundSystem({ k, gameState, audio }) {
   });
 
   const groundMap = new Map();
-  for (let col = 0; col < COLS; col++) {
+  for (let col = 0; col < WORLD_COLS; col++) {
     groundMap.set(col, { dug: new Set() });
   }
 
@@ -52,7 +52,7 @@ export function createGroundSystem({ k, gameState, audio }) {
   }
 
   function initColliders() {
-    for (let col = 0; col < COLS; col++) {
+    for (let col = 0; col < WORLD_COLS; col++) {
       rebuildGroundColliderForCol(col);
     }
   }
@@ -119,14 +119,14 @@ export function createGroundSystem({ k, gameState, audio }) {
       const entry = groundMap.get(col);
       if (entry && row >= GROUND_ROW && row < ROWS) entry.dug.add(row);
     }
-    for (let col = 0; col < COLS; col++) {
+    for (let col = 0; col < WORLD_COLS; col++) {
       rebuildGroundColliderForCol(col);
     }
   }
 
   // Draw function: call inside a k.add draw() override
   function drawGround() {
-    for (let col = 0; col < COLS; col++) {
+    for (let col = 0; col < WORLD_COLS; col++) {
       const dug = groundMap.get(col).dug;
       let drewTop = false;
       for (let row = GROUND_ROW; row < ROWS; row++) {

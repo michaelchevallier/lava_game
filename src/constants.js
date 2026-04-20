@@ -4,6 +4,9 @@ export const ROWS = 18;
 export const GROUND_ROW = 14;
 export const WIDTH = COLS * TILE;
 export const HEIGHT = ROWS * TILE;
+// Monde élargi : on peut construire au-delà de la vue par défaut (zoom out → voit plus)
+export const WORLD_COLS = 80;
+export const WORLD_WIDTH = WORLD_COLS * TILE;
 
 export const SPEED = 220;
 export const JUMP = 620;
