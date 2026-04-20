@@ -142,7 +142,7 @@ const settings = {
 const gameState = {
   skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
   milestoneIdx:0, bulletTimeUntil:0,
-  wagonSpeedMult: save.wagonSpeedMult ?? 1, zoom: save.zoom ?? 1,
+  wagonSpeedMult: save.wagonSpeedMult ?? 1, zoom: save.zoom ?? 0.5,
   magnetFields:[], geysers:[], lastConstellationAt:0, constellationActive:false,
   metronomes:[], scoreMultiplier:1, scoreMultiplierUntil:0, iceCrowns:[],
 };
@@ -202,6 +202,8 @@ k.scene("game", () => {
   entityCounts.particle = 0;
   k.onAdd("particle", () => { entityCounts.particle++; });
   k.onDestroy("particle", () => { entityCounts.particle--; });
+  // Apply persisted zoom (or default 0.5 = vue large)
+  try { k.camScale(gameState.zoom || 0.5); } catch (e) {}
   let _playerConfigs = null;
   let crowdHooks = null;
   let tutorial = null;
@@ -1495,7 +1497,7 @@ k.scene("game", () => {
   tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
   tutorial.setup();
 
-  window.__quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  // Old daily quest system (Almanach du Forain) DISABLED — the tier system is the single source of truth for objectives now
   window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });

@@ -44,7 +44,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       k.pos(x, -20),
       k.color(k.rgb(255, 215, 60)),
       k.outline(2, k.rgb(160, 110, 0)),
-      k.area({ shape: new k.Circle(k.vec2(0, 0), 10) }),
+      k.area({ shape: new k.Rect(k.vec2(-10, -10), 20, 20) }),
       k.opacity(1),
       k.lifespan(5, { fade: 0.5 }),
       k.z(8),

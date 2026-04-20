@@ -1,55 +1,56 @@
 const TIERS = [
   {
+    // Tier 0 : tools de base + COIN (essential pour scoring) + rail_up/down (essentiel pour la diversite)
     objectives: [],
-    unlocks: ["lava", "rail", "erase", "sol"],
+    unlocks: ["lava", "rail", "rail_up", "rail_down", "erase", "sol", "coin"],
   },
   {
     objectives: [
-      { id: "skel10", label: "Faire 10 squelettes", target: 10, hook: "skeleton" },
+      { id: "skel5", label: "Faire 5 squelettes", target: 5, hook: "skeleton" },
       { id: "tile10", label: "Poser 10 tuiles", target: 10, hook: "tile" },
-      { id: "coin5", label: "Collecter 5 pieces", target: 5, hook: "coin" },
+      { id: "wagon3", label: "Spawner 3 wagons", target: 3, hook: "wagon" },
     ],
-    unlocks: ["water", "coin"],
+    unlocks: ["water", "boost"],
   },
   {
     objectives: [
-      { id: "skel20cum", label: "20 squelettes cumul", target: 20, hook: "skeletonCum" },
+      { id: "skel15cum", label: "15 squelettes cumul", target: 15, hook: "skeletonCum" },
       { id: "score200", label: "Atteindre 200 pts", target: 200, hook: "score" },
-      { id: "rail5", label: "Poser 5 rails diagonaux", target: 5, hook: "railDiag" },
+      { id: "tile20", label: "Poser 20 tuiles", target: 20, hook: "tile" },
     ],
-    unlocks: ["rail_up", "rail_down"],
+    unlocks: ["trampoline", "fan"],
   },
   {
     objectives: [
       { id: "score500", label: "Atteindre 500 pts", target: 500, hook: "score" },
-      { id: "wagon3", label: "Spawner 3 wagons", target: 3, hook: "wagon" },
+      { id: "skel30cum", label: "30 squelettes cumul", target: 30, hook: "skeletonCum" },
       { id: "tramp1", label: "Poser 1 trampoline", target: 1, hook: "trampoline" },
     ],
-    unlocks: ["boost", "trampoline"],
+    unlocks: ["portal", "ice"],
   },
   {
     objectives: [
       { id: "score1000", label: "Atteindre 1000 pts", target: 1000, hook: "score" },
-      { id: "loop1", label: "Completer 1 loop", target: 1, hook: "loop" },
-      { id: "tile20more", label: "Poser 20 tuiles de plus", target: 20, hook: "tile" },
+      { id: "tile40", label: "Poser 40 tuiles", target: 40, hook: "tile" },
+      { id: "skel50cum", label: "50 squelettes cumul", target: 50, hook: "skeletonCum" },
     ],
-    unlocks: ["fan", "portal"],
+    unlocks: ["magnet", "bridge"],
   },
   {
     objectives: [
       { id: "score2000", label: "Atteindre 2000 pts", target: 2000, hook: "score" },
-      { id: "tile30more", label: "Poser 30 tuiles", target: 30, hook: "tile" },
-      { id: "catapult1", label: "Catapulter 1 wagon", target: 1, hook: "catapult" },
+      { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
+      { id: "loop1", label: "Completer 1 loop", target: 1, hook: "loop" },
     ],
-    unlocks: ["ice", "magnet"],
+    unlocks: ["wheel", "rail_loop"],
   },
   {
     objectives: [
       { id: "score5000", label: "Atteindre 5000 pts", target: 5000, hook: "score" },
-      { id: "bridge1", label: "Casser 1 pont", target: 1, hook: "bridge" },
+      { id: "catapult1", label: "Catapulter 1 wagon", target: 1, hook: "catapult" },
       { id: "duck5", label: "Pecher 5 canards", target: 5, hook: "duck" },
     ],
-    unlocks: ["bridge", "wheel", "rail_loop", "tunnel"],
+    unlocks: ["tunnel"],
   },
 ];
 

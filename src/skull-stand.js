@@ -9,19 +9,19 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
     k.pos(STAND_X, STAND_Y),
     k.color(k.rgb(60, 30, 30)),
     k.outline(2, k.rgb(20, 10, 10)),
-    k.z(-2),
+    k.z(11),
   ]);
   k.add([
     k.rect(STAND_W, 8),
     k.pos(STAND_X, STAND_Y - 10),
     k.color(k.rgb(120, 30, 30)),
     k.outline(1, k.rgb(60, 0, 0)),
-    k.z(-2),
+    k.z(11),
   ]);
 
   k.add([
     k.pos(0, 0),
-    k.z(5),
+    k.z(15),
     {
       draw() {
         k.drawText({
@@ -44,7 +44,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       k.color(isGolden ? k.rgb(255, 220, 60) : k.rgb(230, 230, 220)),
       k.outline(2, k.rgb(40, 30, 30)),
       k.area({ shape: new k.Rect(k.vec2(-10, -10), 20, 20) }),
-      k.z(2),
+      k.z(13),
       "skull-target",
       {
         skullIdx: idx,
@@ -59,7 +59,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       k.rect(2, 2),
       k.pos(skull.pos.x - 3, skull.pos.y - 2),
       k.color(k.rgb(20, 20, 20)),
-      k.z(3),
+      k.z(14),
       "skull-part",
       { skull },
     ]);
@@ -67,7 +67,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       k.rect(2, 2),
       k.pos(skull.pos.x + 3, skull.pos.y - 2),
       k.color(k.rgb(20, 20, 20)),
-      k.z(3),
+      k.z(14),
       "skull-part",
       { skull },
     ]);

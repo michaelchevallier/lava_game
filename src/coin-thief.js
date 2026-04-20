@@ -15,7 +15,7 @@ export function createCoinThiefSystem({ k, gameState, audio, showPopup, WIDTH, G
       k.pos(startX, yBase),
       k.color(k.rgb(220, 220, 240)),
       k.outline(2, k.rgb(140, 80, 220)),
-      k.area({ shape: new k.Circle(k.vec2(0, 0), 14) }),
+      k.area({ shape: new k.Rect(k.vec2(-14, -14), 28, 28) }),
       k.opacity(0.9),
       k.z(12),
       "coin-thief",
