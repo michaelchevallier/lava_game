@@ -821,6 +821,7 @@ k.scene("game", () => {
   k.onKeyPress("y", () => (selectedTool = "wheel"));
   k.onKeyPress("l", () => (selectedTool = "rail_loop"));
   k.onKeyPress("k", () => (selectedTool = "sol"));
+  k.onKeyPress("b", () => (selectedTool = "tunnel"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));

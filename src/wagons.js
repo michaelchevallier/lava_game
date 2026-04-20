@@ -1140,6 +1140,51 @@ export function createWagonSystem({
       wagon.loopExitX = loopTile.pos.x + TILE / 2 + 6;
       wagon.loopExitY = loopTile.pos.y - wagon.loopRadius - 15;
     });
+
+    wagon.onCollide("tunnel", (tunnel) => {
+      if (k.time() < (tunnel.cooldownUntil || 0)) return;
+      if (wagon._inTunnel) return;
+      tunnel.cooldownUntil = k.time() + 5;
+      wagon._inTunnel = true;
+
+      const wasOpacity = wagon.opacity ?? 1;
+      const partsOpacities = wagon.parts.map((p) => p.opacity ?? 1);
+
+      wagon.opacity = 0;
+      wagon.parts.forEach((p) => { p.opacity = 0; });
+      if (wagon.passengerEntity) wagon.passengerEntity.opacity = 0;
+
+      wagon.pos.x = tunnel.pos.x + TILE * 4;
+
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        k.add([
+          k.circle(4),
+          k.pos(tunnel.pos.x + TILE / 2, tunnel.pos.y + TILE / 2),
+          k.color(k.rgb(40, 20, 60)),
+          k.opacity(0.85),
+          k.lifespan(1, { fade: 0.7 }),
+          k.z(8),
+          "particle",
+          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 20 },
+        ]);
+      }
+
+      audio.combo();
+      window.__juice?.dirShake(0, 1, 8, 0.2);
+
+      k.wait(1, () => {
+        if (!wagon.exists()) return;
+        wagon.opacity = wasOpacity;
+        wagon.parts.forEach((p, i) => { if (p.exists()) p.opacity = partsOpacities[i] ?? 1; });
+        if (wagon.passengerEntity?.exists()) wagon.passengerEntity.opacity = 1;
+        wagon._inTunnel = false;
+
+        showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "TUNNEL HANTE +50", k.rgb(180, 80, 255), 22);
+        gameState.score += 50;
+        audio.combo();
+      });
+    });
   }
 
   function collectCoin(c) {

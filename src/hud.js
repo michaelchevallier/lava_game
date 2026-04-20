@@ -37,6 +37,7 @@ export function createHUD({
     wheel: "GRANDE ROUE",
     rail_loop: "LOOP",
     sol: "SOL",
+    tunnel: "TUNNEL HANTE",
   };
   const TOOL_COLORS = {
     lava: k.rgb(255, 120, 60),
@@ -56,6 +57,7 @@ export function createHUD({
     wheel: k.rgb(80, 220, 240),
     rail_loop: k.rgb(180, 80, 240),
     sol: k.rgb(160, 100, 50),
+    tunnel: k.rgb(120, 60, 180),
   };
 
   function inCog(m) {

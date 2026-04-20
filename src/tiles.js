@@ -631,6 +631,34 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: type, extras: ties },
       ]);
       tileMap.set(key, t);
+    } else if (type === "tunnel") {
+      const x = col * TILE;
+      const y = row * TILE;
+      const t = k.add([
+        k.rect(TILE, TILE),
+        k.pos(x, y),
+        k.color(k.rgb(15, 5, 25)),
+        k.outline(2, k.rgb(80, 40, 100)),
+        k.area(),
+        k.z(2),
+        "tile",
+        "tunnel",
+        { gridCol: col, gridRow: row, tileType: "tunnel", extras: [], cooldownUntil: 0 },
+      ]);
+      const eye1 = k.add([
+        k.circle(3),
+        k.pos(x + TILE * 0.3, y + TILE * 0.4),
+        k.color(k.rgb(220, 50, 50)),
+        k.z(3),
+      ]);
+      const eye2 = k.add([
+        k.circle(3),
+        k.pos(x + TILE * 0.7, y + TILE * 0.4),
+        k.color(k.rgb(220, 50, 50)),
+        k.z(3),
+      ]);
+      t.extras = [eye1, eye2];
+      tileMap.set(key, t);
     } else if (type === "ground") {
       const top = k.add([
         k.sprite("ground_top"),
