@@ -631,6 +631,25 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: type, extras: ties },
       ]);
       tileMap.set(key, t);
+    } else if (type === "ground") {
+      const top = k.add([
+        k.sprite("ground_top"),
+        k.pos(col * TILE, row * TILE),
+        k.z(2),
+      ]);
+      const t = k.add([
+        k.rect(TILE, TILE),
+        k.pos(col * TILE, row * TILE),
+        k.color(k.rgb(0, 0, 0)),
+        k.opacity(0),
+        k.area(),
+        k.body({ isStatic: true }),
+        k.z(2),
+        "tile",
+        "ground_tile",
+        { gridCol: col, gridRow: row, tileType: "ground", extras: [top] },
+      ]);
+      tileMap.set(key, t);
     }
   }
 

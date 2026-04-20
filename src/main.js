@@ -819,7 +819,7 @@ k.scene("game", () => {
   k.onKeyPress("0", () => (selectedTool = "fan"));
   k.onKeyPress("y", () => (selectedTool = "wheel"));
   k.onKeyPress("l", () => (selectedTool = "rail_loop"));
-  k.onKeyPress("k", () => (selectedTool = "dig"));
+  k.onKeyPress("k", () => (selectedTool = "sol"));
   k.onKeyPress("c", () => {
     tileMap.forEach((t) => {
       if (t.extras) t.extras.forEach((e) => k.destroy(e));
@@ -1005,9 +1005,23 @@ k.scene("game", () => {
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
     if (col < 0 || col >= COLS || row < 0) return;
-    if (selectedTool === "dig" && row >= GROUND_ROW && row < ROWS) {
-      if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
-      else groundSystem.digGround(col, row);
+    const key = gridKey(col, row);
+    if (selectedTool === "sol") {
+      if (row >= GROUND_ROW && row < ROWS) {
+        if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
+      } else {
+        placeTile(col, row, "ground");
+        gameState.lastTilePlaced = k.time();
+        audio.place();
+      }
+      return;
+    }
+    if (selectedTool === "erase") {
+      if (tileMap.has(key)) {
+        placeTile(col, row, "erase");
+      } else if (row >= GROUND_ROW && row < ROWS && !groundSystem.isDug(col, row)) {
+        groundSystem.digGround(col, row);
+      }
       return;
     }
     if (row >= GROUND_ROW) return;
@@ -1028,17 +1042,30 @@ k.scene("game", () => {
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
     if (col < 0 || col >= COLS || row < 0) return;
-    if (selectedTool === "dig" && row >= GROUND_ROW && row < ROWS) {
-      const key = gridKey(col, row);
-      if (key === lastPlacedKey) return;
-      if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
-      else groundSystem.digGround(col, row);
+    const key = gridKey(col, row);
+    if (key === lastPlacedKey) return;
+    if (selectedTool === "sol") {
+      if (row >= GROUND_ROW && row < ROWS) {
+        if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
+      } else {
+        if (tileMap.has(key) && tileMap.get(key).tileType === "ground") return;
+        placeTile(col, row, "ground");
+        gameState.lastTilePlaced = k.time();
+        audio.place();
+      }
+      lastPlacedKey = key;
+      return;
+    }
+    if (selectedTool === "erase") {
+      if (tileMap.has(key)) {
+        placeTile(col, row, "erase");
+      } else if (row >= GROUND_ROW && row < ROWS && !groundSystem.isDug(col, row)) {
+        groundSystem.digGround(col, row);
+      }
       lastPlacedKey = key;
       return;
     }
     if (row >= GROUND_ROW) return;
-    const key = gridKey(col, row);
-    if (key === lastPlacedKey) return;
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();

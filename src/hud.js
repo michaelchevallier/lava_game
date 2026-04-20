@@ -35,6 +35,8 @@ export function createHUD({
     magnet: "AIMANT",
     bridge: "PONT",
     wheel: "GRANDE ROUE",
+    rail_loop: "LOOP",
+    sol: "SOL",
   };
   const TOOL_COLORS = {
     lava: k.rgb(255, 120, 60),
@@ -52,6 +54,8 @@ export function createHUD({
     magnet: k.rgb(220, 80, 60),
     bridge: k.rgb(160, 100, 40),
     wheel: k.rgb(80, 220, 240),
+    rail_loop: k.rgb(180, 80, 240),
+    sol: k.rgb(160, 100, 50),
   };
 
   function inCog(m) {

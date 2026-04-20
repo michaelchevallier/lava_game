@@ -28,6 +28,7 @@ export const TILE_CODE = {
   lava: "L", water: "W", rail: "R", rail_up: "U", rail_down: "D",
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
   ice: "I", magnet: "M", bridge: "N", wheel: "Y", rail_loop: "Z",
+  ground: "Q",
 };
 export const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -52,7 +53,7 @@ export const TOOLBAR_ORDER = [
   { tool: "wheel", key: "Y", label: "Roue" },
   { tool: "rail_loop", key: "L", label: "Loop" },
   { tool: "erase", key: "3", label: "Gomme" },
-  { tool: "dig", key: "K", label: "Creuser" },
+  { tool: "sol", key: "K", label: "Sol" },
 ];
 export const TB_ICON = 52;
 export const TB_GAP = 4;
