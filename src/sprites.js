@@ -881,127 +881,45 @@ export function makeLoopSpriteUrl() {
 
 const SPR_TETRIS_COLORED = substituteSprite(SPR_TETRIS, { T: "P", t: "p" });
 
-// Taille de rendu cible pour tous les personnages (pixel art downscale).
-// Proche des sprites procéduraux originaux (28×44) pour compat hitbox.
-const CHAR_W = 32;
-const CHAR_H = 48;
-
-// Sheet grid : adventurer/female/player/zombie sheets = 720×330 → 10 frames × 3 rows → 72×110 each.
-const FRAME_W = 72;
-const FRAME_H = 110;
-
-// Load un PNG, crop une région, downscale en pixel-art (nearest-neighbor), renvoie data URL.
-function loadImageDownscale(url, sx, sy, sw, sh, dw = CHAR_W, dh = CHAR_H) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const c = document.createElement("canvas");
-      c.width = dw;
-      c.height = dh;
-      const ctx = c.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
-      resolve(c.toDataURL());
-    };
-    img.onerror = () => reject(new Error("Failed to load " + url));
-    img.src = url;
-  });
-}
-
-// Downscale + tint (multiply) — pour donner une couleur d'identité à un perso qui partage le même corps.
-function loadImageTinted(url, sx, sy, sw, sh, tintHex) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const c = document.createElement("canvas");
-      c.width = CHAR_W;
-      c.height = CHAR_H;
-      const ctx = c.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CHAR_W, CHAR_H);
-      // Tint via multiply, puis masquer aux pixels non-transparents du sprite original
-      ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = tintHex;
-      ctx.fillRect(0, 0, CHAR_W, CHAR_H);
-      ctx.globalCompositeOperation = "destination-in";
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CHAR_W, CHAR_H);
-      resolve(c.toDataURL());
-    };
-    img.onerror = () => reject(new Error("Failed to load " + url));
-    img.src = url;
-  });
-}
-
-export async function loadAllSprites(k) {
-  // Downscale personnages statiques Kenney (80×110) → 32×48 pixel art
-  const [marioUrl, luigiUrl, toadUrl, skelNewUrl] = await Promise.all([
-    loadImageDownscale("sprites/mario.png",         0, 0, 80, 110),
-    loadImageDownscale("sprites/luigi.png",         0, 0, 80, 110),
-    loadImageDownscale("sprites/toad.png",          0, 0, 80, 110),
-    loadImageDownscale("sprites/skeleton_new.png",  0, 0, 80, 110),
-  ]);
-
-  // Downscale sheets → static idle frame 0 pixel art
-  const [humanUrl, zombieUrl] = await Promise.all([
-    loadImageDownscale("sprites/female_sheet.png", 0, 0, FRAME_W, FRAME_H),
-    loadImageDownscale("sprites/zombie_sheet.png", 0, 0, FRAME_W, FRAME_H),
-  ]);
-
-  // Tinted variants for avatars sans sprite dédié (couleurs d'identité des personnages)
-  const tintConfigs = [
-    { name: "sonic",    url: "sprites/player_sheet.png",     tint: "#3a7bd5" },
-    { name: "link",     url: "sprites/adventurer_sheet.png", tint: "#3aaa35" },
-    { name: "pacman",   url: "sprites/adventurer_sheet.png", tint: "#ffd700" },
-    { name: "kirby",    url: "sprites/adventurer_sheet.png", tint: "#ff9eba" },
-    { name: "yoshi",    url: "sprites/player_sheet.png",     tint: "#5cba47" },
-    { name: "bowser",   url: "sprites/player_sheet.png",     tint: "#ff7f00" },
-    { name: "donkey",   url: "sprites/player_sheet.png",     tint: "#8b4513" },
-    { name: "mega",     url: "sprites/adventurer_sheet.png", tint: "#3296ff" },
-    { name: "samus",    url: "sprites/player_sheet.png",     tint: "#ff8800" },
-    { name: "crash",    url: "sprites/player_sheet.png",     tint: "#ff5500" },
-    { name: "steve",    url: "sprites/adventurer_sheet.png", tint: "#5fa3d9" },
-    { name: "pokeball", url: "sprites/adventurer_sheet.png", tint: "#dc0a2d" },
-    { name: "tetris",   url: "sprites/adventurer_sheet.png", tint: "#a020f0" },
-    { name: "invader",  url: "sprites/player_sheet.png",     tint: "#39ff14" },
-    { name: "chief",    url: "sprites/player_sheet.png",     tint: "#4a5d2c" },
-    { name: "astro",    url: "sprites/adventurer_sheet.png", tint: "#3399cc" },
-    { name: "pika",     url: "sprites/adventurer_sheet.png", tint: "#ffd23f" },
-  ];
-  const tintedUrls = await Promise.all(
-    tintConfigs.map(c => loadImageTinted(c.url, 0, 0, FRAME_W, FRAME_H, c.tint)),
-  );
-
-  const loaders = [
-    // Personnages Kenney (downscalés en pixel art 32×48)
-    k.loadSprite("player",      marioUrl),
-    k.loadSprite("luigi",       luigiUrl),
-    k.loadSprite("toad",        toadUrl),
-    // Squelettes : unifié sur skeleton_new downscalé (cohérence visuelle)
-    k.loadSprite("player_skel", skelNewUrl),
-    k.loadSprite("luigi_skel",  skelNewUrl),
-    k.loadSprite("toad_skel",   skelNewUrl),
-    k.loadSprite("pika_skel",   skelNewUrl),
-    k.loadSprite("skeleton",    skelNewUrl),
-    k.loadSprite("skeleton_generic", skelNewUrl),
-    k.loadSprite("zombie",      zombieUrl),
-    // Visiteur humain (sheet cropée + downscalée)
-    k.loadSprite("human",       humanUrl),
-    // Avatars tintés à partir des sheets Kenney
-    ...tintConfigs.map((c, i) => k.loadSprite(c.name, tintedUrls[i])),
-    // Tuiles / ambient (encore procédural, volontairement)
-    k.loadSprite("ground_top",  makeSpriteUrl(SPR_GROUND_TOP, 2)),
-    k.loadSprite("ground",      makeSpriteUrl(SPR_GROUND, 2)),
-    k.loadSprite("lava1",       makeSpriteUrl(SPR_LAVA, 2)),
-    k.loadSprite("lava2",       makeSpriteUrl(SPR_LAVA2, 2)),
-    k.loadSprite("water1",      makeSpriteUrl(SPR_WATER, 2)),
-    k.loadSprite("water2",      makeSpriteUrl(SPR_WATER2, 2)),
-    k.loadSprite("boost",       makeSpriteUrl(SPR_BOOST, 2)),
-    k.loadSprite("fan",         makeSpriteUrl(SPR_FAN, 2)),
-    k.loadSprite("cloud",       makeSpriteUrl(SPR_CLOUD, 3)),
-    k.loadSprite("hill",        makeSpriteUrl(SPR_HILL, 4)),
+export function loadAllSprites(k) {
+  return Promise.all([
+    k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)),
+    k.loadSprite("player_skel", makeSpriteUrl(SPR_PLAYER_SKEL, 2)),
+    k.loadSprite("luigi", makeSpriteUrl(SPR_LUIGI, 2)),
+    k.loadSprite("luigi_skel", makeSpriteUrl(SPR_LUIGI_SKEL, 2)),
+    k.loadSprite("toad", makeSpriteUrl(SPR_TOAD, 2)),
+    k.loadSprite("toad_skel", makeSpriteUrl(SPR_TOAD_SKEL, 2)),
+    k.loadSprite("pika", makeSpriteUrl(SPR_PIKA, 2)),
+    k.loadSprite("pika_skel", makeSpriteUrl(SPR_PIKA_SKEL, 2)),
+    k.loadSprite("human", makeSpriteUrl(SPR_HUMAN, 2)),
+    k.loadSprite("skeleton", makeSpriteUrl(SPR_SKELETON, 2)),
+    k.loadSprite("ground_top", makeSpriteUrl(SPR_GROUND_TOP, 2)),
+    k.loadSprite("ground", makeSpriteUrl(SPR_GROUND, 2)),
+    k.loadSprite("lava1", makeSpriteUrl(SPR_LAVA, 2)),
+    k.loadSprite("lava2", makeSpriteUrl(SPR_LAVA2, 2)),
+    k.loadSprite("water1", makeSpriteUrl(SPR_WATER, 2)),
+    k.loadSprite("water2", makeSpriteUrl(SPR_WATER2, 2)),
+    k.loadSprite("boost", makeSpriteUrl(SPR_BOOST, 2)),
+    k.loadSprite("fan", makeSpriteUrl(SPR_FAN, 2)),
+    k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
+    k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
+    k.loadSprite("skeleton_generic", makeSpriteUrl(SPR_SKEL_GENERIC, 2)),
+    k.loadSprite("sonic", makeSpriteUrl(SPR_SONIC, 2)),
+    k.loadSprite("link", makeSpriteUrl(SPR_LINK, 2)),
+    k.loadSprite("pacman", makeSpriteUrl(SPR_PACMAN, 2)),
+    k.loadSprite("kirby", makeSpriteUrl(SPR_KIRBY, 2)),
+    k.loadSprite("yoshi", makeSpriteUrl(SPR_YOSHI, 2)),
+    k.loadSprite("bowser", makeSpriteUrl(SPR_BOWSER, 2)),
+    k.loadSprite("donkey", makeSpriteUrl(SPR_DONKEY, 2)),
+    k.loadSprite("mega", makeSpriteUrl(SPR_MEGA, 2)),
+    k.loadSprite("samus", makeSpriteUrl(SPR_SAMUS, 2)),
+    k.loadSprite("crash", makeSpriteUrl(SPR_CRASH, 2)),
+    k.loadSprite("steve", makeSpriteUrl(SPR_STEVE, 2)),
+    k.loadSprite("pokeball", makeSpriteUrl(SPR_POKEBALL, 2)),
+    k.loadSprite("tetris", makeSpriteUrl(SPR_TETRIS_COLORED, 2)),
+    k.loadSprite("invader", makeSpriteUrl(SPR_INVADER, 2)),
+    k.loadSprite("chief", makeSpriteUrl(SPR_CHIEF, 2)),
+    k.loadSprite("astro", makeSpriteUrl(SPR_ASTRO, 2)),
     k.loadSprite("rail_loop_visual", makeLoopSpriteUrl()),
-  ];
-  return Promise.all(loaders);
+  ]);
 }
