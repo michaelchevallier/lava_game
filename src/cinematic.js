@@ -10,7 +10,6 @@ export function createCinematicSystem({ k, audio, WIDTH, HEIGHT }) {
     active = true;
     activeUntil = k.time() + 1.2;
     label = displayLabel;
-    k.debug.timeScale = 0.25;
     audio.combo?.();
     setTimeout(() => audio.transform?.(), 100);
   }
@@ -28,7 +27,6 @@ export function createCinematicSystem({ k, audio, WIDTH, HEIGHT }) {
         const remaining = activeUntil - k.time();
         if (remaining <= 0) {
           active = false;
-          k.debug.timeScale = 1;
           audio.crack?.();
           return;
         }
@@ -37,10 +35,16 @@ export function createCinematicSystem({ k, audio, WIDTH, HEIGHT }) {
           t < 0.3 ? (t / 0.3) * 0.4 :
           t > 0.7 ? ((1 - (t - 0.7) / 0.3) * 0.4) :
           0.4;
+        // Cover whole viewport even when dezoomed: compute visible world rect
+        let camS = 1, camP = k.vec2(WIDTH / 2, HEIGHT / 2);
+        try { const s = k.camScale(); camS = s?.x || s || 1; } catch (e) {}
+        try { camP = k.camPos() || camP; } catch (e) {}
+        const visibleW = WIDTH / camS + 200;
+        const visibleH = HEIGHT / camS + 200;
         k.drawRect({
-          pos: k.vec2(0, 0),
-          width: WIDTH,
-          height: HEIGHT,
+          pos: k.vec2(camP.x - visibleW / 2, camP.y - visibleH / 2),
+          width: visibleW,
+          height: visibleH,
           color: k.rgb(0, 0, 0),
           opacity,
         });
@@ -48,12 +52,12 @@ export function createCinematicSystem({ k, audio, WIDTH, HEIGHT }) {
           t < 0.4 ? t / 0.4 :
           t > 0.8 ? (1 - (t - 0.8) / 0.2) :
           1;
-        const scale = 1 + Math.sin(t * Math.PI) * 0.2;
+        const scale = (1 + Math.sin(t * Math.PI) * 0.2) / camS;
         for (const [dx, dy] of [[-3, -3], [3, -3], [-3, 3], [3, 3]]) {
           k.drawText({
             text: label,
             size: 56 * scale,
-            pos: k.vec2(WIDTH / 2 + dx, HEIGHT / 2 + dy),
+            pos: k.vec2(camP.x + dx / camS, camP.y + dy / camS),
             anchor: "center",
             color: k.rgb(0, 0, 0),
             opacity: textOpacity * 0.9,
@@ -62,7 +66,7 @@ export function createCinematicSystem({ k, audio, WIDTH, HEIGHT }) {
         k.drawText({
           text: label,
           size: 56 * scale,
-          pos: k.vec2(WIDTH / 2, HEIGHT / 2),
+          pos: k.vec2(camP.x, camP.y),
           anchor: "center",
           color: k.rgb(255, 220, 80),
           opacity: textOpacity,

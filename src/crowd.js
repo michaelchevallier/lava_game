@@ -16,17 +16,18 @@ export function createCrowdSystem({ k, gameState }) {
     const startX = dir === 1
       ? -30
       : WIDTH + 30;
-    k.add([
+    const c = k.add([
       k.sprite("human"),
       k.pos(startX, (GROUND_ROW - 3) * TILE),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
-      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40) }),
-      k.body(),
+      k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["crowd", "visitor", "wagon", "wagon-part", "passenger", "player", "ghost", "ground_tile", "tile", "skull-target", "skull-part", "rain-coin"] }),
       k.anchor("topleft"),
       k.z(5),
       "crowd",
-      { walkSpeed: 20 + Math.random() * 10, dir, panicUntil: 0 },
+      { walkSpeed: 20 + Math.random() * 10, dir, panicUntil: 0, _vy: 0, _grounded: false },
     ]);
+    c.isGrounded = () => c._grounded;
+    c.jump = (force) => { c._vy = -force; c._grounded = false; };
   }
 
   function setup() {
@@ -38,6 +39,18 @@ export function createCrowdSystem({ k, gameState }) {
     });
 
     k.onUpdate("crowd", (v) => {
+      // Manual gravity (no body component → zero physics push)
+      v._vy += 1800 * k.dt();
+      v.pos.y += v._vy * k.dt();
+      const groundY = GROUND_ROW * TILE;
+      if (v.pos.y + 44 >= groundY) {
+        v.pos.y = groundY - 44;
+        v._vy = 0;
+        v._grounded = true;
+      } else {
+        v._grounded = false;
+      }
+
       const isPanic = v.panicUntil > k.time();
       const isCheering = v.cheerUntil > k.time();
       const speed = isPanic ? v.walkSpeed * 1.5 : (isCheering ? 0 : v.walkSpeed);

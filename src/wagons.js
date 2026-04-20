@@ -643,11 +643,13 @@ export function createWagonSystem({
         const slopeY = Math.min(...candidates);
         const targetY = slopeY - 30;
         const dy = targetY - wagon.pos.y;
-        if (Math.abs(dy) < 28) {
-          if (Math.abs(dy) > 24) {
+        // Augmented threshold (40 → handle high-speed climb on diag rails)
+        // and stronger snap rate (0.6 → keep up with boosted wagons)
+        if (Math.abs(dy) < 50) {
+          if (Math.abs(dy) > 16) {
             wagon.pos.y = targetY;
           } else {
-            wagon.pos.y += dy * 0.35;
+            wagon.pos.y += dy * 0.6;
           }
           if (wagon.vel) wagon.vel.y = 0;
         }
