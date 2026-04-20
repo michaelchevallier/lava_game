@@ -828,6 +828,7 @@ export function createWagonSystem({
               showPopup(wagon.pos.x + 30, wagon.pos.y - 50, `LOOP x${wagon.loopCount}`, k.rgb(255, 80, 220), 36);
               audio.combo();
               window.__juice?.dirShake(0, -1, 6, 0.15);
+              window.__quests?.onLoop();
               if (wagon.loopCount >= 3) {
                 window.__spectres?.unlock(16);
                 wagon.looping = false;
@@ -1022,6 +1023,7 @@ export function createWagonSystem({
       p.pair.cooldownUntil = k.time() + 0.5;
       gameState.portalUses = (gameState.portalUses || 0) + 1;
       if (gameState.portalUses >= 5) window.__spectres?.unlock(3);
+      window.__quests?.onPortal();
       audio.combo();
       window.__juice?.dirShake(1, 0, 3, 0.12);
       for (let i = 0; i < 14; i++) {
