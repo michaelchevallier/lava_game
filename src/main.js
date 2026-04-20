@@ -28,6 +28,7 @@ import { createQuestSystem } from "./quests.js";
 import { createTierSystem } from "./tiers.js";
 import { createSkySystem } from "./sky.js";
 import { createStations } from "./stations.js";
+import { createBalloonSystem } from "./balloons.js";
 import { createSkullStand } from "./skull-stand.js";
 import { createVisitorSystem } from "./visitor.js";
 import { createGCSystem } from "./gc.js";
@@ -1455,5 +1456,6 @@ k.scene("game", () => {
   window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
   window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
+  window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
 });
