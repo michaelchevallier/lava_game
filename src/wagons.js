@@ -419,6 +419,25 @@ export function createWagonSystem({
       else if (sliding) speedMult = 3;
       else if (iced) speedMult = 1.6;
       if (gameState.bulletTimeUntil > k.time()) speedMult *= 0.3;
+      for (const cr of gameState.iceCrowns || []) {
+        const d = Math.hypot(wagon.pos.x + 30 - cr.cx, wagon.pos.y + 15 - cr.cy);
+        if (d < cr.radius) {
+          speedMult *= 0.3;
+          if (Math.random() < 0.4 && entityCounts.particle < 240) {
+            k.add([
+              k.rect(3, 3),
+              k.pos(wagon.pos.x + 30, wagon.pos.y + 15 + Math.random() * 10),
+              k.color(k.rgb(160, 220, 255)),
+              k.opacity(0.85),
+              k.lifespan(0.5, { fade: 0.35 }),
+              k.z(4),
+              "particle",
+              { vx: -10, vy: -5 },
+            ]);
+          }
+          break;
+        }
+      }
       const currentSpeed = wagon.speed * speedMult;
       wagon.move(currentSpeed, 0);
 

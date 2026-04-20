@@ -28,6 +28,7 @@ import { createLoreSystem } from "./lore.js";
 import { createSkySystem } from "./sky.js";
 import { createSkullStand } from "./skull-stand.js";
 import { createVisitorSystem } from "./visitor.js";
+import { createGCSystem } from "./gc.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -367,6 +368,48 @@ k.scene("game", () => {
             pos: k.vec2(cx - 12, cy),
             size: 20,
           });
+        }
+      },
+    },
+  ]);
+
+  k.add([
+    k.pos(0, 0),
+    k.z(2),
+    {
+      draw() {
+        const t = k.time();
+        for (const cr of gameState.iceCrowns) {
+          k.drawCircle({
+            pos: k.vec2(cr.cx, cr.cy),
+            radius: cr.radius,
+            color: k.rgb(140, 200, 255),
+            opacity: 0.05 + Math.sin(t * 2) * 0.04,
+          });
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2 + t * 1.5;
+            const r = TILE * 0.8;
+            const x = cr.cx + Math.cos(a) * r;
+            const y = cr.cy + Math.sin(a) * r;
+            k.drawRect({
+              pos: k.vec2(x - 3, y - 3),
+              width: 6,
+              height: 6,
+              angle: a * 180 / Math.PI,
+              color: k.rgb(200, 235, 255),
+              outline: { color: k.rgb(80, 140, 200), width: 1 },
+              anchor: "center",
+            });
+          }
+          for (let pi = 0; pi < 5; pi++) {
+            k.drawRect({
+              pos: k.vec2(cr.cx - 10 + pi * 5, cr.cy - 14 - (pi % 2) * 3),
+              width: 3,
+              height: 6 + (pi % 2) * 3,
+              color: k.rgb(255, 215, 60),
+              outline: { color: k.rgb(180, 130, 0), width: 1 },
+            });
+          }
         }
       },
     },
@@ -1453,6 +1496,7 @@ k.scene("game", () => {
   crowdHooks = crowdSystem.setup();
 
   createSkullStand({ k, gameState, audio, showPopup: (...args) => showPopup(...args), registerCoin: (...args) => registerCoin(...args), WIDTH, TILE });
+  createGCSystem({ k, WIDTH, HEIGHT });
 
   hud.setup();
 
