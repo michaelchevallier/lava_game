@@ -24,6 +24,7 @@ import { createSettingsModal } from "./settings-modal.js";
 import { createGroundSystem } from "./ground.js";
 import { createCinematicSystem } from "./cinematic.js";
 import { createQuestSystem } from "./quests.js";
+import { createLoreSystem } from "./lore.js";
 
 const __initialPalette = SEASON_PALETTES[currentSeason()];
 
@@ -418,6 +419,7 @@ k.scene("game", () => {
     }
     showPopup(WIDTH / 2, HEIGHT / 2, `PALIER ${target}!`, k.rgb(255, 230, 80), 40);
     juice.dirShake(0, 1, 10, 0.2);
+    setTimeout(() => lore.show(), 1500);
   }
 
   k.onUpdate("confetti", (p) => {
@@ -1585,4 +1587,6 @@ k.scene("game", () => {
 
   const quests = createQuestSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   window.__quests = quests;
+  const lore = createLoreSystem({ k, save, persistSave, WIDTH, HEIGHT });
+  window.__lore = lore;
 });
