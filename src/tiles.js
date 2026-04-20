@@ -892,5 +892,52 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     return result;
   }
 
-  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes };
+  function detectLavaTriangles() {
+    const result = [];
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "lava") continue;
+      // Pattern ▲ : t est sommet supérieur, 2 lava en bas-gauche et bas-droite
+      const left = tileMap.get(gridKey(t.gridCol, t.gridRow + 1));
+      const right = tileMap.get(gridKey(t.gridCol + 1, t.gridRow + 1));
+      if (left?.tileType === "lava" && right?.tileType === "lava") {
+        const cx = (t.gridCol + 0.5) * TILE;
+        const cy = (t.gridRow + 1) * TILE;
+        result.push({ cx, cy, key: `${t.gridCol},${t.gridRow}-up` });
+        if (result.length >= 2) break;
+      }
+      // Pattern ▽ : t est sommet inférieur centre, 2 lava au-dessus gauche/droite
+      const ul = tileMap.get(gridKey(t.gridCol - 1, t.gridRow - 1));
+      const ur = tileMap.get(gridKey(t.gridCol + 1, t.gridRow - 1));
+      if (ul?.tileType === "lava" && ur?.tileType === "lava") {
+        const cx = t.gridCol * TILE + TILE / 2;
+        const cy = t.gridRow * TILE;
+        result.push({ cx, cy, key: `${t.gridCol},${t.gridRow}-dn` });
+        if (result.length >= 2) break;
+      }
+    }
+    return result;
+  }
+
+  function detectIceCrowns() {
+    const result = [];
+    for (const [, t] of tileMap) {
+      if (t.tileType !== "magnet") continue;
+      const n = tileMap.get(gridKey(t.gridCol, t.gridRow - 1));
+      const s = tileMap.get(gridKey(t.gridCol, t.gridRow + 1));
+      const e = tileMap.get(gridKey(t.gridCol + 1, t.gridRow));
+      const w = tileMap.get(gridKey(t.gridCol - 1, t.gridRow));
+      if (n?.tileType === "ice" && s?.tileType === "ice" && e?.tileType === "ice" && w?.tileType === "ice") {
+        result.push({
+          centerCol: t.gridCol,
+          centerRow: t.gridRow,
+          cx: t.gridCol * TILE + TILE / 2,
+          cy: t.gridRow * TILE + TILE / 2,
+          radius: 5 * TILE,
+        });
+      }
+    }
+    return result;
+  }
+
+  return { placeTile, checkCoinResonance, checkCascade, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes, detectLavaTriangles, detectIceCrowns };
 }

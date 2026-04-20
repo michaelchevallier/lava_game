@@ -152,6 +152,7 @@ const gameState = {
   metronomes: [],
   scoreMultiplier: 1,
   scoreMultiplierUntil: 0,
+  iceCrowns: [],
 };
 
 audio.setMasterVolume(save.volume ?? 0.7);
@@ -239,7 +240,7 @@ k.scene("game", () => {
   const cinematic = createCinematicSystem({ k, audio, WIDTH, HEIGHT });
   cinematic.reset();
 
-  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes } = createTileSystem({
+  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes, detectLavaTriangles, detectIceCrowns } = createTileSystem({
     k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
   });
@@ -257,6 +258,9 @@ k.scene("game", () => {
   gameState.magnetPortals = [];
   k.loop(0.5, () => { gameState.magnetPortals = detectMagnetPortals(); });
   k.loop(0.5, () => { gameState.metronomes = detectMetronomes(); });
+  gameState.lavaTriangles = [];
+  k.loop(0.5, () => { gameState.lavaTriangles = detectLavaTriangles(); });
+  k.loop(0.5, () => { gameState.iceCrowns = detectIceCrowns(); });
 
   k.loop(0.5, () => constellation.check());
 
@@ -362,6 +366,99 @@ k.scene("game", () => {
             text: "👑",
             pos: k.vec2(cx - 12, cy),
             size: 20,
+          });
+        }
+      },
+    },
+  ]);
+
+  k.loop(3, () => {
+    for (const tri of gameState.lavaTriangles) {
+      const visitors = k.get("visitor").filter((v) => !v.isSkeleton);
+      if (visitors.length === 0) continue;
+      let closest = null, bestD = Infinity;
+      for (const v of visitors) {
+        const d = Math.hypot(v.pos.x - tri.cx, v.pos.y - tri.cy);
+        if (d < bestD && d < 200) { bestD = d; closest = v; }
+      }
+      if (!closest) continue;
+      const ghost = k.add([
+        k.circle(6),
+        k.pos(tri.cx, tri.cy),
+        k.color(k.rgb(180, 30, 80)),
+        k.outline(2, k.rgb(60, 0, 0)),
+        k.opacity(0.85),
+        k.z(15),
+        "lava-ghost",
+        { target: closest, speed: 90 },
+      ]);
+      ghost.onUpdate(() => {
+        if (!ghost.target?.exists() || ghost.target.isSkeleton) {
+          k.destroy(ghost);
+          return;
+        }
+        const dx = ghost.target.pos.x - ghost.pos.x;
+        const dy = ghost.target.pos.y - ghost.pos.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 12) {
+          ghost.target.isSkeleton = true;
+          ghost.target.sprite = "skeleton";
+          ghost.target.color.r = 255;
+          ghost.target.color.g = 255;
+          ghost.target.color.b = 255;
+          gameState.skeletons += 1;
+          gameState.score += 50;
+          audio.transform();
+          showPopup(ghost.target.pos.x + 14, ghost.target.pos.y - 30, "OEIL +50", k.rgb(180, 30, 80), 18);
+          for (let i = 0; i < 8; i++) {
+            const a = (Math.PI * 2 * i) / 8;
+            const p = k.add([
+              k.circle(3),
+              k.pos(ghost.target.pos.x + 14, ghost.target.pos.y + 20),
+              k.color(k.rgb(40, 0, 20)),
+              k.opacity(1),
+              k.lifespan(0.5, { fade: 0.3 }),
+              k.z(12),
+              "particle",
+              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
+            ]);
+            p.onUpdate(() => {
+              p.pos.x += p.vx * k.dt();
+              p.pos.y += p.vy * k.dt();
+            });
+          }
+          k.destroy(ghost);
+          return;
+        }
+        ghost.pos.x += (dx / d) * ghost.speed * k.dt();
+        ghost.pos.y += (dy / d) * ghost.speed * k.dt();
+      });
+    }
+  });
+
+  k.add([
+    k.pos(0, 0),
+    k.z(3),
+    {
+      draw() {
+        const t = k.time();
+        for (const tri of gameState.lavaTriangles) {
+          const pulse = 0.5 + Math.sin(t * 4) * 0.5;
+          k.drawCircle({
+            pos: k.vec2(tri.cx, tri.cy),
+            radius: 12 + pulse * 4,
+            color: k.rgb(120, 20, 40),
+            opacity: 0.7 + pulse * 0.2,
+          });
+          k.drawCircle({
+            pos: k.vec2(tri.cx, tri.cy),
+            radius: 4,
+            color: k.rgb(20, 0, 0),
+          });
+          k.drawCircle({
+            pos: k.vec2(tri.cx + 1, tri.cy - 1),
+            radius: 1,
+            color: k.rgb(255, 200, 200),
           });
         }
       },
