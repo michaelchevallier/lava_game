@@ -55,6 +55,45 @@ export function createVisitorSystem({
       if (constellation.applyVisitorSpiralUpdate(v)) return;
       const vSpeed = gameState.bulletTimeUntil > k.time() ? v.walkSpeed * 0.3 : v.walkSpeed;
       v.move(vSpeed, 0);
+      // Hesitation: detect lava ahead (visitors always walk right, dir=+1)
+      if (!v.isSkeleton) {
+        let danger = null;
+        for (let look = 1; look <= 3; look++) {
+          const checkCol = Math.floor((v.pos.x + 14) / TILE) + look;
+          const checkRow = Math.floor((v.pos.y + 42) / TILE);
+          const ahead = tileMap.get(gridKey(checkCol, checkRow));
+          if (ahead && ahead.tileType === "lava") { danger = look; break; }
+        }
+        if (danger !== null) {
+          v._hesitate = danger;
+          if (!v._hesitateState || v._hesitateState.dist > danger) {
+            v._hesitateState = { dist: danger, started: k.time() };
+          }
+        } else {
+          if (v._hesitateState && k.time() - v._hesitateState.started < 1) {
+            const ec = window.__entityCounts;
+            if (!ec || ec.particle < 250) {
+              for (let i = 0; i < 3; i++) {
+                k.add([
+                  k.circle(2 + Math.random()),
+                  k.pos(v.pos.x + 14 + (Math.random() - 0.5) * 8, v.pos.y - 4),
+                  k.color(k.rgb(180, 220, 255)),
+                  k.opacity(0.8),
+                  k.lifespan(0.6, { fade: 0.4 }),
+                  k.z(8),
+                  "particle",
+                  { vx: 0, vy: -25 - Math.random() * 15 },
+                ]);
+              }
+            }
+          }
+          v._hesitate = null;
+          v._hesitateState = null;
+        }
+      } else {
+        v._hesitate = null;
+        v._hesitateState = null;
+      }
       // Skeleton dance: when 3+ skeletons + grounded, sync hop via small jump impulse
       if (v.isSkeleton && gameState.skeletons >= 3 && v.isGrounded()) {
         const phase = (v._dancePhase ??= Math.random() * 0.4);
@@ -92,6 +131,9 @@ export function createVisitorSystem({
       const pRowFeet = Math.floor((v.pos.y + 42) / TILE);
       const tile = tileMap.get(gridKey(pCol, pRowFeet));
       if (tile && tile.tileType === "lava" && !v.isSkeleton) {
+        v._deadCross = k.time() + 0.4;
+        v._hesitate = null;
+        v._hesitateState = null;
         v.isSkeleton = true;
         v.sprite = "skeleton";
         v.color.r = 255; v.color.g = 255; v.color.b = 255;
@@ -175,6 +217,33 @@ export function createVisitorSystem({
     });
     return v;
   }
+
+  k.onDraw(() => {
+    const visitors = k.get("visitor");
+    for (const v of visitors) {
+      if (v._deadCross && v._deadCross > k.time()) {
+        const bobY = Math.sin(k.time() * 8) * 1;
+        k.drawText({
+          text: "X",
+          pos: k.vec2(v.pos.x + 14, v.pos.y - 10 + bobY),
+          size: 18,
+          color: k.rgb(220, 40, 40),
+          anchor: "center",
+        });
+      } else if (v._hesitate !== null && !v.isSkeleton) {
+        const symbol = v._hesitate <= 1 ? "!" : "?";
+        const color = v._hesitate <= 1 ? k.rgb(255, 80, 80) : k.rgb(255, 220, 80);
+        const bobY = Math.sin(k.time() * 6) * 2;
+        k.drawText({
+          text: symbol,
+          pos: k.vec2(v.pos.x + 14, v.pos.y - 10 + bobY),
+          size: 16,
+          color,
+          anchor: "center",
+        });
+      }
+    }
+  });
 
   return { spawn: spawnVisitor };
 }
