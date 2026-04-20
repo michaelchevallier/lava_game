@@ -15,16 +15,19 @@ export function createVisitorSystem({
     const speed = 40 + Math.random() * 40;
     const isVIP = Math.random() < 0.12;
     const tint = VISITOR_TINTS[Math.floor(Math.random() * VISITOR_TINTS.length)];
+    // Diversité visuelle : variations de taille (petit, moyen, grand) et légère largeur
+    const heightVar = 0.88 + Math.random() * 0.22;    // 0.88–1.10 vertical
+    const widthVar = 0.92 + Math.random() * 0.16;     // 0.92–1.08 horizontal
     const v = k.add([
       k.sprite("human"),
       k.pos(-40 + (Math.random() - 0.5) * 30, (GROUND_ROW - 3) * TILE),
       k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd", "player", "skull-target", "skull-part", "ghost", "lava-ghost", "rain-coin", "ground_tile", "tile"] }),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
-      k.scale(1, 1),
+      k.scale(widthVar, heightVar),
       k.z(5),
       "visitor",
-      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint, _vy: 0, _grounded: false },
+      { walkSpeed: speed, isSkeleton: false, isVIP, crown: null, tint, _vy: 0, _grounded: false, visualScale: { w: widthVar, h: heightVar } },
     ]);
     // Manual gravity (no body component → zero physics push between visitors)
     const FEET_OFFSET = 44;
