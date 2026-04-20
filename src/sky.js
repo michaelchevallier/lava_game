@@ -25,7 +25,6 @@ export function createSkySystem({ k, spectres }) {
     k.color(k.rgb(20, 30, 80)),
     k.opacity(0),
     k.z(-12),
-    k.fixed(),
     "night-deco",
   ]);
 

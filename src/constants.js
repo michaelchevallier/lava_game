@@ -80,5 +80,5 @@ export const SEASON_PALETTES = {
   normal:    { lava: [255, 100,  30], sky: [ 92, 148, 252], accent: [255, 220,  60] },
   halloween: { lava: [180,  50, 200], sky: [ 40,  30,  80], accent: [255, 140,  30] },
   christmas: { lava: [220,  60,  40], sky: [180, 200, 230], accent: [255, 250, 250] },
-  carnival:  { lava: [255,  80, 180], sky: [255, 200, 100], accent: [ 80, 220, 200] },
+  carnival:  { lava: [255,  80, 180], sky: [255, 180, 220], accent: [ 80, 220, 200] },
 };

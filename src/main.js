@@ -28,13 +28,11 @@ import { createLoreSystem } from "./lore.js";
 import { createSkySystem } from "./sky.js";
 import { createSkullStand } from "./skull-stand.js";
 
-const __initialPalette = SEASON_PALETTES[currentSeason()];
-
 const k = kaplay({
   canvas: document.getElementById("game"),
   width: WIDTH,
   height: HEIGHT,
-  background: __initialPalette.sky,
+  background: [92, 148, 252],
   global: false,
   pixelDensity: 1,
   letterbox: false,
@@ -652,7 +650,7 @@ k.scene("game", () => {
         k.rect(WIDTH, HEIGHT),
         k.pos(0, 0),
         k.color(k.rgb(seasonPalette.sky[0], seasonPalette.sky[1], seasonPalette.sky[2])),
-        k.opacity(0.18),
+        k.opacity(0.08),
         k.z(-9),
       ]);
     }
