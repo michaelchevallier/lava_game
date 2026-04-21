@@ -909,6 +909,16 @@ export function createWagonSystem({
       if (hasHuman || wagon.inverseTrain) {
         window.__juice?.hitStop(80);
         transformToSkeleton(wagon);
+      } else if (window.__campaign?.getCurrent?.()) {
+        // En campagne : un passage en lave d'un wagon déjà squelette compte aussi
+        // (sinon niveaux "N squelettes" avec wagonLimit < N impossibles)
+        const now = k.time();
+        if (!wagon._lastCampaignLavaCount || now - wagon._lastCampaignLavaCount > 1.0) {
+          wagon._lastCampaignLavaCount = now;
+          window.__campaign.progress("skeleton");
+          showPopup(wagon.pos.x + 30, wagon.pos.y - 20, "+1 💀", k.rgb(255, 120, 40), 18);
+          window.__juice?.dirShake(wagon.vel?.x || 1, 0, 3, 0.12);
+        }
       }
     });
 

@@ -1187,7 +1187,9 @@ k.scene("game", () => {
       }
       return;
     }
-    if (row >= GROUND_ROW) return;
+    // Permettre placement dans le sol creusé (row >= GROUND_ROW mais isDug)
+    const canPlaceHere = row < GROUND_ROW || (row < ROWS && groundSystem.isDug(col, row));
+    if (!canPlaceHere) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
@@ -1237,7 +1239,8 @@ k.scene("game", () => {
       lastPlacedKey = key;
       return;
     }
-    if (row >= GROUND_ROW) return;
+    const canPlaceHere2 = row < GROUND_ROW || (row < ROWS && groundSystem.isDug(col, row));
+    if (!canPlaceHere2) return;
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();

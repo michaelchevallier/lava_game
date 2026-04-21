@@ -374,8 +374,9 @@ export const LEVELS = [
     id: "3-7",
     world: 3,
     title: "Patinoire mortelle",
-    hint: "3 GLACES 🧊 alignées + LAVE 🔥 au bout = les wagons glissent vers leur fin.",
-    layout: "v2:" + railRow(3, 16) + "," + tile(8, 12, "I") + "," + tile(9, 12, "I") + "," + tile(10, 12, "I"),
+    hint: "3 GLACES 🧊 alignées sur le rail = PATINOIRE. Le wagon glisse x1.6 vitesse. Place ta LAVE 🔥 en sortie.",
+    // Glaces remplacent le rail sur cols 8-10 pour que le wagon glisse vraiment
+    layout: "v2:" + railRow(3, 7) + "," + tile(8, 13, "I") + "," + tile(9, 13, "I") + "," + tile(10, 13, "I") + "," + railRow(11, 16),
     playerSpawn: { col: 4, row: 13 },
     allowedTools: ["lava", "erase"],
     tileBudget: 2,
@@ -610,10 +611,10 @@ export const LEVELS = [
   {
     id: "5-6",
     world: 5,
-    title: "Le palais gelé",
-    hint: "Les glaces t'empêchent de contrôler la vitesse. Fais quand même 3 squelettes.",
-    // Patinoire (3 glaces) + rail étendu
-    layout: "v2:" + railRow(3, 16) + "," + tile(8, 12, "I") + "," + tile(9, 12, "I") + "," + tile(10, 12, "I"),
+    title: "Patinoire infernale",
+    hint: "Les 3 GLACES 🧊 en ligne font GLISSER le wagon (x1.6 vitesse). Fais 3 squelettes.",
+    // Glaces AU MILIEU des rails (row 13 = remplacent rails) → wagons glissent dessus
+    layout: "v2:" + railRow(3, 7) + "," + tile(8, 13, "I") + "," + tile(9, 13, "I") + "," + tile(10, 13, "I") + "," + railRow(11, 16),
     playerSpawn: { col: 4, row: 13 },
     allowedTools: ["lava", "boost", "trampoline", "fan", "erase"],
     tileBudget: 4,
