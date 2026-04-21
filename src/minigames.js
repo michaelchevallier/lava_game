@@ -121,7 +121,6 @@ export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
     }
     if (ch.hits >= 3 && k.time() - ch.streakStart < 3) {
       gameState.score += 100;
-      window.__spectres?.unlock(27);
       showPopup(can.pos.x, can.pos.y - 34, "CHAMBOULE ! +100", k.rgb(255, 120, 40), 24);
       audio.combo?.();
       window.__juice?.dirShake?.(0, 1, 10, 0.25);
@@ -268,7 +267,6 @@ export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
         ro.consumed = true;
         ro.spinning = false;
         gameState.score += ro.result.pts;
-        if (ro.result.pts >= 500) window.__spectres?.unlock(28);
         audio.combo?.();
         showPopup(ro.wheel.pos.x, ro.wheel.pos.y - 46, ro.result.label, k.rgb(ro.result.col[0], ro.result.col[1], ro.result.col[2]), 28);
         window.__juice?.dirShake?.(0, 1, 12, 0.25);
@@ -321,7 +319,6 @@ export function createMinigames({ k, tileMap, gameState, audio, showPopup }) {
   function spawnHauntedHouse(col, row, key) {
     const house = { ghosts: [], lastSpawnAt: 0, col, row };
     hauntedHouses.set(key, house);
-    window.__spectres?.unlock(26);
   }
 
   function spawnGhost(house) {

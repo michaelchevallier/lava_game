@@ -154,7 +154,7 @@ export function createConstellationSystem({
           ]);
         }
         showPopup(WIDTH / 2, HEIGHT / 2 - 20, "CONSTELLATION TERMINEE", k.rgb(180, 80, 255), 28);
-        window.__spectres?.unlock(24);
+        window.__spectres?.unlock("constellation");
         gameState.constellationActive = false;
         wagon.parts?.forEach((p) => { if (p.exists()) k.destroy(p); });
         wagon.passengerEntities?.forEach((p) => { if (p.exists()) k.destroy(p); });

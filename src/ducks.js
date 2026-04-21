@@ -230,12 +230,10 @@ export function createDuckSystem({ k, tileMap, gameState, audio, showPopup }) {
       if (duck.gold) {
         showPopup(duck.pos.x + 9, duck.pos.y - 10, "JACKPOT! +200", k.rgb(255, 215, 0), 26);
         window.__juice?.dirShake(0, -1, 4, 0.15);
-        window.__spectres?.unlock(14);
       } else {
         showPopup(duck.pos.x + 9, duck.pos.y - 10, "QUACK! +30", k.rgb(255, 230, 80), 20);
       }
       gameState._ducksCaught = (gameState._ducksCaught || 0) + 1;
-      if (gameState._ducksCaught >= 10) window.__spectres?.unlock(13);
       window.__quests?.onDuck();
       spawnFeathers(duck.pos.x + 9, duck.pos.y + 7);
       if (duck._bill && duck._bill.exists()) k.destroy(duck._bill);

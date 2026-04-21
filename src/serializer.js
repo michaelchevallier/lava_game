@@ -1,24 +1,35 @@
 import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, ROWS, GROUND_ROW } from "./constants.js";
+import { migrateSpectres } from "./spectres.js";
+
+function freshSave() {
+  const s = { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" }, titles: [], playDays: [] };
+  migrateSpectres(s);
+  return s;
+}
 
 export function loadSave() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" } };
+    if (!raw) return freshSave();
     const parsed = JSON.parse(raw);
     if (!parsed.numPlayers) parsed.numPlayers = 2;
     if (parsed.numPlayers > 2) parsed.numPlayers = 2;
-    if (!parsed.spectres) parsed.spectres = 0;
+    if (parsed.spectres == null) parsed.spectres = 0;
     if (!parsed.lastPlayed) parsed.lastPlayed = 0;
     if (parsed.tutorialDone === undefined) parsed.tutorialDone = false;
     if (!parsed.heroes) parsed.heroes = { mario: 0, pika: 0, luigi: 0, toad: 0 };
     if (!parsed.avatars) parsed.avatars = { p1: "mario", p2: "pika" };
     if (!parsed.avatars.p1) parsed.avatars.p1 = "mario";
     if (!parsed.avatars.p2) parsed.avatars.p2 = "pika";
-    if (!parsed.campaign) parsed.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1] };
+    if (!parsed.campaign) parsed.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1], records: {} };
+    if (!parsed.campaign.records) parsed.campaign.records = {};
     if (!parsed.runs) parsed.runs = {};
+    if (!Array.isArray(parsed.titles)) parsed.titles = [];
+    if (!Array.isArray(parsed.playDays)) parsed.playDays = [];
+    migrateSpectres(parsed);
     return parsed;
   } catch (e) {
-    return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" } };
+    return freshSave();
   }
 }
 

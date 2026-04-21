@@ -46,7 +46,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       k.rgb(80, 180, 230),
       18,
     );
-    window.__spectres?.unlock(9);
     const bottomTile = tileMap.get(gridKey(col, r));
     if (bottomTile?.tileType === "lava") {
       placeTile(col, r, "bridge");
@@ -83,6 +82,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     if (!trio) return;
     window.__tiers?.onChain?.();
     window.__campaign?.progress?.("chain");
+    window.__spectres?.unlock?.("gold_chain");
     gameState.comboExpire = k.time() + 4;
     if (gameState.comboCount < 2) gameState.comboCount = 2;
     audio.combo();
@@ -129,7 +129,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     if (type === "erase") return;
 
     gameState.tilesPlacedThisGame = (gameState.tilesPlacedThisGame || 0) + 1;
-    if (gameState.tilesPlacedThisGame >= 50) window.__spectres?.unlock(18);
+    if (gameState.tilesPlacedThisGame >= 50) window.__spectres?.unlock("park_50tiles");
 
     if (type === "lava") {
       const t = k.add([
@@ -342,7 +342,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       tileMap.set(key, t);
       checkCoinResonance(col, row);
     } else if (type === "wheel") {
-      window.__spectres?.unlock(12);
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
       const armLen = 44;
@@ -689,7 +688,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         }
         if (!clear) continue;
         fields.push({ a, b, len: dx });
-        window.__spectres?.unlock(11);
+        window.__spectres?.unlock("magnet_field");
       }
     }
     return fields;

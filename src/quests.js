@@ -77,7 +77,7 @@ export function createQuestSystem({ k, save, persistSave, gameState, audio, show
         save.daily.claimed = true;
         showPopup?.(WIDTH / 2, 100, "JOURNEE COMPLETE !", k.rgb(255, 200, 60), 22);
         if (save.daily.streak >= 6) {
-          window.__spectres?.unlock?.(24);
+          window.__spectres?.unlock?.("streak_7d");
         }
       }
       persistSave(save);
@@ -103,7 +103,7 @@ export function createQuestSystem({ k, save, persistSave, gameState, audio, show
         save.daily.claimed = true;
         showPopup?.(WIDTH / 2, 100, "JOURNEE COMPLETE !", k.rgb(255, 200, 60), 22);
         if (save.daily.streak >= 6) {
-          window.__spectres?.unlock?.(24);
+          window.__spectres?.unlock?.("streak_7d");
         }
       }
       persistSave(save);

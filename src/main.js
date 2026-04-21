@@ -588,13 +588,12 @@ k.scene("game", () => {
     gameState.sessionSkeletons += 1;
     if (gameState.sessionSkeletons === 100) cinematic.play("100souls", "100 AMES");
     persistSave(save);
-    if (save.totalSkeletons >= 100) spectres.unlock(6);
+    if (save.totalSkeletons >= 1) spectres.unlock("first_skel");
+    if (save.totalSkeletons >= 10) spectres.unlock("ten_skel");
+    if (save.totalSkeletons >= 100) spectres.unlock("hundred_skel");
     window.__quests?.onSkeleton(); window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
     window.__campaign?.progress?.("skeleton");
   }
-
-  gameState.onSlowMilestone = () => spectres.unlock(4);
-  gameState.onFastMilestone = () => spectres.unlock(5);
 
   function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
     const now = k.time();
@@ -615,7 +614,6 @@ k.scene("game", () => {
     }
     if (vip) {
       gameState.vipStreak = (gameState.vipStreak || 0) + 1;
-      if (gameState.vipStreak >= 3) spectres.unlock(1);
       audio.combo();
       showPopup(x, y - 30, `VIP +${pts}!`, k.rgb(255, 230, 80), 28);
     } else if (gameState.comboCount >= 2) {
@@ -640,11 +638,11 @@ k.scene("game", () => {
   function triggerApocalypse() {
     window.__tiers?.onApocalypse?.();
     cinematic.play("apocalypse", "APOCALYPSE !");
-    spectres.unlock(8);    window.__quests?.onCombo5();
+    spectres.unlock("apocalypse");
+    window.__quests?.onCombo5();
     window.__campaign?.progress?.("apocalypse");
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
-    if (save.apocalypseCount >= 5) spectres.unlock(7);
     window.__juice?.hitStop(200);
     if (crowdHooks) crowdHooks.onApocalypse();
     audio.combo();
@@ -706,7 +704,10 @@ k.scene("game", () => {
     save.totalCoins = (save.totalCoins || 0) + 1;
     if (gameState.score > save.bestScore) save.bestScore = gameState.score;
     persistSave(save);
-    if (save.totalCoins >= 100) spectres.unlock(17);
+    if (save.totalCoins >= 10) spectres.unlock("coins_10");
+    if (save.totalCoins >= 50) spectres.unlock("coins_50");
+    if (save.totalCoins >= 200) spectres.unlock("coins_200");
+    if (save.totalCoins >= 1000) spectres.unlock("coins_1000");
     window.__quests?.onCoin(); window.__tiers?.onCoin();
     window.__campaign?.progress?.("coin");
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
@@ -931,7 +932,7 @@ k.scene("game", () => {
   _playerConfigs = PLAYER_CONFIGS;
 
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
-  if (isMobile) spectres.unlock(22);
+  if (isMobile) spectres.unlock("mobile");
 
   let raceSystem = null;
   if (cfg.enableRace) {
@@ -969,7 +970,6 @@ k.scene("game", () => {
     tileMap.clear();
   });
   k.onKeyPress("r", () => {
-    if (gameState.score === 0 && save.plays > 0) spectres.unlock(2);
     settingsModal.hide();
     settings.open = false;
     k.go("game");
@@ -1188,7 +1188,7 @@ k.scene("game", () => {
 
   exportActionRef = () => {
     const code = serializeTiles(tileMap, groundSystem.getDugMap());
-    spectres.unlock(23);
+    spectres.unlock("first_save");
     showExportModal(code, (pasted) => { loadParkFromCode(pasted); });
   };
 

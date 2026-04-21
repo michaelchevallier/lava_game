@@ -137,8 +137,7 @@ export function createSkySystem({ k, spectres }) {
     moon.opacity = isNight ? 1 : 0;
     moonCrater.opacity = isNight ? 1 : 0;
     nightTint.opacity = isNight ? 0.35 : 0;
-    if (isNight) spectres?.unlock?.(19);
-    else spectres?.unlock?.(20);
+    if (isNight) spectres?.unlock?.("night_mode");
   }
 
   function setNight(v) {

@@ -64,6 +64,7 @@ export function createRunSystem({
     save.runs[avatar] = save.runs[avatar].slice(0, 5);
     try { persistSave(save); } catch (e) {}
     audio.combo?.();
+    if (record.score >= 3000) window.__spectres?.unlock?.("run_3000");
     onEnd?.({ avatar, record, top: save.runs[avatar] });
   }
 

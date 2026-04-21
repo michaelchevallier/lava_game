@@ -67,7 +67,7 @@ export function showInteractionsModal() {
   <li>🏁 <b style="color:#ffd23f">Course de Wagons (F2)</b> &mdash; mode 2P 3 tours, gagnant +500 pts.</li>
   <li>🎆 <b style="color:#ffa0ff">Feux d'artifice</b> &mdash; à chaque palier : 50 / 100 / 250 / 500 / 1000 pts.</li>
   <li>🏅 <b style="color:#ffe080">Tier system</b> &mdash; objectifs progressifs débloquent les tuiles avancées.</li>
-  <li>📜 <b style="color:#c090f0">Carnet des Spectres</b> &mdash; 25 collectibles à débloquer (cog → Carnet).</li>
+  <li>📜 <b style="color:#c090f0">Carnet des Spectres</b> &mdash; 24 spectres en 6 catégories. Compléter 1 catégorie = 1 titre.</li>
 </ul>
 
 <h3 style="color:#ffb080;margin:18px 0 8px 0;font-size:15px;border-bottom:1px solid #333;padding-bottom:6px">🌦 Événements aléatoires</h3>

@@ -1,6 +1,8 @@
 import { deserializeTiles } from "./serializer.js";
-import { findLevel } from "./levels.js";
+import { findLevel, levelsByWorld } from "./levels.js";
 import { TILE } from "./constants.js";
+
+const LEVELS_BY_WORLD = levelsByWorld();
 
 export function createCampaignSystem({
   k, tileMap, gameState, save, persistSave,
@@ -234,14 +236,26 @@ export function createCampaignSystem({
 
     const avatar = save.avatars?.p1 || "mario";
     const entry = { avatar, time: elapsed, tiles: state.tilesPlaced, date: Date.now() };
-    const list = (save.campaign.records[state.def.id] || []).slice();
-    list.push(entry);
+    const prevList = (save.campaign.records[state.def.id] || []).slice();
+    const list = prevList.concat([entry]);
     list.sort((a, b) => a.time - b.time);
     const top = list.slice(0, 3);
     save.campaign.records[state.def.id] = top;
     state.recordRank = top.findIndex((r) => r === entry) + 1 || 0;
+    if (state.recordRank === 1 && prevList.length > 0 && prevList[0].time > elapsed) {
+      window.__spectres?.unlock?.("beat_record");
+    }
 
     try { persistSave(save); } catch (e) { console.error("persistSave campaign", e); }
+
+    // Spectre hooks : platine, mondes, etc.
+    if (state.platinum && !prev.platinum) window.__spectres?.unlock?.("first_platinum");
+    const platCount = Object.values(save.campaign.levels).filter((l) => l.platinum).length;
+    if (platCount >= 5) window.__spectres?.unlock?.("five_platinum");
+    const worldLvls = LEVELS_BY_WORLD.get(state.def.world) || [];
+    const worldAllDone = worldLvls.every((l) => (save.campaign.levels[l.id]?.stars || 0) >= 1);
+    if (worldAllDone && worldLvls.length > 0) window.__spectres?.unlock?.("world_clear");
+    if (state.def.world >= 6) window.__spectres?.unlock?.("world_all");
   }
 
   function tick(dt = 0.5) {

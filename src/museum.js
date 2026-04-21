@@ -1,6 +1,6 @@
 import { LEVELS, levelsByWorld } from "./levels.js";
 import { AVATARS, getAvatarById } from "./avatars.js";
-import { SPECTRES } from "./spectres.js";
+import { SPECTRE_CATEGORIES, ALL_SPECTRES } from "./spectres.js";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -98,25 +98,48 @@ export function createMuseum({ save }) {
   }
 
   function renderSpectresTab() {
-    const unlockedCount = SPECTRES.filter((s) => ((save.spectres || 0) & (1 << s.id)) !== 0).length;
-    const grid = SPECTRES.map((s) => {
-      const unlocked = ((save.spectres || 0) & (1 << s.id)) !== 0;
-      const bg = unlocked ? "#2a3050" : "#1a1f30";
-      const op = unlocked ? "1" : "0.35";
-      const filt = unlocked ? "" : "filter:blur(3px) grayscale(1);";
+    const total = ALL_SPECTRES.length;
+    let unlockedTotal = 0;
+    for (const s of ALL_SPECTRES) if (save.spectres?.[s.category]?.[s.id]) unlockedTotal++;
+    const titles = save.titles || [];
+    const catsHtml = SPECTRE_CATEGORIES.map((cat) => {
+      const done = cat.spectres.every((s) => !!save.spectres?.[cat.id]?.[s.id]);
+      const items = cat.spectres.map((s) => {
+        const has = !!save.spectres?.[cat.id]?.[s.id];
+        const bg = has ? "#2a3050" : "#1a1f30";
+        const op = has ? "1" : "0.35";
+        const filt = has ? "" : "filter:blur(3px) grayscale(1);";
+        return `
+          <div style="background:${bg};padding:10px 6px;border-radius:6px;text-align:center;border:1px solid ${has ? cat.color : "#444"};opacity:${op}">
+            <div style="font-size:24px;${filt}">${s.emoji}</div>
+            <div style="font-size:10px;color:white;margin-top:3px;font-weight:bold">${has ? s.name : "???"}</div>
+            <div style="font-size:9px;color:#aab;margin-top:1px;line-height:1.3">${has ? "" : s.desc}</div>
+          </div>
+        `;
+      }).join("");
+      const titleBadge = done
+        ? `<span style="margin-left:10px;background:${cat.color};color:#000;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:bold">TITRE: ${cat.title}</span>`
+        : "";
       return `
-        <div style="background:${bg};padding:10px 8px;border-radius:6px;text-align:center;border:1px solid ${unlocked ? "#ffd23f" : "#444"};opacity:${op}">
-          <div style="font-size:26px;${filt}">${s.emoji}</div>
-          <div style="font-size:10px;color:white;margin-top:3px">${unlocked ? s.name : "???"}</div>
-          <div style="font-size:9px;color:#aab;margin-top:1px">${unlocked ? "" : s.desc}</div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;margin-bottom:6px">
+            <span style="font-size:18px;margin-right:8px">${cat.emoji}</span>
+            <span style="color:${cat.color};font-size:13px;font-weight:bold;letter-spacing:1px">${cat.name}</span>
+            ${titleBadge}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${items}</div>
         </div>
       `;
     }).join("");
+    const titlesLine = titles.length === 0
+      ? ""
+      : `<div style="text-align:center;margin-bottom:10px;color:#ffd23f;font-size:12px">Titres débloqués : ${titles.map((t) => `<span style="background:rgba(255,210,63,0.18);padding:2px 8px;border-radius:4px;margin:0 2px">${t}</span>`).join("")}</div>`;
     return `
-      <div style="text-align:center;margin-bottom:14px;color:#b4c8e8;font-size:13px">
-        <span style="color:#c090f0;font-weight:bold">👻 ${unlockedCount} / ${SPECTRES.length}</span> spectres découverts
+      <div style="text-align:center;margin-bottom:12px;color:#b4c8e8;font-size:13px">
+        <span style="color:#c090f0;font-weight:bold">👻 ${unlockedTotal} / ${total}</span> spectres · 6 catégories
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">${grid}</div>
+      ${titlesLine}
+      ${catsHtml}
     `;
   }
 

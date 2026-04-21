@@ -63,7 +63,6 @@ export function createBalloonSystem({ k, gameState, audio, showPopup, WIDTH, GRO
     bal.popped = true;
     gameState.score += 10;
     gameState.balloonsPopped = (gameState.balloonsPopped || 0) + 1;
-    if (gameState.balloonsPopped === 20) window.__spectres?.unlock(25);
     audio.coin?.();
     showPopup(bal.pos.x, bal.pos.y - 15, "+10", k.rgb(255, 220, 80), 16);
     // Extract r,g,b as primitives avant de passer à k.color (qui attend 3 args, pas Color obj)
