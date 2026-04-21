@@ -157,15 +157,16 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
 
   __hudIntervalId = setInterval(() => {
     const now = Date.now();
+    const mode = window.__router?.get()?.mode || "sandbox";
 
-    // Score animé
+    // Score animé — universel
     const targetScore = gameState.score;
     const diff = targetScore - displayScore;
     if (Math.abs(diff) < 1) displayScore = targetScore;
     else displayScore += diff * 0.18;
     if (elScore) elScore.textContent = `SCORE ${Math.round(displayScore)}`;
 
-    // Stats
+    // Stats — universel
     if (now - lastWagonCountUpdate > 250) {
       cachedWagonCount = k ? k.get("wagon").length : 0;
       lastWagonCountUpdate = now;
@@ -174,45 +175,56 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       elStats.textContent = `Wagons ${cachedWagonCount} | Squelettes ${gameState.skeletons} | Pieces ${gameState.coins} | Rates ${gameState.missed || 0}`;
     }
 
-    // Palier — hide quand max atteint (au lieu d'afficher MAX inutilement)
-    const intScore = Math.floor(gameState.score);
-    const nextMile = MILESTONES.find((m) => m > intScore);
+    // Palier MILESTONES — sandbox + run (motivation score). Campagne = caché (objectifs dédiés)
     if (elPalier) {
-      if (nextMile != null) {
-        elPalier.style.display = "";
-        const remain = Math.max(0, nextMile - intScore);
-        elPalier.textContent = `Palier ${nextMile} (-${remain})`;
-        const milestoneIdx = MILESTONES.indexOf(nextMile);
-        const prevMile = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
-        const progress = Math.max(0, Math.min(1, (intScore - prevMile) / (nextMile - prevMile)));
-        if (elPalierBar) {
-          elPalierBar.style.display = "";
-          elPalierBar.style.width = `${Math.round(progress * 100)}%`;
-        }
-      } else {
+      if (mode === "campaign") {
         elPalier.style.display = "none";
         if (elPalierBar) elPalierBar.style.display = "none";
+      } else {
+        const intScore = Math.floor(gameState.score);
+        const nextMile = MILESTONES.find((m) => m > intScore);
+        if (nextMile != null) {
+          elPalier.style.display = "";
+          const remain = Math.max(0, nextMile - intScore);
+          elPalier.textContent = `Palier ${nextMile} (-${remain})`;
+          const milestoneIdx = MILESTONES.indexOf(nextMile);
+          const prevMile = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
+          const progress = Math.max(0, Math.min(1, (intScore - prevMile) / (nextMile - prevMile)));
+          if (elPalierBar) {
+            elPalierBar.style.display = "";
+            elPalierBar.style.width = `${Math.round(progress * 100)}%`;
+          }
+        } else {
+          elPalier.style.display = "none";
+          if (elPalierBar) elPalierBar.style.display = "none";
+        }
       }
     }
 
-    // Record
+    // Record — universel
     if (elRecord) elRecord.textContent = `Record ${save.bestScore}`;
 
-    // Tip rotation toutes les 12s
-    if (now - tipChangedAt > 12000) {
+    // Tip rotation — sandbox uniquement (distraction en campagne/run)
+    if (mode === "sandbox" && now - tipChangedAt > 12000) {
       tipIdx = (tipIdx + 1) % TIPS.length;
       tipChangedAt = now;
       if (elTip) elTip.textContent = TIPS[tipIdx];
+    } else if (mode !== "sandbox" && elTip && elTip.textContent) {
+      elTip.textContent = "";
     }
 
-    // Outil sélectionné
+    // Outil sélectionné — universel
     updateSelectedBtn(getCurrentTool());
 
-    // Tiers objectives + toolbar lock (toutes les 500ms)
-    if (now - lastTierUpdate > 500) {
-      lastTierUpdate = now;
-      updateTierBox();
-      updateToolbarLock();
+    // Tier box : sandbox uniquement (campaign/run ont leurs propres renderers — C.3 / D.2)
+    if (mode === "sandbox") {
+      if (now - lastTierUpdate > 500) {
+        lastTierUpdate = now;
+        updateTierBox();
+        updateToolbarLock();
+      }
+    } else if (elTierBox.style.display !== "none") {
+      elTierBox.style.display = "none";
     }
   }, 100);
 
