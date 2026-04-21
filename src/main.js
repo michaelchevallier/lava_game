@@ -41,6 +41,7 @@ import { createRaceSystem } from "./race.js";
 import { createRouter } from "./router.js";
 import { createCampaignSystem } from "./campaign.js";
 import { showCampaignResult } from "./campaign-result.js";
+import { createCampaignMenu } from "./campaign-menu.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -96,14 +97,33 @@ window.__getStats = () => {
 };
 
 let splashRef = null;
+let campaignMenuRef = null;
+function startLevel(levelId) {
+  router.enter({ mode: "campaign", levelId });
+  try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
+}
+function openCampaignMenu() {
+  campaignMenuRef?.show();
+}
 loadAllSprites(k).then(() => {
   const splash = createSplash({ save, persistSave, settings, onStart: (info) => {
     const mode = info?.mode || "sandbox";
+    if (mode === "campaign") {
+      openCampaignMenu();
+      return;
+    }
     router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars });
     try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
   }});
   splashRef = splash;
   window.__splash = splash;
+  const menu = createCampaignMenu({
+    save,
+    onSelectLevel: (id) => startLevel(id),
+    onBack: () => splash.show(),
+  });
+  campaignMenuRef = menu;
+  window.__campaignMenu = menu;
   const recent = save.lastPlayed && (Date.now() - save.lastPlayed < 120000);
   if (recent) {
     router.enter({ mode: "sandbox", numPlayers: save.numPlayers || 2, avatars: save.avatars });
@@ -1543,8 +1563,7 @@ k.scene("game", () => {
       router.enter({ mode: "menu" });
       const existing = document.getElementById("campaign-result");
       if (existing) existing.remove();
-      // v1 : retour splash (campagne menu arrive en C.7 wrapper)
-      splashRef?.show?.();
+      openCampaignMenu();
     };
     k.loop(0.5, () => campaign.tick(0.5));
     const initialLevel = router.get().levelId || save.campaign?.lastPlayedLevel || "1-1";
