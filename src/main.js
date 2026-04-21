@@ -42,6 +42,8 @@ import { createRouter } from "./router.js";
 import { createCampaignSystem } from "./campaign.js";
 import { showCampaignResult } from "./campaign-result.js";
 import { createCampaignMenu } from "./campaign-menu.js";
+import { createRunSystem, RUN_DURATION } from "./run.js";
+import { showRunResult } from "./run-result.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -110,6 +112,11 @@ loadAllSprites(k).then(() => {
     const mode = info?.mode || "sandbox";
     if (mode === "campaign") {
       openCampaignMenu();
+      return;
+    }
+    if (mode === "run") {
+      router.enter({ mode: "run", numPlayers: 1, avatars: info?.avatars || save.avatars });
+      try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
       return;
     }
     router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars });
@@ -1568,5 +1575,25 @@ k.scene("game", () => {
     k.loop(0.5, () => campaign.tick(0.5));
     const initialLevel = router.get().levelId || save.campaign?.lastPlayedLevel || "1-1";
     k.wait(0.1, () => campaign.loadLevel(initialLevel));
+  }
+
+  if (router.get().mode === "run") {
+    const run = createRunSystem({
+      k, gameState, save, persistSave, audio, spawnWagon,
+      getActiveAvatar: () => save.avatars?.p1 || "mario",
+      onEnd: ({ avatar, record, top }) => {
+        juice.dirShake(0, 1, 8, 0.25);
+        k.wait(0.6, () => {
+          showRunResult({
+            avatar, record, top,
+            onRetry: () => { router.enter({ mode: "run" }); k.go("game"); },
+            onMenu: () => { router.enter({ mode: "menu" }); splashRef?.show?.(); },
+          });
+        });
+      },
+    });
+    window.__run = run;
+    k.loop(0.5, () => run.tick(0.5));
+    k.wait(0.1, () => run.start(RUN_DURATION));
   }
 });

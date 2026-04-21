@@ -173,6 +173,37 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     return `${m}:${String(r).padStart(2, "0")}`;
   }
 
+  // Run HUD : gros timer central au-dessus
+  document.getElementById("run-hud")?.remove();
+  const elRunHud = document.createElement("div");
+  elRunHud.id = "run-hud";
+  elRunHud.style.cssText = [
+    "position:fixed", "top:54px", "left:50%", "transform:translateX(-50%)",
+    "background:rgba(15,20,40,0.92)", "border:3px solid #ff6b1c",
+    "border-radius:10px", "padding:10px 28px", "display:none",
+    "flex-direction:column", "gap:2px", "align-items:center",
+    "font-family:system-ui,sans-serif", "pointer-events:none", "z-index:900",
+    "min-width:200px",
+  ].join(";");
+  document.body.appendChild(elRunHud);
+
+  function updateRunHud() {
+    const run = window.__run;
+    if (!run) { elRunHud.style.display = "none"; return; }
+    const state = run.getState();
+    if (!state) { elRunHud.style.display = "none"; return; }
+    elRunHud.style.display = "flex";
+    const elapsed = k.time() - state.startTime;
+    const left = Math.max(0, state.duration - elapsed);
+    const color = left < 10 ? "#ff4a4a" : (left < 30 ? "#ffd23f" : "#7cdc60");
+    elRunHud.innerHTML = `
+      <div style="color:${color};font-size:32px;font-weight:bold;font-family:monospace;letter-spacing:3px">
+        ${formatTime(left)}
+      </div>
+      <div style="color:#ff6b1c;font-size:11px;letter-spacing:2px">RUN ARCADE</div>
+    `;
+  }
+
   function updateTierBox() {
     const tiers = getTiers?.();
     if (!tiers) { elTierBox.style.display = "none"; return; }
@@ -275,7 +306,7 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     // Outil sélectionné — universel
     updateSelectedBtn(getCurrentTool());
 
-    // Tier box : sandbox uniquement. Campaign a son propre renderer.
+    // Tier box / campaign HUD / run HUD selon mode
     if (mode === "sandbox") {
       if (now - lastTierUpdate > 500) {
         lastTierUpdate = now;
@@ -283,12 +314,19 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
         updateToolbarLock();
       }
       if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
+      if (elRunHud.style.display !== "none") elRunHud.style.display = "none";
     } else if (mode === "campaign") {
       if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
+      if (elRunHud.style.display !== "none") elRunHud.style.display = "none";
       updateCampaignHud();
+    } else if (mode === "run") {
+      if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
+      if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
+      updateRunHud();
     } else {
       if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
       if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
+      if (elRunHud.style.display !== "none") elRunHud.style.display = "none";
     }
   }, 100);
 
