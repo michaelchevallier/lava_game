@@ -231,7 +231,7 @@ export function createConstellationSystem({
     gameState.constellationActive = true;
     gameState.lastConstellationAt = k.time();
     window.__tiers?.onConstellation?.();
-    window.__campaign?.progress?.("constellation");
+    window.__campaign?.progress?.("constellation"); window.__contract?.progress?.("constellation");
 
     const portalX = activePair.pos.x + TILE / 2;
     const portalY = activePair.pos.y + TILE / 2;

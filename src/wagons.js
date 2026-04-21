@@ -246,7 +246,7 @@ export function createWagonSystem({
           audio.combo();
           window.__juice?.dirShake(0, -1, 6, 0.2);
           window.__quests?.onLoop();
-          window.__campaign?.progress?.("loop");
+          window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
           for (const p of (wagon.passengerEntities || [])) {
             if (p.exists()) p.angle = 0;
           }
@@ -516,7 +516,7 @@ export function createWagonSystem({
             wagon.pos.y += Math.sin(wagon.pos.x * 0.05) * 0.5;
             if (!wagon._magnetFieldCdUntil || k.time() > wagon._magnetFieldCdUntil) {
               wagon._magnetFieldCdUntil = k.time() + 1.5;
-              window.__campaign?.progress?.("magnetField");
+              window.__campaign?.progress?.("magnetField"); window.__contract?.progress?.("magnetField");
             }
           }
         }
@@ -699,7 +699,7 @@ export function createWagonSystem({
               if (wagon.vel) wagon.vel.y = -300;
               if (!wagon._geyserCdUntil || k.time() > wagon._geyserCdUntil) {
                 wagon._geyserCdUntil = k.time() + 1;
-                window.__campaign?.progress?.("geyser");
+                window.__campaign?.progress?.("geyser"); window.__contract?.progress?.("geyser");
                 window.__spectres?.unlock?.("geyser_master");
               }
             }
@@ -773,7 +773,7 @@ export function createWagonSystem({
           const fanAbove = tileMap.get(gridKey(wCol, wRow - 1));
           if (fanAbove?.tileType === "fan") {
             catapultWagon(wagon);
-            window.__campaign?.progress?.("catapult");
+            window.__campaign?.progress?.("catapult"); window.__contract?.progress?.("catapult");
           } else {
             wagon.jump?.(850);
             window.__juice?.dirShake(0, -1, 4, 0.12);
@@ -793,7 +793,7 @@ export function createWagonSystem({
             wagon._metroCol = m.col;
           } else if (wRow === m.bottomRow && wagon._metroEntry && k.time() - wagon._metroEntry < 0.8) {
             wagon._metroEntry = null;
-            window.__campaign?.progress?.("metronome");
+            window.__campaign?.progress?.("metronome"); window.__contract?.progress?.("metronome");
             gameState.scoreMultiplier = 2;
             gameState.scoreMultiplierUntil = k.time() + 3;
             for (const w of k.get("wagon")) {
@@ -855,7 +855,7 @@ export function createWagonSystem({
               audio.combo();
               window.__juice?.dirShake(0, -1, 6, 0.15);
               window.__quests?.onLoop();
-              window.__campaign?.progress?.("loop");
+              window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
               if (wagon.loopCount >= 3) {
                 window.__spectres?.unlock("triple_loop");
                 wagon.looping = false;
@@ -937,13 +937,14 @@ export function createWagonSystem({
       if (hasHuman || wagon.inverseTrain) {
         window.__juice?.hitStop(80);
         transformToSkeleton(wagon);
-      } else if (window.__campaign?.getCurrent?.()) {
-        // En campagne : un passage en lave d'un wagon déjà squelette compte aussi
+      } else if (window.__campaign?.getCurrent?.() || window.__contract?.getActive?.()) {
+        // En campagne ou contrat : un passage en lave d'un wagon déjà squelette compte aussi
         // (sinon niveaux "N squelettes" avec wagonLimit < N impossibles)
         const now = k.time();
         if (!wagon._lastCampaignLavaCount || now - wagon._lastCampaignLavaCount > 1.0) {
           wagon._lastCampaignLavaCount = now;
-          window.__campaign.progress("skeleton");
+          window.__campaign?.progress?.("skeleton");
+          window.__contract?.progress?.("skeleton");
           showPopup(wagon.pos.x + 30, wagon.pos.y - 20, "+1 💀", k.rgb(255, 120, 40), 18);
           window.__juice?.dirShake(wagon.vel?.x || 1, 0, 3, 0.12);
         }
@@ -1097,7 +1098,7 @@ export function createWagonSystem({
       const fanAbove = tileMap.get(gridKey(t.gridCol, t.gridRow - 1));
       if (fanAbove && fanAbove.tileType === "fan") {
         catapultWagon(wagon);
-        window.__campaign?.progress?.("catapult");
+        window.__campaign?.progress?.("catapult"); window.__contract?.progress?.("catapult");
         return;
       }
       wagon._tramHits = (wagon._tramHits || []).filter(h => k.time() - h.time < 1.5);

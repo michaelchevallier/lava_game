@@ -81,7 +81,7 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
         }
       }
       window.__tiers?.onRevive?.();
-      window.__campaign?.progress?.("revive");
+      window.__campaign?.progress?.("revive"); window.__contract?.progress?.("revive");
     });
   }
 
@@ -132,6 +132,9 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
       // En campagne : compter humansCount-1 squelettes supplémentaires (registerKill en compte 1)
       if (humansCount > 1 && window.__campaign?.getCurrent?.()) {
         window.__campaign.progress("skeleton", humansCount - 1);
+      }
+      if (humansCount > 1) {
+        window.__contract?.progress?.("skeleton", humansCount - 1);
       }
     }
     if (dark > 0) wagon.darkPassenger = 0;

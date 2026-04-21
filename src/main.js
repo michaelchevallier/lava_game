@@ -8,7 +8,7 @@ import {
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
 import { loadSave, persistSave, serializeTiles, deserializeTiles, showExportModal } from "./serializer.js";
-import { ensureVipToday } from "./contracts.js";
+import { ensureVipToday, createContractRunner } from "./contracts.js";
 import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
@@ -121,7 +121,7 @@ loadAllSprites(k).then(() => {
       try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
       return;
     }
-    router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars });
+    router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars, contractEntry: info?.contractEntry || null });
     try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
   }});
   splashRef = splash;
@@ -246,6 +246,7 @@ const entityState = { count: 0, stamp: 0 };
 
 k.scene("game", () => {
   const cfg = MODE_CONFIG[router.get().mode] || MODE_CONFIG.sandbox;
+  window.__contract = null;
   const tileMap = new Map();
   Object.assign(gameState, {
     skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
@@ -596,7 +597,7 @@ k.scene("game", () => {
     if (save.totalSkeletons >= 10) spectres.unlock("ten_skel");
     if (save.totalSkeletons >= 100) spectres.unlock("hundred_skel");
     window.__quests?.onSkeleton(); window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
-    window.__campaign?.progress?.("skeleton");
+    window.__campaign?.progress?.("skeleton"); window.__contract?.progress?.("skeleton");
   }
 
   function registerKill(x, y, base = 10, vip = false, darkBonus = 0) {
@@ -644,7 +645,7 @@ k.scene("game", () => {
     cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock("apocalypse");
     window.__quests?.onCombo5();
-    window.__campaign?.progress?.("apocalypse");
+    window.__campaign?.progress?.("apocalypse"); window.__contract?.progress?.("apocalypse");
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
     window.__juice?.hitStop(200);
@@ -713,7 +714,7 @@ k.scene("game", () => {
     if (save.totalCoins >= 200) spectres.unlock("coins_200");
     if (save.totalCoins >= 1000) spectres.unlock("coins_1000");
     window.__quests?.onCoin(); window.__tiers?.onCoin();
-    window.__campaign?.progress?.("coin");
+    window.__campaign?.progress?.("coin"); window.__contract?.progress?.("coin");
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
 
     // Coin streak: 5 coins in <2s → +50 bonus + golden flash
@@ -931,7 +932,7 @@ k.scene("game", () => {
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
     exitWagon: (...args) => exitWagon(...args),
-    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); window.__tiers?.onWagonSpawn(); },
+    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); window.__tiers?.onWagonSpawn(); window.__contract?.onWagonSpawned?.(); },
   });
   _playerConfigs = PLAYER_CONFIGS;
 
@@ -988,6 +989,7 @@ k.scene("game", () => {
     if (tutorial) tutorial.notifyWagonSpawned();
     window.__tiers?.onWagonSpawn();
     window.__campaign?.onWagonSpawned?.();
+    window.__contract?.onWagonSpawned?.();
   });
 
   // Respawn player(s) au centre de l'écran (dépanne si tombé hors map)
@@ -1210,6 +1212,26 @@ k.scene("game", () => {
         persistSave(save);
       } catch (e) {}
     });
+
+    const contractEntry = router.get().contractEntry;
+    if (contractEntry) {
+      const contractRunner = createContractRunner({
+        k, save, persistSave,
+        showPopup: (...args) => showPopup(...args),
+        WIDTH, HEIGHT,
+        onHonored: () => {
+          juice.dirShake(0, 1, 10, 0.25);
+          k.wait(1.8, () => { router.enter({ contractEntry: null }); });
+        },
+        onFailed: () => {
+          juice.dirShake(0, -1, 8, 0.2);
+          k.wait(1.2, () => { router.enter({ contractEntry: null }); });
+        },
+      });
+      window.__contract = contractRunner;
+      k.wait(0.4, () => contractRunner.start(contractEntry));
+      k.loop(0.5, () => contractRunner.tick(0.5));
+    }
   }
 
   resetParkRef = () => {
@@ -1250,7 +1272,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
-        window.__campaign?.onTileEvent?.("sol");
+        window.__campaign?.onTileEvent?.("sol"); window.__contract?.onToolPlaced?.("sol");
       }
       return;
     }
@@ -1269,7 +1291,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
-    window.__campaign?.onTileEvent?.(selectedTool);
+    window.__campaign?.onTileEvent?.(selectedTool); window.__contract?.onToolPlaced?.(selectedTool);
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1300,7 +1322,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
-        window.__campaign?.onTileEvent?.("sol");
+        window.__campaign?.onTileEvent?.("sol"); window.__contract?.onToolPlaced?.("sol");
       }
       lastPlacedKey = key;
       return;
@@ -1321,7 +1343,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
-    window.__campaign?.onTileEvent?.(selectedTool);
+    window.__campaign?.onTileEvent?.(selectedTool); window.__contract?.onToolPlaced?.(selectedTool);
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });

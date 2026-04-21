@@ -1,6 +1,8 @@
 import { WIDTH, HEIGHT } from "./constants.js";
 import { AVATARS, getAvatarById, avatarBadgeHtml } from "./avatars.js";
 import { createMuseum } from "./museum.js";
+import { showVipScreen } from "./vip-screen.js";
+import { ensureVipToday } from "./contracts.js";
 
 export function createSplash({ save, persistSave, settings, onStart }) {
   function show() {
@@ -41,6 +43,27 @@ export function createSplash({ save, persistSave, settings, onStart }) {
         const arr = save.runs[p1Id] || [];
         return arr.length ? arr[0].score : 0;
       })();
+
+      const today = ensureVipToday(save, persistSave);
+      const unhonoredVips = (today.vips || []).filter((v) => !v.honored && !v.failed).length;
+      const vipBanner = `
+        <div id="vip-banner" style="
+          margin:0 0 14px 0;max-width:820px;width:calc(100% - 32px);padding:14px 20px;
+          background:linear-gradient(90deg,rgba(255,210,63,0.18) 0%,rgba(255,120,200,0.18) 100%);
+          border:2px solid #ffd23f;border-radius:10px;cursor:pointer;
+          display:flex;align-items:center;justify-content:space-between;gap:14px;
+          transition:transform 0.15s,box-shadow 0.15s;
+          box-shadow:0 4px 14px rgba(255,210,63,0.15);
+          box-sizing:border-box
+        ">
+          <div style="text-align:left">
+            <div style="color:#ffd23f;font-size:12px;letter-spacing:2px;font-weight:bold">AUJOURD'HUI AU PARC</div>
+            <div style="color:#fff;font-size:18px;font-weight:bold;margin-top:2px">${unhonoredVips > 0 ? `${unhonoredVips} VIP t'attend${unhonoredVips > 1 ? "ent" : ""}` : "Tous les contrats du jour sont honorés"}</div>
+            <div style="color:#ffd5f0;font-size:12px;margin-top:2px">🎫 ${save.tickets || 0} tickets · contrats renouvelés à minuit</div>
+          </div>
+          <div style="font-size:36px">📅</div>
+        </div>
+      `;
 
       const modeCards = `
         <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:820px;padding:0 16px">
@@ -136,12 +159,14 @@ export function createSplash({ save, persistSave, settings, onStart }) {
           #splash-play:hover { background:#8fd45a !important; }
           #sandbox-btn:hover { background:rgba(0,0,0,0.7) !important; color:#ffd23f !important; border-color:#ffd23f !important }
           #splash-museum:hover { background:rgba(255,210,63,0.22) !important; color:#fff7c0 !important }
+          #vip-banner:hover { transform:scale(1.02); box-shadow:0 6px 22px rgba(255,210,63,0.3) !important }
           .players-btn:hover { background:rgba(255,210,63,0.25) !important; color:#ffd23f !important; border-color:#ffd23f !important }
           .players-btn.selected { background:#ffd23f !important; color:#000 !important; border-color:#ffd23f !important }
           [data-avatar-id]:hover { transform:scale(1.1) !important; }
         </style>
         <h1 style="color:#ffd23f;font-size:clamp(28px,6vw,52px);margin:0 0 6px 0;text-shadow:3px 3px 0 #000;letter-spacing:2px;text-align:center">FÊTE FORAINE</h1>
         <h2 style="color:#fff;font-size:clamp(16px,3vw,26px);margin:0 0 14px 0;text-shadow:2px 2px 0 #000">EN LAVE</h2>
+        ${vipBanner}
         ${modeCards}
         ${avatarPickerSection}
         ${heroBoard}
@@ -236,6 +261,21 @@ export function createSplash({ save, persistSave, settings, onStart }) {
       splash.querySelector("#splash-museum")?.addEventListener("click", () => {
         const museum = createMuseum({ save });
         museum.show();
+      });
+
+      splash.querySelector("#vip-banner")?.addEventListener("click", () => {
+        showVipScreen({
+          save,
+          persistSave,
+          onBack: () => { splash.remove(); show(); },
+          onPickContract: (entry) => {
+            save.avatars = { ...chosenAvatars };
+            save.numPlayers = chosenPlayers;
+            save.lastPlayed = Date.now();
+            persistSave(save);
+            onStart({ mode: "sandbox", numPlayers: Math.max(1, chosenPlayers), avatars: { ...chosenAvatars }, contractEntry: entry });
+          },
+        });
       });
 
       splash.querySelector("#splash-play").onclick = () => {

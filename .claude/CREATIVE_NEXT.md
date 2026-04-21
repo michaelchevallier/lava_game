@@ -143,9 +143,13 @@ Sprint 3 (VIP contrats) est plus **spectaculaire** mais plus coûteux et risqué
 ## À valider avec le user avant implémentation
 
 1. **OK pour commencer par Sprint 1 + 2** (quick wins + métagame) ? Ou tu préfères attaquer direct Sprint 3 VIP (narratif plus sexy mais plus coûteux) ?
+** Go pour faire dans l'ordre
 2. **Scope final** : 2 sprints / 3 sprints / 5 sprints — où on s'arrête ?
+** on fait tout
 3. **Platine** : garde-t-on le concept "contrainte secrète révélée après 3⭐" ou c'est trop complexe pour Milan 8 ans ?
+** vasy c'est rigolo
 4. **Éditeur** (Sprint 5) : priorité haute (c'est ce qui rend le jeu social) ou basse (on s'en fout pour v1) ?
+** je me rends pas compte de la complexité qui est a évaluer. Ça reste un petit jeu pour le fils de mon pote. on est pas en train de chercher a faire un jeu viral.
 
 ---
 
