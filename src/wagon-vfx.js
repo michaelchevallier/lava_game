@@ -2,13 +2,10 @@ import { WIDTH, HEIGHT, gridKey } from "./constants.js";
 
 export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, registerKill, registerCoin, onSkeletonTransform }) {
   function collectCoin(c) {
+    if (c.collected) return;
     audio.coin();
     const cx = c.pos.x;
     const cy = c.pos.y;
-    if (c.extras) c.extras.forEach((e) => k.destroy(e));
-    const key = gridKey(c.gridCol, c.gridRow);
-    tileMap.delete(key);
-    k.destroy(c);
     gameState.coins += 1;
     registerCoin(cx, cy);
     for (let i = 0; i < 10; i++) {
@@ -21,12 +18,26 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
         k.lifespan(0.5, { fade: 0.3 }),
         k.z(15),
         "particle-grav",
-        {
-          vx: Math.cos(angle) * 120,
-          vy: Math.sin(angle) * 120 - 40,
-          grav: 250,
-        },
+        { vx: Math.cos(angle) * 120, vy: Math.sin(angle) * 120 - 40, grav: 250 },
       ]);
+    }
+
+    const isCampaign = !!window.__campaign?.getCurrent?.();
+    if (isCampaign) {
+      c.collected = true;
+      c.opacity = 0;
+      if (c.extras) c.extras.forEach((e) => { try { e.opacity = 0; } catch (_) {} });
+      k.wait(2.5, () => {
+        if (!c.exists()) return;
+        c.collected = false;
+        c.opacity = 1;
+        if (c.extras) c.extras.forEach((e) => { try { e.opacity = 1; } catch (_) {} });
+      });
+    } else {
+      if (c.extras) c.extras.forEach((e) => k.destroy(e));
+      const key = gridKey(c.gridCol, c.gridRow);
+      tileMap.delete(key);
+      k.destroy(c);
     }
   }
 
