@@ -911,6 +911,50 @@ export function makePortalSpriteUrl(variant = "A") {
 }
 
 // Procedural tunnel sprite 32×32: entrée sombre + yeux rouges.
+// Procedural bomb sprite 32×32: sphère noire avec mèche torsadée + highlights.
+export function makeBombSpriteUrl() {
+  const T = 32;
+  const c = document.createElement("canvas");
+  c.width = T; c.height = T;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  // Corps : sphère noire
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath();
+  ctx.arc(16, 20, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#3c3c3c";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Highlight clair (shine top-left)
+  ctx.fillStyle = "#5a5a5a";
+  ctx.beginPath();
+  ctx.arc(12, 16, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#8a8a8a";
+  ctx.fillRect(11, 15, 2, 2);
+  // Collerette (base de mèche)
+  ctx.fillStyle = "#643c14";
+  ctx.fillRect(13, 8, 6, 3);
+  ctx.strokeStyle = "#2d1a08";
+  ctx.strokeRect(13, 8, 6, 3);
+  // Mèche torsadée
+  ctx.strokeStyle = "#a88040";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(16, 8);
+  ctx.quadraticCurveTo(19, 5, 16, 2);
+  ctx.stroke();
+  // Étincelle en bout de mèche (orange)
+  ctx.fillStyle = "#ff6828";
+  ctx.beginPath();
+  ctx.arc(16, 2, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffd23f";
+  ctx.fillRect(15, 1, 2, 2);
+  return c.toDataURL();
+}
+
 export function makeTunnelSpriteUrl() {
   const T = 32;
   const c = document.createElement("canvas");
@@ -1132,5 +1176,6 @@ export function loadAllSprites(k) {
     k.loadSprite("portal_a_visual", makePortalSpriteUrl("A")),
     k.loadSprite("portal_b_visual", makePortalSpriteUrl("B")),
     k.loadSprite("tunnel_visual", makeTunnelSpriteUrl()),
+    k.loadSprite("bomb_visual", makeBombSpriteUrl()),
   ]);
 }

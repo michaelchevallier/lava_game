@@ -508,6 +508,17 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: type, extras: ties },
       ]);
       tileMap.set(key, t);
+    } else if (type === "bomb") {
+      const t = k.add([
+        k.sprite("bomb_visual"),
+        k.pos(col * TILE, row * TILE),
+        k.area(),
+        k.z(2),
+        "tile",
+        "bomb",
+        { gridCol: col, gridRow: row, tileType: "bomb", extras: [], _fuseCd: 0, exploded: false },
+      ]);
+      tileMap.set(key, t);
     } else if (type === "tunnel") {
       // Tunnel : 1 sprite pré-rendu (avant : base + 2 eyes = 3 entités → maintenant 1)
       const t = k.add([
@@ -544,6 +555,74 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
 
   k.onUpdate("portal", (ring) => {
     ring.angle = (ring.angle || 0) + 120 * k.dt();
+  });
+
+  function explodeBomb(t) {
+    if (!t || t.exploded) return;
+    t.exploded = true;
+    const col = t.gridCol, row = t.gridRow;
+    const cx = col * TILE + TILE / 2;
+    const cy = row * TILE + TILE / 2;
+    audio.transform?.();
+    window.__juice?.dirShake?.(0, 1, 10, 0.25);
+    window.__juice?.hitStop?.(80);
+    showPopup(cx, cy - 30, "BOOM !", k.rgb(255, 120, 40), 24);
+    const pCount = entityCounts.particle || 0;
+    if (pCount < 220) {
+      for (let i = 0; i < 24; i++) {
+        const a = (Math.PI * 2 * i) / 24;
+        const sp = 160 + Math.random() * 140;
+        k.add([
+          k.circle(3 + Math.random() * 2),
+          k.pos(cx, cy),
+          k.color(k.rgb(255, 150 + Math.random() * 80, 40)),
+          k.opacity(1),
+          k.lifespan(0.55, { fade: 0.35 }),
+          k.z(15),
+          "particle-grav",
+          { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60, grav: 400 },
+        ]);
+      }
+    }
+    placeTile(col, row, "lava");
+    const neighbors = [[col - 1, row], [col + 1, row], [col, row - 1], [col, row + 1]];
+    for (const [nc, nr] of neighbors) {
+      if (nr < 0 || nr >= GROUND_ROW) continue;
+      const existing = tileMap.get(gridKey(nc, nr));
+      if (existing?.tileType === "bomb" && !existing.exploded) {
+        const chainT = existing;
+        k.wait(0.15, () => explodeBomb(chainT));
+      } else {
+        placeTile(nc, nr, "lava");
+      }
+    }
+  }
+
+  k.onUpdate("bomb", (t) => {
+    if (t.exploded) return;
+    // AABB wagon / tile (wagon ~60×40, tile 32×32)
+    for (const w of k.get("wagon")) {
+      if (w.pos.x + 60 > t.pos.x && w.pos.x < t.pos.x + TILE &&
+          w.pos.y + 40 > t.pos.y && w.pos.y < t.pos.y + TILE) {
+        explodeBomb(t);
+        return;
+      }
+    }
+    // Fuse ember particle périodique
+    t._fuseCd = (t._fuseCd || 0) - k.dt();
+    if (t._fuseCd <= 0 && (entityCounts.particle || 0) < 180) {
+      t._fuseCd = 0.25 + Math.random() * 0.15;
+      k.add([
+        k.circle(1 + Math.random() * 1.5),
+        k.pos(t.pos.x + 16 + (Math.random() - 0.5) * 3, t.pos.y + 2),
+        k.color(k.rgb(255, 200 + Math.random() * 40, 80)),
+        k.opacity(1),
+        k.lifespan(0.5, { fade: 0.3 }),
+        k.z(12),
+        "particle",
+        { vx: (Math.random() - 0.5) * 15, vy: -30 - Math.random() * 20 },
+      ]);
+    }
   });
 
   k.onUpdate("coin", (t) => {

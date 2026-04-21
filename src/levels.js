@@ -813,6 +813,23 @@ export const LEVELS = [
     timeLimit: 90,
     platinum: { label: "3 visiteurs en 1 seul wagon", check: (r) => r.visitors >= 3 && r.wagons <= 1 },
   },
+  {
+    id: "6-7",
+    world: 6,
+    title: "Champ de mines",
+    hint: "3 BOMBES 💣 pré-placées row 12 explosent au passage du wagon (bombe + 4 voisines → lave). Fais 3 squelettes.",
+    layout: "v2:" + railRow(3, 16) + "," + tile(7, 12, "E") + "," + tile(11, 12, "E") + "," + tile(14, 12, "E"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "erase"],
+    tileBudget: 2,
+    wagonLimit: 4,
+    objectives: [
+      { id: "skel3", type: "skeleton", target: 3, label: "3 squelettes (les bombes font le travail)" },
+    ],
+    stars: { time: { under: 45 }, efficient: { tilesUnder: 1 } },
+    timeLimit: 90,
+    platinum: { label: "5 squelettes sans poser de tuile", check: (r) => r.skeletons >= 5 && r.tiles === 0 },
+  },
 
   // MONDE 7 — Contrats VIP (7-1 à 7-5, 45⭐ pour débloquer)
   {
@@ -836,6 +853,25 @@ export const LEVELS = [
     stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
     timeLimit: 100,
     platinum: { label: "2 VIP sans poser de BOOST", check: (r) => r.visitors >= 2 && !r.tools.includes("boost") },
+  },
+  {
+    id: "7-2",
+    world: 7,
+    title: "Cascade explosive",
+    hint: "6 BOMBES 💣 adjacentes : une explosion déclenche ses voisines en chaîne (+0.15s). Décroche une APOCALYPSE.",
+    layout: "v2:" + railRow(3, 16)
+      + "," + tile(8, 12, "E") + "," + tile(9, 12, "E") + "," + tile(10, 12, "E")
+      + "," + tile(12, 12, "E") + "," + tile(13, 12, "E") + "," + tile(14, 12, "E"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "erase"],
+    tileBudget: 2,
+    wagonLimit: 6,
+    objectives: [
+      { id: "apo1", type: "apocalypse", target: 1, label: "Déclenche 1 APOCALYPSE via cascade" },
+    ],
+    stars: { time: { under: 60 }, efficient: { tilesUnder: 1 } },
+    timeLimit: 100,
+    platinum: { label: "APOCALYPSE sous 30s", check: (r) => r.apocalypses >= 1 && r.time < 30 },
   },
 ];
 

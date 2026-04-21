@@ -10,7 +10,7 @@ const TOOL_ICONS = {
   lava: "🔥", rail: "🛤", erase: "✖", rail_up: "↗", rail_down: "↘",
   water: "💧", coin: "🪙", boost: "⚡", trampoline: "🎪", fan: "🌀",
   portal: "🌀", ice: "🧊", magnet: "🧲", bridge: "🌉", wheel: "🎡",
-  rail_loop: "⭕", sol: "🪨", tunnel: "🏚",
+  rail_loop: "⭕", sol: "🪨", tunnel: "🏚", bomb: "💣",
 };
 
 const TOOL_DESCRIPTIONS = {
@@ -32,6 +32,7 @@ const TOOL_DESCRIPTIONS = {
   rail_loop: "Boucle 360° : le wagon fait un looping complet (+50 pts)",
   sol: "Pose du sol plein. 3 sols verticaux = CHAMBOULE-TOUT",
   tunnel: "Tunnel : transforme les wagons qui passent",
+  bomb: "Bombe 💣 : explose au contact d'un wagon. Lave pour la bombe + 4 voisines",
   erase: "Gomme la tuile cliquée",
 };
 
@@ -623,6 +624,7 @@ export function createHUD({
       ice: k.rgb(200, 235, 255), magnet: k.rgb(220, 80, 60),
       bridge: k.rgb(160, 100, 40), rail_loop: k.rgb(180, 80, 240),
       sol: k.rgb(160, 100, 50), tunnel: k.rgb(120, 60, 180),
+      bomb: k.rgb(60, 60, 60),
     };
     const ghostColor = COLORS[selectedTool] || k.rgb(210, 210, 225);
     const ghostW = selectedTool === "wheel" ? TILE * 3 : (selectedTool === "rail_loop" ? TILE * 2 : TILE);
