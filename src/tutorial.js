@@ -34,7 +34,7 @@ export function createTutorial({ k, save, persistSave, drawTextOutlined }) {
     },
     {
       arrow: () => ({ x: COG_X, y: COG_Y + 30, dir: "up" }),
-      text: "Bravo ! Engrenage en haut-droite pour les options",
+      text: "Bravo ! Engrenage en bas-droite pour les options",
       check: () => false,
       autoCloseAfter: 4,
     },

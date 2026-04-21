@@ -110,7 +110,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
         ${avatarPickerSection}
         ${heroBoard}
         <button id="splash-play" style="margin-top:18px;padding:14px 36px;font-size:20px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:6px;cursor:pointer;box-shadow:0 4px 0 #4a7a25;transition:background 0.15s">JOUER</button>
-        <div style="margin-top:12px;color:#aaa;font-size:12px">Engrenage ⚙ en haut à droite pour changer plus tard</div>
+        <div style="margin-top:12px;color:#aaa;font-size:12px">Engrenage ⚙ en bas à droite pour changer plus tard</div>
       `;
     }
 
