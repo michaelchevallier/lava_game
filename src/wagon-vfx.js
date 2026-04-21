@@ -70,6 +70,7 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
         }
       }
       window.__tiers?.onRevive?.();
+      window.__campaign?.progress?.("revive");
     });
   }
 

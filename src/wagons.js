@@ -825,6 +825,7 @@ export function createWagonSystem({
               audio.combo();
               window.__juice?.dirShake(0, -1, 6, 0.15);
               window.__quests?.onLoop();
+              window.__campaign?.progress?.("loop");
               if (wagon.loopCount >= 3) {
                 window.__spectres?.unlock(16);
                 wagon.looping = false;
@@ -1057,6 +1058,7 @@ export function createWagonSystem({
       const fanAbove = tileMap.get(gridKey(t.gridCol, t.gridRow - 1));
       if (fanAbove && fanAbove.tileType === "fan") {
         catapultWagon(wagon);
+        window.__campaign?.progress?.("catapult");
         return;
       }
       wagon._tramHits = (wagon._tramHits || []).filter(h => k.time() - h.time < 1.5);

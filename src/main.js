@@ -552,6 +552,7 @@ k.scene("game", () => {
     persistSave(save);
     if (save.totalSkeletons >= 100) spectres.unlock(6);
     window.__quests?.onSkeleton(); window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
+    window.__campaign?.progress?.("skeleton");
   }
 
   gameState.onSlowMilestone = () => spectres.unlock(4);
@@ -669,6 +670,7 @@ k.scene("game", () => {
     persistSave(save);
     if (save.totalCoins >= 100) spectres.unlock(17);
     window.__quests?.onCoin(); window.__tiers?.onCoin();
+    window.__campaign?.progress?.("coin");
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
 
     // Coin streak: 5 coins in <2s → +50 bonus + golden flash
@@ -1114,6 +1116,10 @@ k.scene("game", () => {
       showPopup(WIDTH / 2, 80, "VERROUILLE - completez les objectifs du tier", k.rgb(255, 80, 80), 18);
       return;
     }
+    if (window.__campaign && !window.__campaign.isAllowed(selectedTool)) {
+      showPopup(WIDTH / 2, 80, "Outil indisponible dans ce niveau", k.rgb(255, 120, 120), 18);
+      return;
+    }
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
         if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
@@ -1121,6 +1127,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
+        window.__campaign?.onTileEvent?.();
       }
       return;
     }
@@ -1137,6 +1144,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
+    window.__campaign?.onTileEvent?.();
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1156,6 +1164,7 @@ k.scene("game", () => {
     const key = gridKey(col, row);
     if (key === lastPlacedKey) return;
     if (selectedTool !== "erase" && selectedTool !== "sol" && window.__tiers && !window.__tiers.isUnlocked(selectedTool)) return;
+    if (window.__campaign && !window.__campaign.isAllowed(selectedTool)) return;
     if (selectedTool === "sol") {
       if (row >= GROUND_ROW && row < ROWS) {
         if (groundSystem.isDug(col, row)) groundSystem.fillGround(col, row);
@@ -1164,6 +1173,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
+        window.__campaign?.onTileEvent?.();
       }
       lastPlacedKey = key;
       return;
@@ -1183,6 +1193,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
+    window.__campaign?.onTileEvent?.();
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
