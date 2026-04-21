@@ -60,7 +60,45 @@ export function createCampaignSystem({
         } catch (_) {}
       }
     }
+    showLevelIntro(def);
     return current;
+  }
+
+  function showLevelIntro(def) {
+    const existing = document.getElementById("level-intro");
+    if (existing) existing.remove();
+    const el = document.createElement("div");
+    el.id = "level-intro";
+    el.style.cssText = [
+      "position:fixed", "top:50%", "left:50%", "transform:translate(-50%,-50%) scale(0.9)",
+      "background:linear-gradient(180deg,#1e2840 0%,#0f1420 100%)",
+      "border:3px solid #7cc947", "border-radius:14px",
+      "padding:28px 36px", "min-width:340px", "max-width:80vw",
+      "text-align:center", "color:#fff",
+      "font-family:system-ui,sans-serif", "z-index:99000",
+      "box-shadow:0 18px 50px rgba(0,0,0,0.7)",
+      "animation:introIn 0.25s forwards",
+      "pointer-events:none",
+    ].join(";");
+    const objLabels = def.objectives.map((o) => `<div style="color:#7cdc60;font-size:14px;margin:2px 0">▸ ${o.label}</div>`).join("");
+    el.innerHTML = `
+      <style>
+        @keyframes introIn { from { opacity:0; transform:translate(-50%,-50%) scale(0.85) } to { opacity:1; transform:translate(-50%,-50%) scale(1) } }
+        @keyframes introOut { from { opacity:1; transform:translate(-50%,-50%) scale(1) } to { opacity:0; transform:translate(-50%,-50%) scale(0.95) } }
+      </style>
+      <div style="color:#ffd23f;font-size:12px;letter-spacing:2px;margin-bottom:4px">NIVEAU ${def.world}-${def.id.split("-")[1]}</div>
+      <div style="color:#fff;font-size:26px;font-weight:bold;letter-spacing:1px;margin-bottom:12px">${def.title}</div>
+      <div style="color:#c8d8ff;font-size:14px;line-height:1.5;margin:10px 0 14px 0;max-width:440px">${def.hint || ""}</div>
+      <div style="border-top:1px solid rgba(255,210,63,0.25);padding-top:10px;margin-top:10px">${objLabels}</div>
+      ${def.tileBudget > 0 ? `<div style="color:#ffd23f;font-size:12px;margin-top:10px">🧰 Budget : ${def.tileBudget} tuiles max</div>` : ""}
+      ${def.timeLimit > 0 ? `<div style="color:#ffd23f;font-size:12px;margin-top:4px">⏱ Temps : ${def.timeLimit}s max</div>` : ""}
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => {
+      if (!el.parentNode) return;
+      el.style.animation = "introOut 0.35s forwards";
+      setTimeout(() => el.remove(), 400);
+    }, 3500);
   }
 
   function progress(type, amount = 1) {

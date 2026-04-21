@@ -1185,6 +1185,8 @@ k.scene("game", () => {
   k.onMouseDown("left", () => {
     if (settingsModal.isVisible()) return;
     if (selectedTool === "cursor") return;
+    // En campagne : pas de drag-to-paint (préserve le budget tuiles)
+    if (window.__campaign?.getCurrent?.()) return;
     const screenM = k.mousePos();
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);

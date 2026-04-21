@@ -13,6 +13,28 @@ const TOOL_ICONS = {
   rail_loop: "⭕", sol: "🪨", tunnel: "🏚",
 };
 
+const TOOL_DESCRIPTIONS = {
+  cursor: "Mode curseur : clique sur les entités interactives (ballons, canards, roue)",
+  lava: "Transforme un wagon en squelette. Combo x5 en <2.5s = APOCALYPSE",
+  rail: "Pose un rail horizontal. Les wagons roulent dessus",
+  rail_up: "Rail montant diagonale ↗",
+  rail_down: "Rail descendant diagonale ↘",
+  water: "Ressuscite un squelette en vivant. Eau + fan au-dessus = GEYSER",
+  coin: "Ramassée par le wagon = +5 pts. 3 pièces en diagonale = CHAÎNE D'OR",
+  boost: "Accélère le wagon x2.2 pendant 0.6s",
+  trampoline: "Fait rebondir le wagon vers le haut. Trampoline + fan au-dessus = CATAPULTE",
+  fan: "Pousse le wagon vers le haut. Eau au-dessus = GEYSER",
+  portal: "Téléporte le wagon à l'autre portail. Magnet à côté = VORTEX",
+  ice: "Le wagon glisse. 3 glaces alignées = PATINOIRE",
+  magnet: "Attire les wagons. Magnet + portail = VORTEX",
+  bridge: "Pont fragile : casse après 2 passages",
+  wheel: "Grande roue : produit pièces et VIP toutes les 7s",
+  rail_loop: "Boucle 360° : le wagon fait un looping complet (+50 pts)",
+  sol: "Pose du sol plein. 3 sols verticaux = CHAMBOULE-TOUT",
+  tunnel: "Tunnel : transforme les wagons qui passent",
+  erase: "Gomme la tuile cliquée",
+};
+
 // Module-level handle so we can clear previous interval/listeners on scene reset
 let __hudIntervalId = null;
 let __hudCogHandler = null;
@@ -57,7 +79,8 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       const btn = document.createElement("button");
       btn.className = "tb-btn";
       btn.dataset.tool = item.tool;
-      btn.title = item.label + " (" + item.key + ")";
+      const descr = TOOL_DESCRIPTIONS[item.tool] || "";
+      btn.title = `${item.label} (${item.key})${descr ? " — " + descr : ""}`;
       btn.innerHTML = `<span class="tb-key">${item.key}</span><span class="tb-icon">${TOOL_ICONS[item.tool] || "?"}</span><span class="tb-label">${item.label}</span>`;
       btn.addEventListener("click", () => onToolClick(item.tool));
       btn.addEventListener("touchstart", (e) => { e.preventDefault(); onToolClick(item.tool); }, { passive: false });
@@ -159,10 +182,12 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       : state.status === "lost"
         ? `<div style="color:#ff4a4a;font-weight:bold">RATE</div>`
         : "";
+    const hintHtml = def.hint ? `<div style="color:#aad4ff;font-size:11px;font-style:italic;max-width:420px;line-height:1.35">💡 ${def.hint}</div>` : "";
     elCampaignHud.innerHTML = `
       ${title}
       <div style="display:flex;gap:14px;align-items:center">${timerHtml}${budgetHtml}</div>
       <div style="display:flex;flex-direction:column;gap:2px;align-items:center">${objectives}</div>
+      ${hintHtml}
       ${status}
     `;
   }
@@ -229,18 +254,25 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   function updateToolbarLock() {
     if (!elToolbar) return;
     const tiers = getTiers?.();
+    const campaign = window.__campaign;
+    const campaignActive = campaign && campaign.getCurrent?.();
     for (const btn of elToolbar.querySelectorAll(".tb-btn")) {
       const tool = btn.dataset.tool;
-      const locked = tiers && !tiers.isUnlocked(tool);
+      const lockedByTier = tiers && !tiers.isUnlocked(tool);
+      const lockedByCampaign = campaignActive && !campaign.isAllowed(tool);
+      const locked = lockedByTier || lockedByCampaign;
       btn.classList.toggle("tb-locked", locked);
       if (locked) {
-        btn.style.opacity = "0.38";
-        btn.style.filter = "grayscale(0.8)";
-        btn.title = btn.title.replace(" [VERROUILLE]", "") + " [VERROUILLE]";
+        btn.style.opacity = lockedByCampaign ? "0.18" : "0.38";
+        btn.style.filter = "grayscale(0.9)";
+        btn.style.pointerEvents = lockedByCampaign ? "none" : "";
+        btn.title = btn.title.replace(" [INDISPONIBLE]", "").replace(" [VERROUILLE]", "")
+          + (lockedByCampaign ? " [INDISPONIBLE]" : " [VERROUILLE]");
       } else {
         btn.style.opacity = "";
         btn.style.filter = "";
-        btn.title = btn.title.replace(" [VERROUILLE]", "");
+        btn.style.pointerEvents = "";
+        btn.title = btn.title.replace(" [INDISPONIBLE]", "").replace(" [VERROUILLE]", "");
       }
     }
   }
@@ -319,6 +351,10 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
       if (elRunHud.style.display !== "none") elRunHud.style.display = "none";
       updateCampaignHud();
+      if (now - lastTierUpdate > 500) {
+        lastTierUpdate = now;
+        updateToolbarLock();
+      }
     } else if (mode === "run") {
       if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
       if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
