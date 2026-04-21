@@ -112,7 +112,7 @@ export function createTierSystem({ k, save, persistSave, gameState, audio, showP
   rebuildUnlocked();
 
   function isUnlocked(toolName) {
-    if (toolName === "dig") return true;
+    if (toolName === "dig" || toolName === "cursor" || toolName === "erase") return true;
     return unlockedTiles.has(toolName);
   }
 

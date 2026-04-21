@@ -230,7 +230,8 @@ export function createCampaignSystem({
 
   function isAllowed(tool) {
     if (!current) return true;
-    if (tool === "cursor") return true;
+    // Curseur + erase sont TOUJOURS disponibles (outils de navigation/correction)
+    if (tool === "cursor" || tool === "erase") return true;
     return current.def.allowedTools.includes(tool);
   }
 
