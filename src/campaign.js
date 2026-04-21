@@ -205,6 +205,7 @@ export function createCampaignSystem({
       platinum: current.platinum,
       platinumLabel: plat?.label || null,
       alreadyPlatinum,
+      recordRank: current.recordRank || 0,
     });
   }
 
@@ -216,7 +217,8 @@ export function createCampaignSystem({
   }
 
   function recordResult(state) {
-    if (!save.campaign) save.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1] };
+    if (!save.campaign) save.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1], records: {} };
+    if (!save.campaign.records) save.campaign.records = {};
     const prev = save.campaign.levels[state.def.id] || { stars: 0, bestTime: null, bestTiles: null, attempts: 0, platinum: false };
     const elapsed = state.endAt - state.startTime;
     const newEntry = {
@@ -229,6 +231,16 @@ export function createCampaignSystem({
     save.campaign.levels[state.def.id] = newEntry;
     save.campaign.lastPlayedLevel = state.def.id;
     save.campaign.totalStars = Object.values(save.campaign.levels).reduce((s, l) => s + (l.stars || 0), 0);
+
+    const avatar = save.avatars?.p1 || "mario";
+    const entry = { avatar, time: elapsed, tiles: state.tilesPlaced, date: Date.now() };
+    const list = (save.campaign.records[state.def.id] || []).slice();
+    list.push(entry);
+    list.sort((a, b) => a.time - b.time);
+    const top = list.slice(0, 3);
+    save.campaign.records[state.def.id] = top;
+    state.recordRank = top.findIndex((r) => r === entry) + 1 || 0;
+
     try { persistSave(save); } catch (e) { console.error("persistSave campaign", e); }
   }
 

@@ -1,6 +1,6 @@
 import { findLevel, nextLevelId } from "./levels.js";
 
-export function showCampaignResult({ won, stars, time, tiles, levelId, reason, platinum, platinumLabel, alreadyPlatinum, onRetry, onNext, onMenu }) {
+export function showCampaignResult({ won, stars, time, tiles, levelId, reason, platinum, platinumLabel, alreadyPlatinum, recordRank, onRetry, onNext, onMenu }) {
   const existing = document.getElementById("campaign-result");
   if (existing) existing.remove();
   const overlay = document.createElement("div");
@@ -44,6 +44,9 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, reason, p
   })();
   const reasonHtml = won ? "" : `<div style="color:#ffb090;font-size:14px;margin-top:6px">${reasonText}</div>`;
 
+  const recordHtml = (won && recordRank >= 1 && recordRank <= 3)
+    ? `<div style="margin:6px auto 0 auto;color:#ffd23f;font-size:14px;font-weight:bold;letter-spacing:1px;animation:platShine 0.9s ease-out">${recordRank === 1 ? "🥇 NOUVEAU RECORD !" : recordRank === 2 ? "🥈 TOP 2 DU FOYER" : "🥉 TOP 3 DU FOYER"}</div>`
+    : "";
   const platLabel = def?.platinum?.label || platinumLabel || null;
   const platHtml = (() => {
     if (!won || !platLabel) return "";
@@ -95,6 +98,7 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, reason, p
       </div>
       <div style="margin:14px 0 20px 0;min-height:80px">${starsHtml}</div>
       ${reasonHtml}
+      ${recordHtml}
       ${platHtml}
       <div style="display:flex;gap:14px;justify-content:center;font-size:13px;color:#b4c8e8;margin:14px 0 22px 0">
         <span>⏱ ${timeStr}</span>

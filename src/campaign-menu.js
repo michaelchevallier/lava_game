@@ -1,4 +1,14 @@
 import { LEVELS, levelsByWorld } from "./levels.js";
+import { getAvatarById } from "./avatars.js";
+
+const MEDALS = ["🥇", "🥈", "🥉"];
+
+function fmtTime(t) {
+  if (t == null) return "--:--";
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 const WORLD_NAMES = {
   1: "Monde 1 — Premiers pas",
@@ -50,27 +60,40 @@ export function createCampaignMenu({ save, onSelectLevel, onBack }) {
         ? `<span style="color:#ff9090;font-size:12px;margin-left:10px">🔒 ${threshold}⭐ requises</span>`
         : "";
       const levelsHtml = lvls.map((lvl) => {
-        const saved = save.campaign?.levels?.[lvl.id] || { stars: 0 };
+        const saved = save.campaign?.levels?.[lvl.id] || { stars: 0, platinum: false };
         const unlocked = worldUnlocked && isLevelUnlocked(lvl.id);
         const starsStr = unlocked
           ? [1, 2, 3].map((i) => i <= saved.stars ? "⭐" : "☆").join("")
           : "🔒";
-        const border = saved.stars === 3 ? "#ffd23f" : (saved.stars > 0 ? "#7cdc60" : (unlocked ? "#3c4e6e" : "#333"));
+        const border = saved.platinum ? "#b0e0ff" : (saved.stars === 3 ? "#ffd23f" : (saved.stars > 0 ? "#7cdc60" : (unlocked ? "#3c4e6e" : "#333")));
         const opacity = unlocked ? "1" : "0.4";
+        const platBadge = saved.platinum
+          ? `<div title="Platine débloquée" style="position:absolute;top:4px;right:4px;font-size:12px;color:#b0e0ff;text-shadow:0 0 6px #b0e0ff">🏆</div>`
+          : "";
+        const records = (unlocked ? (save.campaign?.records?.[lvl.id] || []) : []).slice(0, 3);
+        const recordsHtml = records.length === 0
+          ? `<div style="color:rgba(180,200,232,0.35);font-size:10px;margin-top:6px;font-style:italic">aucun record</div>`
+          : `<div style="margin-top:6px;color:#b4c8e8;font-size:10px;line-height:1.35">${records.map((r, i) => {
+              const av = getAvatarById(r.avatar);
+              return `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:${av.color}">${MEDALS[i]}</span> <span style="color:#fff;font-weight:bold">${fmtTime(r.time)}</span> <span style="color:#7b92c2">${av.name}</span></div>`;
+            }).join("")}</div>`;
         return `
           <button class="level-card" data-level="${lvl.id}" ${unlocked ? "" : "disabled"} style="
+            position:relative;
             background:rgba(0,0,0,0.5);
             border:2px solid ${border};
             border-radius:10px; padding:12px 10px;
-            min-width:110px; max-width:140px;
+            min-width:130px; max-width:160px;
             cursor:${unlocked ? "pointer" : "not-allowed"};
             opacity:${opacity};
             text-align:center; color:#fff; font-family:inherit;
             transition:transform 0.12s, box-shadow 0.12s;
           ">
+            ${platBadge}
             <div style="color:#ffd23f;font-size:11px;font-weight:bold;letter-spacing:1px">${lvl.id}</div>
             <div style="color:#b4c8e8;font-size:13px;font-weight:bold;margin:4px 0;min-height:36px;display:flex;align-items:center;justify-content:center">${lvl.title}</div>
             <div style="font-size:18px;letter-spacing:2px">${starsStr}</div>
+            ${recordsHtml}
           </button>
         `;
       }).join("");

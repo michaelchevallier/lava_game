@@ -1602,6 +1602,7 @@ k.scene("game", () => {
             won: true, stars: r.stars, time: r.time, tiles: r.tiles, levelId: r.levelId,
             platinum: r.platinum, platinumLabel: r.platinumLabel,
             alreadyPlatinum: r.alreadyPlatinum && r.platinum,
+            recordRank: r.recordRank,
             onRetry: () => campaignHandlers.reload(r.levelId),
             onNext: (nextId) => campaignHandlers.go(nextId),
             onMenu: () => campaignHandlers.toMenu(),
