@@ -2,7 +2,7 @@ import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, ROWS, GROUND_ROW } from "./con
 import { migrateSpectres } from "./spectres.js";
 
 function freshSave() {
-  const s = { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" }, titles: [], playDays: [], sandboxLayout: null };
+  const s = { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" }, titles: [], playDays: [], sandboxLayout: null, tickets: 0, almanac: [], vipToday: null, vipHistory: {}, ownedSkins: [], activeSkin: null };
   migrateSpectres(s);
   return s;
 }
@@ -27,6 +27,12 @@ export function loadSave() {
     if (!Array.isArray(parsed.titles)) parsed.titles = [];
     if (!Array.isArray(parsed.playDays)) parsed.playDays = [];
     if (parsed.sandboxLayout === undefined) parsed.sandboxLayout = null;
+    if (typeof parsed.tickets !== "number") parsed.tickets = 0;
+    if (!Array.isArray(parsed.almanac)) parsed.almanac = [];
+    if (parsed.vipToday === undefined) parsed.vipToday = null;
+    if (!parsed.vipHistory || typeof parsed.vipHistory !== "object") parsed.vipHistory = {};
+    if (!Array.isArray(parsed.ownedSkins)) parsed.ownedSkins = [];
+    if (parsed.activeSkin === undefined) parsed.activeSkin = null;
     migrateSpectres(parsed);
     return parsed;
   } catch (e) {

@@ -8,6 +8,7 @@ import {
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
 import { loadSave, persistSave, serializeTiles, deserializeTiles, showExportModal } from "./serializer.js";
+import { ensureVipToday } from "./contracts.js";
 import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
@@ -175,6 +176,7 @@ if (isMobile) {
 }
 
 const save = loadSave();
+ensureVipToday(save, persistSave);
 const settings = {
   open: false,
   numPlayers: save.numPlayers || 2,
