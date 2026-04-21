@@ -1,5 +1,6 @@
 import { WIDTH, HEIGHT } from "./constants.js";
 import { AVATARS, getAvatarById, avatarBadgeHtml } from "./avatars.js";
+import { createMuseum } from "./museum.js";
 
 export function createSplash({ save, persistSave, settings, onStart }) {
   function show() {
@@ -134,6 +135,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
           .mode-card.selected { background:rgba(255,210,63,0.22) !important; transform:scale(1.06); box-shadow:0 0 20px rgba(255,210,63,0.35) }
           #splash-play:hover { background:#8fd45a !important; }
           #sandbox-btn:hover { background:rgba(0,0,0,0.7) !important; color:#ffd23f !important; border-color:#ffd23f !important }
+          #splash-museum:hover { background:rgba(255,210,63,0.22) !important; color:#fff7c0 !important }
           .players-btn:hover { background:rgba(255,210,63,0.25) !important; color:#ffd23f !important; border-color:#ffd23f !important }
           .players-btn.selected { background:#ffd23f !important; color:#000 !important; border-color:#ffd23f !important }
           [data-avatar-id]:hover { transform:scale(1.1) !important; }
@@ -145,6 +147,14 @@ export function createSplash({ save, persistSave, settings, onStart }) {
         ${heroBoard}
         <button id="splash-play" style="margin-top:18px;padding:14px 36px;font-size:20px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:6px;cursor:pointer;box-shadow:0 4px 0 #4a7a25;transition:background 0.15s">JOUER</button>
         ${sandboxRow}
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+          <button id="splash-museum" style="
+            padding:8px 18px;font-size:13px;font-weight:bold;
+            background:rgba(0,0,0,0.45);color:#ffd23f;
+            border:1.5px solid #ffd23f;border-radius:6px;cursor:pointer;
+            transition:background 0.12s,color 0.12s
+          ">🏆 Musée</button>
+        </div>
         <div style="margin-top:10px;color:#aaa;font-size:12px">Engrenage ⚙ en bas à droite pour changer plus tard</div>
       `;
     }
@@ -221,6 +231,11 @@ export function createSplash({ save, persistSave, settings, onStart }) {
             badge.style.background = sel ? av.color : av.color + "cc";
           });
         });
+      });
+
+      splash.querySelector("#splash-museum")?.addEventListener("click", () => {
+        const museum = createMuseum({ save });
+        museum.show();
       });
 
       splash.querySelector("#splash-play").onclick = () => {
