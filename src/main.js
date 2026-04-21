@@ -1018,9 +1018,13 @@ k.scene("game", () => {
       },
     },
   ]);
-  k.onKeyPress(["p", "escape"], () => {
+  k.onKeyPress("p", () => {
     const root = k.getTreeRoot();
     root.paused = !root.paused;
+  });
+  k.onKeyPress("escape", () => {
+    if (settingsModal.isVisible()) { settings.open = false; settingsModal.hide(); }
+    else { settings.open = true; settingsModal.show(); }
   });
 
   function buildDemoCircuit() {

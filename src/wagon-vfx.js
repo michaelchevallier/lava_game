@@ -129,6 +129,10 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
       if (wagon.isGolden) base *= 2;
       base *= humansCount;
       registerKill(wagon.pos.x + 30, wagon.pos.y, base, wagon.ghostTrain || wagon.isGolden, dark);
+      // En campagne : compter humansCount-1 squelettes supplémentaires (registerKill en compte 1)
+      if (humansCount > 1 && window.__campaign?.getCurrent?.()) {
+        window.__campaign.progress("skeleton", humansCount - 1);
+      }
     }
     if (dark > 0) wagon.darkPassenger = 0;
     if (wagon.ghostTrain) {
