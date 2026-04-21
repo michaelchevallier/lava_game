@@ -203,7 +203,6 @@ const settingsModal = createSettingsModal({
   onAction: (name, payload) => {
     if (name === "changeNumPlayers") {
       audio.combo?.();
-      if (payload === 4) spectresRef?.unlock?.(21);
       k.go("game");
     }
     if (name === "home") {
@@ -958,7 +957,7 @@ k.scene("game", () => {
   k.onKeyPress("9", () => (selectedTool = "trampoline"));
   k.onKeyPress("0", () => (selectedTool = "fan"));
   // Touches outils — éviter conflits avec touches joueurs :
-  // (Pika L=right, Toad G=board, Mario A=left, Mario E=board)
+  // (Mario A/Q=left, Mario E=board, Pika L=right, Pika O=board)
   k.onKeyPress("y", () => (selectedTool = "wheel"));
   k.onKeyPress("k", () => (selectedTool = "sol"));
   // L retiré (conflit Pika right), B retiré (conflit éventuel) — utiliser la toolbar HTML

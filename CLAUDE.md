@@ -41,7 +41,7 @@ public/
 - **`[...]` ou `\`** dans `drawText` = parse error styled tags → utiliser `(...)` et éviter backslash
 - **`k.fixed()`** sur overlay fullscreen = WebGL feedback loop → ne pas faire
 - **`const WAGON_THEMES`** dans scene callback = TDZ si lu par fonction appelée tôt → mettre au module level
-- **Touches D et T** = conflit Mario right + Toad jump → INTERDITES comme shortcuts globaux
+- **Touches D et L** = conflit Mario right + Pika right → INTERDITES comme shortcuts globaux
 - **`letterbox: true`** + viewport != ratio jeu = canvas redimensionné au viewport, perf killer
 - **160 static bodies** (ground tiles individuels) = collision O(N×M) à 60fps = 4 FPS. **TOUJOURS** un seul gros collider invisible pour le sol, visuels séparés
 - **`k.get("*")`** = full scene tree iteration, à utiliser parcimonieusement (pas par frame)
@@ -136,7 +136,7 @@ requestAnimationFrame(tick);
 
 ## Done (référence)
 
-- ✅ 4 joueurs sur 1 clavier (Mario QSDE, Pika JLI O, Luigi flèches Enter, Toad FHTG)
+- ✅ 1-2 joueurs sur 1 clavier (Mario QSDE/AZ/Space/E, Pika JLI/O). Luigi/Toad dispos comme avatars via picker.
 - ✅ Mobile touch controls (4 boutons overlay, ?mobile=1 override)
 - ✅ Tiles : lava, water, rail, rail_up/down, coin, boost, trampoline, fan, portal, ice, magnet, bridge, erase
 - ✅ Mécaniques émergentes : auto-tamponneuses, Dette Fantôme, Chaîne d'Or 3 pièces diag, vapeur eau+lave, Téléport Magnétique, Pluie d'Or

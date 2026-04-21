@@ -137,7 +137,7 @@ export const MODE_CONFIG = {
     enableInverseTrain: true,
     enableTutorial: true,
     lockToolbar: false,
-    numPlayers: 4,
+    numPlayers: 2,
     wagonAutoSpawn: false,
   },
 };

@@ -25,22 +25,6 @@ export function createPlayerSystem({
       sizeMult: 1.3,
       hitbox: [8, 6, 24, 54],
     },
-    {
-      x: 280,
-      sprite: "luigi",
-      skelSprite: "luigi_skel",
-      name: "Luigi",
-      color: k.rgb(124, 201, 71),
-      keys: { left: "left", right: "right", jump: "up", board: "enter" },
-    },
-    {
-      x: 380,
-      sprite: "toad",
-      skelSprite: "toad_skel",
-      name: "Toad",
-      color: k.rgb(255, 76, 109),
-      keys: { left: "f", right: "h", jump: "t", board: "g" },
-    },
   ];
 
   function getEntityTile(e, footY = 42) {

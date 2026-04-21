@@ -3,9 +3,9 @@ import { AVATARS, getAvatarById, avatarBadgeHtml } from "./avatars.js";
 export function createSettingsModal({ save, persistSave, settings, audio, gameState, onAction }) {
   let modal = null;
 
-  const CHAR_COLORS = ["#e74c4c", "#f1c40f", "#2ecc71", "#e91e8c"];
-  const CHAR_NAMES = ["Mario", "Pika", "Luigi", "Toad"];
-  const CHAR_ICONS = ["M", "P", "L", "T"];
+  const CHAR_COLORS = ["#e74c4c", "#f1c40f"];
+  const CHAR_NAMES = ["Mario", "Pika"];
+  const CHAR_ICONS = ["M", "P"];
 
   function buildModal() {
     modal = document.createElement("div");
