@@ -598,13 +598,14 @@ export const LEVELS = [
     id: "5-5",
     world: 5,
     title: "Le plongeur",
-    hint: "Le wagon doit passer PAR-DESSUS la lave sans se transformer. Puis collecter 5 pièces.",
+    hint: "Le wagon doit SAUTER PAR-DESSUS la lave SANS SE TRANSFORMER. Si un wagon devient squelette : c'est perdu !",
     // Lave pré-placée large, pièces au sol après
     layout: "v2:" + railRow(3, 7) + "," + tile(8, 13, "L") + "," + tile(9, 13, "L") + "," + tile(10, 13, "L") + "," + railRow(11, 16) + "," + tile(12, 13, "C") + "," + tile(13, 13, "C") + "," + tile(14, 13, "C") + "," + tile(15, 13, "C") + "," + tile(16, 13, "C"),
     playerSpawn: { col: 4, row: 13 },
     allowedTools: ["trampoline", "fan", "boost", "erase"],
     tileBudget: 4,
     wagonLimit: 3,
+    failOn: { skeleton: 1 },
     objectives: [
       { id: "coin5", type: "coin", target: 5, label: "5 pièces de l'autre côté" },
     ],

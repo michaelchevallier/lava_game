@@ -1,6 +1,6 @@
 import { findLevel, nextLevelId } from "./levels.js";
 
-export function showCampaignResult({ won, stars, time, tiles, levelId, onRetry, onNext, onMenu }) {
+export function showCampaignResult({ won, stars, time, tiles, levelId, reason, onRetry, onNext, onMenu }) {
   const existing = document.getElementById("campaign-result");
   if (existing) existing.remove();
   const overlay = document.createElement("div");
@@ -32,9 +32,17 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, onRetry, 
       }).join("")
     : `<div style="font-size:54px;color:#ff4a4a">☒</div>`;
 
-  const reason = won ? "" : `<div style="color:#ffb090;font-size:14px;margin-top:6px">
-    ${time >= (def?.timeLimit || Infinity) ? "Temps écoulé" : "Budget dépassé"}
-  </div>`;
+  const reasonText = (() => {
+    if (won) return "";
+    if (reason === "time") return "Temps écoulé";
+    if (reason === "budget") return "Budget de tuiles dépassé";
+    if (reason === "wagons") return "Plus de wagons disponibles";
+    if (reason === "forbid_skeleton") return "Un wagon s'est transformé !";
+    if (reason === "forbid_coin") return "Pièce collectée interdite";
+    if (time >= (def?.timeLimit || Infinity)) return "Temps écoulé";
+    return "Objectif non atteint";
+  })();
+  const reasonHtml = won ? "" : `<div style="color:#ffb090;font-size:14px;margin-top:6px">${reasonText}</div>`;
 
   overlay.innerHTML = `
     <style>
@@ -55,7 +63,7 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, onRetry, 
         ${won ? "BRAVO !" : "RATE"}
       </div>
       <div style="margin:14px 0 20px 0;min-height:80px">${starsHtml}</div>
-      ${reason}
+      ${reasonHtml}
       <div style="display:flex;gap:14px;justify-content:center;font-size:13px;color:#b4c8e8;margin:10px 0 22px 0">
         <span>⏱ ${timeStr}</span>
         <span>🧰 ${tiles} tuiles</span>

@@ -109,6 +109,18 @@ export function createCampaignSystem({
 
   function progress(type, amount = 1) {
     if (!current || current.status !== "playing") return;
+    // Fail early si type interdit dans failOn
+    const failOn = current.def.failOn || {};
+    if (failOn[type] != null) {
+      current.failOnCount = current.failOnCount || {};
+      current.failOnCount[type] = (current.failOnCount[type] || 0) + amount;
+      if (current.failOnCount[type] >= failOn[type]) {
+        current.status = "lost";
+        current.endAt = k.time();
+        onLose?.({ levelId: current.def.id, reason: "forbid_" + type });
+        return;
+      }
+    }
     const matching = current.def.objectives.filter((o) => o.type === type);
     if (matching.length === 0) return;
     for (const o of matching) {

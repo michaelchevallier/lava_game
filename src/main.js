@@ -44,6 +44,7 @@ import { showCampaignResult } from "./campaign-result.js";
 import { createCampaignMenu } from "./campaign-menu.js";
 import { createRunSystem, RUN_DURATION } from "./run.js";
 import { showRunResult } from "./run-result.js";
+import { showPauseMenu, hidePauseMenu } from "./pause-menu.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1023,6 +1024,46 @@ k.scene("game", () => {
     root.paused = !root.paused;
   });
   k.onKeyPress("escape", () => {
+    if (document.getElementById("pause-menu")) { hidePauseMenu(); k.getTreeRoot().paused = false; return; }
+    if (settingsModal.isVisible()) { settings.open = false; settingsModal.hide(); return; }
+    const mode = router.get().mode;
+    if (mode === "campaign" || mode === "run") {
+      k.getTreeRoot().paused = true;
+      showPauseMenu({
+        mode,
+        levelId: mode === "campaign" ? (window.__campaign?.getCurrent?.()?.def.id) : null,
+        onResume: () => { k.getTreeRoot().paused = false; },
+        onRetry: () => {
+          k.getTreeRoot().paused = false;
+          if (mode === "campaign") {
+            const id = window.__campaign?.getCurrent?.()?.def.id;
+            if (id) { router.enter({ mode: "campaign", levelId: id }); k.go("game"); }
+          } else if (mode === "run") {
+            router.enter({ mode: "run" });
+            k.go("game");
+          }
+        },
+        onCampaignMenu: () => {
+          k.getTreeRoot().paused = false;
+          router.enter({ mode: "menu" });
+          document.getElementById("campaign-result")?.remove();
+          openCampaignMenu();
+        },
+        onMainMenu: () => {
+          k.getTreeRoot().paused = false;
+          router.enter({ mode: "menu" });
+          document.getElementById("campaign-result")?.remove();
+          document.getElementById("run-result")?.remove();
+          splashRef?.show?.();
+        },
+        onSettings: () => {
+          settings.open = true;
+          settingsModal.show();
+        },
+      });
+      return;
+    }
+    // Sandbox : Escape = settings modal comme avant
     if (settingsModal.isVisible()) { settings.open = false; settingsModal.hide(); }
     else { settings.open = true; settingsModal.show(); }
   });
@@ -1575,6 +1616,7 @@ k.scene("game", () => {
             time: state ? (state.endAt - state.startTime) : 0,
             tiles: state ? state.tilesPlaced : 0,
             levelId: r.levelId,
+            reason: r.reason,
             onRetry: () => campaignHandlers.reload(r.levelId),
             onNext: null,
             onMenu: () => campaignHandlers.toMenu(),
