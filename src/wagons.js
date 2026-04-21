@@ -515,6 +515,10 @@ export function createWagonSystem({
           const fieldY = f.a.gridRow * TILE + TILE / 2;
           if (wagon.pos.x + 30 > minX && wagon.pos.x + 30 < maxX && Math.abs(wagon.pos.y + 30 - fieldY) < 60) {
             wagon.pos.y += Math.sin(wagon.pos.x * 0.05) * 0.5;
+            if (!wagon._magnetFieldCdUntil || k.time() > wagon._magnetFieldCdUntil) {
+              wagon._magnetFieldCdUntil = k.time() + 1.5;
+              window.__campaign?.progress?.("magnetField");
+            }
           }
         }
       }
@@ -694,6 +698,10 @@ export function createWagonSystem({
             const wRow = Math.floor((wagon.pos.y + 15) / TILE);
             if (wRow >= g.fanRow - 3 && wRow <= g.row) {
               if (wagon.vel) wagon.vel.y = -300;
+              if (!wagon._geyserCdUntil || k.time() > wagon._geyserCdUntil) {
+                wagon._geyserCdUntil = k.time() + 1;
+                window.__campaign?.progress?.("geyser");
+              }
             }
           }
         }
@@ -785,6 +793,7 @@ export function createWagonSystem({
             wagon._metroCol = m.col;
           } else if (wRow === m.bottomRow && wagon._metroEntry && k.time() - wagon._metroEntry < 0.8) {
             wagon._metroEntry = null;
+            window.__campaign?.progress?.("metronome");
             gameState.scoreMultiplier = 2;
             gameState.scoreMultiplierUntil = k.time() + 3;
             for (const w of k.get("wagon")) {

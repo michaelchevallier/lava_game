@@ -9,6 +9,8 @@ export const OBJECTIVE_TYPES = {
   constellation: { hookName: "onConstellation" },
   apocalypse: { hookName: "onApocalypse" },
   geyser: { hookName: "onGeyser" },
+  metronome: { hookName: "onMetronome" },
+  magnetField: { hookName: "onMagnetField" },
   score: { hookName: "onScore" },
   portalUse: { hookName: "onPortalUse" },
 };
