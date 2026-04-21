@@ -1030,12 +1030,13 @@ export function createWagonSystem({
       if (wagon.isSpectral) return;
       if (!p.pair || k.time() < p.cooldownUntil) return;
       const savedVelX = wagon.vel ? wagon.vel.x : 0;
-      const savedVelY = wagon.vel ? wagon.vel.y : 0;
       wagon.pos.x = p.pair.pos.x - 30;
-      wagon.pos.y = p.pair.pos.y - 30;
+      // Clamp Y : wagon ne doit jamais être embed dans le sol (physics eject violent)
+      const safeY = Math.min(p.pair.pos.y - 30, (GROUND_ROW - 1) * TILE - 30);
+      wagon.pos.y = safeY;
       if (wagon.vel) {
         wagon.vel.x = savedVelX;
-        wagon.vel.y = savedVelY;
+        wagon.vel.y = 0; // reset vertical : évite la catapulte incontrôlée si vel.y hérité
       }
       p.cooldownUntil = k.time() + 0.5;
       p.pair.cooldownUntil = k.time() + 0.5;
