@@ -40,6 +40,7 @@ import { createCelebrationSystem } from "./celebration.js";
 import { createRaceSystem } from "./race.js";
 import { createRouter } from "./router.js";
 import { createCampaignSystem } from "./campaign.js";
+import { showCampaignResult } from "./campaign-result.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -94,12 +95,15 @@ window.__getStats = () => {
   return out;
 };
 
+let splashRef = null;
 loadAllSprites(k).then(() => {
   const splash = createSplash({ save, persistSave, settings, onStart: (info) => {
     const mode = info?.mode || "sandbox";
     router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars });
     try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
   }});
+  splashRef = splash;
+  window.__splash = splash;
   const recent = save.lastPlayed && (Date.now() - save.lastPlayed < 120000);
   if (recent) {
     router.enter({ mode: "sandbox", numPlayers: save.numPlayers || 2, avatars: save.avatars });
@@ -1488,19 +1492,60 @@ k.scene("game", () => {
   if (cfg.enableMinigames) window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
 
   if (router.get().mode === "campaign") {
+    const campaignHandlers = {
+      reload: null,
+      go: null,
+      toMenu: null,
+    };
     const campaign = createCampaignSystem({
       k, tileMap, gameState, save, persistSave,
       placeTile, groundSystem, spawnWagon,
       showPopup: (...args) => showPopup(...args),
       onWin: (r) => {
-        showPopup(WIDTH / 2, 100, `BRAVO ! ${"⭐".repeat(r.stars)}`, k.rgb(124, 201, 71), 40);
         audio.combo?.();
+        juice.dirShake(0, 1, 10, 0.25);
+        k.wait(0.8, () => {
+          showCampaignResult({
+            won: true, stars: r.stars, time: r.time, tiles: r.tiles, levelId: r.levelId,
+            onRetry: () => campaignHandlers.reload(r.levelId),
+            onNext: (nextId) => campaignHandlers.go(nextId),
+            onMenu: () => campaignHandlers.toMenu(),
+          });
+        });
       },
       onLose: (r) => {
-        showPopup(WIDTH / 2, 100, `RATE : ${r.reason === "time" ? "Temps écoulé" : "Budget dépassé"}`, k.rgb(255, 80, 80), 32);
+        juice.dirShake(0, -1, 10, 0.25);
+        k.wait(0.5, () => {
+          const state = campaign.getCurrent();
+          showCampaignResult({
+            won: false, stars: 0,
+            time: state ? (state.endAt - state.startTime) : 0,
+            tiles: state ? state.tilesPlaced : 0,
+            levelId: r.levelId,
+            onRetry: () => campaignHandlers.reload(r.levelId),
+            onNext: null,
+            onMenu: () => campaignHandlers.toMenu(),
+          });
+        });
       },
     });
     window.__campaign = campaign;
+    campaignHandlers.reload = (id) => {
+      router.enter({ mode: "campaign", levelId: id });
+      k.go("game");
+    };
+    campaignHandlers.go = (nextId) => {
+      if (!nextId) { campaignHandlers.toMenu(); return; }
+      router.enter({ mode: "campaign", levelId: nextId });
+      k.go("game");
+    };
+    campaignHandlers.toMenu = () => {
+      router.enter({ mode: "menu" });
+      const existing = document.getElementById("campaign-result");
+      if (existing) existing.remove();
+      // v1 : retour splash (campagne menu arrive en C.7 wrapper)
+      splashRef?.show?.();
+    };
     k.loop(0.5, () => campaign.tick(0.5));
     const initialLevel = router.get().levelId || save.campaign?.lastPlayedLevel || "1-1";
     k.wait(0.1, () => campaign.loadLevel(initialLevel));
