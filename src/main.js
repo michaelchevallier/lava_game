@@ -224,6 +224,7 @@ const settingsModal = createSettingsModal({
     if (name === "toggleDemo") toggleDemoRef?.();
     if (name === "toggleNight") toggleNightRef?.();
     if (name === "unlockAll") window.__tiers?.unlockAll?.();
+    if (name === "resetPark") resetParkRef?.();
     if (name === "zoom") {
       try { k.camScale(payload); } catch (e) {}
     }
@@ -235,6 +236,7 @@ let buildTestCircuitRef = null;
 let exportActionRef = null;
 let toggleDemoRef = null;
 let toggleNightRef = null;
+let resetParkRef = null;
 
 const fpsBuffer = [];
 const fpsState = { lastSec: 0, value: 0 };
@@ -1190,6 +1192,33 @@ k.scene("game", () => {
     const code = serializeTiles(tileMap, groundSystem.getDugMap());
     spectres.unlock("first_save");
     showExportModal(code, (pasted) => { loadParkFromCode(pasted); });
+  };
+
+  if (router.get().mode === "sandbox") {
+    if (save.sandboxLayout) {
+      k.wait(0.1, () => {
+        try {
+          deserializeTiles(save.sandboxLayout, placeTile, (pairs) => groundSystem.loadDugMap(pairs));
+        } catch (e) { console.error("sandbox layout load failed", e); }
+      });
+    }
+    k.loop(10, () => {
+      try {
+        save.sandboxLayout = serializeTiles(tileMap, groundSystem.getDugMap());
+        persistSave(save);
+      } catch (e) {}
+    });
+  }
+
+  resetParkRef = () => {
+    tileMap.forEach((t) => {
+      if (t.extras) t.extras.forEach((e) => k.destroy(e));
+      k.destroy(t);
+    });
+    tileMap.clear();
+    save.sandboxLayout = null;
+    persistSave(save);
+    showPopup(WIDTH / 2, 100, "PARC VIERGE !", k.rgb(124, 201, 71), 32);
   };
 
   k.onMousePress("left", () => {

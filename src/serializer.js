@@ -2,7 +2,7 @@ import { STORAGE_KEY, TILE_CODE, CODE_TILE, COLS, ROWS, GROUND_ROW } from "./con
 import { migrateSpectres } from "./spectres.js";
 
 function freshSave() {
-  const s = { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" }, titles: [], playDays: [] };
+  const s = { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" }, titles: [], playDays: [], sandboxLayout: null };
   migrateSpectres(s);
   return s;
 }
@@ -26,6 +26,7 @@ export function loadSave() {
     if (!parsed.runs) parsed.runs = {};
     if (!Array.isArray(parsed.titles)) parsed.titles = [];
     if (!Array.isArray(parsed.playDays)) parsed.playDays = [];
+    if (parsed.sandboxLayout === undefined) parsed.sandboxLayout = null;
     migrateSpectres(parsed);
     return parsed;
   } catch (e) {

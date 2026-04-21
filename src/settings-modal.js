@@ -131,6 +131,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
           <button id="sm-export" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(160,90,220,0.9);color:#fff;font-weight:bold">Exporter le parc</button>
           <button id="sm-carnet" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(100,40,160,0.9);color:#fff;font-weight:bold">Carnet des Spectres</button>
           <button id="sm-reset" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(180,40,40,0.8);color:#fff;font-weight:bold">Reset score</button>
+          <button id="sm-reset-park" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(160,90,30,0.9);color:#fff;font-weight:bold">Parc vierge</button>
           <button id="sm-unlock-all" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(200,160,30,0.9);color:#111;font-weight:bold">Debloquer toutes les tuiles</button>
         </div>
       </section>
@@ -260,6 +261,28 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
       btn.textContent = "Toutes les tuiles debloquees !";
       btn.style.background = "rgba(80,200,80,0.9)";
       btn.style.color = "#fff";
+    });
+
+    panel.querySelector("#sm-reset-park").addEventListener("click", () => {
+      const btn = panel.querySelector("#sm-reset-park");
+      if (btn.dataset.confirm === "1") {
+        onAction("resetPark");
+        hide();
+        btn.dataset.confirm = "0";
+        btn.textContent = "Parc vierge";
+        btn.style.background = "rgba(160,90,30,0.9)";
+      } else {
+        btn.dataset.confirm = "1";
+        btn.textContent = "Cliquer pour confirmer";
+        btn.style.background = "rgba(220,90,30,1)";
+        setTimeout(() => {
+          if (btn && btn.dataset.confirm === "1") {
+            btn.dataset.confirm = "0";
+            btn.textContent = "Parc vierge";
+            btn.style.background = "rgba(160,90,30,0.9)";
+          }
+        }, 2500);
+      }
     });
   }
 
