@@ -61,6 +61,8 @@ export function createRaceSystem({
 
     const red = spawnRaceWagon("red", TILE * 5);
     const blue = spawnRaceWagon("blue", TILE * 9);
+    red.raceLocked = true;
+    blue.raceLocked = true;
     race.wagons = [red, blue];
 
     forceBoardPlayer(players[0], red);
@@ -85,6 +87,7 @@ export function createRaceSystem({
           if (w.exists()) {
             w.speed = speedBase;
             w.halfTurnDir = 1;
+            w.raceLocked = false; // déverrouille rider control pour les 2 joueurs
           }
         }
       }

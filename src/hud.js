@@ -6,6 +6,7 @@ import {
 } from "./constants.js";
 
 const TOOL_ICONS = {
+  cursor: "👆",
   lava: "🔥", rail: "🛤", erase: "✖", rail_up: "↗", rail_down: "↘",
   water: "💧", coin: "🪙", boost: "⚡", trampoline: "🎪", fan: "🌀",
   portal: "🌀", ice: "🧊", magnet: "🧲", bridge: "🌉", wheel: "🎡",
@@ -388,7 +389,7 @@ export function createHUD({
             opacity: alpha,
           });
           k.drawText({
-            text: "D = Mode auto. Engrenage en haut a droite pour les options.",
+            text: "D = Mode auto. Cog en bas a droite pour les options.",
             size: 17,
             pos: k.vec2(WIDTH / 2, HEIGHT / 2 + 10),
             anchor: "center",
@@ -426,6 +427,8 @@ export function createHUD({
   function renderGhostCursor() {
     if (settings.open || k.getTreeRoot().paused) return;
     const selectedTool = getCurrentTool();
+    // Mode curseur : pas de preview tuile, on laisse le curseur natif
+    if (selectedTool === "cursor") return;
     const sm = k.mousePos();
     const wm = k.toWorld(sm);
     const col = Math.floor(wm.x / TILE);

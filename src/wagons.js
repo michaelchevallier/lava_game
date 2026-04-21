@@ -533,12 +533,15 @@ export function createWagonSystem({
       // Quand un joueur pilote : contrôle 100% via input. Bypass complet de la physique —
       // on déplace wagon.pos.x directement, on évite tout side-effect (collisions, dérive).
       // Le speedMult ambient (boost, ice, slide) s'applique aussi au rider pour le fun.
+      // Mode Course inclus : les 2 wagons sont pilotés par les 2 joueurs.
       let currentSpeed;
-      if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral && !wagon.isRace) {
+      if (wagon.rider && !wagon._inTunnel && !wagon.inLoop && !wagon.isSpectral) {
         const RIDER_SPEED = 240 * speedMult;
         let dx = 0;
-        if (wagon._riderInput === "right") dx = RIDER_SPEED;
-        else if (wagon._riderInput === "left") dx = -RIDER_SPEED;
+        if (!wagon.raceLocked) {
+          if (wagon._riderInput === "right") dx = RIDER_SPEED;
+          else if (wagon._riderInput === "left") dx = -RIDER_SPEED;
+        }
         wagon.pos.x += dx * k.dt();
         if (wagon.vel) wagon.vel.x = 0;
         wagon._riderInput = null;

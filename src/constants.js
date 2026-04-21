@@ -40,6 +40,7 @@ export const CODE_TILE = Object.fromEntries(
 export const STORAGE_KEY = "milan_lava_park";
 
 export const TOOLBAR_ORDER = [
+  { tool: "cursor", key: "`", label: "Curseur" },
   { tool: "lava", key: "1", label: "Lave" },
   { tool: "rail", key: "2", label: "Rail" },
   { tool: "rail_up", key: "4", label: "Up" },

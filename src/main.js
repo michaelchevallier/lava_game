@@ -1089,6 +1089,8 @@ k.scene("game", () => {
   k.onMousePress("left", () => {
     tryUnlockAudio();
     if (settingsModal.isVisible()) return;
+    // Mode curseur : ne pose rien, laisse k.onClick des entités (balloon, duck, can, wheel) jouer seuls
+    if (selectedTool === "cursor") return;
     const w = k.toWorld(k.mousePos());
     const col = Math.floor(w.x / TILE);
     const row = Math.floor(w.y / TILE);
@@ -1131,6 +1133,7 @@ k.scene("game", () => {
 
   k.onMouseDown("left", () => {
     if (settingsModal.isVisible()) return;
+    if (selectedTool === "cursor") return;
     const screenM = k.mousePos();
     const w = k.toWorld(screenM);
     const col = Math.floor(w.x / TILE);
