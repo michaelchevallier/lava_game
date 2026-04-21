@@ -7,6 +7,7 @@ const LEVELS_BY_WORLD = levelsByWorld();
 export function createCampaignSystem({
   k, tileMap, gameState, save, persistSave,
   placeTile, groundSystem, spawnWagon, showPopup,
+  spawnVisitorAt,
   onWin, onLose,
 }) {
   let current = null;
@@ -23,6 +24,10 @@ export function createCampaignSystem({
       try { k.destroy(w); } catch (_) {}
     });
     k.get("particle").forEach((p) => { try { k.destroy(p); } catch (_) {} });
+    k.get("visitor").forEach((v) => {
+      if (v.crown) v.crown.forEach((e) => { try { k.destroy(e); } catch (_) {} });
+      try { k.destroy(v); } catch (_) {}
+    });
   }
 
   function loadLevel(levelId) {
@@ -46,7 +51,7 @@ export function createCampaignSystem({
       counts: {
         skeleton: 0, revive: 0, coin: 0, catapult: 0, loop: 0, apocalypse: 0,
         chain: 0, constellation: 0, metronome: 0, magnetField: 0, geyser: 0,
-        portalUse: 0, wagon: 0, score: 0,
+        portalUse: 0, wagon: 0, score: 0, visitor: 0,
       },
       toolsUsed: new Set(),
       status: "playing",
@@ -73,6 +78,11 @@ export function createCampaignSystem({
           p.pos.y = 2 * TILE;
           if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
         } catch (_) {}
+      }
+    }
+    if (def.visitors && spawnVisitorAt) {
+      for (const v of def.visitors) {
+        try { spawnVisitorAt(v.col, v.row, { isVIP: !!v.isVIP, walkSpeed: 0 }); } catch (_) {}
       }
     }
     showLevelIntro(def);
@@ -178,6 +188,7 @@ export function createCampaignSystem({
       magnetFields: c.magnetField || 0,
       geysers: c.geyser || 0,
       portalUses: c.portalUse || 0,
+      visitors: c.visitor || 0,
       score: Math.floor(gameState.score || 0),
       wagons: state.wagonsSpawned,
       tools: Array.from(state.toolsUsed || []),

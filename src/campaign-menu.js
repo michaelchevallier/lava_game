@@ -17,9 +17,10 @@ const WORLD_NAMES = {
   4: "Monde 4 — Experts",
   5: "Monde 5 — Énigmes",
   6: "Monde 6 — Mécaniques secrètes",
+  7: "Monde 7 — Contrats VIP",
 };
 
-const WORLD_STAR_THRESHOLDS = { 1: 0, 2: 5, 3: 12, 4: 20, 5: 28, 6: 35 };
+const WORLD_STAR_THRESHOLDS = { 1: 0, 2: 5, 3: 12, 4: 20, 5: 28, 6: 35, 7: 45 };
 
 export function createCampaignMenu({ save, onSelectLevel, onBack }) {
   function isLevelUnlocked(levelId) {

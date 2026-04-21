@@ -887,9 +887,11 @@ k.scene("game", () => {
     boardingFn: (w, v) => tryAutoBoardVisitor(w, v),
   });
 
-  k.loop(6, () => {
-    if (k.get("visitor").length < 3) visitorSystem.spawn();
-  });
+  if (cfg.enableAmbientVisitors !== false) {
+    k.loop(6, () => {
+      if (k.get("visitor").length < 3) visitorSystem.spawn();
+    });
+  }
 
   k.loop(0.08, () => {
     const wagons = k.get("wagon");
@@ -1167,6 +1169,7 @@ k.scene("game", () => {
     const campaign = createCampaignSystem({
       k, tileMap, gameState, save, persistSave,
       placeTile, groundSystem, spawnWagon,
+      spawnVisitorAt: visitorSystem.spawnAt,
       showPopup: (...args) => showPopup(...args),
       onWin: (r) => {
         audio.combo?.();

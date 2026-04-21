@@ -1399,6 +1399,8 @@ export function createWagonSystem({
       wagon.passenger = wagon.passengers[0].type;
     }
     audio.board?.();
+    window.__campaign?.progress?.("visitor");
+    window.__contract?.progress?.("visitor");
     const ec = window.__entityCounts;
     if (!ec || ec.particle < 270) {
       for (let p = 0; p < 5; p++) {

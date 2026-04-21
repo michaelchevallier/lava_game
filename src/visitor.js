@@ -11,16 +11,22 @@ export function createVisitorSystem({
     [255, 180, 255], [180, 255, 255], [255, 200, 150], [200, 180, 255],
   ];
 
-  function spawnVisitor() {
-    const speed = 40 + Math.random() * 40;
-    const isVIP = Math.random() < 0.12;
+  function spawnVisitor(opts = {}) {
+    const speed = opts.walkSpeed != null ? opts.walkSpeed : (40 + Math.random() * 40);
+    const isVIP = opts.isVIP != null ? opts.isVIP : (Math.random() < 0.12);
     const tint = VISITOR_TINTS[Math.floor(Math.random() * VISITOR_TINTS.length)];
     // Diversité visuelle : variations de taille (petit, moyen, grand) et légère largeur
     const heightVar = 0.88 + Math.random() * 0.22;    // 0.88–1.10 vertical
     const widthVar = 0.92 + Math.random() * 0.16;     // 0.92–1.08 horizontal
+    const spawnX = opts.col != null
+      ? opts.col * TILE
+      : (-40 + (Math.random() - 0.5) * 30);
+    const spawnY = opts.row != null
+      ? opts.row * TILE - 44
+      : (GROUND_ROW - 3) * TILE;
     const v = k.add([
       k.sprite("human"),
-      k.pos(-40 + (Math.random() - 0.5) * 30, (GROUND_ROW - 3) * TILE),
+      k.pos(spawnX, spawnY),
       k.area({ shape: new k.Rect(k.vec2(2, 4), 24, 40), collisionIgnore: ["wagon", "wagon-part", "passenger", "visitor", "crowd", "player", "skull-target", "skull-part", "ghost", "lava-ghost", "rain-coin", "ground_tile", "tile"] }),
       k.anchor("topleft"),
       k.color(k.rgb(tint[0], tint[1], tint[2])),
@@ -91,8 +97,9 @@ export function createVisitorSystem({
       }
       v.move(v.walkSpeed, 0);
       // Anti-stuck : si pas bougé depuis 4s, destroy (évite pile-up indéfini)
+      // Skip si walkSpeed=0 (visiteurs campaign pré-placés qui attendent sur place)
       if (v._stuckCheckAt === undefined) { v._stuckCheckAt = k.time(); v._stuckLastX = v.pos.x; }
-      if (k.time() - v._stuckCheckAt > 4) {
+      if (v.walkSpeed > 0 && k.time() - v._stuckCheckAt > 4) {
         if (Math.abs(v.pos.x - v._stuckLastX) < 5) {
           if (v.crown) v.crown.forEach((e) => k.destroy(e));
           if (v.isSkeleton) gameState.skeletons = Math.max(0, gameState.skeletons - 1);
@@ -293,5 +300,5 @@ export function createVisitorSystem({
     }
   });
 
-  return { spawn: spawnVisitor };
+  return { spawn: spawnVisitor, spawnAt: (col, row, opts = {}) => spawnVisitor({ col, row, ...opts }) };
 }

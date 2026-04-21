@@ -13,6 +13,7 @@ export const OBJECTIVE_TYPES = {
   magnetField: { hookName: "onMagnetField" },
   score: { hookName: "onScore" },
   portalUse: { hookName: "onPortalUse" },
+  visitor: { hookName: "onVisitorBoard" },
 };
 
 // Layout helpers (concaténés pour réduire la duplication)
@@ -789,6 +790,52 @@ export const LEVELS = [
     stars: { time: { under: 90 }, efficient: { tilesUnder: 3 } },
     timeLimit: 130,
     platinum: { label: "3 métronomes déclenchés", check: (r) => r.metronomes >= 3 },
+  },
+  {
+    id: "6-6",
+    world: 6,
+    title: "Ramassage",
+    hint: "3 visiteurs 🧍 attendent sur le rail. Lance des wagons qui les embarquent en passant (max 4 passagers/wagon).",
+    layout: "v2:" + railRow(3, 16),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "erase"],
+    visitors: [
+      { col: 8, row: 13 },
+      { col: 11, row: 13 },
+      { col: 14, row: 13 },
+    ],
+    tileBudget: 3,
+    wagonLimit: 3,
+    objectives: [
+      { id: "vis3", type: "visitor", target: 3, label: "Embarque 3 visiteurs" },
+    ],
+    stars: { time: { under: 45 }, efficient: { tilesUnder: 2 } },
+    timeLimit: 90,
+    platinum: { label: "3 visiteurs en 1 seul wagon", check: (r) => r.visitors >= 3 && r.wagons <= 1 },
+  },
+
+  // MONDE 7 — Contrats VIP (7-1 à 7-5, 45⭐ pour débloquer)
+  {
+    id: "7-1",
+    world: 7,
+    title: "VIP transport",
+    hint: "2 VIP attendent. Amène-les à destination SANS qu'aucun visiteur ne soit brûlé. Lave interdite.",
+    layout: "v2:" + railRow(3, 16),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "coin", "erase"],
+    visitors: [
+      { col: 8, row: 13, isVIP: true },
+      { col: 13, row: 13, isVIP: true },
+    ],
+    tileBudget: 5,
+    wagonLimit: 3,
+    failOn: { skeleton: 1 },
+    objectives: [
+      { id: "vis2", type: "visitor", target: 2, label: "Embarque les 2 VIP" },
+    ],
+    stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 100,
+    platinum: { label: "2 VIP sans poser de BOOST", check: (r) => r.visitors >= 2 && !r.tools.includes("boost") },
   },
 ];
 
