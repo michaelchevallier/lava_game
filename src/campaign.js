@@ -1,0 +1,142 @@
+import { deserializeTiles } from "./serializer.js";
+import { findLevel } from "./levels.js";
+import { TILE } from "./constants.js";
+
+export function createCampaignSystem({
+  k, tileMap, gameState, save, persistSave,
+  placeTile, groundSystem, showPopup,
+  onWin, onLose,
+}) {
+  let current = null;
+
+  function clearPlayfield() {
+    tileMap.forEach((t) => {
+      if (t.extras) t.extras.forEach((e) => { try { k.destroy(e); } catch (_) {} });
+      try { k.destroy(t); } catch (_) {}
+    });
+    tileMap.clear();
+    k.get("wagon").forEach((w) => {
+      if (w.parts) w.parts.forEach((p) => { try { k.destroy(p); } catch (_) {} });
+      try { k.destroy(w); } catch (_) {}
+    });
+    k.get("particle").forEach((p) => { try { k.destroy(p); } catch (_) {} });
+  }
+
+  function loadLevel(levelId) {
+    const def = findLevel(levelId);
+    if (!def) {
+      console.error("Level not found:", levelId);
+      return null;
+    }
+    clearPlayfield();
+    try {
+      deserializeTiles(def.layout, placeTile, (pairs) => groundSystem?.loadDugMap?.(pairs));
+    } catch (e) {
+      console.error("deserializeTiles failed for", levelId, e);
+    }
+    current = {
+      def,
+      startTime: k.time(),
+      tilesPlaced: 0,
+      progress: Object.fromEntries(def.objectives.map((o) => [o.id, 0])),
+      status: "playing",
+      endAt: 0,
+      stars: 0,
+    };
+    gameState.score = 0;
+    gameState.skeletons = 0;
+    gameState.coins = 0;
+    gameState.comboCount = 0;
+    gameState.comboExpire = 0;
+    return current;
+  }
+
+  function progress(type, amount = 1) {
+    if (!current || current.status !== "playing") return;
+    const matching = current.def.objectives.filter((o) => o.type === type);
+    if (matching.length === 0) return;
+    for (const o of matching) {
+      current.progress[o.id] = Math.min(o.target, (current.progress[o.id] || 0) + amount);
+    }
+    checkWin();
+  }
+
+  function onTileEvent() {
+    if (!current || current.status !== "playing") return;
+    current.tilesPlaced++;
+    if (current.def.tileBudget > 0 && current.tilesPlaced > current.def.tileBudget) {
+      current.status = "lost";
+      current.endAt = k.time();
+      onLose?.({ levelId: current.def.id, reason: "budget", tiles: current.tilesPlaced });
+    }
+  }
+
+  function checkWin() {
+    if (!current || current.status !== "playing") return;
+    const allDone = current.def.objectives.every((o) => (current.progress[o.id] || 0) >= o.target);
+    if (!allDone) return;
+    const elapsed = k.time() - current.startTime;
+    current.status = "won";
+    current.endAt = k.time();
+    current.stars = computeStars(current.def, elapsed, current.tilesPlaced);
+    recordResult(current);
+    onWin?.({
+      levelId: current.def.id,
+      stars: current.stars,
+      time: elapsed,
+      tiles: current.tilesPlaced,
+    });
+  }
+
+  function computeStars(def, elapsed, tilesPlaced) {
+    let stars = 1;
+    if (def.stars?.time?.under && elapsed <= def.stars.time.under) stars++;
+    if (def.stars?.efficient?.tilesUnder && tilesPlaced <= def.stars.efficient.tilesUnder) stars++;
+    return Math.min(3, stars);
+  }
+
+  function recordResult(state) {
+    if (!save.campaign) save.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1] };
+    const prev = save.campaign.levels[state.def.id] || { stars: 0, bestTime: null, bestTiles: null, attempts: 0 };
+    const elapsed = state.endAt - state.startTime;
+    const newEntry = {
+      stars: Math.max(prev.stars, state.stars),
+      bestTime: prev.bestTime == null ? elapsed : Math.min(prev.bestTime, elapsed),
+      bestTiles: prev.bestTiles == null ? state.tilesPlaced : Math.min(prev.bestTiles, state.tilesPlaced),
+      attempts: (prev.attempts || 0) + 1,
+    };
+    save.campaign.levels[state.def.id] = newEntry;
+    save.campaign.lastPlayedLevel = state.def.id;
+    save.campaign.totalStars = Object.values(save.campaign.levels).reduce((s, l) => s + (l.stars || 0), 0);
+    try { persistSave(save); } catch (e) { console.error("persistSave campaign", e); }
+  }
+
+  function tick() {
+    if (!current || current.status !== "playing") return;
+    if (current.def.timeLimit > 0) {
+      const elapsed = k.time() - current.startTime;
+      if (elapsed > current.def.timeLimit) {
+        current.status = "lost";
+        current.endAt = k.time();
+        onLose?.({ levelId: current.def.id, reason: "time" });
+      }
+    }
+  }
+
+  function isAllowed(tool) {
+    if (!current) return true;
+    if (tool === "cursor") return true;
+    return current.def.allowedTools.includes(tool);
+  }
+
+  function getCurrent() { return current; }
+
+  function abort() {
+    current = null;
+  }
+
+  return {
+    loadLevel, progress, onTileEvent, tick, isAllowed,
+    getCurrent, abort, computeStars,
+  };
+}

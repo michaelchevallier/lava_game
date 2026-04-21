@@ -39,6 +39,7 @@ import { createMinigames } from "./minigames.js";
 import { createCelebrationSystem } from "./celebration.js";
 import { createRaceSystem } from "./race.js";
 import { createRouter } from "./router.js";
+import { createCampaignSystem } from "./campaign.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1474,4 +1475,22 @@ k.scene("game", () => {
   if (cfg.enableWeather) window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
   if (cfg.enableBalloons) window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableMinigames) window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
+
+  if (router.get().mode === "campaign") {
+    const campaign = createCampaignSystem({
+      k, tileMap, gameState, save, persistSave,
+      placeTile, groundSystem, showPopup: (...args) => showPopup(...args),
+      onWin: (r) => {
+        showPopup(WIDTH / 2, 100, `BRAVO ! ${"⭐".repeat(r.stars)}`, k.rgb(124, 201, 71), 40);
+        audio.combo?.();
+      },
+      onLose: (r) => {
+        showPopup(WIDTH / 2, 100, `RATE : ${r.reason === "time" ? "Temps écoulé" : "Budget dépassé"}`, k.rgb(255, 80, 80), 32);
+      },
+    });
+    window.__campaign = campaign;
+    k.loop(0.5, () => campaign.tick());
+    const initialLevel = router.get().levelId || save.campaign?.lastPlayedLevel || "1-1";
+    k.wait(0.1, () => campaign.loadLevel(initialLevel));
+  }
 });
