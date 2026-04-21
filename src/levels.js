@@ -475,19 +475,21 @@ export const LEVELS = [
   {
     id: "4-3",
     world: 4,
-    title: "Labyrinthe portail",
-    hint: "Le parc est pré-rempli. Utilise les portails et l'aimant pour combo-vortex.",
-    layout: "v2:" + railRow(3, 16) + "," + tile(5, 12, "P") + "," + tile(13, 12, "P") + "," + tile(9, 12, "M"),
+    title: "Boucle infinie",
+    hint: "Le portail GAUCHE te renvoie direct à droite = fin de run. Construis une RAMPE ↗↘ pour passer AU-DESSUS, puis le portail droit te téléporte en boucle à gauche.",
+    // Rails 3-4, portal A (5,13), rails 6-12, portal B (13,13), rails 14-16
+    // Le wagon entre portail A par défaut → ressort portail B → fin. Il faut bypass A via ramp.
+    layout: "v2:" + railRow(3, 4) + "," + tile(5, 13, "P") + "," + railRow(6, 12) + "," + tile(13, 13, "P") + "," + railRow(14, 16),
     playerSpawn: { col: 4, row: 13 },
-    allowedTools: ["lava", "coin", "erase"],
-    tileBudget: 4,
+    allowedTools: ["rail_up", "rail_down", "rail", "lava", "coin", "boost", "erase"],
+    tileBudget: 10,
     wagonLimit: 2,
     objectives: [
-      { id: "skel5", type: "skeleton", target: 5, label: "5 squelettes" },
+      { id: "skel5", type: "skeleton", target: 5, label: "5 squelettes (boucle les wagons)" },
       { id: "coin8", type: "coin", target: 8, label: "8 pièces" },
     ],
-    stars: { time: { under: 80 }, efficient: { tilesUnder: 3 } },
-    timeLimit: 110,
+    stars: { time: { under: 90 }, efficient: { tilesUnder: 8 } },
+    timeLimit: 130,
   },
   {
     id: "4-4",
