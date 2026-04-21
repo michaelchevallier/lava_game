@@ -5,9 +5,10 @@ const WORLD_NAMES = {
   2: "Monde 2 — Combos",
   3: "Monde 3 — Challenges",
   4: "Monde 4 — Experts",
+  5: "Monde 5 — Énigmes",
 };
 
-const WORLD_STAR_THRESHOLDS = { 1: 0, 2: 5, 3: 12, 4: 20 };
+const WORLD_STAR_THRESHOLDS = { 1: 0, 2: 5, 3: 12, 4: 20, 5: 28 };
 
 export function createCampaignMenu({ save, onSelectLevel, onBack }) {
   function isLevelUnlocked(levelId) {

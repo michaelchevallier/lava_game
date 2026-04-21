@@ -520,6 +520,143 @@ export const LEVELS = [
     stars: { time: { under: 120 }, efficient: { tilesUnder: 6 } },
     timeLimit: 150,
   },
+
+  // MONDE 5 — ÉNIGMES (5-1 à 5-8, 28⭐ pour débloquer)
+  // Ici le BUT est clair mais la SOLUTION pas dite. Le joueur expérimente.
+  {
+    id: "5-1",
+    world: 5,
+    title: "Les cimes",
+    hint: "Collecte les pièces en hauteur. Tu as les bons outils, à toi de trouver comment.",
+    // 3 pièces à row 8 (haut), rails en bas
+    layout: "v2:" + railRow(3, 16) + "," + tile(7, 8, "C") + "," + tile(10, 8, "C") + "," + tile(13, 8, "C"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["trampoline", "fan", "boost", "rail_loop", "erase"],
+    tileBudget: 5,
+    wagonLimit: 3,
+    objectives: [
+      { id: "coin3", type: "coin", target: 3, label: "Collecte les 3 pièces en hauteur" },
+    ],
+    stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 100,
+  },
+  {
+    id: "5-2",
+    world: 5,
+    title: "L'abîme",
+    hint: "Un trou coupe ton parc en deux. Fais 3 squelettes quand même.",
+    // Rails coupés au milieu (gap cols 8-11)
+    layout: "v2:" + railRow(3, 7) + "," + railRow(12, 16),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["lava", "portal", "bridge", "erase"],
+    tileBudget: 5,
+    wagonLimit: 3,
+    objectives: [
+      { id: "skel3", type: "skeleton", target: 3, label: "3 squelettes de l'autre côté" },
+    ],
+    stars: { time: { under: 75 }, efficient: { tilesUnder: 4 } },
+    timeLimit: 110,
+  },
+  {
+    id: "5-3",
+    world: 5,
+    title: "Le vortex",
+    hint: "5 squelettes avec seulement 2 wagons. Fais-les repasser.",
+    layout: "v2:" + railRow(3, 16),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["portal", "magnet", "lava", "erase"],
+    tileBudget: 5,
+    wagonLimit: 2,
+    objectives: [
+      { id: "skel5", type: "skeleton", target: 5, label: "5 squelettes (2 wagons !)" },
+    ],
+    stars: { time: { under: 90 }, efficient: { tilesUnder: 4 } },
+    timeLimit: 130,
+  },
+  {
+    id: "5-4",
+    world: 5,
+    title: "Le puits",
+    hint: "Le wagon DOIT plonger dans le puits et revenir. 3 pièces à ramasser en chemin.",
+    // Puits : ground dug sur 2 tiles profond (cols 8-9, row 14-15)
+    layout: "v2:" + railRow(3, 7) + "," + tile(8, 13, "D") + "," + tile(9, 13, "D") + "," + railRow(10, 16) + "," + tile(8, 12, "C") + "," + tile(9, 12, "C") + "," + tile(11, 12, "C"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["trampoline", "fan", "boost", "erase"],
+    tileBudget: 4,
+    wagonLimit: 2,
+    objectives: [
+      { id: "coin3", type: "coin", target: 3, label: "3 pièces ramassées" },
+    ],
+    stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 90,
+  },
+  {
+    id: "5-5",
+    world: 5,
+    title: "Le plongeur",
+    hint: "Le wagon doit passer PAR-DESSUS la lave sans se transformer. Puis collecter 5 pièces.",
+    // Lave pré-placée large, pièces au sol après
+    layout: "v2:" + railRow(3, 7) + "," + tile(8, 13, "L") + "," + tile(9, 13, "L") + "," + tile(10, 13, "L") + "," + railRow(11, 16) + "," + tile(12, 13, "C") + "," + tile(13, 13, "C") + "," + tile(14, 13, "C") + "," + tile(15, 13, "C") + "," + tile(16, 13, "C"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["trampoline", "fan", "boost", "erase"],
+    tileBudget: 4,
+    wagonLimit: 3,
+    objectives: [
+      { id: "coin5", type: "coin", target: 5, label: "5 pièces de l'autre côté" },
+    ],
+    stars: { time: { under: 70 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 100,
+  },
+  {
+    id: "5-6",
+    world: 5,
+    title: "Le palais gelé",
+    hint: "Les glaces t'empêchent de contrôler la vitesse. Fais quand même 3 squelettes.",
+    // Patinoire (3 glaces) + rail étendu
+    layout: "v2:" + railRow(3, 16) + "," + tile(8, 12, "I") + "," + tile(9, 12, "I") + "," + tile(10, 12, "I"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["lava", "boost", "trampoline", "fan", "erase"],
+    tileBudget: 4,
+    wagonLimit: 3,
+    objectives: [
+      { id: "skel3", type: "skeleton", target: 3, label: "3 squelettes" },
+    ],
+    stars: { time: { under: 55 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 90,
+  },
+  {
+    id: "5-7",
+    world: 5,
+    title: "Énigme du forain",
+    hint: "La grande roue 🎡 est déjà là. Encaisse 300 points grâce à elle.",
+    // Wheel placée au centre — produit coins/VIP auto
+    layout: "v2:" + railRow(3, 16) + "," + tile(9, 10, "Y"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["rail_loop", "coin", "boost", "erase"],
+    tileBudget: 4,
+    wagonLimit: 3,
+    objectives: [
+      { id: "score300", type: "score", target: 300, label: "Encaisse 300 pts" },
+    ],
+    stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 110,
+  },
+  {
+    id: "5-8",
+    world: 5,
+    title: "La dernière énigme",
+    hint: "2 wagons. 8 squelettes. Tous les outils. Démerde-toi.",
+    layout: "v2:" + railRow(3, 16),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["lava", "water", "portal", "magnet", "trampoline", "fan", "boost", "rail_loop", "ice", "erase"],
+    tileBudget: 8,
+    wagonLimit: 2,
+    objectives: [
+      { id: "skel8", type: "skeleton", target: 8, label: "8 squelettes avec 2 wagons" },
+    ],
+    stars: { time: { under: 120 }, efficient: { tilesUnder: 6 } },
+    timeLimit: 180,
+  },
 ];
 
 export function findLevel(id) {
