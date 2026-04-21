@@ -626,8 +626,8 @@ k.scene("game", () => {
   function triggerApocalypse() {
     window.__tiers?.onApocalypse?.();
     cinematic.play("apocalypse", "APOCALYPSE !");
-    spectres.unlock(8);
-    window.__quests?.onCombo5();
+    spectres.unlock(8);    window.__quests?.onCombo5();
+    window.__campaign?.progress?.("apocalypse");
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
     if (save.apocalypseCount >= 5) spectres.unlock(7);

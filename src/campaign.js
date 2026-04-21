@@ -126,6 +126,18 @@ export function createCampaignSystem({
   function tick(dt = 0.5) {
     if (!current || current.status !== "playing") return;
     const def = current.def;
+    // Score objectives : comparer gameState.score au target
+    let scoreUpdated = false;
+    for (const obj of def.objectives) {
+      if (obj.type === "score") {
+        const clamped = Math.min(obj.target, Math.floor(gameState.score));
+        if (current.progress[obj.id] !== clamped) {
+          current.progress[obj.id] = clamped;
+          scoreUpdated = true;
+        }
+      }
+    }
+    if (scoreUpdated) checkWin();
     if (def.timeLimit > 0) {
       const elapsed = k.time() - current.startTime;
       if (elapsed > def.timeLimit) {
