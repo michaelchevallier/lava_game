@@ -3,7 +3,7 @@ import {
   TILE, COLS, ROWS, GROUND_ROW, WIDTH, HEIGHT,
   COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES,
   gridKey, currentSeason, SEASON_PALETTES,
-  WORLD_COLS, WORLD_WIDTH,
+  WORLD_COLS, WORLD_WIDTH, MODE_CONFIG,
 } from "./constants.js";
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
@@ -199,6 +199,7 @@ const fpsState = { lastSec: 0, value: 0 };
 const entityState = { count: 0, stamp: 0 };
 
 k.scene("game", () => {
+  const cfg = MODE_CONFIG[router.get().mode] || MODE_CONFIG.sandbox;
   const tileMap = new Map();
   Object.assign(gameState, {
     skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
@@ -888,15 +889,18 @@ k.scene("game", () => {
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock(22);
 
-  const raceSystem = createRaceSystem({
-    k, gameState, settings, audio, juice, showPopup: (...args) => showPopup(...args),
-    spawnWagon, exitWagon,
-    getActivePlayers: () => activePlayers,
-    WORLD_WIDTH, TILE, GROUND_ROW, WIDTH, HEIGHT,
-  });
-  window.__race = raceSystem;
-  k.onKeyPress("f2", () => raceSystem.start());
-  k.onUpdate(() => raceSystem.check());
+  let raceSystem = null;
+  if (cfg.enableRace) {
+    raceSystem = createRaceSystem({
+      k, gameState, settings, audio, juice, showPopup: (...args) => showPopup(...args),
+      spawnWagon, exitWagon,
+      getActivePlayers: () => activePlayers,
+      WORLD_WIDTH, TILE, GROUND_ROW, WIDTH, HEIGHT,
+    });
+    window.__race = raceSystem;
+    k.onKeyPress("f2", () => raceSystem.start());
+    k.onUpdate(() => raceSystem.check());
+  }
 
   k.onKeyPress("1", () => (selectedTool = "lava"));
   k.onKeyPress("2", () => (selectedTool = "rail"));
@@ -1031,7 +1035,7 @@ k.scene("game", () => {
       });
     });
   }
-  k.wait(0.05, () => startGhostTrain());
+  if (cfg.enableGhostTrain) k.wait(0.05, () => startGhostTrain());
 
   let inverseTrainCooldown = 0;
   function spawnInverseTrain() {
@@ -1045,7 +1049,7 @@ k.scene("game", () => {
       spawnInverseTrain();
     });
   }
-  k.loop(2, () => {
+  if (cfg.enableInverseTrain) k.loop(2, () => {
     if (k.time() < inverseTrainCooldown) return;
     if (k.time() - gameState.lastTilePlaced < 20) return;
     if (k.get("wagon").filter((w) => w.inverseTrain).length > 0) return;
@@ -1455,14 +1459,16 @@ k.scene("game", () => {
 
   hud.setup();
 
-  tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
-  tutorial.setup();
+  if (cfg.enableTutorial) {
+    tutorial = createTutorial({ k, save, persistSave, drawTextOutlined: hud.drawTextOutlined });
+    tutorial.setup();
+  }
 
   // Old daily quest system (Almanach du Forain) DISABLED — the tier system is the single source of truth for objectives now
-  window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
-  window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
-  window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
-  window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
-  window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
-  window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
+  if (cfg.enableTiers) window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
+  if (cfg.enableCoinThief) window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
+  if (cfg.enableVisitorQuests) window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
+  if (cfg.enableWeather) window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
+  if (cfg.enableBalloons) window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
+  if (cfg.enableMinigames) window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
 });
