@@ -1219,7 +1219,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
-        window.__campaign?.onTileEvent?.();
+        window.__campaign?.onTileEvent?.("sol");
       }
       return;
     }
@@ -1238,7 +1238,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
-    window.__campaign?.onTileEvent?.();
+    window.__campaign?.onTileEvent?.(selectedTool);
     gameState.lastTilePlaced = k.time();
     audio.place();
   });
@@ -1269,7 +1269,7 @@ k.scene("game", () => {
         placeTile(col, row, "ground");
         gameState.lastTilePlaced = k.time();
         audio.place();
-        window.__campaign?.onTileEvent?.();
+        window.__campaign?.onTileEvent?.("sol");
       }
       lastPlacedKey = key;
       return;
@@ -1290,7 +1290,7 @@ k.scene("game", () => {
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
     window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
-    window.__campaign?.onTileEvent?.();
+    window.__campaign?.onTileEvent?.(selectedTool);
     gameState.lastTilePlaced = k.time();
     lastPlacedKey = key;
   });
@@ -1600,6 +1600,8 @@ k.scene("game", () => {
         k.wait(0.8, () => {
           showCampaignResult({
             won: true, stars: r.stars, time: r.time, tiles: r.tiles, levelId: r.levelId,
+            platinum: r.platinum, platinumLabel: r.platinumLabel,
+            alreadyPlatinum: r.alreadyPlatinum && r.platinum,
             onRetry: () => campaignHandlers.reload(r.levelId),
             onNext: (nextId) => campaignHandlers.go(nextId),
             onMenu: () => campaignHandlers.toMenu(),

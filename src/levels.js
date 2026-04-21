@@ -41,6 +41,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 30 }, efficient: { tilesUnder: 1 } },
     timeLimit: 60,
+    platinum: { label: "Premier squelette sous 12s", check: (r) => r.time < 12 },
   },
   {
     id: "1-2",
@@ -57,6 +58,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 35 }, efficient: { tilesUnder: 1 } },
     timeLimit: 70,
+    platinum: { label: "Ressuscite 2 squelettes", check: (r) => r.revives >= 2 },
   },
   {
     id: "1-3",
@@ -73,6 +75,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 30 }, efficient: { tilesUnder: 5 } },
     timeLimit: 60,
+    platinum: { label: "Ramasse 6 pièces", check: (r) => r.coins >= 6 },
   },
   {
     id: "1-4",
@@ -89,6 +92,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 40 }, efficient: { tilesUnder: 2 } },
     timeLimit: 75,
+    platinum: { label: "Catapulte 2 wagons d'affilée", check: (r) => r.catapults >= 2 },
   },
   {
     id: "1-5",
@@ -105,6 +109,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 40 }, efficient: { tilesUnder: 1 } },
     timeLimit: 75,
+    platinum: { label: "2 loopings d'affilée", check: (r) => r.loops >= 2 },
   },
 
   // MONDE 2 — Combos (2-1 à 2-10, 5⭐ pour débloquer)
@@ -123,6 +128,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 50 }, efficient: { tilesUnder: 1 } },
     timeLimit: 90,
+    platinum: { label: "5 squelettes avec 2 tuiles max", check: (r) => r.skeletons >= 5 && r.tiles <= 2 },
   },
   {
     id: "2-2",
@@ -140,6 +146,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
     timeLimit: 90,
+    platinum: { label: "Sans poser de LAVE supplémentaire", check: (r) => !r.tools.includes("lava") },
   },
   {
     id: "2-3",
@@ -157,6 +164,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 40 }, efficient: { tilesUnder: 3 } },
     timeLimit: 75,
+    platinum: { label: "2 chaînes d'or dans la même run", check: (r) => r.chains >= 2 },
   },
   {
     id: "2-4",
@@ -174,6 +182,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
     timeLimit: 90,
+    platinum: { label: "2 catapultes ET 2 loopings", check: (r) => r.catapults >= 2 && r.loops >= 2 },
   },
   {
     id: "2-5",
@@ -191,6 +200,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 80 }, efficient: { tilesUnder: 3 } },
     timeLimit: 110,
+    platinum: { label: "4 squelettes ET 4 ressuscités", check: (r) => r.skeletons >= 4 && r.revives >= 4 },
   },
   {
     id: "2-6",
@@ -207,6 +217,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 45 }, efficient: { tilesUnder: 5 } },
     timeLimit: 75,
+    platinum: { label: "10 pièces ramassées", check: (r) => r.coins >= 10 },
   },
   {
     id: "2-7",
@@ -223,6 +234,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 55 }, efficient: { tilesUnder: 3 } },
     timeLimit: 90,
+    platinum: { label: "5 catapultes dans la run", check: (r) => r.catapults >= 5 },
   },
   {
     id: "2-8",
@@ -239,6 +251,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 2 } },
     timeLimit: 90,
+    platinum: { label: "5 loopings avec 2 tuiles max", check: (r) => r.loops >= 5 && r.tiles <= 2 },
   },
   {
     id: "2-9",
@@ -256,6 +269,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 55 }, efficient: { tilesUnder: 5 } },
     timeLimit: 90,
+    platinum: { label: "300 pts cumulés", check: (r) => r.score >= 300 },
   },
   {
     id: "2-10",
@@ -272,6 +286,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 50 }, efficient: { tilesUnder: 4 } },
     timeLimit: 90,
+    platinum: { label: "APOCALYPSE sous 30s", check: (r) => r.apocalypses >= 1 && r.time < 30 },
   },
 
   // MONDE 3 — Challenges contraintes (3-1 à 3-10, 12⭐)
@@ -290,6 +305,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 45 }, efficient: { tilesUnder: 1 } },
     timeLimit: 75,
+    platinum: { label: "8 squelettes avec 1 seule tuile", check: (r) => r.skeletons >= 8 },
   },
   {
     id: "3-2",
@@ -306,6 +322,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 25 }, efficient: { tilesUnder: 3 } },
     timeLimit: 30,
+    platinum: { label: "10 squelettes sous 20s", check: (r) => r.skeletons >= 10 && r.time < 20 },
   },
   {
     id: "3-3",
@@ -322,6 +339,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 6 } },
     timeLimit: 90,
+    platinum: { label: "800 pts cumulés", check: (r) => r.score >= 800 },
   },
   {
     id: "3-4",
@@ -338,6 +356,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 5 } },
     timeLimit: 90,
+    platinum: { label: "6 squelettes avec 2 wagons", check: (r) => r.skeletons >= 6 },
   },
   {
     id: "3-5",
@@ -355,6 +374,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 75 }, efficient: { tilesUnder: 5 } },
     timeLimit: 110,
+    platinum: { label: "3 catapultes ET 3 loopings", check: (r) => r.catapults >= 3 && r.loops >= 3 },
   },
   {
     id: "3-6",
@@ -371,6 +391,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 40 }, efficient: { tilesUnder: 8 } },
     timeLimit: 60,
+    platinum: { label: "20 pièces sous 30s", check: (r) => r.coins >= 20 && r.time < 30 },
   },
   {
     id: "3-7",
@@ -388,6 +409,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 40 }, efficient: { tilesUnder: 1 } },
     timeLimit: 70,
+    platinum: { label: "5 squelettes sur patinoire", check: (r) => r.skeletons >= 5 },
   },
   {
     id: "3-8",
@@ -404,6 +426,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 2 } },
     timeLimit: 90,
+    platinum: { label: "APOCALYPSE sans BOOST posé", check: (r) => r.apocalypses >= 1 && !r.tools.includes("boost") },
   },
   {
     id: "3-9",
@@ -420,6 +443,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 45 }, efficient: { tilesUnder: 3 } },
     timeLimit: 75,
+    platinum: { label: "4 geysers déclenchés", check: (r) => r.geysers >= 4 },
   },
   {
     id: "3-10",
@@ -436,6 +460,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 7 } },
     timeLimit: 90,
+    platinum: { label: "1500 pts cumulés", check: (r) => r.score >= 1500 },
   },
 
   // MONDE 4 — Experts (4-1 à 4-5, 20⭐)
@@ -457,6 +482,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 7 } },
     timeLimit: 120,
+    platinum: { label: "+ 2 chaînes d'or en bonus", check: (r) => r.chains >= 2 },
   },
   {
     id: "4-2",
@@ -473,6 +499,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 80 }, efficient: { tilesUnder: 1 } },
     timeLimit: 120,
+    platinum: { label: "15 squelettes avec 1 tuile", check: (r) => r.skeletons >= 15 },
   },
   {
     id: "4-3",
@@ -492,6 +519,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 8 } },
     timeLimit: 130,
+    platinum: { label: "10 squelettes avant 90s", check: (r) => r.skeletons >= 10 && r.time < 90 },
   },
   {
     id: "4-4",
@@ -508,6 +536,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 10 } },
     timeLimit: 130,
+    platinum: { label: "3000 pts cumulés", check: (r) => r.score >= 3000 },
   },
   {
     id: "4-5",
@@ -524,6 +553,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 120 }, efficient: { tilesUnder: 6 } },
     timeLimit: 150,
+    platinum: { label: "5 APOCALYPSES dans la même run", check: (r) => r.apocalypses >= 5 },
   },
 
   // MONDE 5 — ÉNIGMES (5-1 à 5-8, 28⭐ pour débloquer)
@@ -545,6 +575,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
     timeLimit: 100,
+    platinum: { label: "Sans poser de BOOST", check: (r) => !r.tools.includes("boost") },
   },
   {
     id: "5-2",
@@ -562,6 +593,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 75 }, efficient: { tilesUnder: 4 } },
     timeLimit: 110,
+    platinum: { label: "5 squelettes malgré l'abîme", check: (r) => r.skeletons >= 5 },
   },
   {
     id: "5-3",
@@ -578,6 +610,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 4 } },
     timeLimit: 130,
+    platinum: { label: "8 squelettes avec 2 wagons", check: (r) => r.skeletons >= 8 },
   },
   {
     id: "5-4",
@@ -595,6 +628,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 70 }, efficient: { tilesUnder: 3 } },
     timeLimit: 100,
+    platinum: { label: "5 pièces sous 45s", check: (r) => r.coins >= 5 && r.time < 45 },
   },
   {
     id: "5-5",
@@ -613,6 +647,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 70 }, efficient: { tilesUnder: 3 } },
     timeLimit: 100,
+    platinum: { label: "5 pièces sous 40s", check: (r) => r.coins >= 5 && r.time < 40 },
   },
   {
     id: "5-6",
@@ -630,6 +665,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 55 }, efficient: { tilesUnder: 3 } },
     timeLimit: 90,
+    platinum: { label: "5 squelettes sous 30s", check: (r) => r.skeletons >= 5 && r.time < 30 },
   },
   {
     id: "5-7",
@@ -647,6 +683,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 3 } },
     timeLimit: 110,
+    platinum: { label: "600 pts via la roue", check: (r) => r.score >= 600 },
   },
   {
     id: "5-8",
@@ -663,6 +700,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 120 }, efficient: { tilesUnder: 6 } },
     timeLimit: 180,
+    platinum: { label: "12 squelettes avec 2 wagons", check: (r) => r.skeletons >= 12 },
   },
 
   // MONDE 6 — Mécaniques secrètes (6-1 à 6-5, 35⭐ pour débloquer)
@@ -681,6 +719,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 2 } },
     timeLimit: 100,
+    platinum: { label: "5 squelettes malgré la casse", check: (r) => r.skeletons >= 5 },
   },
   {
     id: "6-2",
@@ -697,6 +736,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 60 }, efficient: { tilesUnder: 0 } },
     timeLimit: 100,
+    platinum: { label: "5 squelettes sans poser de tuile", check: (r) => r.skeletons >= 5 && r.tiles === 0 },
   },
   {
     id: "6-3",
@@ -714,6 +754,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 70 }, efficient: { tilesUnder: 3 } },
     timeLimit: 120,
+    platinum: { label: "3 pièces sous 50s", check: (r) => r.coins >= 3 && r.time < 50 },
   },
   {
     id: "6-4",
@@ -730,6 +771,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 3 } },
     timeLimit: 150,
+    platinum: { label: "5 transformations avec 1 wagon", check: (r) => r.skeletons >= 5 },
   },
   {
     id: "6-5",
@@ -746,6 +788,7 @@ export const LEVELS = [
     ],
     stars: { time: { under: 90 }, efficient: { tilesUnder: 3 } },
     timeLimit: 130,
+    platinum: { label: "3 métronomes déclenchés", check: (r) => r.metronomes >= 3 },
   },
 ];
 

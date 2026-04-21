@@ -41,9 +41,16 @@ export function createCampaignSystem({
       tilesPlaced: 0,
       wagonsSpawned: 0,
       progress: Object.fromEntries(def.objectives.map((o) => [o.id, 0])),
+      counts: {
+        skeleton: 0, revive: 0, coin: 0, catapult: 0, loop: 0, apocalypse: 0,
+        chain: 0, constellation: 0, metronome: 0, magnetField: 0, geyser: 0,
+        portalUse: 0, wagon: 0, score: 0,
+      },
+      toolsUsed: new Set(),
       status: "playing",
       endAt: 0,
       stars: 0,
+      platinum: false,
     };
     wagonSpawnTimer = 0;
     gameState.score = 0;
@@ -117,6 +124,9 @@ export function createCampaignSystem({
 
   function progress(type, amount = 1) {
     if (!current || current.status !== "playing") return;
+    // Tracker raw count pour les prédicats platine
+    if (current.counts[type] == null) current.counts[type] = 0;
+    current.counts[type] += amount;
     // Fail early si type interdit dans failOn
     const failOn = current.def.failOn || {};
     if (failOn[type] != null) {
@@ -137,14 +147,39 @@ export function createCampaignSystem({
     checkWin();
   }
 
-  function onTileEvent() {
+  function onTileEvent(tool) {
     if (!current || current.status !== "playing") return;
     current.tilesPlaced++;
+    if (tool) current.toolsUsed.add(tool);
     if (current.def.tileBudget > 0 && current.tilesPlaced > current.def.tileBudget) {
       current.status = "lost";
       current.endAt = k.time();
       onLose?.({ levelId: current.def.id, reason: "budget", tiles: current.tilesPlaced });
     }
+  }
+
+  function buildResultPayload(state, elapsed) {
+    const c = state.counts || {};
+    return {
+      time: elapsed,
+      tiles: state.tilesPlaced,
+      stars: state.stars,
+      skeletons: c.skeleton || 0,
+      revives: c.revive || 0,
+      coins: c.coin || 0,
+      catapults: c.catapult || 0,
+      loops: c.loop || 0,
+      apocalypses: c.apocalypse || 0,
+      chains: c.chain || 0,
+      constellations: c.constellation || 0,
+      metronomes: c.metronome || 0,
+      magnetFields: c.magnetField || 0,
+      geysers: c.geyser || 0,
+      portalUses: c.portalUse || 0,
+      score: Math.floor(gameState.score || 0),
+      wagons: state.wagonsSpawned,
+      tools: Array.from(state.toolsUsed || []),
+    };
   }
 
   function checkWin() {
@@ -155,12 +190,21 @@ export function createCampaignSystem({
     current.status = "won";
     current.endAt = k.time();
     current.stars = computeStars(current.def, elapsed, current.tilesPlaced);
+    const payload = buildResultPayload(current, elapsed);
+    const plat = current.def.platinum;
+    if (plat && current.stars >= 3) {
+      try { current.platinum = !!plat.check(payload); } catch (_) { current.platinum = false; }
+    }
+    const alreadyPlatinum = !!save.campaign?.levels?.[current.def.id]?.platinum;
     recordResult(current);
     onWin?.({
       levelId: current.def.id,
       stars: current.stars,
       time: elapsed,
       tiles: current.tilesPlaced,
+      platinum: current.platinum,
+      platinumLabel: plat?.label || null,
+      alreadyPlatinum,
     });
   }
 
@@ -173,13 +217,14 @@ export function createCampaignSystem({
 
   function recordResult(state) {
     if (!save.campaign) save.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1] };
-    const prev = save.campaign.levels[state.def.id] || { stars: 0, bestTime: null, bestTiles: null, attempts: 0 };
+    const prev = save.campaign.levels[state.def.id] || { stars: 0, bestTime: null, bestTiles: null, attempts: 0, platinum: false };
     const elapsed = state.endAt - state.startTime;
     const newEntry = {
       stars: Math.max(prev.stars, state.stars),
       bestTime: prev.bestTime == null ? elapsed : Math.min(prev.bestTime, elapsed),
       bestTiles: prev.bestTiles == null ? state.tilesPlaced : Math.min(prev.bestTiles, state.tilesPlaced),
       attempts: (prev.attempts || 0) + 1,
+      platinum: prev.platinum || state.platinum,
     };
     save.campaign.levels[state.def.id] = newEntry;
     save.campaign.lastPlayedLevel = state.def.id;

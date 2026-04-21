@@ -82,6 +82,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     const trio = checkTriplet(1, -1) || checkTriplet(1, 1);
     if (!trio) return;
     window.__tiers?.onChain?.();
+    window.__campaign?.progress?.("chain");
     gameState.comboExpire = k.time() + 4;
     if (gameState.comboCount < 2) gameState.comboCount = 2;
     audio.combo();

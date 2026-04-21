@@ -1,6 +1,6 @@
 import { findLevel, nextLevelId } from "./levels.js";
 
-export function showCampaignResult({ won, stars, time, tiles, levelId, reason, onRetry, onNext, onMenu }) {
+export function showCampaignResult({ won, stars, time, tiles, levelId, reason, platinum, platinumLabel, alreadyPlatinum, onRetry, onNext, onMenu }) {
   const existing = document.getElementById("campaign-result");
   if (existing) existing.remove();
   const overlay = document.createElement("div");
@@ -44,10 +44,41 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, reason, o
   })();
   const reasonHtml = won ? "" : `<div style="color:#ffb090;font-size:14px;margin-top:6px">${reasonText}</div>`;
 
+  const platLabel = def?.platinum?.label || platinumLabel || null;
+  const platHtml = (() => {
+    if (!won || !platLabel) return "";
+    if (platinum) {
+      const banner = alreadyPlatinum
+        ? `<div style="color:#ffd23f;font-size:14px;font-weight:bold;margin-top:6px">PLATINE confirmée</div>`
+        : `<div style="color:#fff7c0;font-size:16px;font-weight:bold;margin-top:6px;letter-spacing:1px;animation:platShine 0.9s ease-out">✨ NOUVELLE PLATINE ! ✨</div>`;
+      return `
+        <div style="margin:8px auto 0 auto;padding:10px 14px;border-radius:10px;border:2px solid #ffd23f;background:linear-gradient(135deg,rgba(255,210,63,0.12),rgba(255,210,63,0.04));max-width:420px">
+          ${banner}
+          <div style="color:#ffd23f;font-size:13px;font-weight:bold;margin-top:4px">🏆 ${platLabel}</div>
+        </div>
+      `;
+    }
+    if (stars >= 3) {
+      return `
+        <div style="margin:8px auto 0 auto;padding:10px 14px;border-radius:10px;border:1.5px dashed rgba(255,210,63,0.55);max-width:420px">
+          <div style="color:rgba(255,210,63,0.85);font-size:11px;letter-spacing:2px;font-weight:bold">PLATINE À DÉBLOQUER</div>
+          <div style="color:#ffe88a;font-size:13px;margin-top:4px">🏆 ${platLabel}</div>
+        </div>
+      `;
+    }
+    return `
+      <div style="margin:8px auto 0 auto;padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);max-width:420px;opacity:0.65">
+        <div style="color:rgba(255,210,63,0.45);font-size:11px;letter-spacing:2px;font-weight:bold">PLATINE (3⭐ requises)</div>
+        <div style="color:rgba(255,232,138,0.35);font-size:13px;margin-top:4px;filter:blur(2.5px)">🏆 ${platLabel}</div>
+      </div>
+    `;
+  })();
+
   overlay.innerHTML = `
     <style>
       @keyframes resultFadeIn { from { opacity:0 } to { opacity:1 } }
       @keyframes starPop { 0% { transform:scale(0) rotate(-45deg) } 60% { transform:scale(1.3) rotate(0deg) } 100% { transform:scale(1) rotate(0deg) } }
+      @keyframes platShine { 0% { text-shadow:0 0 0 #ffd23f; transform:scale(0.8) } 50% { text-shadow:0 0 18px #ffd23f,0 0 30px #fff; transform:scale(1.08) } 100% { text-shadow:0 0 10px #ffd23f; transform:scale(1) } }
       .result-btn:hover { transform:translateY(-2px); box-shadow:0 6px 0 rgba(0,0,0,0.4) !important }
       .result-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.4) !important }
     </style>
@@ -64,7 +95,8 @@ export function showCampaignResult({ won, stars, time, tiles, levelId, reason, o
       </div>
       <div style="margin:14px 0 20px 0;min-height:80px">${starsHtml}</div>
       ${reasonHtml}
-      <div style="display:flex;gap:14px;justify-content:center;font-size:13px;color:#b4c8e8;margin:10px 0 22px 0">
+      ${platHtml}
+      <div style="display:flex;gap:14px;justify-content:center;font-size:13px;color:#b4c8e8;margin:14px 0 22px 0">
         <span>⏱ ${timeStr}</span>
         <span>🧰 ${tiles} tuiles</span>
       </div>
