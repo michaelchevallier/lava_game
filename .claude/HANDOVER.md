@@ -1,75 +1,79 @@
-# Handover — Milan Lava Park (2026-04-20 fin de session)
+# Handover — Milan Lava Park (2026-04-21 fin de session opus)
 
 ## État live
 
 - URL : https://michaelchevallier.github.io/lava_game/
-- Branche `main` : commit `e06bc53` pushé, CI auto-deploy GitHub Pages
-- Bundle : 62.13 KB gz game + 67.11 KB kaplay = ~129 KB
-- main.js : 1458 lignes (sous limite 1500)
-- Plus de crash écran bleu (3 bugs fixés ce soir)
+- Branche `main` : commit `47ebd6c` pushé, CI auto-deploy GitHub Pages
+- Bundle : ~62 KB gz game + 67 KB kaplay = **~129 KB** (OK)
+- main.js : 1463 lignes (sous limite 1500)
+- **wagons.js : 1386 lignes** (refactor Passes 1+2 terminé — sous limite)
+- Pas de crash connu
 
-## Fixes de la session (référence commits)
+## Ce qu'a fait la session précédente (7 commits)
 
-| Commit | Fix |
+| Commit | Quoi |
 |---|---|
-| `eb8cce4` | crash balloon `popBalloon` — passait Color obj à `k.color()` |
-| `5917de9` | crash portal collision — `p.color` undefined depuis refactor sprite 09f9ffb |
-| `d9b7fd3` | bridge pulse danger — overlay rouge restauré (silently no-op après refactor) |
-| `e06bc53` | race rider control + mode curseur + tutoriel cog position |
+| `bade731` | fix splash + tutorial — cog est en bas-droite |
+| `59ccc80` | 7 sprites avatars en vue de profil 20×30 (PIKA/SONIC/LINK/KIRBY/YOSHI/BOWSER + SKEL) |
+| `7ec18de` | `.claude/GAMEPLAY_PLAN.md` — synthèse débat 3 agents opus |
+| `ff59782` | Toggle menu tuiles (🧰, collapsed par défaut mobile) |
+| `905afb2` | Extract `wagon-draw.js` (-177 lignes) |
+| `dd996c5` | Specs Sprint 1 (combo juice + avis écrits) |
+| `47ebd6c` | Extract `wagon-vfx.js` (-296 lignes) |
 
-## Priorités pour la prochaine session (ordre strict)
+## État du Gameplay Plan (attente validation user)
 
-### 1. Sprites persos vue de côté (P0 user)
-Mario/Luigi/Toad sont déjà en profil 20×30 (commit `e31cf54`). Il faut convertir les autres avatars en profil aussi pour cohérence visuelle.
+User avait dit : *"aujourd'hui le jeu est creux comme pas permis"*. 3 agents opus ont débattu (simulation tycoon / arcade score hunt / sandbox communauté). Synthèse dans **`.claude/GAMEPLAY_PLAN.md`**.
 
-**À faire** : éditer `src/sprites.js` blocs suivants pour passer de vue de face à profil side-view (silhouette tournée vers droite, un œil visible, arm forward si approprié) :
-- `SPR_PIKA` (14×22 actuel → 20×30 profil)
-- `SPR_SONIC` (20×30 vue de face actuellement)
-- `SPR_LINK`, `SPR_KIRBY`, `SPR_PACMAN`, `SPR_YOSHI`, `SPR_BOWSER`, `SPR_POKEBALL`, `SPR_TETRIS`, `SPR_INVADER`
+**Recommandation** : arcade-heavy Sprint 1-2 + tycoon-lite Sprint 3 + sandbox reporté.
 
-Note : DK, Mega, Samus, Crash, Steve, Chief, Astro dérivent déjà via `substituteSprite(SPR_PLAYER, ...)` donc héritent automatiquement du Mario profil. Rien à faire pour eux.
+**Sprint 1 (prêt à shipper après greenlight)** :
+1. **Combo Meter juice** — spec détaillée dans `.claude/specs/sprint1-combo-juice.md` (7 commits estimés, ~2h dev)
+2. **Feed d'avis écrits** — spec détaillée dans `.claude/specs/sprint1-avis-ecrits.md` (5 commits estimés, ~3h dev)
 
-Règles :
-- Garder la grille 20 colonnes × 30 rangées (hitbox calibré dessus)
-- Silhouette tournée vers la droite (flipX gère le retour gauche)
-- Utiliser la palette existante (voir début de `sprites.js`)
-- Build + vérifier chaque sprite fait bien 20 chars de large avec :
-  ```bash
-  awk '/const SPR_XXX = \[/,/^\];/' src/sprites.js | grep -oE '"[^"]*"' | awk '{print length($0)-2}' | sort -u
-  ```
+**À demander au user** (cf. fin de `.claude/GAMEPLAY_PLAN.md` §5) :
+- Valide l'hybride, ou redirige ?
+- Sprint 1 point d'entrée OK, ou tu veux le Run 180s direct ?
+- Mode Sandbox legacy à garder ou retirer ?
+- Scope Phase 3+ intéressant ou hors-périmètre ?
 
-### 2. 3 agents créatifs — débat gameplay (P1 user)
-User : *"aujourd'hui le jeu est creux comme pas permis"*
+## Priorités pour la prochaine session (ordre)
 
-Spawn en **parallèle** (1 seul message, 3 `Agent` tool calls) :
-- **creative-opus #1** : Perspective "simulation parc" — le joueur construit, les visiteurs ont des désirs/émotions, économie, progression long-terme
-- **creative-opus #2** : Perspective "action arcade" — combos serrés, time pressure, score hunt, chain/combo meter, power moves
-- **creative-opus #3** : Perspective "sandbox créatif" — outils de construction à la Mario Maker, partage de circuits, challenges communauté, physics puzzles
+### 1. Obtenir greenlight user sur GAMEPLAY_PLAN
+Présenter les 4 questions. Dès réponse :
+- Si Sprint 1 OK → déléguer `sprint1-combo-juice.md` à un feature-dev sonnet en parallèle de `sprint1-avis-ecrits.md` (les deux specs n'ont pas de conflit fichier, peuvent tourner en parallèle).
 
-Chaque agent doit produire :
-- Diagnostic "pourquoi le jeu est creux"
-- 5 propositions concrètes qui comblent le vide
-- Une recommandation de **core loop** qui tient la rétention
+### 2. P3 items reportés
+- **Pose tuiles en hauteur** (ambigu — user doit clarifier : placer dans trous creusés ? ou en row < 0 ? Les deux ?). Ne pas implémenter à l'aveugle.
+- **Passe 3 wagons refactor** (optionnelle) : extract `tryBoardWagon` + `exitWagon` + `tryAutoBoardVisitor` → `src/wagon-rider.js` (~116 lignes) pour descendre wagons.js à ~1270. Bonus, pas bloquant.
 
-Puis tu synthétises les 3 retours en un **plan gameplay unifié** (1 doc markdown) et le présentes au user AVANT d'implémenter quoi que ce soit.
+### 3. Backlog créatif round 3 (CLAUDE.md)
+Boss Goret, Réparation Express, Parade Lave QTE, Aire Tir Mobile, Labyrinthe. Indépendant du GAMEPLAY_PLAN, à faire après Sprint 1+2.
 
-### 3. Items secondaires (à traiter si temps)
-- **Mobile toolbar** : menu tuiles trop petit sur mobile, ajouter bouton rentrer/sortir le menu
-- **Pose tuiles en hauteur** : quand user dezoom, row < 0 ou row >= GROUND_ROW est bloqué → permettre placement partout dans le viewport visible
-- **Splash typo** : "Engrenage en haut à droite" → "en bas à droite" (le cog est déplacé)
+### 4. Skeleton variants par avatar
+Unifié sur skeleton_generic actuellement. Les sprites vue-de-profil `_SKEL` par avatar existent maintenant (PIKA_SKEL refait). À wiring dans `avatars.js` quand un skeleton propre par avatar sera souhaité.
 
-## Conventions importantes (rappel)
+## Conventions rappel (utiles)
 
 - **Pas de commentaires superflus** (sauf WHY non-obvious)
 - **1 commit atomique par feature** + push immédiat
 - **Build systématique** après chaque changement (`npm run build`)
 - **Agent models** : bug-fixer/qa-tester en haiku, quality-maintainer/feature-dev/perf-auditor en sonnet, spec-writer en opus
-- **Pas de console.log** en prod (terser les strippe via drop_console)
-- **Tests** : user teste lui-même ou via agent qa-tester, PAS de Chrome MCP direct (trop lent, user l'a dit explicitement)
-- **Structure agents** (quatuor) : créatif → spec-writer → feature-dev → qa-tester + quality-maintainer en appui
+- **Tests** : user teste lui-même ou via agent qa-tester, PAS de Chrome MCP direct (trop lent, user l'a dit)
+- **Quatuor d'agents** : créatif → spec-writer → feature-dev → qa-tester + quality-maintainer en appui
 
-## Pitfalls KAPLAY rencontrés (éviter)
+## Pitfalls KAPLAY (ajouts session)
 
-- `k.color(colorObj)` crash "Invalid color arguments" dans certains contextes → utiliser `k.color(r, g, b)` en 3 args explicites
-- Refactor tile en sprite unique casse silently tous les accès `t.color.r/g/b` et `t.extras[N]` → auditer avant de refactor
-- `wagon.rider.pos = ...` chaque frame annule un parking off-screen → ne jamais repositionner un entity body avec `k.body` qui pilote une hitbox physique
+Rien de nouveau. Les pitfalls connus (CLAUDE.md) suffisent. Le refactor wagons.js s'est bien passé grâce au pattern factory closure `createWagonVfx({...})` qui préserve l'accès à `k`, `audio`, `gameState`, `tileMap`, etc.
+
+## Nouveaux fichiers depuis la dernière session
+
+- `src/wagon-draw.js` (180 lignes) — pure draw fns, pas de closure
+- `src/wagon-vfx.js` (303 lignes) — factory closure, collectCoin/revive/carillon/transform
+- `.claude/GAMEPLAY_PLAN.md` — plan unifié attente validation
+- `.claude/specs/sprint1-combo-juice.md` — spec Sprint 1a prête
+- `.claude/specs/sprint1-avis-ecrits.md` — spec Sprint 1b prête
+
+## État tasks
+
+Toutes les tasks P1/P2/P3 triviales cochées. Seule `P3: Pose tuiles en hauteur` reste pending car ambiguë — attend clarification user.
