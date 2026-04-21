@@ -149,6 +149,29 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+      #toolbar-buttons.collapsed { display: none; }
+      #toolbar-toggle {
+        width: 52px;
+        height: 52px;
+        background: #1a2236;
+        border: 1.5px solid #3c4e6e;
+        border-radius: 5px;
+        color: #ffd23f;
+        font-size: 22px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 6px;
+        flex-shrink: 0;
+        transition: border-color 0.1s, background 0.1s;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      #toolbar-toggle:hover { border-color: #ffd23f; background: #1e2c48; }
+      #toolbar-toggle:active { transform: scale(0.93); }
+      #toolbar-toggle.open { background: #ffd23f; color: #1a1a28; border-color: #ffd23f; }
       .tb-btn {
         width: 52px;
         height: 52px;
@@ -254,6 +277,7 @@
     </div>
 
     <div id="bottom-bar">
+      <button id="toolbar-toggle" title="Afficher/masquer le menu tuiles">🧰</button>
       <div id="toolbar-buttons"></div>
       <button id="cog-btn" title="Options (Cog)">&#9881;</button>
     </div>

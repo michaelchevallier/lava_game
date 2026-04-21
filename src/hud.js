@@ -28,6 +28,7 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   const elRecord = document.getElementById("hud-record");
   const elToolbar = document.getElementById("toolbar-buttons");
   const elCog = document.getElementById("cog-btn");
+  const elToolbarToggle = document.getElementById("toolbar-toggle");
 
   const TIPS = [
     "Astuce : aligne 3 pieces en diagonale = chaine d'or",
@@ -72,6 +73,19 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     __hudCogHandler = (e) => { if (e?.preventDefault) e.preventDefault(); onCogClick(); };
     elCog.addEventListener("click", __hudCogHandler);
     elCog.addEventListener("touchstart", __hudCogHandler, { passive: false });
+  }
+
+  if (elToolbar && elToolbarToggle) {
+    const isNarrow = window.innerWidth < 900 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    if (isNarrow) elToolbar.classList.add("collapsed");
+    else elToolbarToggle.classList.add("open");
+    const toggle = (e) => {
+      if (e?.preventDefault) e.preventDefault();
+      const wasCollapsed = elToolbar.classList.toggle("collapsed");
+      elToolbarToggle.classList.toggle("open", !wasCollapsed);
+    };
+    elToolbarToggle.addEventListener("click", toggle);
+    elToolbarToggle.addEventListener("touchstart", toggle, { passive: false });
   }
 
   function updateSelectedBtn(tool) {
