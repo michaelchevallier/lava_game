@@ -2,13 +2,13 @@ import kaplay from "kaplay";
 import {
   TILE, COLS, ROWS, GROUND_ROW, WIDTH, HEIGHT,
   COMBO_WINDOW, COMBO_MULTIPLIERS, MILESTONES,
-  gridKey, currentSeason, SEASON_PALETTES,
+  gridKey,
   WORLD_COLS, WORLD_WIDTH, MODE_CONFIG,
 } from "./constants.js";
 import { audio } from "./audio.js";
 import { loadAllSprites } from "./sprites.js";
-import { loadSave, persistSave, serializeTiles, deserializeTiles, showExportModal } from "./serializer.js";
-import { ensureVipToday, createContractRunner } from "./contracts.js";
+import { loadSave, persistSave } from "./serializer.js";
+import { ensureVipToday } from "./contracts.js";
 import { createTileSystem } from "./tiles.js";
 import { createWagonSystem } from "./wagons.js";
 import { createPlayerSystem } from "./players.js";
@@ -46,6 +46,9 @@ import { createCampaignMenu } from "./campaign-menu.js";
 import { createRunSystem, RUN_DURATION } from "./run.js";
 import { showRunResult } from "./run-result.js";
 import { showPauseMenu, hidePauseMenu } from "./pause-menu.js";
+import { createSceneOverlays } from "./scene-overlays.js";
+import { createSceneDecor } from "./scene-decor.js";
+import { createSandboxSetup } from "./sandbox-setup.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -338,248 +341,7 @@ k.scene("game", () => {
 
   k.loop(0.5, () => constellation.check());
 
-  k.onUpdate(() => {
-    for (const g of gameState.geysers) {
-      if (entityCounts.particle > 120) break;
-      if (Math.random() < 0.7) {
-        const cx = g.col * TILE + TILE / 2;
-        const cy = g.row * TILE;
-        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.5;
-        const sp = 80 + Math.random() * 80;
-        const p = k.add([
-          k.circle(2 + Math.random() * 2),
-          k.pos(cx + (Math.random() - 0.5) * 14, cy),
-          k.color(k.rgb(80, 200, 255)),
-          k.opacity(0.85),
-          k.lifespan(0.6, { fade: 0.3 }),
-          k.z(8),
-          "particle",
-          { vx: Math.cos(angle) * sp, vy: Math.sin(angle) * sp, grav: 200 },
-        ]);
-        p.onUpdate(() => {
-          p.pos.x += p.vx * k.dt();
-          p.pos.y += p.vy * k.dt();
-          p.vy += p.grav * k.dt();
-        });
-      }
-    }
-  });
-
-  k.loop(0.3, () => {
-    if (entityCounts.particle > 120) return;
-    for (const r of gameState.iceRinks) {
-      if (Math.random() < 0.5) {
-        const x = (r.startCol + Math.random() * r.len) * TILE;
-        const cry = k.add([
-          k.rect(2 + Math.random() * 2, 2 + Math.random() * 2),
-          k.pos(x, r.row * TILE - 80 - Math.random() * 40),
-          k.color(k.rgb(180, 220, 255)),
-          k.opacity(0.7),
-          k.lifespan(2, { fade: 1.5 }),
-          k.z(3),
-          "particle",
-          { vx: (Math.random() - 0.5) * 10, vy: 50 + Math.random() * 30 },
-        ]);
-        cry.onUpdate(() => {
-          cry.pos.x += cry.vx * k.dt();
-          cry.pos.y += cry.vy * k.dt();
-        });
-      }
-    }
-  });
-
-  k.add([
-    k.pos(0, 0),
-    k.z(8),
-    {
-      draw() {
-        for (const f of gameState.magnetFields) {
-          const ax = f.a.gridCol * TILE + TILE / 2;
-          const ay = f.a.gridRow * TILE + TILE / 2;
-          const bx = f.b.gridCol * TILE + TILE / 2;
-          const by = f.b.gridRow * TILE + TILE / 2;
-          const opacity = 0.3 + Math.sin(k.time() * 3) * 0.2;
-          for (let p = 0.08; p < 1; p += 0.12) {
-            const x = ax + (bx - ax) * p;
-            const y = ay + (by - ay) * p;
-            k.drawCircle({ pos: k.vec2(x, y - 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
-            k.drawCircle({ pos: k.vec2(x, y + 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
-          }
-        }
-        for (const mp of gameState.magnetPortals || []) {
-          const cx = mp.x + TILE / 2;
-          const cy = mp.y + TILE / 2;
-          const pulse = 0.5 + 0.5 * Math.sin(k.time() * 4);
-          k.drawCircle({
-            pos: k.vec2(cx, cy),
-            radius: 3 * TILE * (0.85 + 0.15 * pulse),
-            color: k.rgb(180, 80, 240),
-            opacity: 0.05 + 0.1 * pulse,
-          });
-          for (let i = 0; i < 6; i++) {
-            const ang = (i / 6) * Math.PI * 2 + k.time() * 1.5;
-            const r = 2 * TILE + Math.sin(k.time() * 3 + i) * 8;
-            k.drawCircle({
-              pos: k.vec2(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r),
-              radius: 4,
-              color: k.rgb(220, 140, 255),
-              opacity: 0.7,
-            });
-          }
-        }
-        // Crown on leading wagon (when 2+ wagons exist)
-        const allWagons = k.get("wagon").filter((w) => !w.inverseTrain);
-        if (allWagons.length >= 2) {
-          let leader = allWagons[0];
-          for (const w of allWagons) {
-            if (w.pos.x > leader.pos.x) leader = w;
-          }
-          const cx = leader.pos.x + 30;
-          const cy = leader.pos.y - 18 + Math.sin(k.time() * 4) * 2;
-          k.drawText({
-            text: "👑",
-            pos: k.vec2(cx - 12, cy),
-            size: 20,
-          });
-        }
-      },
-    },
-  ]);
-
-  k.add([
-    k.pos(0, 0),
-    k.z(2),
-    {
-      draw() {
-        const t = k.time();
-        for (const cr of gameState.iceCrowns) {
-          k.drawCircle({
-            pos: k.vec2(cr.cx, cr.cy),
-            radius: cr.radius,
-            color: k.rgb(140, 200, 255),
-            opacity: 0.05 + Math.sin(t * 2) * 0.04,
-          });
-          for (let i = 0; i < 4; i++) {
-            const a = (i / 4) * Math.PI * 2 + t * 1.5;
-            const r = TILE * 0.8;
-            const x = cr.cx + Math.cos(a) * r;
-            const y = cr.cy + Math.sin(a) * r;
-            k.drawRect({
-              pos: k.vec2(x - 3, y - 3),
-              width: 6,
-              height: 6,
-              angle: a * 180 / Math.PI,
-              color: k.rgb(200, 235, 255),
-              outline: { color: k.rgb(80, 140, 200), width: 1 },
-              anchor: "center",
-            });
-          }
-          for (let pi = 0; pi < 5; pi++) {
-            k.drawRect({
-              pos: k.vec2(cr.cx - 10 + pi * 5, cr.cy - 14 - (pi % 2) * 3),
-              width: 3,
-              height: 6 + (pi % 2) * 3,
-              color: k.rgb(255, 215, 60),
-              outline: { color: k.rgb(180, 130, 0), width: 1 },
-            });
-          }
-        }
-      },
-    },
-  ]);
-
-  k.loop(3, () => {
-    for (const tri of gameState.lavaTriangles) {
-      const visitors = k.get("visitor").filter((v) => !v.isSkeleton);
-      if (visitors.length === 0) continue;
-      let closest = null, bestD = Infinity;
-      for (const v of visitors) {
-        const d = Math.hypot(v.pos.x - tri.cx, v.pos.y - tri.cy);
-        if (d < bestD && d < 200) { bestD = d; closest = v; }
-      }
-      if (!closest) continue;
-      const ghost = k.add([
-        k.circle(6),
-        k.pos(tri.cx, tri.cy),
-        k.color(k.rgb(180, 30, 80)),
-        k.outline(2, k.rgb(60, 0, 0)),
-        k.opacity(0.85),
-        k.z(15),
-        "lava-ghost",
-        { target: closest, speed: 90 },
-      ]);
-      ghost.onUpdate(() => {
-        if (!ghost.target?.exists() || ghost.target.isSkeleton) {
-          k.destroy(ghost);
-          return;
-        }
-        const dx = ghost.target.pos.x - ghost.pos.x;
-        const dy = ghost.target.pos.y - ghost.pos.y;
-        const d = Math.hypot(dx, dy);
-        if (d < 12) {
-          ghost.target.isSkeleton = true;
-          ghost.target.sprite = "skeleton";
-          ghost.target.color.r = 255;
-          ghost.target.color.g = 255;
-          ghost.target.color.b = 255;
-          gameState.skeletons += 1;
-          gameState.score += 50;
-          audio.transform();
-          showPopup(ghost.target.pos.x + 14, ghost.target.pos.y - 30, "OEIL +50", k.rgb(180, 30, 80), 18);
-          for (let i = 0; i < 8; i++) {
-            const a = (Math.PI * 2 * i) / 8;
-            const p = k.add([
-              k.circle(3),
-              k.pos(ghost.target.pos.x + 14, ghost.target.pos.y + 20),
-              k.color(k.rgb(40, 0, 20)),
-              k.opacity(1),
-              k.lifespan(0.5, { fade: 0.3 }),
-              k.z(12),
-              "particle",
-              { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 },
-            ]);
-            p.onUpdate(() => {
-              p.pos.x += p.vx * k.dt();
-              p.pos.y += p.vy * k.dt();
-            });
-          }
-          k.destroy(ghost);
-          return;
-        }
-        ghost.pos.x += (dx / d) * ghost.speed * k.dt();
-        ghost.pos.y += (dy / d) * ghost.speed * k.dt();
-      });
-    }
-  });
-
-  k.add([
-    k.pos(0, 0),
-    k.z(3),
-    {
-      draw() {
-        const t = k.time();
-        for (const tri of gameState.lavaTriangles) {
-          const pulse = 0.5 + Math.sin(t * 4) * 0.5;
-          k.drawCircle({
-            pos: k.vec2(tri.cx, tri.cy),
-            radius: 12 + pulse * 4,
-            color: k.rgb(120, 20, 40),
-            opacity: 0.7 + pulse * 0.2,
-          });
-          k.drawCircle({
-            pos: k.vec2(tri.cx, tri.cy),
-            radius: 4,
-            color: k.rgb(20, 0, 0),
-          });
-          k.drawCircle({
-            pos: k.vec2(tri.cx + 1, tri.cy - 1),
-            radius: 1,
-            color: k.rgb(255, 200, 200),
-          });
-        }
-      },
-    },
-  ]);
+  createSceneOverlays({ k, gameState, entityCounts, audio, showPopup, TILE });
 
   function updatePersistence() {
     if (gameState.score > save.bestScore) {
@@ -768,158 +530,7 @@ k.scene("game", () => {
     WIDTH, HEIGHT, TILE, GROUND_ROW,
   });
 
-  for (let i = 0; i < 6; i++) {
-    k.add([
-      k.sprite("cloud"),
-      k.pos(i * 240 + (i % 2) * 60, 60 + (i % 3) * 40),
-      k.z(-10),
-      k.opacity(0.9),
-      "cloud",
-      { speed: 6 + (i % 3) * 3 },
-    ]);
-  }
-
-  {
-    const season = currentSeason();
-    const seasonPalette = SEASON_PALETTES[season];
-
-    if (season !== "normal") {
-      k.add([
-        k.rect(WIDTH, HEIGHT),
-        k.pos(0, 0),
-        k.color(k.rgb(seasonPalette.sky[0], seasonPalette.sky[1], seasonPalette.sky[2])),
-        k.opacity(0.08),
-        k.z(-9),
-      ]);
-    }
-
-    k.add([
-      k.pos(WIDTH - 180, HEIGHT - 22),
-      k.z(35),
-      {
-        draw() {
-          const labels = { normal: "Normal", halloween: "Halloween", christmas: "Noel", carnival: "Carnaval" };
-          k.drawText({
-            text: `Saison : ${labels[season]}`,
-            size: 11,
-            pos: k.vec2(0, 0),
-            color: k.rgb(seasonPalette.accent[0], seasonPalette.accent[1], seasonPalette.accent[2]),
-          });
-        },
-      },
-    ]);
-
-    if (season === "halloween") {
-      for (let i = 0; i < 5; i++) {
-        const cx = 100 + i * 230;
-        k.add([
-          k.circle(8),
-          k.pos(cx, GROUND_ROW * TILE - 12),
-          k.color(k.rgb(255, 140, 30)),
-          k.outline(1, k.rgb(80, 30, 0)),
-          k.z(-5),
-        ]);
-        k.add([
-          k.rect(2, 4),
-          k.pos(cx - 1, GROUND_ROW * TILE - 22),
-          k.color(k.rgb(60, 100, 30)),
-          k.z(-5),
-        ]);
-      }
-    } else if (season === "christmas") {
-      for (let i = 0; i < 8; i++) {
-        const flake = k.add([
-          k.circle(2),
-          k.pos(Math.random() * WIDTH, Math.random() * HEIGHT * 0.6),
-          k.color(k.rgb(255, 255, 255)),
-          k.opacity(0.85),
-          k.z(-3),
-          { vy: 25 + Math.random() * 30, drift: Math.random() * Math.PI * 2 },
-        ]);
-        flake.onUpdate(() => {
-          flake.pos.y += flake.vy * k.dt();
-          flake.pos.x += Math.sin(k.time() * 0.5 + flake.drift) * 8 * k.dt();
-          if (flake.pos.y > HEIGHT) flake.pos.y = -10;
-        });
-      }
-    } else if (season === "carnival") {
-      k.loop(2, () => {
-        if (k.get("season-confetti").length > 12) return;
-        const colors = [k.rgb(255, 80, 180), k.rgb(80, 220, 200), k.rgb(255, 220, 80), k.rgb(180, 80, 255)];
-        const c = k.add([
-          k.rect(4, 6),
-          k.pos(Math.random() * WIDTH, -10),
-          k.color(colors[Math.floor(Math.random() * 4)]),
-          k.rotate(Math.random() * 360),
-          k.opacity(0.7),
-          k.z(-3),
-          "season-confetti",
-          { vy: 30 + Math.random() * 20, spin: (Math.random() - 0.5) * 60 },
-        ]);
-        c.onUpdate(() => {
-          c.pos.y += c.vy * k.dt();
-          c.angle = (c.angle || 0) + c.spin * k.dt();
-          if (c.pos.y > HEIGHT) k.destroy(c);
-        });
-      });
-    }
-  }
-
-  k.add([
-    k.pos(0, 0),
-    k.z(-20),
-    {
-      draw() {
-        for (let i = 0; i < 4; i++) {
-          k.drawSprite({ sprite: "hill", pos: k.vec2(i * 330 - 50, GROUND_ROW * TILE - 64) });
-        }
-      },
-    },
-  ]);
-
-  const FLAG_COLORS = [
-    [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
-    [230, 100, 200], [255, 140, 40], [120, 100, 230], [255, 255, 255],
-  ];
-  for (let i = 0; i < 10; i++) {
-    const fx = 40 + i * 120 + Math.random() * 40;
-    const poleH = 60 + Math.random() * 30;
-    const poleY = GROUND_ROW * TILE - poleH;
-    k.add([
-      k.rect(3, poleH),
-      k.pos(fx, poleY),
-      k.color(k.rgb(80, 70, 60)),
-      k.z(-8),
-      "flag-pole",
-    ]);
-    k.add([
-      k.circle(3),
-      k.pos(fx + 1, poleY),
-      k.color(k.rgb(255, 210, 63)),
-      k.z(-7),
-      "flag-pole",
-    ]);
-    const col = FLAG_COLORS[i % FLAG_COLORS.length];
-    k.add([
-      k.rect(22, 14),
-      k.pos(fx + 3, poleY + 2),
-      k.color(k.rgb(col[0], col[1], col[2])),
-      k.z(-7),
-      "flag-deco",
-      { baseX: fx + 3, baseY: poleY + 2, phase: Math.random() * 6 },
-    ]);
-  }
-
-  k.onUpdate("flag-deco", (flag) => {
-    const w = Math.sin(k.time() * 3 + flag.phase);
-    flag.pos.x = flag.baseX + w * 1.5;
-    flag.pos.y = flag.baseY + Math.abs(w) * 1;
-  });
-
-  k.onUpdate("cloud", (c) => {
-    c.pos.x += c.speed * k.dt();
-    if (c.pos.x > WIDTH + 100) c.pos.x = -200;
-  });
+  createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW });
 
   const groundSystem = createGroundSystem({ k, gameState, audio });
   groundSystem.initColliders();
@@ -1073,38 +684,14 @@ k.scene("game", () => {
     else { settings.open = true; settingsModal.show(); }
   });
 
-  function buildDemoCircuit() {
-    tileMap.forEach((t) => {
-      if (t.extras) t.extras.forEach((e) => k.destroy(e));
-      k.destroy(t);
-    });
-    tileMap.clear();
-    placeTile(6, 13, "coin");
-    placeTile(8, 13, "coin");
-    placeTile(10, 13, "boost");
-    placeTile(13, 13, "lava");
-    placeTile(14, 13, "lava");
-    placeTile(15, 13, "lava");
-    placeTile(16, 13, "lava");
-    placeTile(18, 13, "coin");
-    placeTile(20, 12, "rail_up");
-    placeTile(21, 11, "rail");
-    placeTile(22, 11, "rail");
-    placeTile(23, 11, "coin");
-    placeTile(24, 11, "rail");
-    placeTile(25, 11, "rail");
-    placeTile(26, 12, "rail_down");
-    placeTile(28, 13, "trampoline");
-    placeTile(31, 13, "water");
-    placeTile(32, 13, "water");
-    placeTile(34, 13, "lava");
-    placeTile(35, 13, "lava");
-    placeTile(36, 13, "lava");
-    placeTile(3, 8, "portal");
-    placeTile(38, 13, "portal");
-  }
-
+  const sandbox = createSandboxSetup({
+    k, tileMap, save, persistSave, audio, juice, showPopup,
+    router, placeTile, groundSystem, spectres, WIDTH, HEIGHT,
+  });
+  const { buildDemoCircuit } = sandbox;
   buildTestCircuitRef = buildDemoCircuit;
+  exportActionRef = () => sandbox.exportAction();
+  resetParkRef = () => sandbox.resetPark();
 
   const MAX_WAGONS = 3;
 
@@ -1177,73 +764,7 @@ k.scene("game", () => {
   }
   k.onKeyPress(() => tryUnlockAudio());
 
-  function loadParkFromCode(code) {
-    try {
-      tileMap.forEach((t) => {
-        if (t.extras) t.extras.forEach((e) => k.destroy(e));
-        k.destroy(t);
-      });
-      tileMap.clear();
-      deserializeTiles(code, placeTile, (pairs) => groundSystem.loadDugMap(pairs));
-      audio.combo();
-      showPopup(WIDTH / 2, 100, "PARC CHARGE !", k.rgb(124, 201, 71), 32);
-    } catch (e) {
-      showPopup(WIDTH / 2, 100, "CODE INVALIDE", k.rgb(255, 80, 80), 28);
-    }
-  }
-
-  exportActionRef = () => {
-    const code = serializeTiles(tileMap, groundSystem.getDugMap());
-    spectres.unlock("first_save");
-    showExportModal(code, (pasted) => { loadParkFromCode(pasted); });
-  };
-
-  if (router.get().mode === "sandbox") {
-    if (save.sandboxLayout) {
-      k.wait(0.1, () => {
-        try {
-          deserializeTiles(save.sandboxLayout, placeTile, (pairs) => groundSystem.loadDugMap(pairs));
-        } catch (e) { console.error("sandbox layout load failed", e); }
-      });
-    }
-    k.loop(10, () => {
-      try {
-        save.sandboxLayout = serializeTiles(tileMap, groundSystem.getDugMap());
-        persistSave(save);
-      } catch (e) {}
-    });
-
-    const contractEntry = router.get().contractEntry;
-    if (contractEntry) {
-      const contractRunner = createContractRunner({
-        k, save, persistSave,
-        showPopup: (...args) => showPopup(...args),
-        WIDTH, HEIGHT,
-        onHonored: () => {
-          juice.dirShake(0, 1, 10, 0.25);
-          k.wait(1.8, () => { router.enter({ contractEntry: null }); });
-        },
-        onFailed: () => {
-          juice.dirShake(0, -1, 8, 0.2);
-          k.wait(1.2, () => { router.enter({ contractEntry: null }); });
-        },
-      });
-      window.__contract = contractRunner;
-      k.wait(0.4, () => contractRunner.start(contractEntry));
-      k.loop(0.5, () => contractRunner.tick(0.5));
-    }
-  }
-
-  resetParkRef = () => {
-    tileMap.forEach((t) => {
-      if (t.extras) t.extras.forEach((e) => k.destroy(e));
-      k.destroy(t);
-    });
-    tileMap.clear();
-    save.sandboxLayout = null;
-    persistSave(save);
-    showPopup(WIDTH / 2, 100, "PARC VIERGE !", k.rgb(124, 201, 71), 32);
-  };
+  sandbox.initSandboxScene();
 
   k.onMousePress("left", () => {
     tryUnlockAudio();
