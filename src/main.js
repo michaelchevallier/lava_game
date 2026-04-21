@@ -94,11 +94,14 @@ window.__getStats = () => {
 };
 
 loadAllSprites(k).then(() => {
-  const splash = createSplash({ save, persistSave, settings, onStart: () => {
+  const splash = createSplash({ save, persistSave, settings, onStart: (info) => {
+    const mode = info?.mode || "sandbox";
+    router.enter({ mode, numPlayers: info?.numPlayers || 1, avatars: info?.avatars || save.avatars });
     try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
   }});
   const recent = save.lastPlayed && (Date.now() - save.lastPlayed < 120000);
   if (recent) {
+    router.enter({ mode: "sandbox", numPlayers: save.numPlayers || 2, avatars: save.avatars });
     try { k.go("game"); } catch (e) { console.error("scene start failed", e); }
   } else {
     splash.show();
