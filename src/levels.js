@@ -530,12 +530,13 @@ export const LEVELS = [
     id: "5-1",
     world: 5,
     title: "Les cimes",
-    hint: "Collecte les pièces en hauteur. Tu as les bons outils, à toi de trouver comment.",
-    // 3 pièces à row 8 (haut), rails en bas
-    layout: "v2:" + railRow(3, 16) + "," + tile(7, 8, "C") + "," + tile(10, 8, "C") + "," + tile(13, 8, "C"),
+    hint: "Collecte les pièces en hauteur. Catapulte = trampoline 🎪 + ventilateur 🌀 juste au-dessus. Le wagon s'envole en parabole.",
+    // 3 pièces à row 10 (accessible au sommet d'un catapulte)
+    // Trampoline doit être placé ~col 5-6 pour que l'arc parabolique passe par 7/10/13
+    layout: "v2:" + railRow(3, 16) + "," + tile(8, 10, "C") + "," + tile(11, 10, "C") + "," + tile(14, 10, "C"),
     playerSpawn: { col: 4, row: 13 },
-    allowedTools: ["trampoline", "fan", "boost", "rail_loop", "erase"],
-    tileBudget: 5,
+    allowedTools: ["trampoline", "fan", "boost", "erase"],
+    tileBudget: 4,
     wagonLimit: 3,
     objectives: [
       { id: "coin3", type: "coin", target: 3, label: "Collecte les 3 pièces en hauteur" },
