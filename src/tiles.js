@@ -519,6 +519,33 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "bomb", extras: [], _fuseCd: 0, exploded: false },
       ]);
       tileMap.set(key, t);
+    } else if (type === "alarm_flood" || type === "alarm_freeze" || type === "alarm_wind") {
+      const variant = type === "alarm_flood" ? "flood" : type === "alarm_freeze" ? "freeze" : "wind";
+      const colorByVariant = {
+        flood: k.rgb(80, 160, 230),
+        freeze: k.rgb(180, 230, 255),
+        wind: k.rgb(200, 240, 180),
+      };
+      const iconByVariant = { flood: "💧", freeze: "❄", wind: "🌬" };
+      const delay = 10;
+      const t = k.add([
+        k.rect(TILE, TILE),
+        k.pos(col * TILE, row * TILE),
+        k.color(colorByVariant[variant]),
+        k.outline(2, k.rgb(40, 40, 60)),
+        k.opacity(0.85),
+        k.area(),
+        k.z(2),
+        "tile",
+        "alarm",
+        {
+          gridCol: col, gridRow: row, tileType: "alarm",
+          variant, triggerAt: k.time() + delay, detonated: false,
+          alarmIcon: iconByVariant[variant],
+          extras: [],
+        },
+      ]);
+      tileMap.set(key, t);
     } else if (type === "tunnel") {
       // Tunnel : 1 sprite pré-rendu (avant : base + 2 eyes = 3 entités → maintenant 1)
       const t = k.add([
@@ -597,6 +624,63 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       }
     }
   }
+
+  function detonateAlarm(t) {
+    if (!t || t.detonated) return;
+    t.detonated = true;
+    const cx = t.gridCol * TILE + TILE / 2;
+    const cy = t.gridRow * TILE + TILE / 2;
+    audio.combo?.();
+    window.__juice?.dirShake?.(1, 0, 6, 0.25);
+    const labels = { flood: "INONDATION !", freeze: "GEL !", wind: "BOURRASQUE !" };
+    const colors = { flood: k.rgb(80, 180, 230), freeze: k.rgb(180, 230, 255), wind: k.rgb(200, 240, 180) };
+    showPopup(cx, cy - 40, labels[t.variant] || "ALARME !", colors[t.variant], 24);
+    if (t.variant === "flood") {
+      const lavaPositions = [];
+      for (const tile of tileMap.values()) {
+        if (tile.tileType === "lava") lavaPositions.push({ col: tile.gridCol, row: tile.gridRow });
+      }
+      for (const p of lavaPositions) placeTile(p.col, p.row, "water");
+      k.wait(5, () => {
+        for (const p of lavaPositions) {
+          const existing = tileMap.get(gridKey(p.col, p.row));
+          if (existing && existing.tileType === "water") placeTile(p.col, p.row, "lava");
+        }
+      });
+    } else if (t.variant === "freeze") {
+      const until = k.time() + 3;
+      for (const w of k.get("wagon")) w.frozenUntil = until;
+    } else if (t.variant === "wind") {
+      const until = k.time() + 2;
+      for (const w of k.get("wagon")) w.windUntil = until;
+    }
+    placeTile(t.gridCol, t.gridRow, "erase");
+  }
+
+  k.onUpdate("alarm", (t) => {
+    if (t.detonated) return;
+    if (k.time() >= t.triggerAt) detonateAlarm(t);
+  });
+
+  k.onDraw(() => {
+    for (const t of k.get("alarm")) {
+      if (t.detonated) continue;
+      const remaining = Math.max(0, t.triggerAt - k.time());
+      k.drawText({
+        text: t.alarmIcon || "⏱",
+        pos: k.vec2(t.pos.x + TILE / 2, t.pos.y + 4),
+        size: 18,
+        anchor: "top",
+      });
+      k.drawText({
+        text: remaining <= 0.05 ? "0" : Math.ceil(remaining).toString(),
+        pos: k.vec2(t.pos.x + TILE / 2, t.pos.y + TILE - 4),
+        size: 12,
+        anchor: "bot",
+        color: remaining < 3 ? k.rgb(200, 40, 40) : k.rgb(20, 20, 40),
+      });
+    }
+  });
 
   k.onUpdate("bomb", (t) => {
     if (t.exploded) return;

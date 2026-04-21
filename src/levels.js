@@ -830,6 +830,27 @@ export const LEVELS = [
     timeLimit: 90,
     platinum: { label: "5 squelettes sans poser de tuile", check: (r) => r.skeletons >= 5 && r.tiles === 0 },
   },
+  {
+    id: "6-8",
+    world: 6,
+    title: "Alarme !",
+    hint: "ALARME 💧 pré-placée : dans 10s les LAVES deviennent eau 5s. Attends la vague, traverse, ramasse 3 pièces.",
+    layout: "v2:" + railRow(3, 16)
+      + "," + tile(10, 13, "L") + "," + tile(11, 13, "L") + "," + tile(12, 13, "L")
+      + "," + tile(13, 13, "C") + "," + tile(14, 13, "C") + "," + tile(15, 13, "C")
+      + "," + tile(10, 11, "A"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "erase"],
+    tileBudget: 2,
+    wagonLimit: 3,
+    failOn: { skeleton: 1 },
+    objectives: [
+      { id: "coin3", type: "coin", target: 3, label: "3 pièces sans brûler de wagon" },
+    ],
+    stars: { time: { under: 30 }, efficient: { tilesUnder: 1 } },
+    timeLimit: 60,
+    platinum: { label: "3 pièces avec 0 boost posé", check: (r) => r.coins >= 3 && !r.tools.includes("boost") },
+  },
 
   // MONDE 7 — Contrats VIP (7-1 à 7-5, 45⭐ pour débloquer)
   {
@@ -872,6 +893,25 @@ export const LEVELS = [
     stars: { time: { under: 60 }, efficient: { tilesUnder: 1 } },
     timeLimit: 100,
     platinum: { label: "APOCALYPSE sous 30s", check: (r) => r.apocalypses >= 1 && r.time < 30 },
+  },
+  {
+    id: "7-3",
+    world: 7,
+    title: "Compte à rebours",
+    hint: "ALARME ❄ dans 10s : tous les wagons gelés 3s. Fais 3 squelettes AVANT le gel (ou après, plus dur).",
+    layout: "v2:" + railRow(3, 16)
+      + "," + tile(7, 13, "L") + "," + tile(11, 13, "L")
+      + "," + tile(8, 11, "G"),
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["boost", "erase"],
+    tileBudget: 1,
+    wagonLimit: 4,
+    objectives: [
+      { id: "skel3", type: "skeleton", target: 3, label: "3 squelettes (avant ou après le gel)" },
+    ],
+    stars: { time: { under: 25 }, efficient: { tilesUnder: 1 } },
+    timeLimit: 45,
+    platinum: { label: "3 squelettes avant le gel (<10s)", check: (r) => r.skeletons >= 3 && r.time < 10 },
   },
 ];
 

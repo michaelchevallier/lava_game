@@ -32,6 +32,7 @@ export const TILE_CODE = {
   coin: "C", boost: "B", trampoline: "T", fan: "F", portal: "P",
   ice: "I", magnet: "M", bridge: "N", wheel: "Y", rail_loop: "Z",
   ground: "Q", tunnel: "X", bomb: "E",
+  alarm_flood: "A", alarm_freeze: "G", alarm_wind: "V",
 };
 export const CODE_TILE = Object.fromEntries(
   Object.entries(TILE_CODE).map(([k, v]) => [v, k]),
@@ -60,6 +61,9 @@ export const TOOLBAR_ORDER = [
   { tool: "sol", key: "K", label: "Sol" },
   { tool: "tunnel", key: "B", label: "Tunnel" },
   { tool: "bomb", key: "X", label: "Bombe" },
+  { tool: "alarm_flood", key: "", label: "Alarm💧" },
+  { tool: "alarm_freeze", key: "", label: "Alarm❄" },
+  { tool: "alarm_wind", key: "", label: "Alarm🌬" },
 ];
 export const TB_ICON = 52;
 export const TB_GAP = 4;

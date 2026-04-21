@@ -88,7 +88,7 @@ const TIERS = [
       { id: "duck5", label: "Pecher 5 canards", target: 5, hook: "duck" },
       { id: "skel100cum", label: "100 squelettes cumul", target: 100, hook: "skeletonCum" },
     ],
-    unlocks: ["bomb"],
+    unlocks: ["bomb", "alarm_flood", "alarm_freeze", "alarm_wind"],
   },
 ];
 

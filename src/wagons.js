@@ -336,6 +336,8 @@ export function createWagonSystem({
       const boosted = wagon.boostUntil && k.time() < wagon.boostUntil;
       const iced = wagon.iceUntil && k.time() < wagon.iceUntil;
       const sliding = wagon.slideUntil && k.time() < wagon.slideUntil;
+      const frozen = wagon.frozenUntil && k.time() < wagon.frozenUntil;
+      const windy = wagon.windUntil && k.time() < wagon.windUntil;
       if (boosted && wagon.boostStackUntil && k.time() > wagon.boostStackUntil) wagon.boostStack = 0;
       let speedMult = 1;
       if (boosted) {
@@ -343,6 +345,8 @@ export function createWagonSystem({
         speedMult = stack === 1 ? 2.2 : stack === 2 ? 3.0 : 4.5;
       } else if (sliding) speedMult = 3;
       else if (iced) speedMult = 1.6;
+      if (windy) speedMult += 1.2;
+      if (frozen) speedMult *= 0.35;
       for (const cr of gameState.iceCrowns || []) {
         const d = Math.hypot(wagon.pos.x + 30 - cr.cx, wagon.pos.y + 15 - cr.cy);
         if (d < cr.radius) {
