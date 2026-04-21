@@ -1,6 +1,9 @@
 import { LEVELS, levelsByWorld } from "./levels.js";
 import { AVATARS, getAvatarById } from "./avatars.js";
 import { SPECTRE_CATEGORIES, ALL_SPECTRES } from "./spectres.js";
+import { TILE_PRICES, TILE_LABELS, TILE_EMOJI, SKINS, buyTile, buySkin, setActiveSkin } from "./shop.js";
+import { persistSave } from "./serializer.js";
+import { getVipById, pickContract } from "./vips.js";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -174,14 +177,143 @@ export function createMuseum({ save }) {
   }
 
   function renderVipTab() {
-    return `
-      <div style="text-align:center;padding:40px 20px;color:rgba(180,200,232,0.55)">
-        <div style="font-size:48px;margin-bottom:12px;opacity:0.45">📜</div>
-        <div style="color:#ffd23f;font-size:14px;font-weight:bold;letter-spacing:1px;margin-bottom:8px">CONTRATS VIP HONORÉS</div>
-        <div style="font-size:12px;line-height:1.6;max-width:400px;margin:0 auto">
-          À venir — les VIP arrivent dans la prochaine grande mise à jour.<br>
-          Ils viendront au parc avec leurs propres contraintes et récompenses.
+    const almanac = (save.almanac || []).slice().reverse();
+    if (almanac.length === 0) {
+      return `
+        <div style="text-align:center;padding:40px 20px;color:rgba(180,200,232,0.55)">
+          <div style="font-size:48px;margin-bottom:12px;opacity:0.45">📜</div>
+          <div style="color:#ffd23f;font-size:14px;font-weight:bold;letter-spacing:1px;margin-bottom:8px">AUCUN CONTRAT HONORÉ</div>
+          <div style="font-size:12px;line-height:1.6;max-width:420px;margin:0 auto">
+            Honore un contrat VIP depuis l'écran "Aujourd'hui au parc" sur le splash et il apparaîtra ici avec le témoignage du visiteur.
+          </div>
         </div>
+      `;
+    }
+    const byVip = new Map();
+    for (const e of almanac) {
+      if (!byVip.has(e.vipId)) byVip.set(e.vipId, []);
+      byVip.get(e.vipId).push(e);
+    }
+    const cards = almanac.map((entry) => {
+      const vip = getVipById(entry.vipId);
+      if (!vip) return "";
+      const dateStr = entry.date ? new Date(entry.date + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "";
+      return `
+        <div style="
+          background:linear-gradient(135deg,${vip.color}99 0%,rgba(20,28,50,0.8) 100%);
+          border:2px solid ${vip.color};
+          border-radius:10px;padding:14px 16px;
+          max-width:300px;min-width:240px;
+          display:flex;flex-direction:column;gap:6px;
+        ">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:32px">${vip.emoji}</div>
+            <div>
+              <div style="font-size:14px;font-weight:bold;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,0.4)">${vip.name}</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.8)">${vip.age} ans · ${vip.personality}</div>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px 10px;font-style:italic;color:#fff;font-size:12px;line-height:1.4">« ${entry.testimonial} »</div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.7)">
+            <span>${dateStr}</span>
+            <span>+${entry.reward || 1} 🎫</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+    const totalTickets = (save.almanac || []).reduce((s, e) => s + (e.reward || 1), 0);
+    return `
+      <div style="text-align:center;margin-bottom:12px;color:#b4c8e8;font-size:13px">
+        <span style="color:#ffd23f;font-weight:bold">${almanac.length} contrat${almanac.length > 1 ? "s" : ""} honoré${almanac.length > 1 ? "s" : ""}</span>
+        &nbsp;·&nbsp;
+        <span style="color:#c090f0;font-weight:bold">${byVip.size} visiteur${byVip.size > 1 ? "s" : ""} différent${byVip.size > 1 ? "s" : ""}</span>
+        &nbsp;·&nbsp;
+        <span style="color:#7cc947;font-weight:bold">${totalTickets} 🎫 gagnés</span>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">${cards}</div>
+    `;
+  }
+
+  function renderShopTab() {
+    const tickets = save.tickets || 0;
+    const tilesHtml = Object.keys(TILE_PRICES).map((tool) => {
+      const owned = (save.ticketUnlocks || []).includes(tool);
+      const price = TILE_PRICES[tool];
+      const canAfford = tickets >= price;
+      return `
+        <div style="
+          background:rgba(0,0,0,0.45);
+          border:1.5px solid ${owned ? "#7cc947" : canAfford ? "#ffd23f" : "#3c4e6e"};
+          border-radius:8px;padding:10px;
+          display:flex;align-items:center;gap:10px;
+        ">
+          <div style="font-size:28px">${TILE_EMOJI[tool] || "◻"}</div>
+          <div style="flex:1">
+            <div style="color:#fff;font-weight:bold;font-size:13px">${TILE_LABELS[tool] || tool}</div>
+            <div style="color:${owned ? "#7cc947" : "#ffd23f"};font-size:11px;font-weight:bold">${owned ? "DÉBLOQUÉ" : `${price} 🎫`}</div>
+          </div>
+          ${owned
+            ? `<span style="color:#7cc947;font-size:12px;font-weight:bold">✓</span>`
+            : `<button class="shop-buy-tile" data-tool="${tool}" ${canAfford ? "" : "disabled"} style="
+                padding:6px 12px;font-size:11px;font-weight:bold;
+                background:${canAfford ? "#ffd23f" : "rgba(100,100,100,0.3)"};
+                color:${canAfford ? "#000" : "#666"};
+                border:0;border-radius:5px;cursor:${canAfford ? "pointer" : "not-allowed"};
+              ">ACHETER</button>`
+          }
+        </div>
+      `;
+    }).join("");
+
+    const skinsHtml = SKINS.map((skin) => {
+      const owned = (save.ownedSkins || []).includes(skin.id);
+      const active = save.activeSkin === skin.id;
+      const canAfford = tickets >= skin.price;
+      const color = `rgb(${skin.theme.body.join(",")})`;
+      return `
+        <div style="
+          background:rgba(0,0,0,0.45);
+          border:1.5px solid ${active ? "#ffd23f" : owned ? "#7cc947" : canAfford ? "#ffd23f" : "#3c4e6e"};
+          border-radius:8px;padding:12px;
+          display:flex;align-items:center;gap:12px;
+        ">
+          <div style="
+            width:48px;height:32px;border-radius:4px;
+            background:${color};
+            border:2px solid rgb(${skin.theme.dark.join(",")});
+            box-shadow:inset 0 0 0 2px rgb(${skin.theme.trim.join(",")});
+          "></div>
+          <div style="flex:1">
+            <div style="color:#fff;font-weight:bold;font-size:13px">${skin.emoji} ${skin.name}</div>
+            <div style="color:${active ? "#ffd23f" : owned ? "#7cc947" : "#ffd23f"};font-size:11px;font-weight:bold">${active ? "ACTIF" : owned ? "POSSÉDÉ" : `${skin.price} 🎫`}</div>
+          </div>
+          ${active
+            ? `<button class="shop-unequip-skin" style="padding:6px 12px;font-size:11px;font-weight:bold;background:rgba(255,100,100,0.2);color:#ffb4b4;border:1px solid #ffb4b4;border-radius:5px;cursor:pointer">RETIRER</button>`
+            : owned
+            ? `<button class="shop-equip-skin" data-skin="${skin.id}" style="padding:6px 12px;font-size:11px;font-weight:bold;background:#7cc947;color:#000;border:0;border-radius:5px;cursor:pointer">ÉQUIPER</button>`
+            : `<button class="shop-buy-skin" data-skin="${skin.id}" ${canAfford ? "" : "disabled"} style="
+                padding:6px 12px;font-size:11px;font-weight:bold;
+                background:${canAfford ? "#ffd23f" : "rgba(100,100,100,0.3)"};
+                color:${canAfford ? "#000" : "#666"};
+                border:0;border-radius:5px;cursor:${canAfford ? "pointer" : "not-allowed"};
+              ">ACHETER</button>`
+          }
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="display:inline-block;background:rgba(255,210,63,0.15);border:2px solid #ffd23f;padding:10px 20px;border-radius:10px;color:#ffd23f;font-size:18px;font-weight:bold">🎫 ${tickets} tickets d'or</div>
+        <div style="color:#b4c8e8;font-size:12px;margin-top:6px">Gagne des tickets en honorant les contrats VIP sur le splash.</div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="color:#ffd23f;font-size:13px;font-weight:bold;letter-spacing:1px;margin-bottom:10px">🛠️ TUILES AVANCÉES</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">${tilesHtml}</div>
+      </div>
+      <div>
+        <div style="color:#ffd23f;font-size:13px;font-weight:bold;letter-spacing:1px;margin-bottom:10px">🎨 SKINS DE WAGON</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">${skinsHtml}</div>
       </div>
     `;
   }
@@ -192,6 +324,7 @@ export function createMuseum({ save }) {
     if (currentTab === "spectres") return renderSpectresTab();
     if (currentTab === "runs") return renderRunsTab();
     if (currentTab === "vip") return renderVipTab();
+    if (currentTab === "shop") return renderShopTab();
     return "";
   }
 
@@ -214,7 +347,8 @@ export function createMuseum({ save }) {
       { id: "records", label: "⏱️ Records" },
       { id: "spectres", label: "👻 Spectres" },
       { id: "runs", label: "🎰 Runs" },
-      { id: "vip", label: "📜 VIP" },
+      { id: "vip", label: "📜 Almanach" },
+      { id: "shop", label: "🎫 Boutique" },
     ];
 
     const renderTabNav = () => tabs.map((t) => `
@@ -270,6 +404,35 @@ export function createMuseum({ save }) {
       currentTab = btn.dataset.tab;
       tabsBox.innerHTML = renderTabNav();
       contentBox.innerHTML = renderContent();
+    });
+
+    contentBox.addEventListener("click", (e) => {
+      const buyTileBtn = e.target.closest(".shop-buy-tile");
+      const buySkinBtn = e.target.closest(".shop-buy-skin");
+      const equipBtn = e.target.closest(".shop-equip-skin");
+      const unequipBtn = e.target.closest(".shop-unequip-skin");
+      if (buyTileBtn) {
+        const tool = buyTileBtn.dataset.tool;
+        const res = buyTile(save, persistSave, tool);
+        if (res.ok) contentBox.innerHTML = renderContent();
+        return;
+      }
+      if (buySkinBtn) {
+        const id = buySkinBtn.dataset.skin;
+        const res = buySkin(save, persistSave, id);
+        if (res.ok) contentBox.innerHTML = renderContent();
+        return;
+      }
+      if (equipBtn) {
+        setActiveSkin(save, persistSave, equipBtn.dataset.skin);
+        contentBox.innerHTML = renderContent();
+        return;
+      }
+      if (unequipBtn) {
+        setActiveSkin(save, persistSave, null);
+        contentBox.innerHTML = renderContent();
+        return;
+      }
     });
 
     overlay.querySelector("#museum-close")?.addEventListener("click", () => overlay.remove());

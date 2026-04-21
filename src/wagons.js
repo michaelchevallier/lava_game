@@ -1,4 +1,5 @@
 import { TILE, GROUND_ROW, WIDTH, HEIGHT, WAGON_THEMES, gridKey } from "./constants.js";
+import { getSkinTheme } from "./shop.js";
 import { hueToRgb, getRoyalLevel, drawWagonBody as _drawWagonBody, drawRoyalOverlay as _drawRoyalOverlay } from "./wagon-draw.js";
 import { createWagonVfx } from "./wagon-vfx.js";
 
@@ -73,10 +74,13 @@ export function createWagonSystem({
     ]);
 
     const isGolden = !ghost && !inverse && Math.random() < 0.07;
+    const skinTheme = (!ghost && !inverse && !isGolden) ? getSkinTheme(save) : null;
     const theme = (ghost || inverse)
       ? { body: [30, 30, 40], dark: [0, 0, 0], trim: [180, 30, 30] }
       : isGolden
       ? { body: [255, 200, 30], dark: [180, 130, 0], trim: [255, 255, 200] }
+      : skinTheme
+      ? skinTheme
       : WAGON_THEMES[Math.floor(Math.random() * WAGON_THEMES.length)];
     wagon.theme = theme;
     wagon.isGolden = isGolden;
