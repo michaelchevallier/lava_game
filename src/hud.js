@@ -169,6 +169,11 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     const budgetHtml = def.tileBudget > 0
       ? `<span style="color:${budgetColor}">🧰 ${state.tilesPlaced}/${def.tileBudget}</span>`
       : "";
+    const wagonsLeft = campaign.getWagonsLeft();
+    const wagonsColor = wagonsLeft <= 1 ? "#ff4a4a" : (wagonsLeft <= 2 ? "#ffd23f" : "#c8d8ff");
+    const wagonsHtml = (def.wagonLimit || 0) > 0 && isFinite(wagonsLeft)
+      ? `<span style="color:${wagonsColor}">🚃 ${wagonsLeft} (X)</span>`
+      : "";
     const title = `<span style="color:#ffd23f;font-weight:bold">${def.world}-${def.id.split("-")[1]} · ${def.title}</span>`;
     const objectives = def.objectives.map((o) => {
       const progress = state.progress[o.id] || 0;
@@ -185,7 +190,7 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     const hintHtml = def.hint ? `<div style="color:#aad4ff;font-size:11px;font-style:italic;max-width:420px;line-height:1.35">💡 ${def.hint}</div>` : "";
     elCampaignHud.innerHTML = `
       ${title}
-      <div style="display:flex;gap:14px;align-items:center">${timerHtml}${budgetHtml}</div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">${timerHtml}${budgetHtml}${wagonsHtml}</div>
       <div style="display:flex;flex-direction:column;gap:2px;align-items:center">${objectives}</div>
       ${hintHtml}
       ${status}

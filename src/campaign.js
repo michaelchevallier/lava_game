@@ -39,6 +39,7 @@ export function createCampaignSystem({
       def,
       startTime: k.time(),
       tilesPlaced: 0,
+      wagonsSpawned: 0,
       progress: Object.fromEntries(def.objectives.map((o) => [o.id, 0])),
       status: "playing",
       endAt: 0,
@@ -190,19 +191,41 @@ export function createCampaignSystem({
         return;
       }
     }
-    // Wagon auto-spawn selon le level
-    if (def.wagonSpawn?.auto && spawnWagon) {
-      wagonSpawnTimer += dt;
-      const interval = def.wagonSpawn.interval || 6;
-      const cap = def.wagonSpawn.cap || 1;
-      if (wagonSpawnTimer >= interval) {
-        wagonSpawnTimer = 0;
-        const live = k.get("wagon").length;
-        if (live < cap) {
-          try { spawnWagon(false, false); } catch (e) { console.error("spawnWagon campaign", e); }
-        }
+    // Lose condition : plus de wagons dispo ET plus de wagons en jeu ET objectifs pas atteints
+    if (canExhaustWagons()) {
+      const noWagonsLeft = k.get("wagon").length === 0;
+      if (noWagonsLeft) {
+        current.status = "lost";
+        current.endAt = k.time();
+        onLose?.({ levelId: def.id, reason: "wagons" });
       }
     }
+  }
+
+  function canExhaustWagons() {
+    if (!current) return false;
+    const limit = current.def.wagonLimit || 0;
+    if (limit === 0) return false;
+    return current.wagonsSpawned >= limit;
+  }
+
+  function canSpawnWagon() {
+    if (!current) return true;
+    const limit = current.def.wagonLimit || 0;
+    if (limit === 0) return true;
+    return current.wagonsSpawned < limit;
+  }
+
+  function onWagonSpawned() {
+    if (!current) return;
+    current.wagonsSpawned++;
+  }
+
+  function getWagonsLeft() {
+    if (!current) return 0;
+    const limit = current.def.wagonLimit || 0;
+    if (limit === 0) return Infinity;
+    return Math.max(0, limit - current.wagonsSpawned);
   }
 
   function isAllowed(tool) {
@@ -220,5 +243,6 @@ export function createCampaignSystem({
   return {
     loadLevel, progress, onTileEvent, tick, isAllowed,
     getCurrent, abort, computeStars,
+    canSpawnWagon, onWagonSpawned, getWagonsLeft,
   };
 }

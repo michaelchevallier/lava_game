@@ -974,7 +974,17 @@ k.scene("game", () => {
     settings.open = false;
     k.go("game");
   });
-  k.onKeyPress("x", () => { spawnWagon(); if (tutorial) tutorial.notifyWagonSpawned(); window.__tiers?.onWagonSpawn(); });
+  k.onKeyPress("x", () => {
+    const c = window.__campaign?.getCurrent?.();
+    if (c && !window.__campaign.canSpawnWagon()) {
+      showPopup(WIDTH / 2, 100, "Plus de wagons disponibles", k.rgb(255, 180, 80), 22);
+      return;
+    }
+    spawnWagon();
+    if (tutorial) tutorial.notifyWagonSpawned();
+    window.__tiers?.onWagonSpawn();
+    window.__campaign?.onWagonSpawned?.();
+  });
 
   // Respawn player(s) au centre de l'écran (dépanne si tombé hors map)
   k.onKeyPress(",", () => {
