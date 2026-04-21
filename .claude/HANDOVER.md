@@ -1,117 +1,109 @@
-# Handover — Milan Lava Park (2026-04-21 fin session refonte gameplay)
+# Handover — Milan Lava Park (2026-04-21 fin session créative)
 
 ## État live
 
 - URL : https://michaelchevallier.github.io/lava_game/
-- Branche `main` : commit `70b2b01` pushé, CI auto-deploy
-- Bundle : ~77 KB gz game + 67 KB kaplay = **~144 KB total** (user a abandonné la cible 100 KB)
-- 29 commits cette session, refonte game design complète livrée
-- Pas de QA live confirmée (qa-tester haiku n'a pas Chrome MCP dans cette config)
+- Branche `main` : commit `c2cff3d` pushé, CI auto-deploy
+- Bundle : ~77 KB gz game + 67 KB kaplay = ~144 KB total (user a libéré la cible)
+- 30+ commits session précédente (refonte v2 complète), + 4 docs créatifs ce tour-ci
 
-## Ce qui a été fait
+## Contexte (pour la prochaine session)
 
-### Refonte game design B2 (campagne + run + sandbox)
+La **refonte v2** (campagne 38 niveaux + run arcade + sandbox) est livrée et stable. Voir `.claude/plans/ne-me-mets-pas-keen-kahn.md` (plan précédent, archivé).
 
-**3 modes jouables**, écran d'accueil avec sélection :
-- **Campagne** : 38 niveaux solo répartis sur 5 mondes (Premiers pas / Combos / Challenges / Experts / Énigmes)
-- **Run arcade** : session 180s chronométrée, podium top 5 local par avatar
-- **Bac à sable** (discret) : le jeu actuel intact, 4P clavier préservé, race F2, tous systèmes ON
+Une **session créative** a été menée :
+- 3 agents opus en parallèle (puzzles / carte blanche / progression)
+- 3 rounds de Q&A AskUserQuestion avec le user (12 questions)
+- Plan final validé dans `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md`
 
-### Architecture technique
+## ➡️ PROCHAINE SESSION = IMPLÉMENTATION SPRINTS 0-4
 
-```
-src/router.js         — state machine mode
-src/constants.js       — MODE_CONFIG { campaign, run, sandbox } feature flags
-src/main.js            — scene game lit MODE_CONFIG, wire hooks campaign/run
-src/splash.js          — 3 cartes mode, avatar contextuel
-src/hud.js             — HUD polymorphe (sandbox / campaign / run)
-src/campaign.js        — loadLevel, progress, tick, failOn, stars, persistance
-src/campaign-menu.js   — grille niveaux + déverrouillage par étoiles cumulées
-src/campaign-result.js — overlay fin de niveau avec raisons d'échec nommées
-src/levels.js          — 38 niveaux avec helpers railRow() et tile()
-src/run.js             — timer 180s, spawn auto wagons 5s/cap 3
-src/run-result.js      — podium top 5 local par avatar
-src/pause-menu.js      — Escape en campagne/run = Retry/Menu/Accueil
-src/settings-modal.js  — mode-aware (cache sandbox-only sections en campagne)
-```
+Le plan approuvé est dans `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md`. Consulte-le EN PREMIER. Résumé :
 
-### Gameplay campagne
+### Sprint 0 — Cleanup 4P (1-2h)
+Vire la notion 4 joueurs, garde 1-2 max partout. Fichiers : splash, settings-modal, main, players, constants, index.html, CLAUDE.md.
 
-**Wagons manuels** : plus de spawn automatique, X lance un wagon, compteur visible HUD 🚃 N (X).  
-**WagonLimit par niveau** : si tous wagons utilisés sans objectif atteint → lost.  
-**Tile budget** : max tuiles plaçables, lost si dépassé.  
-**Objectives** : skeleton / revive / coin / catapult / loop / apocalypse / score.  
-**FailOn** : niveau perdu si condition interdite atteinte (ex 5-5 forbid skeleton=1).  
-**Étoiles 3/3** : ⭐ finir / ⭐⭐ temps / ⭐⭐⭐ budget.  
-**Hint par niveau** + **overlay intro 3.5s** + **tooltips toolbar enrichis**.  
-**Coins respawn 2.5s en campagne** (sinon niveaux 5+ pièces impossibles).  
-**Pass-through skeleton count** : wagon déjà squelette passant lave compte quand même en campagne (cooldown 1s).
+### Sprint 1 — Quick wins puzzles (4h)
+- Wire 4 hooks combo orphelins (geyser, constellation, metronome, magnetField)
+- +5 niveaux Monde 6 en pure data (6-1 pont chancelant, 6-2 tunnel maléfique, 6-10 cascade fatale, 6-14 yin yang infini, 6-15 métronome)
 
-### Niveaux (38 au total)
+### Sprint 2 — Métagame étendu (12-14h)
+- Médailles Platine pré-écrites (38 prédicats custom dans levels.js)
+- Speedrun Records foyer (top 3 par niveau cross-avatar)
+- 🏆 Musée / Trophy Room (nouveau module src/museum.js, 5 onglets)
+- Refonte spectres 24 → 6 catégories × 4 avec titres débloqués
 
-| Monde | Seuil | Titres |
-|---|---|---|
-| 1 Premiers pas | 0⭐ | Premier wagon · Le sauveur · La collecte · Catapulte · La boucle |
-| 2 Combos | 5⭐ | Triple incinération · Cycle parfait · Chaîne d'or · Acrobate · Yin Yang · Escalier d'or · Grand saut · Looper pro · Lave et glace · APOCALYPSE |
-| 3 Challenges | 12⭐ | Minimaliste · Time trial · Le magot · Portail maître · Double sommet · Vide-caisse · Patinoire mortelle · Grand frisson · Geyser Express · Maître forain |
-| 4 Experts | 20⭐ | Symphonie · Ultra minimaliste · Boucle infinie (puzzle rampe!) · Le gardien · Maître absolu |
-| 5 Énigmes | 28⭐ | Les cimes · L'abîme · Le vortex · Le pont suspendu · Le plongeur · Patinoire infernale · Énigme du forain · La dernière énigme |
+### Sprint 3 — VIP narratif + persistance (14-16h)
+- Parc sandbox persistant (save.sandboxLayout)
+- Pool 40 VIP nommés dans src/vips.js
+- Seed journalière → 3 contrats/jour
+- Écran "Aujourd'hui au parc" sur splash
+- Tickets d'Or monnaie (débloque tuiles avancées + skins)
+- Almanach témoignages post-victoire (src/almanac.js)
 
-### Fixes notables livrés cette session
+### Sprint 4 — Nouvelles mécaniques (8h)
+Dans l'ordre : Visitor (faire monter passagers) → Bomb (lava s'étend) → Alarm (flood/freeze/wind).
 
-- Player spawn en l'air → tombe naturellement sur sol (avant traversée horizontale)
-- Portail au sol n'éjecte plus le wagon (clamp Y + reset vel.y)
-- Drag-to-paint désactivé en campagne (préserve budget)
-- Toolbar grisée pour tuiles non-autorisées en campagne + cursor/erase toujours dispo
-- Placement de tuiles dans le sol creusé (isDug)
-- humansCount skeletons (passager multiple = multi-count)
-- Escape en campagne = pause menu (Retry / Menu / Accueil)
-- Settings modal cache sections sandbox-only en campagne/run
-- Trampoline fallback grid-based (résout collision borderline)
-- Rail_loop progress tracking (360° complétion hook)
-- Spawn hint "Appuie sur X" si idle 3s en campagne
-- Level intro ferme sur Escape
-- HUD campagne caché pendant pause
+**Total estimé : 39-44h dev, ~30-40 commits atomiques, 4-6 sessions d'impl.**
 
-## Ce qui n'est PAS fait (backlog)
+## Décisions tranchées avec l'user (Q&A validé)
 
-### Phase F — Retirements fluff
-User a assoupli la règle : on garde les cosmétiques qui **clarifient les interactions tile×combo** (clouds, geyser particles, magnet/ice auras, lava bubbles).  
-À retirer encore (non commencé) :
-- Lava triangle ghosts (~90L) — obscur
-- Flags waving (~40L)
-- Crowd BRAVO text (~10L)
-- Season cosmetics animations (~55L)
+| Sujet | Décision |
+|---|---|
+| Ordre sprints | 0 → 1 → 2 → 3 → 4 (séquentiel) |
+| Scope | Skip Sprint 5 (éditeur/share) |
+| Audience | Milan + père/adulte, **max 2 joueurs** |
+| Device | PC + tablet (pas de focus mobile) |
+| Narration VIP | OK témoignages post-victoire, pas auto |
+| Platine | Pré-écrites par niveau (premium) |
+| Parc persistant | Oui, localStorage |
+| Spectres | Refonte 6×4 catégories avec titres |
+| Pool VIP | 40 personas au launch |
+| Tickets | Débloquent tuiles + skins (les deux) |
 
-### Polish restant
-- Tutorial.js (145L) pas supprimé, il tourne en sandbox mais remplacé par niveaux 1-5 de campagne
-- Mode libre picker 4P (bouton discret) OK mais expansion 3-4P pas intégrée dans le picker splash
-- CLAUDE.md pas à jour sur les modes
-- Achievements/spectres pas encore liés aux étoiles campagne (v1.1 future)
-- Pas de skeleton variants par avatar (unifié sur skeleton_generic)
-- Sons dédiés fin campagne/run manquants (utilise audio.combo générique)
+## Docs de référence
 
-### Points à tester côté user
-
-1. Les 38 niveaux sont-ils jouables et finissables pour Milan 8 ans ?
-2. La rampe 4-3 "Boucle infinie" fonctionne-t-elle comme prévu ?
-3. Le mode run 180s est-il équilibré (score atteignable, tension sans stress) ?
-4. Aucune régression sandbox ?
-5. Settings modal clean en campagne ?
-6. Trampoline + fan catapulte fiable ?
+- `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` — **PLAN OFFICIEL approuvé** (à exécuter)
+- `.claude/CREATIVE_NEXT.md` — synthèse unifiée (300L)
+- `.claude/creative-puzzles.md` — détails puzzles Sprint 1 + 4 (780L)
+- `.claude/creative-carteblanche.md` — détails VIP Sprint 3 (437L)
+- `.claude/creative-progression.md` — détails métagame Sprint 2 (612L)
 
 ## Conventions rappel
 
-- **1 commit atomique par feature** + push immédiat ✓
-- **Build systématique** avant commit ✓
-- Bundle : pas de contrainte stricte (user a libéré)
+- 1 commit atomique par feature + push immédiat
+- Build systématique avant commit (`npm run build`)
+- Bundle libéré de contrainte stricte
 - Agent models : qa-tester haiku, feature-dev sonnet, spec-writer opus
-- Pas de commentaires superflus, pas de console.log en prod
+- Pas de commentaires superflus, pas de console.log prod
 
-## Plan de référence
+## Fichiers cibles par sprint
 
-`/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` — plan game design complet approuvé, phases A+B+C+D+E implémentées. Seules F (retirements) et G (polish final) restent partiellement.
+**Nouveaux à créer** :
+- `src/museum.js` (Sprint 2)
+- `src/vips.js` (Sprint 3)
+- `src/contracts.js` (Sprint 3)
+- `src/almanac.js` (Sprint 3)
+- `src/tickets.js` (Sprint 3)
+
+**Fortement modifiés** :
+- `src/splash.js` (Sprint 0, 2, 3)
+- `src/main.js` (Sprint 0, 1, 3)
+- `src/levels.js` (Sprint 1, 2, 4)
+- `src/campaign.js` (Sprint 2, 4)
+- `src/serializer.js` (migrations Sprint 2, 3)
+- `src/spectres.js` (Sprint 2 refonte)
 
 ## État tasks
 
-Tasks #16-43 complétées. Backlog en notes ci-dessus.
+- Task #45 créée "Sprint 0: cleanup 4P" — in_progress mais AUCUN changement de code encore (user a stoppé à temps)
+- Toutes les tasks précédentes complétées
+
+## Pour démarrer la prochaine session
+
+1. Lire `.claude/HANDOVER.md` (ce fichier)
+2. Lire `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` (plan complet)
+3. Démarrer Sprint 0 (commit `chore(cleanup): vire 4 joueurs, garde 1-2 max`)
+4. Continuer dans l'ordre Sprint 1, 2, 3, 4
+
+Auto mode recommandé pour les sprints mécaniques (Sprint 0, 1). Plan mode recommandé si on veut re-débattre avant Sprint 3 (VIP) qui est le plus ambitieux.
