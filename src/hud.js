@@ -114,6 +114,65 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
   ].join(";");
   document.body.appendChild(elTierBox);
 
+  // Campaign HUD : titre + timer + objectifs + budget (bouton au-dessus du HUD bas)
+  document.getElementById("campaign-hud")?.remove();
+  const elCampaignHud = document.createElement("div");
+  elCampaignHud.id = "campaign-hud";
+  elCampaignHud.style.cssText = [
+    "position:fixed", "top:56px", "left:50%", "transform:translateX(-50%)",
+    "background:rgba(15,20,40,0.95)", "border:2px solid #7cc947",
+    "border-radius:8px", "padding:8px 16px", "display:none",
+    "flex-direction:column", "gap:4px", "align-items:center",
+    "font-size:13px", "color:#c8d8ff", "font-family:system-ui,sans-serif",
+    "pointer-events:none", "z-index:900", "min-width:320px", "max-width:90vw",
+  ].join(";");
+  document.body.appendChild(elCampaignHud);
+
+  function updateCampaignHud() {
+    const campaign = window.__campaign;
+    if (!campaign) { elCampaignHud.style.display = "none"; return; }
+    const state = campaign.getCurrent();
+    if (!state) { elCampaignHud.style.display = "none"; return; }
+    elCampaignHud.style.display = "flex";
+    const def = state.def;
+    const elapsed = k.time() - state.startTime;
+    const timeLeft = def.timeLimit > 0 ? Math.max(0, def.timeLimit - elapsed) : 0;
+    const timerColor = timeLeft < 10 ? "#ff4a4a" : (timeLeft < 30 ? "#ffd23f" : "#7cdc60");
+    const timerHtml = def.timeLimit > 0
+      ? `<span style="color:${timerColor};font-weight:bold">⏱ ${formatTime(timeLeft)}</span>`
+      : "";
+    const budgetLeft = Math.max(0, (def.tileBudget || 0) - state.tilesPlaced);
+    const budgetColor = budgetLeft < 2 ? "#ff4a4a" : (budgetLeft < 4 ? "#ffd23f" : "#c8d8ff");
+    const budgetHtml = def.tileBudget > 0
+      ? `<span style="color:${budgetColor}">🧰 ${state.tilesPlaced}/${def.tileBudget}</span>`
+      : "";
+    const title = `<span style="color:#ffd23f;font-weight:bold">${def.world}-${def.id.split("-")[1]} · ${def.title}</span>`;
+    const objectives = def.objectives.map((o) => {
+      const progress = state.progress[o.id] || 0;
+      const done = progress >= o.target;
+      const color = done ? "#7cdc60" : "#c8d8ff";
+      const check = done ? "✓ " : "";
+      return `<div style="color:${color}">${check}${o.label} <span style="color:#ffd23f">(${progress}/${o.target})</span></div>`;
+    }).join("");
+    const status = state.status === "won"
+      ? `<div style="color:#7cdc60;font-weight:bold;font-size:18px">BRAVO ! ${"⭐".repeat(state.stars)}</div>`
+      : state.status === "lost"
+        ? `<div style="color:#ff4a4a;font-weight:bold">RATE</div>`
+        : "";
+    elCampaignHud.innerHTML = `
+      ${title}
+      <div style="display:flex;gap:14px;align-items:center">${timerHtml}${budgetHtml}</div>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:center">${objectives}</div>
+      ${status}
+    `;
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const r = Math.floor(s % 60);
+    return `${m}:${String(r).padStart(2, "0")}`;
+  }
+
   function updateTierBox() {
     const tiers = getTiers?.();
     if (!tiers) { elTierBox.style.display = "none"; return; }
@@ -216,15 +275,20 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     // Outil sélectionné — universel
     updateSelectedBtn(getCurrentTool());
 
-    // Tier box : sandbox uniquement (campaign/run ont leurs propres renderers — C.3 / D.2)
+    // Tier box : sandbox uniquement. Campaign a son propre renderer.
     if (mode === "sandbox") {
       if (now - lastTierUpdate > 500) {
         lastTierUpdate = now;
         updateTierBox();
         updateToolbarLock();
       }
-    } else if (elTierBox.style.display !== "none") {
-      elTierBox.style.display = "none";
+      if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
+    } else if (mode === "campaign") {
+      if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
+      updateCampaignHud();
+    } else {
+      if (elTierBox.style.display !== "none") elTierBox.style.display = "none";
+      if (elCampaignHud.style.display !== "none") elCampaignHud.style.display = "none";
     }
   }, 100);
 
