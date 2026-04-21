@@ -38,6 +38,7 @@ import { createWeatherSystem } from "./weather.js";
 import { createMinigames } from "./minigames.js";
 import { createCelebrationSystem } from "./celebration.js";
 import { createRaceSystem } from "./race.js";
+import { createRouter } from "./router.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -143,6 +144,9 @@ const settings = {
   numPlayers: save.numPlayers || 2,
   autoMode: save.autoMode || false,
 };
+
+const router = createRouter({ mode: "sandbox", numPlayers: save.numPlayers || 2 });
+window.__router = router;
 
 const gameState = {
   skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
