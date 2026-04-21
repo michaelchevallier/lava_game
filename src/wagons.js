@@ -755,6 +755,25 @@ export function createWagonSystem({
         }
       }
 
+      // Trampoline fallback : si onCollide rate (bord de hitbox), détection grid-based
+      {
+        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
+        const wRow = Math.floor((wagon.pos.y + 40) / TILE);
+        const tileHere = tileMap.get(gridKey(wCol, wRow));
+        if (tileHere?.tileType === "trampoline" && (!wagon.lastBounce || k.time() - wagon.lastBounce > 0.3)) {
+          wagon.lastBounce = k.time();
+          const fanAbove = tileMap.get(gridKey(wCol, wRow - 1));
+          if (fanAbove?.tileType === "fan") {
+            catapultWagon(wagon);
+            window.__campaign?.progress?.("catapult");
+          } else {
+            wagon.jump?.(850);
+            window.__juice?.dirShake(0, -1, 4, 0.12);
+            audio.boost();
+          }
+        }
+      }
+
       // Métronome Infernal: 2 boosts verticaux (gap 3, lava entre) traversés top→bottom en <0.8s
       {
         const wCol = Math.floor((wagon.pos.x + 30) / TILE);

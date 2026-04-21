@@ -40,7 +40,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
         <button id="sm-close" style="background:none;border:1px solid rgba(255,255,255,0.2);color:#ccc;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;line-height:1">&#x2715;</button>
       </div>
 
-      <section style="margin-bottom:22px">
+      <section data-scope="sandbox" style="margin-bottom:22px">
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Joueurs</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
           ${[1,2].map(i => `
@@ -105,7 +105,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
         </div>
       </section>
 
-      <section style="margin-bottom:22px">
+      <section data-scope="sandbox" style="margin-bottom:22px">
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Monde</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button id="sm-demo" style="
@@ -126,12 +126,12 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Actions</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button id="sm-home" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(124,201,71,0.95);color:#000;font-weight:bold">🏠 Retour accueil</button>
-          <button id="sm-build" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(70,90,180,0.9);color:#fff;font-weight:bold">Circuit test</button>
-          <button id="sm-export" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(160,90,220,0.9);color:#fff;font-weight:bold">Exporter le parc</button>
           <button id="sm-help" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(60,130,200,0.9);color:#fff;font-weight:bold">Aide</button>
-          <button id="sm-carnet" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(100,40,160,0.9);color:#fff;font-weight:bold">Carnet des Spectres</button>
-          <button id="sm-reset" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(180,40,40,0.8);color:#fff;font-weight:bold">Reset score</button>
-          <button id="sm-unlock-all" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(200,160,30,0.9);color:#111;font-weight:bold">Debloquer toutes les tuiles</button>
+          <button id="sm-build" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(70,90,180,0.9);color:#fff;font-weight:bold">Circuit test</button>
+          <button id="sm-export" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(160,90,220,0.9);color:#fff;font-weight:bold">Exporter le parc</button>
+          <button id="sm-carnet" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(100,40,160,0.9);color:#fff;font-weight:bold">Carnet des Spectres</button>
+          <button id="sm-reset" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(180,40,40,0.8);color:#fff;font-weight:bold">Reset score</button>
+          <button id="sm-unlock-all" data-scope="sandbox" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(200,160,30,0.9);color:#111;font-weight:bold">Debloquer toutes les tuiles</button>
         </div>
       </section>
     `;
@@ -280,7 +280,17 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
   function show() {
     if (!modal) buildModal();
     refreshPlayerCards();
+    applyModeScope();
     modal.style.display = "flex";
+  }
+
+  function applyModeScope() {
+    if (!modal) return;
+    const mode = window.__router?.get?.().mode || "sandbox";
+    const isSandbox = mode === "sandbox";
+    modal.querySelectorAll("[data-scope='sandbox']").forEach((el) => {
+      el.style.display = isSandbox ? "" : "none";
+    });
   }
 
   function hide() {
