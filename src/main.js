@@ -1490,7 +1490,8 @@ k.scene("game", () => {
   if (router.get().mode === "campaign") {
     const campaign = createCampaignSystem({
       k, tileMap, gameState, save, persistSave,
-      placeTile, groundSystem, showPopup: (...args) => showPopup(...args),
+      placeTile, groundSystem, spawnWagon,
+      showPopup: (...args) => showPopup(...args),
       onWin: (r) => {
         showPopup(WIDTH / 2, 100, `BRAVO ! ${"⭐".repeat(r.stars)}`, k.rgb(124, 201, 71), 40);
         audio.combo?.();
@@ -1500,7 +1501,7 @@ k.scene("game", () => {
       },
     });
     window.__campaign = campaign;
-    k.loop(0.5, () => campaign.tick());
+    k.loop(0.5, () => campaign.tick(0.5));
     const initialLevel = router.get().levelId || save.campaign?.lastPlayedLevel || "1-1";
     k.wait(0.1, () => campaign.loadLevel(initialLevel));
   }

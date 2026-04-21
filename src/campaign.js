@@ -4,10 +4,11 @@ import { TILE } from "./constants.js";
 
 export function createCampaignSystem({
   k, tileMap, gameState, save, persistSave,
-  placeTile, groundSystem, showPopup,
+  placeTile, groundSystem, spawnWagon, showPopup,
   onWin, onLose,
 }) {
   let current = null;
+  let wagonSpawnTimer = 0;
 
   function clearPlayfield() {
     tileMap.forEach((t) => {
@@ -43,11 +44,22 @@ export function createCampaignSystem({
       endAt: 0,
       stars: 0,
     };
+    wagonSpawnTimer = 0;
     gameState.score = 0;
     gameState.skeletons = 0;
     gameState.coins = 0;
     gameState.comboCount = 0;
     gameState.comboExpire = 0;
+    if (def.playerSpawn) {
+      const players = k.get("player");
+      for (const p of players) {
+        try {
+          p.pos.x = def.playerSpawn.col * TILE;
+          p.pos.y = def.playerSpawn.row * TILE - 2;
+          if (p.vel) p.vel.x = p.vel.y = 0;
+        } catch (_) {}
+      }
+    }
     return current;
   }
 
@@ -111,14 +123,29 @@ export function createCampaignSystem({
     try { persistSave(save); } catch (e) { console.error("persistSave campaign", e); }
   }
 
-  function tick() {
+  function tick(dt = 0.5) {
     if (!current || current.status !== "playing") return;
-    if (current.def.timeLimit > 0) {
+    const def = current.def;
+    if (def.timeLimit > 0) {
       const elapsed = k.time() - current.startTime;
-      if (elapsed > current.def.timeLimit) {
+      if (elapsed > def.timeLimit) {
         current.status = "lost";
         current.endAt = k.time();
-        onLose?.({ levelId: current.def.id, reason: "time" });
+        onLose?.({ levelId: def.id, reason: "time" });
+        return;
+      }
+    }
+    // Wagon auto-spawn selon le level
+    if (def.wagonSpawn?.auto && spawnWagon) {
+      wagonSpawnTimer += dt;
+      const interval = def.wagonSpawn.interval || 6;
+      const cap = def.wagonSpawn.cap || 1;
+      if (wagonSpawnTimer >= interval) {
+        wagonSpawnTimer = 0;
+        const live = k.get("wagon").length;
+        if (live < cap) {
+          try { spawnWagon(false, false); } catch (e) { console.error("spawnWagon campaign", e); }
+        }
       }
     }
   }
