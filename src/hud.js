@@ -156,6 +156,8 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
     if (!campaign) { elCampaignHud.style.display = "none"; return; }
     const state = campaign.getCurrent();
     if (!state) { elCampaignHud.style.display = "none"; return; }
+    const paused = k.getTreeRoot?.()?.paused;
+    if (paused) { elCampaignHud.style.display = "none"; return; }
     elCampaignHud.style.display = "flex";
     const def = state.def;
     const elapsed = k.time() - state.startTime;
@@ -188,11 +190,18 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
         ? `<div style="color:#ff4a4a;font-weight:bold">RATE</div>`
         : "";
     const hintHtml = def.hint ? `<div style="color:#aad4ff;font-size:11px;font-style:italic;max-width:420px;line-height:1.35">💡 ${def.hint}</div>` : "";
+    // Hint "appuie sur X" si aucun wagon encore spawné après 3s
+    const showSpawnHint = state.wagonsSpawned === 0 && (k.time() - state.startTime) > 3 && state.status === "playing";
+    const spawnHintHtml = showSpawnHint
+      ? `<div style="color:#ffd23f;font-size:13px;font-weight:bold;background:rgba(255,210,63,0.15);padding:4px 10px;border-radius:4px;margin-top:4px;animation:spawnPulse 1s infinite alternate">↓ Appuie sur <kbd style="background:#000;color:#ffd23f;padding:2px 8px;border-radius:3px;font-family:monospace">X</kbd> pour lancer un wagon</div>`
+      : "";
     elCampaignHud.innerHTML = `
+      <style>@keyframes spawnPulse { from { opacity:0.8 } to { opacity:1 } }</style>
       ${title}
       <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">${timerHtml}${budgetHtml}${wagonsHtml}</div>
       <div style="display:flex;flex-direction:column;gap:2px;align-items:center">${objectives}</div>
       ${hintHtml}
+      ${spawnHintHtml}
       ${status}
     `;
   }

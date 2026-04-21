@@ -73,6 +73,14 @@ export function createCampaignSystem({
   function showLevelIntro(def) {
     const existing = document.getElementById("level-intro");
     if (existing) existing.remove();
+    // Hide intro when Escape is pressed
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        document.getElementById("level-intro")?.remove();
+        document.removeEventListener("keydown", onKey);
+      }
+    };
+    document.addEventListener("keydown", onKey);
     const el = document.createElement("div");
     el.id = "level-intro";
     el.style.cssText = [
@@ -103,7 +111,7 @@ export function createCampaignSystem({
     setTimeout(() => {
       if (!el.parentNode) return;
       el.style.animation = "introOut 0.35s forwards";
-      setTimeout(() => el.remove(), 400);
+      setTimeout(() => { el.remove(); document.removeEventListener("keydown", onKey); }, 400);
     }, 3500);
   }
 
