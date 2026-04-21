@@ -14,6 +14,8 @@ export function loadSave() {
     if (!parsed.avatars) parsed.avatars = { p1: "mario", p2: "pika" };
     if (!parsed.avatars.p1) parsed.avatars.p1 = "mario";
     if (!parsed.avatars.p2) parsed.avatars.p2 = "pika";
+    if (!parsed.campaign) parsed.campaign = { levels: {}, lastPlayedLevel: null, totalStars: 0, unlockedWorlds: [1] };
+    if (!parsed.runs) parsed.runs = {};
     return parsed;
   } catch (e) {
     return { bestScore: 0, totalSkeletons: 0, totalCoins: 0, plays: 0, numPlayers: 2, spectres: 0, lastPlayed: 0, tutorialDone: false, heroes: { mario: 0, pika: 0, luigi: 0, toad: 0 }, avatars: { p1: "mario", p2: "pika" } };
