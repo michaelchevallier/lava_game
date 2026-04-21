@@ -3,6 +3,7 @@ import { AVATARS, getAvatarById, avatarBadgeHtml } from "./avatars.js";
 import { createMuseum } from "./museum.js";
 import { showVipScreen } from "./vip-screen.js";
 import { ensureVipToday } from "./contracts.js";
+import { getUnreadCount } from "./almanac.js";
 
 export function createSplash({ save, persistSave, settings, onStart }) {
   function show() {
@@ -178,7 +179,7 @@ export function createSplash({ save, persistSave, settings, onStart }) {
             background:rgba(0,0,0,0.45);color:#ffd23f;
             border:1.5px solid #ffd23f;border-radius:6px;cursor:pointer;
             transition:background 0.12s,color 0.12s
-          ">🏆 Musée</button>
+          ">🏆 Musée${getUnreadCount(save) > 0 ? ` <span style="background:#ff3a3a;color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:4px">${getUnreadCount(save)}</span>` : ""}</button>
         </div>
         <div style="margin-top:10px;color:#aaa;font-size:12px">Engrenage ⚙ en bas à droite pour changer plus tard</div>
       `;

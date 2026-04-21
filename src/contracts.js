@@ -1,4 +1,5 @@
 import { VIPS, getVipById, pickContract } from "./vips.js";
+import { pushAlmanacEntry } from "./almanac.js";
 
 export function todayKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
@@ -132,8 +133,7 @@ export function createContractRunner({ k, save, persistSave, showPopup, WIDTH, H
     const reward = active.contract.reward || 1;
     save.tickets = (save.tickets || 0) + reward;
     active.entry.honored = true;
-    if (!save.almanac) save.almanac = [];
-    save.almanac.push({
+    pushAlmanacEntry(save, persistSave, {
       vipId: active.entry.vipId,
       contractIdx: active.entry.contractIdx || 0,
       date: todayKey(new Date()),

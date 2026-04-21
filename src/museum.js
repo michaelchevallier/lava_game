@@ -4,6 +4,7 @@ import { SPECTRE_CATEGORIES, ALL_SPECTRES } from "./spectres.js";
 import { TILE_PRICES, TILE_LABELS, TILE_EMOJI, SKINS, buyTile, buySkin, setActiveSkin } from "./shop.js";
 import { persistSave } from "./serializer.js";
 import { getVipById, pickContract } from "./vips.js";
+import { markAllRead, totalTicketsEarned, listByVip } from "./almanac.js";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -189,11 +190,7 @@ export function createMuseum({ save }) {
         </div>
       `;
     }
-    const byVip = new Map();
-    for (const e of almanac) {
-      if (!byVip.has(e.vipId)) byVip.set(e.vipId, []);
-      byVip.get(e.vipId).push(e);
-    }
+    const byVip = listByVip(save);
     const cards = almanac.map((entry) => {
       const vip = getVipById(entry.vipId);
       if (!vip) return "";
@@ -221,7 +218,7 @@ export function createMuseum({ save }) {
         </div>
       `;
     }).join("");
-    const totalTickets = (save.almanac || []).reduce((s, e) => s + (e.reward || 1), 0);
+    const totalTickets = totalTicketsEarned(save);
     return `
       <div style="text-align:center;margin-bottom:12px;color:#b4c8e8;font-size:13px">
         <span style="color:#ffd23f;font-weight:bold">${almanac.length} contrat${almanac.length > 1 ? "s" : ""} honoré${almanac.length > 1 ? "s" : ""}</span>
@@ -351,16 +348,22 @@ export function createMuseum({ save }) {
       { id: "shop", label: "🎫 Boutique" },
     ];
 
-    const renderTabNav = () => tabs.map((t) => `
-      <button class="museum-tab" data-tab="${t.id}" style="
-        padding:8px 14px;font-size:12px;font-weight:bold;
-        background:${currentTab === t.id ? "rgba(255,210,63,0.18)" : "rgba(0,0,0,0.45)"};
-        color:${currentTab === t.id ? "#ffd23f" : "#b4c8e8"};
-        border:1.5px solid ${currentTab === t.id ? "#ffd23f" : "#3c4e6e"};
-        border-radius:6px;cursor:pointer;font-family:inherit;
-        transition:background 0.12s,color 0.12s,border 0.12s;
-      ">${t.label}</button>
-    `).join("");
+    const unread = save.almanacUnread || 0;
+    const renderTabNav = () => tabs.map((t) => {
+      const badge = t.id === "vip" && unread > 0 && currentTab !== "vip"
+        ? `<span style="background:#ff3a3a;color:#fff;font-size:10px;font-weight:bold;padding:1px 6px;border-radius:999px;margin-left:6px">${unread}</span>`
+        : "";
+      return `
+        <button class="museum-tab" data-tab="${t.id}" style="
+          padding:8px 14px;font-size:12px;font-weight:bold;
+          background:${currentTab === t.id ? "rgba(255,210,63,0.18)" : "rgba(0,0,0,0.45)"};
+          color:${currentTab === t.id ? "#ffd23f" : "#b4c8e8"};
+          border:1.5px solid ${currentTab === t.id ? "#ffd23f" : "#3c4e6e"};
+          border-radius:6px;cursor:pointer;font-family:inherit;
+          transition:background 0.12s,color 0.12s,border 0.12s;
+        ">${t.label}${badge}</button>
+      `;
+    }).join("");
 
     overlay.innerHTML = `
       <style>
@@ -402,6 +405,7 @@ export function createMuseum({ save }) {
       const btn = e.target.closest(".museum-tab");
       if (!btn) return;
       currentTab = btn.dataset.tab;
+      if (currentTab === "vip") markAllRead(save, persistSave);
       tabsBox.innerHTML = renderTabNav();
       contentBox.innerHTML = renderContent();
     });
