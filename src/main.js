@@ -205,6 +205,13 @@ const settingsModal = createSettingsModal({
       if (payload === 4) spectresRef?.unlock?.(21);
       k.go("game");
     }
+    if (name === "home") {
+      router.enter({ mode: "menu" });
+      document.getElementById("campaign-result")?.remove();
+      document.getElementById("run-result")?.remove();
+      document.getElementById("level-intro")?.remove();
+      window.__splash?.show?.();
+    }
     if (name === "buildTest") buildTestCircuitRef?.();
     if (name === "export") exportActionRef?.();
     if (name === "help") showInteractionsModal?.();

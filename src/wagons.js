@@ -246,6 +246,8 @@ export function createWagonSystem({
           showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "LOOP +50", k.rgb(180, 80, 240), 22);
           audio.combo();
           window.__juice?.dirShake(0, -1, 6, 0.2);
+          window.__quests?.onLoop();
+          window.__campaign?.progress?.("loop");
           for (const p of (wagon.passengerEntities || [])) {
             if (p.exists()) p.angle = 0;
           }

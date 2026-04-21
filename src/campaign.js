@@ -50,13 +50,18 @@ export function createCampaignSystem({
     gameState.coins = 0;
     gameState.comboCount = 0;
     gameState.comboExpire = 0;
-    if (def.playerSpawn) {
-      const players = k.get("player");
+    const players = k.get("player");
+    if (def.noPlayer) {
+      for (const p of players) {
+        try { k.destroy(p); } catch (_) {}
+      }
+    } else if (def.playerSpawn) {
+      // Spawn le joueur haut dans les airs, il tombe naturellement sur le sol
       for (const p of players) {
         try {
           p.pos.x = def.playerSpawn.col * TILE;
-          p.pos.y = def.playerSpawn.row * TILE - 2;
-          if (p.vel) p.vel.x = p.vel.y = 0;
+          p.pos.y = 2 * TILE;
+          if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
         } catch (_) {}
       }
     }

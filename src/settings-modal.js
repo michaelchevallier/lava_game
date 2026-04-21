@@ -125,6 +125,7 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
       <section style="margin-bottom:8px">
         <h3 style="margin:0 0 12px 0;font-size:15px;color:#ffd23f;text-transform:uppercase;letter-spacing:1px">Actions</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button id="sm-home" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(124,201,71,0.95);color:#000;font-weight:bold">🏠 Retour accueil</button>
           <button id="sm-build" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(70,90,180,0.9);color:#fff;font-weight:bold">Circuit test</button>
           <button id="sm-export" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(160,90,220,0.9);color:#fff;font-weight:bold">Exporter le parc</button>
           <button id="sm-help" style="padding:10px 16px;font-size:14px;border-radius:6px;border:none;cursor:pointer;background:rgba(60,130,200,0.9);color:#fff;font-weight:bold">Aide</button>
@@ -220,6 +221,10 @@ export function createSettingsModal({ save, persistSave, settings, audio, gameSt
       onAction("toggleNight");
     });
 
+    panel.querySelector("#sm-home").addEventListener("click", () => {
+      hide();
+      onAction("home");
+    });
     panel.querySelector("#sm-build").addEventListener("click", () => {
       hide();
       onAction("buildTest");
