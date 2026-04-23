@@ -52,7 +52,6 @@ import { attachParticleAndTileUpdates } from "./particle-systems.js";
 import { createParadeQTE } from "./parade-qte.js";
 import { createReparationExpress } from "./reparation-express.js";
 import { createBossGoret } from "./boss-goret.js";
-import { createMinimap } from "./minimap.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -621,14 +620,6 @@ k.scene("game", () => {
       camFollowX = camFollowX + (clamped - camFollowX) * rate;
       const shake = juice.getShakeOffset ? juice.getShakeOffset() : { x: 0, y: 0 };
       k.camPos(camFollowX + shake.x, HEIGHT / 2 + shake.y);
-    });
-  }
-
-  if (camFollowEnabled) {
-    createMinimap({
-      k,
-      getActivePlayers: () => activePlayers,
-      getMode: () => router.get().mode,
     });
   }
 

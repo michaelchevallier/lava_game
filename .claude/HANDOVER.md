@@ -1,4 +1,28 @@
-# Handover — Milan Lava Park (2026-04-23 fin session K+ / Round 4 expansion)
+# Handover — Milan Lava Park (2026-04-23 fin session L / mini-map HUD)
+
+## ✅ Session L (mini-map HUD — Round 4 #2)
+
+**1 commit** autonome, feature Round 4.
+
+### `f5cf2a0` feat(minimap): HUD mini-map for extended world
+
+Strip 220×20 en haut-centre, k.fixed() z=41. Affiche :
+- Cadre noir/edge gris
+- Zone jouable [0, WORLD_WIDTH] en vert sur fond violet sombre (hors-monde)
+- Sol brun 4px bottom
+- Marqueurs stations : ENTREE (vert, x=-TILE*4) / SORTIE (rouge, x=WORLD_WIDTH+TILE)
+- Viewport caméra (rectangle blanc transparent + bordures)
+- Dots wagons (jaune 3×3 au milieu)
+- Dots joueurs (colored par nameColor + outline noir, pleine hauteur)
+
+Masqué en campaign mode (niveaux mono-écran). Ajouté dans main.js après le
+camFollow setup, ne s'instancie que si `camFollowEnabled`.
+
+Nouveau fichier src/minimap.js (160 L). Bundle `105.39 → 105.87 KB gz` (+480 B).
+
+**Note QA** : dev server local (vite dev) semble casser la scene game
+(treeChildren=0 malgré scene="game" et no errors) — issue préexistante
+non liée à mini-map. Build prod OK, déployé sur CI pour validation live.
 
 ## ✅ Session K+ (décor monde étendu + 3 bugs camera follow)
 
