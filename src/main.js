@@ -569,6 +569,28 @@ k.scene("game", () => {
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock("mobile");
 
+  // Camera follow (sandbox/run seulement) : le monde s'étend de -WORLD_WIDTH
+  // à +WORLD_WIDTH mais seule la zone autour de camPos est visible. Lerp
+  // vers le barycentre des joueurs vivants. Clamp horizontal sur les bornes
+  // monde. Campaign garde caméra fixe (niveaux conçus mono-écran col 0-39).
+  if (router.get().mode !== "campaign") {
+    k.onUpdate(() => {
+      const alive = activePlayers.filter((p) => p?.exists?.());
+      if (alive.length === 0) return;
+      let sumX = 0;
+      for (const p of alive) sumX += p.pos.x + 14;
+      const targetX = sumX / alive.length;
+      const scale = (k.camScale?.().x) || 1;
+      const halfView = WIDTH / (2 * scale);
+      const minX = -WORLD_COLS * TILE + halfView;
+      const maxX = WORLD_COLS * TILE - halfView;
+      const clamped = Math.max(minX, Math.min(maxX, targetX));
+      const cur = k.camPos();
+      const rate = Math.min(1, 4.5 * k.dt());
+      k.camPos(cur.x + (clamped - cur.x) * rate, HEIGHT / 2);
+    });
+  }
+
   const paradeSystem = createParadeQTE({
     k, audio, gameState,
     showPopup: (...args) => showPopup(...args),

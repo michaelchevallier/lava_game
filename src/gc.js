@@ -18,12 +18,13 @@ const CULLABLE_TAGS = [
 ];
 
 export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN }) {
-  // Zone tampon = 30% de la largeur viewport. Évite pop-out et laisse le temps aux entités
-  // de revenir naturellement avant GC. Avant : left = -WORLD_WIDTH - 200 (jamais atteint →
-  // entités accumulées à gauche jamais cull).
+  // Zone tampon = 30% de la largeur viewport autour de la plage monde [-WORLD_WIDTH, +WORLD_WIDTH].
+  // Camera follow révèle les tuiles placées en col négatif — le GC doit épargner les
+  // entités qui y évoluent naturellement.
   const BUFFER = MARGIN ?? Math.floor(WIDTH * 0.3);
-  const right = (WORLD_WIDTH || WIDTH) + BUFFER;
-  const left = -BUFFER;
+  const world = WORLD_WIDTH || WIDTH;
+  const right = world + BUFFER;
+  const left = -world - BUFFER;
   function cull() {
     const minX = left;
     const maxX = right;
