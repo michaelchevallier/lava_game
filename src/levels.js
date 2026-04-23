@@ -913,6 +913,58 @@ export const LEVELS = [
     timeLimit: 45,
     platinum: { label: "3 squelettes avant le gel (<10s)", check: (r) => r.skeletons >= 3 && r.time < 10 },
   },
+
+  // 7-4 : Le Labyrinthe — circuit multi-étages avec murailles lave
+  {
+    id: "7-4",
+    world: 7,
+    title: "Labyrinthe",
+    hint: "Un dédale de rails et de laves. Suis la route jusqu'au TUNNEL HANTÉ en sortie. 4 pièces égarées à ramasser, puis 1 squelette final.",
+    layout: "v2:"
+      + "3.13.R,4.13.R,5.13.R,6.12.U,7.12.R,8.11.U,9.11.R,10.11.R,11.11.R,12.12.D,13.12.R,14.13.D,15.13.R,16.13.X"
+      + ",6.11.L,6.10.L,10.10.L,10.9.L,14.12.L,14.11.L"
+      + ",7.10.C,10.8.C,12.10.C,15.10.C",
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["water", "boost", "fan", "trampoline", "erase"],
+    tileBudget: 4,
+    wagonLimit: 3,
+    objectives: [
+      { id: "coin4", type: "coin", target: 4, label: "Ramasse les 4 pièces égarées" },
+      { id: "skel1", type: "skeleton", target: 1, label: "1 wagon dans le tunnel de sortie" },
+    ],
+    stars: { time: { under: 90 }, efficient: { tilesUnder: 3 } },
+    timeLimit: 120,
+    platinum: { label: "Labyrinthe terminé sous 60s", check: (r) => r.time < 60 },
+  },
+
+  // 7-5 : Dédale final — failOn skeleton, visiteur VIP à embarquer
+  {
+    id: "7-5",
+    world: 7,
+    title: "Dédale final",
+    hint: "Laisse le VIP embarquer et atteins la sortie SANS qu'aucun wagon ne brûle. Les bombes peuvent aider — ou tuer ta run.",
+    layout: "v2:"
+      + "3.13.R,4.13.R,5.13.P,6.13.R,7.12.U,8.12.R,9.12.R,10.12.R,11.12.R,12.13.D,13.13.R,14.13.P,15.13.R,16.13.R"
+      + ",7.12.L,7.11.L,7.10.L,12.12.L,12.11.L,12.10.L"
+      + ",9.13.E,10.13.E"
+      + ",11.10.C,13.10.C"
+      + ",16.13.X",
+    playerSpawn: { col: 4, row: 13 },
+    allowedTools: ["water", "bridge", "boost", "erase"],
+    visitors: [
+      { col: 10, row: 12, isVIP: true },
+    ],
+    tileBudget: 3,
+    wagonLimit: 3,
+    failOn: { skeleton: 1 },
+    objectives: [
+      { id: "vip1", type: "visitor", target: 1, label: "Embarque le VIP" },
+      { id: "coin2", type: "coin", target: 2, label: "Ramasse 2 pièces" },
+    ],
+    stars: { time: { under: 120 }, efficient: { tilesUnder: 2 } },
+    timeLimit: 150,
+    platinum: { label: "VIP livré et moins de 2 tuiles posées", check: (r) => r.visitors >= 1 && r.tiles <= 1 },
+  },
 ];
 
 export function findLevel(id) {
