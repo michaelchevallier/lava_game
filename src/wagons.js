@@ -16,7 +16,7 @@ export function createWagonSystem({
       if (!rt) continue;
       // RAIL_SURFACE = TILE - 10 (=54 for TILE=64), aligned with the visual top
       // of the horizontal rail rect (y = row*TILE + TILE - 10 in tiles.js)
-      if (rt.tileType === "rail") {
+      if (rt.tileType === "rail" && !rt.broken) {
         return r * TILE + (TILE - 10);
       }
       if (rt.tileType === "rail_up") {
@@ -348,6 +348,9 @@ export function createWagonSystem({
       else if (iced) speedMult = 1.6;
       if (windy) speedMult += 1.2;
       if (frozen) speedMult *= 0.35;
+      if (gameState.maintenanceBonusUntil && k.time() < gameState.maintenanceBonusUntil) {
+        speedMult *= 1.2;
+      }
       for (const cr of gameState.iceCrowns || []) {
         const d = Math.hypot(wagon.pos.x + 30 - cr.cx, wagon.pos.y + 15 - cr.cy);
         if (d < cr.radius) {

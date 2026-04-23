@@ -162,6 +162,7 @@ export function createPlayerSystem({
     const jumpKeys = Array.isArray(opts.keys.jump) ? opts.keys.jump : [opts.keys.jump];
     p.parryKeys = jumpKeys;
     p.parryKeyLabel = jumpKeys[0].toUpperCase();
+    p.repairKey = opts.keys.board;
 
     p.onDraw(() => {
       if (p.ridingWagon) return;
@@ -265,11 +266,9 @@ export function createPlayerSystem({
     });
     k.onKeyPress(opts.keys.board, () => {
       if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
-      if (p.ridingWagon) {
-        exitWagon(p);
-      } else {
-        tryBoardWagon(p);
-      }
+      if (window.__reparation?.tryRepair?.(p)) return;
+      if (p.ridingWagon) exitWagon(p);
+      else tryBoardWagon(p);
     });
 
     const leftKeys = Array.isArray(opts.keys.left) ? opts.keys.left : [opts.keys.left];

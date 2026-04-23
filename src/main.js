@@ -51,6 +51,7 @@ import { createSceneDecor } from "./scene-decor.js";
 import { createSandboxSetup } from "./sandbox-setup.js";
 import { attachParticleAndTileUpdates } from "./particle-systems.js";
 import { createParadeQTE } from "./parade-qte.js";
+import { createReparationExpress } from "./reparation-express.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -562,6 +563,16 @@ k.scene("game", () => {
   });
   paradeRef.trigger = paradeSystem.triggerFromWagon;
   window.__parade = paradeSystem;
+
+  if (router.get().mode !== "campaign") {
+    const reparation = createReparationExpress({
+      k, audio, gameState,
+      showPopup: (...args) => showPopup(...args),
+      getActivePlayers: () => activePlayers,
+      tileMap,
+    });
+    window.__reparation = reparation;
+  }
 
   let raceSystem = null;
   if (cfg.enableRace) {
