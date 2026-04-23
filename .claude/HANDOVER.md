@@ -1,9 +1,11 @@
 # Handover — Milan Lava Park (2026-04-23 fin session G / début session H)
 
-## ✅ Session G (6 commits : 3 features round 3 + 2 style + 1 docs)
+## ✅ Session G (9 commits : 4 features round 3 + 2 style + 1 splash fix + 2 docs)
 
-Round 3 backlog créatif **4/5 fini** en une session. Reste uniquement
-Labyrinthe (qui est un niveau scénaristique distinct des mini-jeux récurrents).
+**Round 3 backlog créatif 5/5 FINI**. Tous les items créatifs ouverts sont
+cochés dans CLAUDE.md backlog. `f3f26c4` bonus : splash hardcode `90` max stars
+remplacé par `LEVELS.length * 3` (niveau de base campagne est maintenant
+déduit dynamiquement = +2 niveaux round 3 pris en compte).
 
 ### `cd59add` feat(reparation): mini-jeu QTE rail cassée
 
@@ -64,31 +66,59 @@ Spec : `.claude/specs/boss-goret.md`.
 Le feature-dev avait retiré les accents ("RAIL BRISE !"). Le reste du
 codebase (98 accents sur 23 fichiers) les utilise. Normalisation cosmétique.
 
+### `f68c206` feat(campaign): 7-4 Labyrinthe + 7-5 Dédale final
+
+2 nouveaux niveaux campagne monde 7 (fin round 3). **7-4 Labyrinthe** :
+circuit serpentant 3 étages (rows 13→11→9→11→13) avec 3 murailles verticales
+de lave (col 6, 10, 14), 4 pièces "égarées" acrobatiques, tunnel hanté `X`
+en sortie. **7-5 Dédale final** : ajoute portails, bombes piégées, visiteur
+VIP et `failOn: { skeleton: 1 }` (mécanique déjà utilisée dans 5-5/6-3/6-8/7-1).
++52 L dans `src/levels.js`. Bundle 103.87 KB gz.
+
+Spec : `.claude/specs/labyrinthe.md`.
+
+### `f3f26c4` fix(splash): unhardcode max stars
+
+`splash.js:83` utilisait `90` en dur (49 × ~2 = 98, faux). Remplacé par
+`LEVELS.length * 3` dynamique, intègre les 2 nouveaux niveaux 7-4 / 7-5.
+
+## ⚠️ QA live Chrome MCP (session G)
+
+qa-tester lancé sur le deploy c82aad0 — mais le **MCP Chrome n'est pas
+accessible** à cet agent dans cette config, il est tombé sur code-review
+statique uniquement. Verdict analytique **PASS** sur les 3 features (code
+structurellement correct, APIs debug exposées, pièges KAPLAY évités, priorités
+touches board correctes). **À refaire en live session H** avec accès Chrome
+MCP confirmé.
+
+Observation qa-tester pour follow-up : les achievements `repair_first`,
+`maintenance_pro`, `jackpot_canards`, `jackpot_canards`, `surfeur_lave` sont
+appelés mais pas forcément définis dans le système achievements. Graceful
+no-op via `?.unlock?.()` — non bloquant mais à nettoyer.
+
 ## ➡️ Session H = CHOIX OUVERT
 
 ### Options fonctionnelles
 
-- **Labyrinthe** (round 3 restant) — niveau scénaristique maze avec visibilité
-  limitée, dernière idée créative du round 3.
 - **Skeleton variants par avatar** (18 sprites à dessiner) — seul item coché [ ]
-  dans la section "Sprites personnages" du CLAUDE.md. Mechanical mais ne
-  demande pas de spec.
-- **Labyrinthe + Skeleton variants** en parallèle via 2 agents (1 spec-writer +
-  1 feature-dev sprites directement).
+  restant dans tout le backlog CLAUDE.md. Mechanical, pas de spec nécessaire,
+  juste du dessin dans `sprites.js`. Bonne mission "cleanup visuel".
+- **Round 4 brainstorm créatif** — le round 3 est fini, on peut partir sur un
+  round 4 d'idées (ex : tempête magnétique, saison hiver permanente, course
+  de visiteurs). Nécessite une séance brainstorm puis spec-writer.
 
 ### Options qualité / perf
 
-- **qa-tester live Chrome MCP** : valider les 4 nouvelles features round 3
-  (reparation, aire tir, boss goret) en vrai navigateur sur le live. Utiliser
-  `window.__reparation.__debug()`, `window.__skullStand.__debug()`,
-  `window.__bossGoret.__forceSpawn()`. Bug → bug-fixer → commit/push.
-- **perf-auditor** : bundle a pris +4 KB cette session (99.05 → 103.43). Vérifier
-  FPS avec toutes les features actives (parade + reparation + skull-stand double
-  phase + boss goret + weather + ghost train).
-- **quality-maintainer** : 4 nouveaux `window.__X` exposés (parade, reparation,
-  skullStand, bossGoret) — factoriser en `window.__systems = { parade, reparation, ... }` ?
-  Également chasser dead code si certaines features ont des paths inutilisés
-  (ex : `stop()` API exposée mais non appelée).
+- **qa-tester live Chrome MCP** ⚠️ : refaire avec MCP accessible. Session G
+  est tombée sur code-review statique faute de MCP. Valider les 4 features
+  en vrai navigateur.
+- **perf-auditor** : bundle a pris +4.8 KB cette session (99.05 → 103.87). Vérifier
+  FPS avec toutes les features actives simultanément (parade + reparation +
+  skull-stand double phase + boss goret + weather + ghost train).
+- **quality-maintainer** : 5 nouveaux `window.__X` exposés (parade, reparation,
+  skullStand, bossGoret + anciens). Factoriser en `window.__systems` ?
+  Également chasser dead code (achievements non définis appelés en no-op,
+  `stop()` APIs exposées mais non appelées).
 
 ### Option doc
 
@@ -106,8 +136,8 @@ codebase (98 accents sur 23 fichiers) les utilise. Normalisation cosmétique.
 | `src/reparation-express.js` | 186 | 1500 | ✅ OK (new) |
 | `src/wagons.js` | 1083 | 1500 | ✅ OK |
 
-Bundle prod : **103.43 KB gz** (passé au-dessus de la cible initiale 100 — à
-surveiller, mais cap strict 150 KB respecté largement). +4.4 KB session G.
+Bundle prod : **103.87 KB gz** (passé au-dessus de la cible initiale 100 — à
+surveiller, mais cap strict 150 KB respecté largement). +4.8 KB session G.
 
 # Handover — Milan Lava Park (2026-04-23 fin session E / début session F)
 
