@@ -569,25 +569,57 @@ k.scene("game", () => {
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock("mobile");
 
-  // Camera follow (sandbox/run seulement) : le monde s'étend de -WORLD_WIDTH
-  // à +WORLD_WIDTH mais seule la zone autour de camPos est visible. Lerp
-  // vers le barycentre des joueurs vivants. Clamp horizontal sur les bornes
-  // monde. Campaign garde caméra fixe (niveaux conçus mono-écran col 0-39).
-  if (router.get().mode !== "campaign") {
+  // Auto-respawn + camera follow (sandbox/run) : suit le barycentre des
+  // joueurs vivants. Shake offset additionné, pas écrit comme pos absolue.
+  // Si player.ridingWagon → utiliser wagon.pos (p.pos est parqué à -99999).
+  // Auto-respawn si un joueur tombe sous HEIGHT+200.
+  const camFollowEnabled = router.get().mode !== "campaign";
+  if (!camFollowEnabled) {
+    // Campaign : pas de follow mais shake doit quand même wobble
+    const baseX = WIDTH / 2;
+    const baseY = HEIGHT / 2;
+    k.onUpdate(() => {
+      const shake = juice.getShakeOffset ? juice.getShakeOffset() : { x: 0, y: 0 };
+      k.camPos(baseX + shake.x, baseY + shake.y);
+    });
+  }
+  if (camFollowEnabled) {
+    let camFollowX = k.camPos().x;
     k.onUpdate(() => {
       const alive = activePlayers.filter((p) => p?.exists?.());
       if (alive.length === 0) return;
+      // Auto-respawn joueurs tombés (Y > bottom + margin)
+      for (const p of alive) {
+        const effY = p.ridingWagon ? p.ridingWagon.pos.y : p.pos.y;
+        if (effY > HEIGHT + 200) {
+          if (p.ridingWagon) {
+            const w = p.ridingWagon;
+            p.ridingWagon = null;
+            w.rider = null;
+            w._riderInput = null;
+            p.opacity = 1;
+          }
+          p.pos.x = WIDTH / 2;
+          p.pos.y = (GROUND_ROW - 4) * TILE;
+          if (p.vel) { p.vel.x = 0; p.vel.y = 0; }
+        }
+      }
+      // Effective position : wagon si monté, sinon player
       let sumX = 0;
-      for (const p of alive) sumX += p.pos.x + 14;
+      for (const p of alive) {
+        const ent = p.ridingWagon ?? p;
+        sumX += ent.pos.x + 14;
+      }
       const targetX = sumX / alive.length;
       const scale = (k.camScale?.().x) || 1;
       const halfView = WIDTH / (2 * scale);
       const minX = -WORLD_COLS * TILE + halfView;
       const maxX = WORLD_COLS * TILE - halfView;
       const clamped = Math.max(minX, Math.min(maxX, targetX));
-      const cur = k.camPos();
       const rate = Math.min(1, 4.5 * k.dt());
-      k.camPos(cur.x + (clamped - cur.x) * rate, HEIGHT / 2);
+      camFollowX = camFollowX + (clamped - camFollowX) * rate;
+      const shake = juice.getShakeOffset ? juice.getShakeOffset() : { x: 0, y: 0 };
+      k.camPos(camFollowX + shake.x, HEIGHT / 2 + shake.y);
     });
   }
 
