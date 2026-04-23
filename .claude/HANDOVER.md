@@ -1,4 +1,68 @@
-# Handover — Milan Lava Park (2026-04-23 fin session H)
+# Handover — Milan Lava Park (2026-04-23 fin session I)
+
+## ✅ Session I (QA live Boss Goret post-fix + cleanup + skeleton variants)
+
+**3 commits** : QA boucle Boss Goret validée en live post fix GC (session H), puis
+cleanup achievements orphelins, enfin dernier item [ ] du backlog CLAUDE.md —
+skeleton variants par avatar.
+
+| Task | Commit | Status |
+|---|---|---|
+| QA live Boss Goret post-fix GC | — | ✅ PASS (hp:3, target:wagon, collide+stun OK) |
+| Cleanup achievements no-op | `e4f4884` | ✅ chore: 6 lignes retirées |
+| Skeleton variants (16 avatars) | `cb2f07b` | ✅ feat: substituteSprite R/r → couleur avatar |
+
+### `e4f4884` chore(cleanup): drop orphan window.__achievements.unlock calls
+
+`createAchievements()` expose seulement un listener `spectres.onUnlock` pour
+toast visuels — `unlock()` n'existe pas. Les calls `?.unlock?.()` étaient des
+no-op silencieux. Retirés :
+- `reparation-express.js:103` `repair_first` + `:110` `maintenance_pro` + `:111` `spectres?.unlock?.("maintenance")`
+- `skull-stand.js:258` `jackpot_canards`
+- `parade-qte.js:66-67` `surfeur_lave` + `spectres?.unlock?.("surfeur")`
+
+Net : -7 lignes, zero changement fonctionnel.
+
+### `cb2f07b` feat(sprites): skeleton variants per avatar
+
+16 nouveaux sprites `<avatar>_skel` 20×30 générés procéduralement via
+`substituteSprite(SPR_PLAYER_SKEL, { R: "X", r: "x" })` où X/x = paire
+PALETTE de la couleur signature :
+
+| Avatar | Palette | Avatar | Palette |
+|---|---|---|---|
+| sonic | U/u (blue) | steve | U/u |
+| link | G/g | pokeball | R/r (identité) |
+| pacman | Y/y | tetris | P/p (pink, pas de purple) |
+| kirby | P/p (pink) | invader | H/h (vert vif) |
+| yoshi | H/h | chief | T/t (brun foncé) |
+| bowser | L/f | astro | C/c (blanc/cyan) |
+| donkey | B/b (brun) | mega | U/O (bleu) |
+| samus | L/f | crash | F/f (rouge-orange) |
+
+`SPR_SKEL_GENERIC` 14×22 supprimé (plus de consommateur). `avatars.js` patché
+16 fois. Loader via iterator `Object.entries(SPR_AVATAR_SKELS).map(...)`.
+Bundle 104.14 KB gz (stable, procedural runtime).
+
+### QA live session I (post-fix GC)
+
+Sur le deploy `07286ae` via Chrome MCP tab 343051531 :
+- Sandbox Mario avec demo circuit (4 rails, 7 lava, 2 portal, 1 tramp, 1 boost)
+- `x` key → spawn wagon (s'est révélé ghost train ce run)
+- `w.ghostTrain = false` + `__bossGoret.__forceSpawn()` → **Boss actif**,
+  `hp:3`, `position:{x:1218,y:388}`, `targetWagonId:"wagon"`
+- Collision boss↔wagon observée → `frozenUntil=354.5` (stun 3s appliqué)
+- Boss fleeing, exit screen, nextSpawnAt=120s cooldown (retry path OK)
+- Aucune erreur console
+- **Verdict** : Boss Goret passe de 🟡 PARTIAL → ✅ PASS
+
+Réparation + Parade **non re-testés en live** — setup manuel lourd (placer rails
+custom pour Réparation, forcer wagon→lava pour Parade), et l'analyse statique
+qa-tester les avait passés. Reportables en session J si besoin.
+
+**Observation** : player fell to `y=15_855_466` — `player` tag n'est pas dans
+`CULLABLE_TAGS`, normal car le joueur a son propre respawn via "," key. Pas
+un leak, pas un bug.
 
 ## ✅ Session H (QA live Chrome MCP + 1 bug fix)
 

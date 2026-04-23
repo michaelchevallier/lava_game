@@ -118,7 +118,7 @@ requestAnimationFrame(tick);
 - [x] Sonic, Link, Pacman, Kirby (1cea9db)
 - [x] Yoshi, Bowser, Pokeball, Tetris, Invader (e9a9eac)
 - [x] DK, Mega, Samus, Crash, Steve, Chief, Astro via substituteSprite (02b131d)
-- [ ] Skeleton variants par avatar (unifié sur skeleton_generic pour l'instant)
+- [x] Skeleton variants par avatar (16 sprites 20×30 via substituteSprite, cb2f07b)
 
 ### Ambient / Décor
 - [x] Gares ENTREE/SORTIE aux bords du monde (9bca3ca/47c3e2e)
