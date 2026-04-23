@@ -100,15 +100,12 @@ export function createReparationExpress({
         k.lifespan(0.2, { fade: 0.15 }),
         k.z(15),
       ]);
-      window.__achievements?.unlock?.("repair_first");
       byPlayer._repairStreak = (byPlayer._repairStreak || 0) + 1;
       if (byPlayer._repairStreak % 5 === 0) {
         gameState.score += 500;
         gameState.maintenanceBonusUntil = k.time() + 90;
         showPopup(cx, cy - 60, "MAINTENANCE PRO !", k.rgb(120, 255, 180), 28);
         (audio.apocalypse || audio.combo)?.();
-        window.__achievements?.unlock?.("maintenance_pro");
-        window.__spectres?.unlock?.("maintenance");
       }
     } else {
       for (const p of getActivePlayers()) {

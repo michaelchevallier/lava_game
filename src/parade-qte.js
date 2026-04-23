@@ -63,8 +63,6 @@ export function createParadeQTE({ k, audio, showPopup, gameState, getActivePlaye
         ]);
       }
 
-      window.__achievements?.unlock("surfeur_lave");
-      window.__spectres?.unlock?.("surfeur");
     }
   }
 

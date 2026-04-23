@@ -255,7 +255,6 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       showPopup(duck.pos.x + 9, duck.pos.y - 30, "JACKPOT ! +300", k.rgb(255, 180, 40), 28);
       audio.combo?.();
       window.__juice?.dirShake?.(0, 1, 10, 0.25);
-      window.__achievements?.unlock?.("jackpot_canards");
       for (let i = 0; i < 24; i++) {
         const a = (Math.PI * 2 * i) / 24;
         const fp = k.add([
