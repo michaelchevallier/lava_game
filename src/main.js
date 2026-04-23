@@ -1010,7 +1010,7 @@ k.scene("game", () => {
   const crowdSystem = createCrowdSystem({ k, gameState });
   crowdHooks = crowdSystem.setup();
 
-  createSkullStand({ k, gameState, audio, showPopup: (...args) => showPopup(...args), registerCoin: (...args) => registerCoin(...args), WIDTH, TILE });
+  createSkullStand({ k, gameState, audio, showPopup: (...args) => showPopup(...args), registerCoin: (...args) => registerCoin(...args), getActivePlayers: () => activePlayers, isCampaign: () => router.get().mode === "campaign", WIDTH, TILE });
   createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH });
 
   hud.setup();

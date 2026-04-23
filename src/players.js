@@ -267,6 +267,7 @@ export function createPlayerSystem({
     k.onKeyPress(opts.keys.board, () => {
       if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
       if (window.__reparation?.tryRepair?.(p)) return;
+      if (window.__skullStand?.tryFire?.(p)) return;
       if (p.ridingWagon) exitWagon(p);
       else tryBoardWagon(p);
     });
