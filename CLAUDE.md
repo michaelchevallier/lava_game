@@ -125,7 +125,10 @@ requestAnimationFrame(tick);
 - [x] Diversité visiteurs (scale variation 0.85-1.15 — c84d89c)
 - [x] Ballons flottants ambient toutes 45-70s (f1cc008)
 - [x] Parade Lave QTE (combo Surfeur 5x = +200pts, 8acc407)
-- [ ] Boss Goret, Réparation Express, Aire Tir Mobile, Labyrinthe (backlog créatif round 3)
+- [x] Réparation Express (rail cassée, streak 5 = MAINTENANCE PRO bonus vitesse 90s, cd59add)
+- [x] Aire Tir Mobile (extension skull-stand, cycle 30s crânes/canards, JACKPOT +300, afc4d36)
+- [x] Boss Goret (spawn 4min, 3 pièces pour vaincre, drop portal+trampoline, 5ae35ea/bf5b8a1)
+- [ ] Labyrinthe (niveau scénaristique maze — round 3 restant)
 
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings
