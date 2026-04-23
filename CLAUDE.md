@@ -85,7 +85,8 @@ requestAnimationFrame(tick);
 - [x] Lisibilité textes (drawTextOutlined 8 offsets)
 - [x] Players.js extraction
 - [x] Hud.js extraction
-- [ ] main.js < 1200 lignes (à 1499, refactor sky/* à venir)
+- [x] main.js < 1200 lignes (actuel 1090 — particle-systems.js extrait, 94b1f1c)
+- [x] wagons.js < 1300 lignes (actuel 1079 — wagon-collisions.js extrait, e1c820d)
 
 ### Bugs perf / GC (à fix)
 - [x] **GC trop agressif côté gauche** (fix fb64c4a) — left cull at -0.3×WIDTH
