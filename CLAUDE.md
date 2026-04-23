@@ -124,7 +124,8 @@ requestAnimationFrame(tick);
 - [x] Gares ENTREE/SORTIE aux bords du monde (9bca3ca/47c3e2e)
 - [x] Diversité visiteurs (scale variation 0.85-1.15 — c84d89c)
 - [x] Ballons flottants ambient toutes 45-70s (f1cc008)
-- [ ] Boss Goret, Réparation Express, Parade Lave QTE, Aire Tir Mobile, Labyrinthe (backlog créatif round 3)
+- [x] Parade Lave QTE (combo Surfeur 5x = +200pts, 8acc407)
+- [ ] Boss Goret, Réparation Express, Aire Tir Mobile, Labyrinthe (backlog créatif round 3)
 
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings

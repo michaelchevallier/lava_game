@@ -1,3 +1,36 @@
+# Handover — Milan Lava Park (2026-04-23 fin session F / début session G)
+
+## ✅ Session F (1 commit feature créative)
+
+### `8acc407` feat(parade): mini-jeu QTE parade lave (combo Surfeur 5x = +200pts)
+
+Round 3 anti-autopilote — quand un wagon humain tombe dans la lave, le joueur
+le plus proche (< 400px, non-stunné, non-skeleton) reçoit un QTE 0.6s :
+anneau jaune qui rétrécit + touche à presser (jump = SPACE pour Mario, I pour
+Pika). Succès = flash blanc + `+30 PARADE!`, miss = `STUN!` 1.5s + étoiles qui
+tournent au-dessus. 5 parades consécutives = `SURFEUR DE LAVE !` +200pts.
+
+Nouveau fichier `src/parade-qte.js` (153 L). Modifs `players.js` (parryKeys +
+stunnedUntil checks + \_paradeConsumedAt guard + draw étoiles), `wagons.js` +
+`wagon-collisions.js` (param triggerParade), `main.js` (paradeRef + instanciation).
+
+Expose `window.__parade` pour debug. Bundle 99.05 KB gz (juste sous cible 100).
+
+Spec complète : `.claude/specs/parade-qte.md`.
+
+## ➡️ Session G = CHOIX OUVERT (reste 4 features round 3)
+
+Options :
+- **Boss Goret** (5/5, 2 commits) — tous 4min cochon rose fonce sur wagon le +
+  chargé, jet de pièces pour vaincre +250pts + 2 tiles rares drop
+- **Réparation Express** (4/5, 1 commit) — rail se brise toutes 60s, 10s pour
+  replacer, streak 5 = bouclier Maintenance Pro 90s
+- **Aire Tir Mobile** (4/5, 1 commit) — évolution stand crânes : canards en
+  file, click fléchette parabolique, 3 canards = JACKPOT 300pts
+- **Labyrinthe** (idée libre) — niveau scénaristique maze
+- **Skeleton variants par avatar** (18 sprites à dessiner)
+- **Audit perf/quality** live via perf-auditor / quality-maintainer
+
 # Handover — Milan Lava Park (2026-04-23 fin session E / début session F)
 
 ## État live
