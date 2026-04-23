@@ -25,7 +25,6 @@ import { createConstellationSystem } from "./constellation.js";
 import { createSettingsModal } from "./settings-modal.js";
 import { createGroundSystem } from "./ground.js";
 import { createCinematicSystem } from "./cinematic.js";
-import { createQuestSystem } from "./quests.js";
 import { createTierSystem } from "./tiers.js";
 import { createSkySystem } from "./sky.js";
 import { createStations } from "./stations.js";
