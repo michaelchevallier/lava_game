@@ -32,7 +32,7 @@ export function createReparationExpress({
     }
     const cx = tile.pos.x + TILE / 2;
     const cy = tile.pos.y;
-    showPopup(cx, cy - 30, "RAIL BRISE !", k.rgb(255, 80, 60), 20);
+    showPopup(cx, cy - 30, "RAIL BRISÉ !", k.rgb(255, 80, 60), 20);
     audio.hit?.() || audio.lose?.() || audio.jump?.();
 
     const sparkLoop = k.loop(0.3, () => {
@@ -91,7 +91,7 @@ export function createReparationExpress({
     if (success && byPlayer) {
       audio.combo?.();
       gameState.score += 50;
-      showPopup(cx, cy - 30, "+50 REPARE !", k.rgb(120, 240, 120), 22);
+      showPopup(cx, cy - 30, "+50 RÉPARÉ !", k.rgb(120, 240, 120), 22);
       k.add([
         k.rect(TILE + 8, TILE + 8),
         k.pos(tile.pos.x - 4, tile.pos.y - 4),
