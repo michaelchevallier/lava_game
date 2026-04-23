@@ -4,6 +4,7 @@ import { createMuseum } from "./museum.js";
 import { showVipScreen } from "./vip-screen.js";
 import { ensureVipToday } from "./contracts.js";
 import { getUnreadCount } from "./almanac.js";
+import { LEVELS } from "./levels.js";
 
 export function createSplash({ save, persistSave, settings, onStart }) {
   function show() {
@@ -80,8 +81,8 @@ export function createSplash({ save, persistSave, settings, onStart }) {
           ">
             <div style="font-size:32px;margin-bottom:4px">🎯</div>
             <div style="font-size:18px;color:#7cc947;font-weight:bold;letter-spacing:1px">CAMPAGNE</div>
-            <div style="font-size:11px;color:#ffd23f;margin-top:6px">⭐ ${totalStars} / 90</div>
-            <div style="font-size:10px;color:#aaa;margin-top:4px">30 niveaux à résoudre</div>
+            <div style="font-size:11px;color:#ffd23f;margin-top:6px">⭐ ${totalStars} / ${LEVELS.length * 3}</div>
+            <div style="font-size:10px;color:#aaa;margin-top:4px">${LEVELS.length} niveaux à résoudre</div>
           </div>
 
           <div data-mode="run" class="mode-card" style="
