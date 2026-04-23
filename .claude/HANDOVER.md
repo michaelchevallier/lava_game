@@ -1,4 +1,59 @@
-# Handover — Milan Lava Park (2026-04-23 fin session I)
+# Handover — Milan Lava Park (2026-04-23 fin session J / kickoff Round 4)
+
+## ✅ Session J (audits perf + quality + Round 4 kickoff)
+
+**4 commits** : audits parallèles (perf + quality) par agents, 1 feature Round 4.
+
+| Commit | Type | Résumé |
+|---|---|---|
+| `b869d2a` | chore(quality) | remove dead import createQuestSystem |
+| `367b8ee` | perf(visitor) | éliminer k.get() par-frame (onDraw + onUpdate + particle-systems) |
+| `2f9ac48` | chore(quality) | purge 11 call-sites `window.__quests?.xxx()` dans 5 fichiers |
+| `8ede731` | feat(weather) | **Tempête Magnétique** — Round 4 feature #1 |
+
+### Perf audit (agent perf-auditor)
+
+3 bottlenecks (`k.get()` répétés par-frame) identifiés statiquement :
+1. `visitor.js` `k.onDraw()` global scannait `k.get("visitor")` à 60fps pour les symboles `!`/`?`/`X` → converti en `v.onDraw()` per-instance
+2. `visitor.js` boarding scan `k.get("wagon")` dans chaque visitor onUpdate → cache `_cachedWagons` refresh `k.loop(0.1)`
+3. `particle-systems.js` cap loop faisait 10 `k.get()` / 100ms → single-pass 7 `k.get()` réutilisés
+
+Features round 3 (boss, reparation, skull-stand, parade, weather) n'ajoutent aucun onUpdate par-tile ni collider individuel — conforme catalogue KAPLAY.
+
+### Quality audit (agent quality-maintainer)
+
+Smell trouvé : `createQuestSystem` importé mais jamais instancié (système intentionnellement désactivé, commentaire DISABLED en main.js:1035). Les 11 `window.__quests?.xxx()` callsites étaient des no-ops permanents → purge complète. −190 B gz.
+
+Reste pour revue humaine (non fixé) :
+- `src/quests.js` (164 L) est dead code entier — à supprimer si feature abandonnée définitivement, ou à réactiver si prévue (décision produit)
+- `window.__race`, `__coinThief`, `__weather`, `__balloons`, `__minigames` : assignés mais jamais lus cross-fichier. Poignées DevTools — OK si intentionnel.
+
+### `8ede731` feat(weather): Tempête Magnétique (Round 4 #1)
+
+4e type d'événement dans la rotation `weather.js` (aux côtés de lightning,
+coinrain, wind). Trigger toutes 60-90s aléatoirement.
+
+Mécanique : 10s de x2 score multiplier via `gameState.scoreMultiplier`
+(infrastructure existante metronome). À la fin : +50pts "TEMPÊTE PASSÉE"
+bonus survie.
+
+Visuel : overlay violet pulsant (90,40,160, opacité 0.22-0.30 sine wave) +
+14 aimants stylisés rouges (corps + 2 jambes en U) flottant en Lissajous.
+
+Bundle `103.95 → 104.26 KB gz` (+310 B). Aucun nouveau fichier, extension
+pure de weather.js (+51 L).
+
+## ➡️ Prochaine session (K) = choix Round 4
+
+Backlog Round 4 ouvert dans `CLAUDE.md:135` :
+- [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
+- [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
+- [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
+
+Items orphelins à décider :
+- Supprimer `src/quests.js` (164 L dead) ?
+- Factoriser les `window.__X` poignées DevTools en `window.__systems` ?
+- QA live Réparation + Parade (non validés en vraie session)
 
 ## ✅ Session I (QA live Boss Goret post-fix + cleanup + skeleton variants)
 

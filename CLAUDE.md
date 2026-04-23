@@ -130,6 +130,12 @@ requestAnimationFrame(tick);
 - [x] Boss Goret (spawn 4min, 3 pièces pour vaincre, drop portal+trampoline, 5ae35ea/bf5b8a1)
 - [x] Labyrinthe (2 niveaux campagne 7-4 + 7-5 Dédale final, f68c206)
 
+### Round 4 (en cours)
+- [x] Tempête Magnétique (weather.js 4e type, x2 score + overlay violet + aimants flottants, 8ede731)
+- [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
+- [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
+- [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
+
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings
 - [x] Splash screen sélection nb joueurs avec preview persos
