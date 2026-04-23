@@ -5,9 +5,11 @@ export function createCoinThiefSystem({ k, gameState, audio, showPopup, WIDTH, G
   function spawnThief() {
     if (activeThief?.exists?.()) return;
     const fromLeft = Math.random() < 0.5;
-    const startX = fromLeft ? -40 : WIDTH + 40;
+    // Spawn juste hors caméra pour que le voleur entre dans le champ visible
+    const camX = k.camPos?.().x ?? WIDTH / 2;
+    const startX = fromLeft ? camX - WIDTH / 2 - 40 : camX + WIDTH / 2 + 40;
     const dir = fromLeft ? 1 : -1;
-    const targetX = WIDTH / 2;
+    const targetX = camX;
     const yBase = (GROUND_ROW - 4) * TILE;
 
     const thief = k.add([

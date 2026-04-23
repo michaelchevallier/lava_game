@@ -92,7 +92,9 @@ export function createBalloonSystem({ k, gameState, audio, showPopup, WIDTH, GRO
     if (k.time() < nextSpawnAt) return;
     nextSpawnAt = k.time() + 45 + Math.random() * 25;
     const count = 3 + Math.floor(Math.random() * 3); // 3-5
-    const baseX = 100 + Math.random() * (WIDTH - 200);
+    // Spawn autour de la caméra pour que les ballons soient visibles
+    const camX = k.camPos?.().x ?? WIDTH / 2;
+    const baseX = camX - WIDTH / 2 + 100 + Math.random() * (WIDTH - 200);
     for (let i = 0; i < count; i++) {
       const x = baseX + (i - count / 2) * 28 + (Math.random() - 0.5) * 10;
       spawnBalloon(x);

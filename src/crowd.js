@@ -1,4 +1,6 @@
-import { GROUND_ROW, WIDTH, TILE } from "./constants.js";
+import { GROUND_ROW, WIDTH, TILE, WORLD_COLS } from "./constants.js";
+
+const WORLD_W = WORLD_COLS * TILE;
 
 const MAX_CROWD = 12;
 
@@ -13,9 +15,9 @@ export function createCrowdSystem({ k, gameState }) {
       80 + Math.random() * 175,
     ];
     const dir = Math.random() < 0.5 ? -1 : 1;
-    const startX = dir === 1
-      ? -30
-      : WIDTH + 30;
+    // Spawn autour de la caméra (monde étendu) ±(WIDTH/2 + 30)
+    const camX = k.camPos?.().x ?? WIDTH / 2;
+    const startX = dir === 1 ? camX - WIDTH / 2 - 30 : camX + WIDTH / 2 + 30;
     const c = k.add([
       k.sprite("human"),
       k.pos(startX, (GROUND_ROW - 3) * TILE),
@@ -68,8 +70,8 @@ export function createCrowdSystem({ k, gameState }) {
         }
       }
 
-      if (v.pos.x < -40) v.dir = 1;
-      if (v.pos.x > WIDTH + 40) v.dir = -1;
+      if (v.pos.x < -WORLD_W - 40) v.dir = 1;
+      if (v.pos.x > WORLD_W + 40) v.dir = -1;
 
       gameState.score += 0.1 * k.dt();
     });

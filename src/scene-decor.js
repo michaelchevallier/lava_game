@@ -1,10 +1,14 @@
-import { currentSeason, SEASON_PALETTES } from "./constants.js";
+import { currentSeason, SEASON_PALETTES, WORLD_COLS } from "./constants.js";
 
 export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
-  for (let i = 0; i < 6; i++) {
+  const WORLD_W = WORLD_COLS * TILE;
+  // Monde -WORLD_W .. +WORLD_W = 5120 px. Décor réparti sur toute la plage.
+  // Clouds : 14 (au lieu de 6) pour couvrir la plage monde, wrap de -WORLD_W à +WORLD_W.
+  const CLOUD_COUNT = 14;
+  for (let i = 0; i < CLOUD_COUNT; i++) {
     k.add([
       k.sprite("cloud"),
-      k.pos(i * 240 + (i % 2) * 60, 60 + (i % 3) * 40),
+      k.pos(-WORLD_W + (i / CLOUD_COUNT) * 2 * WORLD_W + (i % 2) * 60, 60 + (i % 3) * 40),
       k.z(-10),
       k.opacity(0.9),
       "cloud",
@@ -15,18 +19,22 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
   const season = currentSeason();
   const seasonPalette = SEASON_PALETTES[season];
 
+  // Teinte saison : fixed() = atmosphère, suit la caméra
   if (season !== "normal") {
     k.add([
       k.rect(WIDTH, HEIGHT),
       k.pos(0, 0),
       k.color(k.rgb(seasonPalette.sky[0], seasonPalette.sky[1], seasonPalette.sky[2])),
       k.opacity(0.08),
+      k.fixed(),
       k.z(-9),
     ]);
   }
 
+  // Label "Saison: X" : camera-fixed bottom-right
   k.add([
     k.pos(WIDTH - 180, HEIGHT - 22),
+    k.fixed(),
     k.z(35),
     {
       draw() {
@@ -42,8 +50,9 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
   ]);
 
   if (season === "halloween") {
-    for (let i = 0; i < 5; i++) {
-      const cx = 100 + i * 230;
+    // Citrouilles : 20 (5 → 20) réparties sur toute la plage monde
+    for (let i = 0; i < 20; i++) {
+      const cx = -WORLD_W + (i / 20) * 2 * WORLD_W + 100;
       k.add([
         k.circle(8),
         k.pos(cx, GROUND_ROW * TILE - 12),
@@ -59,19 +68,21 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
       ]);
     }
   } else if (season === "christmas") {
-    for (let i = 0; i < 8; i++) {
+    // Flocons : camera-fixed (neige permanente sur screen)
+    for (let i = 0; i < 12; i++) {
       const flake = k.add([
         k.circle(2),
         k.pos(Math.random() * WIDTH, Math.random() * HEIGHT * 0.6),
         k.color(k.rgb(255, 255, 255)),
         k.opacity(0.85),
+        k.fixed(),
         k.z(-3),
         { vy: 25 + Math.random() * 30, drift: Math.random() * Math.PI * 2 },
       ]);
       flake.onUpdate(() => {
         flake.pos.y += flake.vy * k.dt();
         flake.pos.x += Math.sin(k.time() * 0.5 + flake.drift) * 8 * k.dt();
-        if (flake.pos.y > HEIGHT) flake.pos.y = -10;
+        if (flake.pos.y > HEIGHT) { flake.pos.y = -10; flake.pos.x = Math.random() * WIDTH; }
       });
     }
   } else if (season === "carnival") {
@@ -84,6 +95,7 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
         k.color(colors[Math.floor(Math.random() * 4)]),
         k.rotate(Math.random() * 360),
         k.opacity(0.7),
+        k.fixed(),
         k.z(-3),
         "season-confetti",
         { vy: 30 + Math.random() * 20, spin: (Math.random() - 0.5) * 60 },
@@ -96,13 +108,63 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
     });
   }
 
+  // Hills : répartis sur toute la plage monde (-WORLD_W..+WORLD_W), tous les ~330px
   k.add([
     k.pos(0, 0),
     k.z(-20),
     {
       draw() {
-        for (let i = 0; i < 4; i++) {
-          k.drawSprite({ sprite: "hill", pos: k.vec2(i * 330 - 50, GROUND_ROW * TILE - 64) });
+        const step = 330;
+        const startX = Math.floor(-WORLD_W / step) * step;
+        for (let x = startX; x < WORLD_W; x += step) {
+          k.drawSprite({ sprite: "hill", pos: k.vec2(x - 50, GROUND_ROW * TILE - 64) });
+        }
+      },
+    },
+  ]);
+
+  // Murs monde : montagnes sombres au-delà des bornes ±WORLD_W pour fermer
+  // visuellement la scène. Empilement de triangles dégradés gris-foncé, z=-25
+  // (derrière hills). S'étendent sur 3×WIDTH au-delà de chaque borne.
+  k.add([
+    k.pos(0, 0),
+    k.z(-25),
+    {
+      draw() {
+        const groundY = GROUND_ROW * TILE;
+        for (const side of [-1, 1]) {
+          const baseX = side * WORLD_W;
+          for (let i = 0; i < 6; i++) {
+            const peakX = baseX + side * (80 + i * 180);
+            const peakY = groundY - 180 - Math.abs(Math.sin(i * 1.7)) * 80;
+            const halfW = 120 + (i % 3) * 40;
+            const shade = 30 + (i % 3) * 15;
+            k.drawTriangle({
+              p1: k.vec2(peakX - halfW, groundY),
+              p2: k.vec2(peakX + halfW, groundY),
+              p3: k.vec2(peakX, peakY),
+              color: k.rgb(shade, shade + 10, shade + 20),
+              opacity: 0.95,
+            });
+            // snow cap
+            k.drawTriangle({
+              p1: k.vec2(peakX - 18, peakY + 30),
+              p2: k.vec2(peakX + 18, peakY + 30),
+              p3: k.vec2(peakX, peakY),
+              color: k.rgb(230, 235, 245),
+              opacity: 0.9,
+            });
+          }
+          // fond plein au-delà du dernier pic
+          const fillStart = baseX + side * (6 * 180 + 200);
+          const fillEnd = side > 0 ? fillStart + 6000 : fillStart - 6000;
+          k.drawRect({
+            pos: k.vec2(Math.min(fillStart, fillEnd), 0),
+            width: 6000,
+            height: groundY,
+            color: k.rgb(15, 15, 28),
+            opacity: 1,
+          });
         }
       },
     },
@@ -112,8 +174,10 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
     [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
     [230, 100, 200], [255, 140, 40], [120, 100, 230], [255, 255, 255],
   ];
-  for (let i = 0; i < 10; i++) {
-    const fx = 40 + i * 120 + Math.random() * 40;
+  // Drapeaux : 40 (10 → 40) répartis sur plage monde
+  const FLAG_COUNT = 40;
+  for (let i = 0; i < FLAG_COUNT; i++) {
+    const fx = -WORLD_W + (i / FLAG_COUNT) * 2 * WORLD_W + 40 + Math.random() * 40;
     const poleH = 60 + Math.random() * 30;
     const poleY = GROUND_ROW * TILE - poleH;
     k.add([
@@ -149,6 +213,6 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
 
   k.onUpdate("cloud", (c) => {
     c.pos.x += c.speed * k.dt();
-    if (c.pos.x > WIDTH + 100) c.pos.x = -200;
+    if (c.pos.x > WORLD_W + 100) c.pos.x = -WORLD_W - 100;
   });
 }

@@ -3,11 +3,13 @@ import { WIDTH, HEIGHT, GROUND_ROW, TILE } from "./constants.js";
 export function createSkySystem({ k, spectres }) {
   let isNight = false;
 
+  // k.fixed() : atmosphère = toujours en screen-space, suit la caméra
   const moon = k.add([
     k.circle(24),
     k.pos(WIDTH - 140, 90),
     k.color(k.rgb(255, 250, 220)),
     k.opacity(0),
+    k.fixed(),
     k.z(-11),
     "night-deco",
   ]);
@@ -16,6 +18,7 @@ export function createSkySystem({ k, spectres }) {
     k.pos(WIDTH - 150, 82),
     k.color(k.rgb(200, 195, 170)),
     k.opacity(0),
+    k.fixed(),
     k.z(-10),
     "night-deco",
   ]);
@@ -24,6 +27,7 @@ export function createSkySystem({ k, spectres }) {
     k.pos(0, 0),
     k.color(k.rgb(20, 30, 80)),
     k.opacity(0),
+    k.fixed(),
     k.z(-12),
     "night-deco",
   ]);
@@ -61,6 +65,7 @@ export function createSkySystem({ k, spectres }) {
 
   k.add([
     k.pos(0, 0),
+    k.fixed(),
     k.z(-9),
     {
       draw() {
@@ -96,6 +101,7 @@ export function createSkySystem({ k, spectres }) {
 
   k.add([
     k.pos(0, 0),
+    k.fixed(),
     k.z(-11),
     {
       draw() {
