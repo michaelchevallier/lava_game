@@ -27,7 +27,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
     {
       draw() {
         k.drawText({
-          text: phase === "skulls" ? "TIR AUX CRANES" : "TIR AUX CANARDS",
+          text: phase === "skulls" ? "TIR AUX CRÂNES" : "TIR AUX CANARDS",
           size: 11,
           pos: k.vec2(STAND_X + STAND_W / 2, STAND_Y - 22),
           anchor: "center",
@@ -121,7 +121,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
             registerCoin(skull.pos.x + (Math.random() - 0.5) * 30, skull.pos.y);
           });
         }
-        showPopup(skull.pos.x, skull.pos.y - 40, "CRANE DORE !", k.rgb(255, 220, 60), 16);
+        showPopup(skull.pos.x, skull.pos.y - 40, "CRÂNE DORÉ !", k.rgb(255, 220, 60), 16);
       }
       skull.parts?.forEach((p) => k.destroy(p));
       k.destroy(skull);
