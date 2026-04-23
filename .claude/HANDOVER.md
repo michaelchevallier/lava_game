@@ -1,223 +1,167 @@
-# Handover — Milan Lava Park (2026-04-21 fin session C / début session D)
+# Handover — Milan Lava Park (2026-04-23 fin session D / début session E)
 
 ## État live
 
 - URL : https://michaelchevallier.github.io/lava_game/
-- Branche `main` : commit `80e7454` pushé, CI auto-deploy en cours
-- Bundle : ~95 KB gz game + 67 KB kaplay
-- **43 niveaux** campagne (5⭐/niveau = 129 total possible)
+- Branche `main` : commit `f6d38e7` pushé, CI auto-deploy en cours
+- Bundle : ~97 KB gz game + 67 KB kaplay (toujours sous 100 KB)
+- **49 niveaux** campagne sur 7 mondes (5⭐/niveau = 147 total possible)
 - **24 spectres** en 6 catégories × 4
 - **40 VIP** avec contrats quotidiens, seed déterministe
 - **Musée** 6 onglets : Médailles, Records, Spectres, Runs, Almanach, Boutique
 
-## ✅ Sessions précédentes — récap
+## ✅ PLAN OFFICIEL 100% TERMINÉ
 
-### Session A (Sprint 0 + 1, 3 commits)
-- `7eb66a8` Sprint 0 : cleanup 4P → 1-2P max
-- `acfc188` Sprint 1.1 : wire hooks geyser/constellation/metronome/magnetField
-- `8fe062a` Sprint 1.2 : +5 niveaux Monde 6
+Les 5 sprints du plan `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` :
+- Sprint 0 (cleanup 4P → 1-2P) ✅
+- Sprint 1 (quick wins puzzle) ✅
+- Sprint 2 (métagame étendu) ✅
+- Sprint 3 (VIP narratif + persistance) ✅
+- Sprint 4 (nouvelles mécaniques puzzle) ✅
+- Sprint 5 (éditeur) **skippé par design** (décision initiale du plan)
 
-### Session B (Sprint 2, 4 commits)
-- `276a633` Sprint 2.1 : 43 prédicats platine
-- `71d426c` Sprint 2.2 : speedrun records top 3 foyer
-- `fded35d` Sprint 2.3 : Musée 5 onglets sur splash
-- `6d0ab7c` Sprint 2.4 : refonte spectres 6×4 catégories
+## ✅ Session D (Sprint 4, 4 commits) — cette session
 
-### Session C (Sprint 3, 6 commits) — cette session
-- `ce70578` **Sprint 3.1** : parc sandbox persistant
-  - `save.sandboxLayout` auto-save chaque 10s en mode sandbox
-  - Chargé au `k.scene("game")` sandbox (k.wait 0.1)
-  - Bouton "Parc vierge" dans settings (double-clic confirm)
-- `ed41498` **Sprint 3.2** : pool 40 VIP
-  - `src/vips.js` (824 L) — 20 archetypes × 2 moods, 1-2 contrats chacun
-  - Schéma contract : `{summary, objectives[], failOn?, forbidTools?,
-    wagonLimit?, tileBudget?, timeLimit?, reward, testimonial}`
-  - Utilise les 13 types campaign (skeleton, coin, catapult, loop, apocalypse,
-    chain, constellation, metronome, magnetField, geyser, portalUse, wagon, score)
-- `e9aa131` **Sprint 3.3** : seed journalière
-  - `src/contracts.js` (187 L) — `todayKey()`, `mulberry32()` seedé,
-    `pickDailyVips()` filtre pool vu <7j, `ensureVipToday()` init boot
-  - `createContractRunner({k,save,showPopup,...})` : start/progress/
-    onToolPlaced/onWagonSpawned/tick, fail sur forbid/forbidTools/budget/
-    timeLimit/wagonLimit, win → +tickets + almanac + vipHistory
-  - `save.vipToday = {date, vips: [{vipId, contractIdx, honored, failed}]}`
-- `cb5b7d9` **Sprint 3.4** : écran "Aujourd'hui au parc"
-  - Bandeau splash cliquable en haut (sous le titre)
-  - `src/vip-screen.js` overlay 3 cartes contrat → bouton "Honorer"
-  - Propagation `router.enter({...,contractEntry})` → scene sandbox crée
-    `window.__contract = contractRunner`
-  - **15 call sites progress() doublés** via sed regex :
-    `window.__campaign?.progress?.("X")` → `...; window.__contract?.progress?.("X")`
-  - wagon-vfx humans>1 + onTileEvent + onWagonSpawned hooks ajoutés
-- `10d74a5` **Sprint 3.5** : tickets + boutique
-  - `src/shop.js` : TILE_PRICES (9 tuiles), SKINS (4 : golden/obsidian/neon/spectre),
-    buyTile/buySkin/setActiveSkin/getSkinTheme
-  - tiers.js `isUnlocked()` respecte `save.ticketUnlocks`
-  - wagons.js applique `getSkinTheme(save)` si activeSkin
-  - museum.js nouvel onglet 🎫 Boutique + onglet renommé 📜 Almanach
-- `80e7454` **Sprint 3.6** : almanach
-  - `src/almanac.js` (34 L) — pushAlmanacEntry, getUnreadCount, markAllRead,
-    listByVip, totalTicketsEarned
-  - `save.almanacUnread` counter
-  - Badges rouges sur onglet Almanach musée + bouton 🏆 Musée splash
-  - Auto-read à l'ouverture de l'onglet
+- `1da23a5` **Sprint 4.0** : refactor main.js 1721 → 1245 L
+  - `src/scene-overlays.js` (243 L) — geyser particles + icerink crystals + magnet/portal/ice-crown/lava-triangle draws + lava-ghost loop
+  - `src/scene-decor.js` (154 L) — clouds + hills + flags + seasonal décor (halloween/christmas/carnival)
+  - `src/sandbox-setup.js` (105 L) — buildDemoCircuit + loadParkFromCode + exportAction + resetPark + sandbox layout auto-save + contract runner
+- `4ee538b` **Sprint 4.1** : objectif `visitor`
+  - `OBJECTIVE_TYPES.visitor = { hookName: "onVisitorBoard" }`
+  - `def.visitors = [{col, row, isVIP?}]` field supporté dans `loadLevel`
+  - `visitor.spawnAt(col, row, opts)` crée visiteur statique (walkSpeed=0, anti-stuck désactivé dans ce cas)
+  - `tryAutoBoardVisitor` dispatche `window.__campaign?.progress?.("visitor")` + contract
+  - `MODE_CONFIG.enableAmbientVisitors=false` en campaign (prévisibilité)
+  - Nouveau monde 7 "Contrats VIP" (seuil 45⭐) avec 6-6 Ramassage + 7-1 VIP transport
+- `1fabdc3` **Sprint 4.2** : tuile `bomb` (code E)
+  - `makeBombSpriteUrl()` (32×32 sphère noire + mèche)
+  - `k.onUpdate("bomb")` AABB vs wagons → explodeBomb → placeTile(lava) pour bomb + 4 voisines cardinales
+  - Bombes adjacentes détonent en cascade (+0.15s)
+  - Fuse ember particle périodique (0.25s cd)
+  - `TOOLBAR_ORDER` + HUD icons + Tier 7 unlock
+  - Niveaux 6-7 Champ de mines + 7-2 Cascade explosive
+- `f6d38e7` **Sprint 4.3** : tuile `alarm` (flood/freeze/wind)
+  - 3 tool names distincts : `alarm_flood` (A), `alarm_freeze` (G), `alarm_wind` (V)
+  - Countdown 10s fixe rendu via `k.onDraw` (icône + timer rouge sous 3s)
+  - Détonation par variant :
+    - flood : toutes les lava → water 5s puis retour
+    - freeze : wagons x0.35 vitesse pendant 3s via `wagon.frozenUntil`
+    - wind : wagons +1.2 speedMult pendant 2s via `wagon.windUntil`
+  - `wagons.js` : 2 états ajoutés dans le speedMult existant (pas de refactor profond)
+  - Niveaux 6-8 Alarme ! + 7-3 Compte à rebours
 
-## ➡️ PROCHAINE SESSION = SPRINT 4 (nouvelles mécaniques puzzle)
+## ➡️ PROCHAINE SESSION = QA LIVE + POLISH / CHOIX OUVERT
 
-Plan officiel intact : `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` sections Sprint 4.
+Le plan officiel est épuisé. La session E peut aller dans plusieurs directions :
 
-**Estimation** : 8h, 3 commits atomiques. Ordre : **visitor → bomb → alarm**.
+### Option A : QA live des nouvelles mécaniques (2-3h)
 
-### 4.1 Objectif `visitor` (2h)
-Dans campaign `OBJECTIVE_TYPES`, ajouter `visitor: { hookName: "onVisitorBoard" }`.
-Dans `levels.js`, field `visitors: [{col, row}]`. Spawn à `loadLevel`.
-Collision wagon < 24px + `wagon.passengers.length < 4` → visitor boards,
-`progress("visitor")`.
+Agent `qa-tester` sur https://michaelchevallier.github.io/lava_game/ :
+- **6-6 Ramassage** : 3 visiteurs statiques embarquent-ils correctement ? Progress visitor compte bien ?
+- **7-1 VIP transport** : failOn skeleton bloque-t-il si un wagon brûle ?
+- **6-7 Champ de mines** : AABB bomb vs wagon correct ? Explosion crée bien lava + 4 voisines ?
+- **7-2 Cascade explosive** : bombes adjacentes détonent-elles en chaîne ? APOCALYPSE déclenchée ?
+- **6-8 Alarme !** : countdown visible ? Flood convertit lava → water 5s puis retour ?
+- **7-3 Compte à rebours** : freeze applique bien x0.35 speed aux wagons ?
+- Vérifier la sérialisation : save/load d'un parc sandbox avec bombs+alarms round-trip
+- Vérifier monde 7 bien affiché dans campaign-menu (seuil 45⭐ respecté)
 
-**Niveaux exemples** : 6-3 Ramassage (3 visiteurs à embarquer), 7-2 VIP transport (failOn skeleton).
+### Option B : Polish restant du backlog CLAUDE.md
 
-**Fichiers** :
-- `src/campaign.js` : ajouter "visitor" dans counts + objective matching
-- `src/levels.js` : field `visitors` dans loadLevel, 2 niveaux
-- `src/wagons.js` : collision check wagon+visitor dédiée
+Cocher les items encore ouverts :
+- [ ] **main.js < 1200 lignes** (actuel 1245 — marge négligeable, extraire sky/* possible)
+- [ ] **Skeleton variants par avatar** (actuellement unifié sur skeleton_generic)
+- [ ] **Boss Goret, Réparation Express, Parade Lave QTE, Aire Tir Mobile, Labyrinthe** (backlog créatif round 3)
 
-### 4.2 Tuile `bomb` (3h)
-Nouveau TILE_CODE (ex `E` pour "explosive"). Lava qui s'étend au contact d'un
-wagon : au touch, la tuile bomb + ses 4 voisines deviennent lava permanente.
-Sprite anim timer (mèche).
+### Option C : Audit performance / quality maintenance
 
-**Niveaux exemples** : 6-8 Champ de mines (bombs pré-placées à éviter), 7-5 Cascade explosive.
+Les 3 agents spécialisés :
+- `perf-auditor` — mesurer FPS live sur laptop 2015/Mac Retina avec alarm+bomb actifs
+- `quality-maintainer` — chasser dead code, patterns dupliqués, wagon.js à 1437L proche du seuil 1500
+- `qa-tester` — voir Option A
 
-**Fichiers** :
-- `src/constants.js` : TILE_CODE ajouter "bomb" → "E"
-- `src/sprites.js` : SPR_BOMB + anim mèche
-- `src/tiles.js` : handler placement + collision expand
-- `src/levels.js` : 2 niveaux
+### Option D : Mode parent dédié ou nouvelles directions
 
-### 4.3 Tuile `alarm` (3h)
-Nouveau tile avec variant (flood/freeze/wind). Après N secondes (configurable
-dans level def), déclenche événement global :
-- `flood` : toutes les lave deviennent eau pendant 5s
-- `freeze` : tous les wagons ralentis 3s
-- `wind` : push tous wagons vers la droite 2s
+Question du plan laissée ouverte : "Mode parent dédié (Sprint 5 skip)". Pourrait faire session dédiée.
 
-**Niveaux exemples** : 6-9 Alarme ! (flood après 30s), 7-6 Compte à rebours (freeze après 15s).
+## ⚠️ Dette technique actuelle
 
-**Fichiers** :
-- `src/tiles.js` : tile alarm + countdown timer + event dispatch
-- `src/wagons.js` : appliquer freeze/wind sur wagons
-- `src/levels.js` : 2 niveaux
+| Fichier | Lignes | Seuil | Statut |
+|---|---|---|---|
+| `src/main.js` | 1245 | 1500 | ✅ OK |
+| `src/wagons.js` | 1437 | 1500 | ⚠️ Proche seuil |
+| `src/sprites.js` | 1177 | 1500 | ✅ OK |
+| `src/vips.js` | 824 | 1500 | ✅ OK |
+| `src/levels.js` | 849 | 1500 | ✅ OK |
+| `src/tiles.js` | 884 | 1500 | ✅ OK |
 
-### Commits Sprint 4 (atomiques)
-1. `feat(tiles): objectif visitor + niveau 6-3 Ramassage`
-2. `feat(tiles): tuile bomb explosive + niveaux 6-8, 7-5`
-3. `feat(tiles): tuile alarm flood/freeze/wind + niveaux 6-9, 7-6`
+`wagons.js` devrait être refactoré AVANT d'y ajouter quoi que ce soit (wagon-vfx.js existe déjà, on peut extraire plus).
 
-## ⚠️ Dette technique à traiter AVANT Sprint 4
-
-**`src/main.js` = 1721 lignes** (seuil CLAUDE.md = 1500, bloquant).
-Refactor suggéré :
-- Extraire `src/contract-setup.js` (bloc contractRunner creation dans scene game, ~30 L)
-- Extraire `src/sandbox-init.js` (layout persist + buildDemoCircuit + loadParkFromCode, ~50 L)
-- Extraire `src/sky-setup.js` (déjà flagué dans backlog polish existant)
-
-Cible : `main.js < 1500 lignes` avant d'ajouter 3 nouvelles tuiles + niveaux.
-
-## Décisions validées (rappel)
-
-| Sujet | Décision |
-|---|---|
-| Ordre sprints | 0 → 1 → 2 → 3 → 4 (séquentiel) ✅ 0/1/2/3 done |
-| Audience | Milan + père/adulte, max 2 joueurs ✅ |
-| Platine | Pré-écrites par niveau (43 prédicats) ✅ |
-| Parc persistant | Oui, localStorage ✅ |
-| Spectres | Refonte 6×4 catégories ✅ |
-| Pool VIP | 40 personas ✅ |
-| Tickets | Débloquent tuiles + skins ✅ |
-| Seed VIP | Déterministe par date, rotation 7j ✅ |
-| Sprint 4 ordre | Visitor → Bomb → Alarm |
-
-## ⚠️ À valider en QA live
-
-Sprint 3 en prod jamais testé foyer :
-- **Flow splash → bandeau VIP → pick contrat** : cliquable, 3 cartes visibles, Honorer lance sandbox avec contrat
-- **Runner événements** : faire un `skeleton` en sandbox contractée → progress compte, win déclenche popup + +tickets
-- **Seed déterministe** : même date = mêmes 3 VIPs (vérifier avec `localStorage.clear()` + reload → 3 VIP nouveaux, puis reload sans clear → mêmes 3)
-- **Boutique** : +8 tickets (via un honored contract) → Skin dispo à l'achat → équiper → wagon change de couleur
-- **Parc persistant** : placer 10 tuiles → rouvrir tab/reload → tuiles reviennent
-- **Parc vierge bouton** : double-clic confirm, clear complet
-
-Sprint 2 niveaux Monde 6 toujours non testés :
-- **6-3 Cascade fatale**, **6-4 Yin Yang infini**, **6-5 Métronome infernal**
-
-Agent `qa-tester` peut tester en live.
-
-## Conventions rappel
+## Conventions rappel (inchangées)
 
 - 1 commit atomique par feature + push immédiat (push main autorisé)
 - Build systématique avant commit (`npm run build`)
 - Agent models : qa-tester haiku, feature-dev sonnet, spec-writer opus
 - Pas de `console.log` prod, pas de commentaires superflus
-- **Si `main.js > 1500 lignes`, refactorer avant d'ajouter** (⚠️ on est à 1721)
+- **Si fichier > 1500 lignes, refactorer avant d'ajouter**
 
-## Docs de référence
-
-- `/Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md` — PLAN OFFICIEL (5 sprints)
-- `.claude/CREATIVE_NEXT.md` — synthèse unifiée
-- `.claude/creative-puzzles.md` — détails puzzles (Sprint 4)
-- `.claude/creative-carteblanche.md` — détails VIP (Sprint 3 fait)
-- `.claude/creative-progression.md` — détails métagame (Sprint 2 fait)
-
-## Fichiers Sprint 3 créés/modifiés
+## Fichiers Sprint 4 créés/modifiés
 
 **Nouveaux** :
-- `src/vips.js` (824 L, 40 personas)
-- `src/contracts.js` (187 L, runner + seed)
-- `src/vip-screen.js` (129 L, overlay 3 cartes)
-- `src/shop.js` (110 L, prices + skins)
-- `src/almanac.js` (34 L, helpers unread)
+- `src/scene-overlays.js` (243 L)
+- `src/scene-decor.js` (154 L)
+- `src/sandbox-setup.js` (105 L)
 
 **Modifiés** :
-- `src/splash.js` (bandeau VIP + badge unread Musée)
-- `src/main.js` (load/persist sandbox, ensureVipToday, contractRunner hook, 15 progress dispatches, reset contract au scene start) — **1721 L**
-- `src/settings-modal.js` (bouton "Parc vierge")
-- `src/serializer.js` (save.sandboxLayout, tickets, almanac, vipToday, vipHistory, ownedSkins, activeSkin, ticketUnlocks migration)
-- `src/museum.js` (onglet Boutique, onglet Almanach reworké, unread badge)
-- `src/tiers.js` (isUnlocked respecte ticketUnlocks)
-- `src/wagons.js` (apply skin theme)
-- `src/wagons.js` + `src/tiles.js` + `src/constellation.js` + `src/wagon-vfx.js` (15 call sites doublés pour dispatcher contract)
+- `src/main.js` (1721 → 1245 L) — imports + 3 extractions
+- `src/visitor.js` (297 → 304 L) — opts params + spawnAt export
+- `src/wagons.js` (1431 → 1437 L) — frozenUntil/windUntil + progress visitor dispatch
+- `src/campaign.js` (+visitor dans counts, +def.visitors spawn, +visitors dans payload)
+- `src/campaign-menu.js` (+monde 7)
+- `src/constants.js` (+TILE_CODE bomb/alarm + toolbar entries + MODE_CONFIG enableAmbientVisitors)
+- `src/tiles.js` (+placeTile bomb/alarm + detonate + k.onUpdate + k.onDraw)
+- `src/sprites.js` (+makeBombSpriteUrl + bomb_visual load)
+- `src/hud.js` (+TOOL_ICONS + TOOL_DESCRIPTIONS + COLORS pour bomb/alarm)
+- `src/tiers.js` (Tier 7 unlocks : bomb + 3 alarms)
+- `src/levels.js` (+6 niveaux : 6-6, 6-7, 6-8, 7-1, 7-2, 7-3)
 
-## Pour démarrer la prochaine session (D)
+## Pour démarrer la prochaine session (E)
 
 1. Lire ce fichier (`.claude/HANDOVER.md`)
-2. Lire plan officiel sections Sprint 4
-3. **Refactorer main.js d'abord** → viser <1500 L avant d'ajouter bomb/alarm
-4. Puis 4.1 → 4.2 → 4.3 avec commits atomiques
-5. Push immédiat après chaque commit pour CI
+2. Choisir une direction (A/B/C/D ci-dessus)
+3. Si option A : lancer agent `qa-tester` directement sur URL live
+4. Si option B/C : prévoir refactor `wagons.js` d'abord si > 1500
 
-Prompt suggéré pour session D :
+Prompt suggéré pour session E (QA live) :
 ```
-Session D — Sprint 4 (nouvelles mécaniques puzzle : visitor → bomb → alarm).
-Auto mode full, aucune validation intermédiaire, pousse sur main à chaque commit.
+Session E — QA live Sprint 4 (6 nouveaux niveaux + 3 mécaniques).
+Auto mode full, aucune validation intermédiaire.
 
-Lis .claude/HANDOVER.md puis /Users/mike/.claude/plans/ne-me-mets-pas-keen-kahn.md
-sections Sprint 4.
+Lis .claude/HANDOVER.md puis lance agent qa-tester sur
+https://michaelchevallier.github.io/lava_game/ pour valider :
+  - 6-6 Ramassage, 7-1 VIP transport (objectif visitor)
+  - 6-7 Champ de mines, 7-2 Cascade explosive (tuile bomb)
+  - 6-8 Alarme !, 7-3 Compte à rebours (tuile alarm)
+  - Sérialisation save/load avec bombs+alarms
 
-Ordre d'exécution strict :
-  4.0 → refactor main.js < 1500 L (extraire contract-setup, sandbox-init,
-        sky-setup ou autre) — commit dédié avant tout ajout
-  4.1 → objectif visitor + 2 niveaux (6-3 Ramassage, 7-2 VIP transport)
-  4.2 → tuile bomb + 2 niveaux (6-8 Champ de mines, 7-5 Cascade explosive)
-  4.3 → tuile alarm flood/freeze/wind + 2 niveaux (6-9, 7-6)
+Si QA trouve des bugs : lance bug-fixer sur chacun.
+Sinon, passer à audit perf/quality (wagons.js à 1437L proche seuil).
 
-1 commit atomique par step + push immédiat. npm run build avant chaque commit.
-Décide seul sur la sensibilité des objectifs (combien de visiteurs, rayon
-d'explosion, durée des alarmes). Vise "lisible pour Milan 8 ans" ET "cohérent
-avec l'esthétique/physique existante".
+en autonomie totale
+```
 
-Si tu rencontres une décision ambiguë : tranche dans le sens de l'existant
-(patterns levels.js, TILE_CODE convention, collision wagon 24px) et note
-le choix dans le message de commit.
+Prompt suggéré pour session E (polish/refactor) :
+```
+Session E — Polish post-Sprint 4.
+Auto mode full.
 
+Lis .claude/HANDOVER.md. Objectif : refactor wagons.js < 1300 L (actuel 1437).
+Extraire wagon-collision.js (interactions tile/wagon) ou wagon-boarding.js
+(passengers + visitor boarding) selon ce qui ressort le plus lisible.
+
+Puis cocher backlog CLAUDE.md polish : skeleton variants par avatar,
+ou main.js < 1200 L.
+
+1 commit atomique par refactor + push immédiat. npm run build avant chaque commit.
 en autonomie totale
 ```
