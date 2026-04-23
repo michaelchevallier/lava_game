@@ -1,6 +1,54 @@
-# Handover — Milan Lava Park (2026-04-23 fin session K / Round 4 expansion)
+# Handover — Milan Lava Park (2026-04-23 fin session K+ / Round 4 expansion)
 
-## ✅ Session K (cleanup + 2 bugs + Round 4 mono-écran cassé)
+## ✅ Session K+ (décor monde étendu + 3 bugs camera follow)
+
+**2 commits supplémentaires** post-session K après feedback live utilisateur :
+
+### `581c577` fix(decor): décor + spawn adaptés au monde étendu
+
+Après camera follow (befa2eb), le décor était resté cantonné à [0, WIDTH] :
+sun, lune, stars, fireflies, label "Saison: X", nuages, hills, drapeaux,
+citrouilles halloween, flocons christmas. Les spawners crowd/balloons/coin-thief
+spawnaient toujours au centre du monde.
+
+Fix :
+- **Atmosphère k.fixed()** — sky.js + scene-decor.js : sun, moon, nightTint,
+  stars, fireflies, shooting stars, teinte saison, label "Saison: X",
+  flocons christmas, confetti carnaval suivent la caméra (screen-space).
+- **Décor étendu** — clouds 6→14, hills draw loop dynamique tous les 330px
+  sur [-WORLD_W, +WORLD_W], drapeaux 10→40, citrouilles 5→20. Nuages wrap
+  aux bornes monde ±WORLD_W+100.
+- **Murs monde** — au-delà de ±WORLD_W, 6 montagnes sombres avec snow-caps
+  dégradés + rect plein noir au-delà. Ferme visuellement la scène, plus de vide.
+- **Spawn camera-aware** — crowd/balloons/coin-thief spawn à `camX ± WIDTH/2 + offset`.
+  Crowd bounce étendu à ±WORLD_W+40.
+
+Bundle 104.79 → 105.20 KB gz.
+
+### `95d3649` fix(camera): 3 bugs follow — shake / ride / fall
+
+Feedback post-befa2eb :
+
+1. **Camera jump sur events (crash côté gauche/droit)** — `juice.dirShake`
+   capturait `baseCam = k.camPos()` UNE FOIS à l'init de juice. Chaque shake
+   faisait `k.camPos(baseCam.x + wobble, ...)` → caméra téléportée à (640,288)
+   puis lerp de retour vers le player. Visible quand player loin du centre.
+   Fix : pattern offset. `juice.getShakeOffset()` renvoie un delta (x,y),
+   le camera follow l'additionne à camFollowX chaque frame. Plus de conflit.
+
+2. **Camera jump quand boarding** — `boardWagon` met `p.pos = (-99999, -99999)`
+   pour parker le player. Le follow lerpait vers -99999. Fix : barycentre
+   utilise `p.ridingWagon.pos` si riding, sinon `p.pos`.
+
+3. **Player tombait définitivement hors niveau** — pas de respawn auto, player
+   pas dans CULLABLE. Fix : chaque frame, si `effY > HEIGHT+200` → teleport
+   à `(WIDTH/2, (GROUND_ROW-4)*TILE)`, exit wagon propre si monté.
+
+Shake aussi appliqué en campaign mode (baseline WIDTH/2, HEIGHT/2).
+
+Bundle 105.20 → **105.39 KB gz**.
+
+## Session K (cleanup + 2 bugs + mono-écran cassé)
 
 **5 commits** cette session :
 
