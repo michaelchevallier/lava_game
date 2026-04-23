@@ -3,7 +3,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
   let warning = null;
   let active = null;
 
-  const TYPES = ["lightning", "coinrain", "wind"];
+  const TYPES = ["lightning", "coinrain", "wind", "magstorm"];
 
   function startWarning() {
     const type = TYPES[Math.floor(Math.random() * TYPES.length)];
@@ -13,6 +13,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       lightning: "ECLAIRS DANS 3s !",
       coinrain: "PLUIE D'OR DANS 3s !",
       wind: "VENT VIOLENT DANS 3s !",
+      magstorm: "TEMPÊTE MAGNÉTIQUE DANS 3s !",
     };
     showPopup(WIDTH / 2, 100, labels[type], k.rgb(255, 200, 100), 22);
   }
@@ -34,6 +35,14 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
     } else if (type === "wind") {
       const dir = Math.random() < 0.5 ? -1 : 1;
       active = { type, until: k.time() + 5, dir };
+    } else if (type === "magstorm") {
+      const DUR = 10;
+      active = { type, until: k.time() + DUR };
+      gameState.scoreMultiplier = 2;
+      gameState.scoreMultiplierUntil = k.time() + DUR;
+      audio.combo?.();
+      audio.crack?.();
+      window.__juice?.dirShake?.(0, 1, 6, 0.3);
     }
   }
 
@@ -129,6 +138,10 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       warning = null;
     }
     if (active && t > active.until) {
+      if (active.type === "magstorm") {
+        gameState.score += 50;
+        showPopup(WIDTH / 2, 100, "TEMPÊTE PASSÉE +50", k.rgb(180, 120, 255), 24);
+      }
       active = null;
     }
     if (active?.type === "lightning") {
@@ -180,6 +193,43 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
               angle: 30 * active.dir,
               color: k.rgb(180, 220, 255),
               opacity: 0.5,
+            });
+          }
+        }
+        if (active?.type === "magstorm") {
+          const t = k.time();
+          const pulse = 0.22 + 0.08 * Math.sin(t * 6);
+          k.drawRect({
+            pos: k.vec2(0, 0),
+            width: WIDTH,
+            height: HEIGHT,
+            color: k.rgb(90, 40, 160),
+            opacity: pulse,
+          });
+          for (let i = 0; i < 14; i++) {
+            const phase = t * 1.3 + i * 0.7;
+            const x = ((i * 91 + Math.sin(phase) * 40) % WIDTH + WIDTH) % WIDTH;
+            const y = ((i * 53 + Math.cos(phase * 1.4) * 30 + t * 40) % HEIGHT + HEIGHT) % HEIGHT;
+            k.drawRect({
+              pos: k.vec2(x - 4, y - 6),
+              width: 8,
+              height: 12,
+              color: k.rgb(220, 60, 60),
+              opacity: 0.8,
+            });
+            k.drawRect({
+              pos: k.vec2(x - 4, y + 2),
+              width: 3,
+              height: 8,
+              color: k.rgb(220, 60, 60),
+              opacity: 0.8,
+            });
+            k.drawRect({
+              pos: k.vec2(x + 1, y + 2),
+              width: 3,
+              height: 8,
+              color: k.rgb(220, 60, 60),
+              opacity: 0.8,
             });
           }
         }
