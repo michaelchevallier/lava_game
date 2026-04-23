@@ -145,7 +145,6 @@ export function attachWagonCollisions({
     p.pair.cooldownUntil = k.time() + 0.5;
     gameState.portalUses = (gameState.portalUses || 0) + 1;
     window.__tiers?.onPortalUse?.();
-    window.__quests?.onPortal();
     audio.combo();
     window.__juice?.dirShake(1, 0, 3, 0.12);
     // Portal est désormais un sprite — plus de p.color. On dérive la couleur du variant.

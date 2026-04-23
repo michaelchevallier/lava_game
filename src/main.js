@@ -361,7 +361,7 @@ k.scene("game", () => {
     if (save.totalSkeletons >= 1) spectres.unlock("first_skel");
     if (save.totalSkeletons >= 10) spectres.unlock("ten_skel");
     if (save.totalSkeletons >= 100) spectres.unlock("hundred_skel");
-    window.__quests?.onSkeleton(); window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
+    window.__tiers?.onSkeleton(); window.__tiers?.onSkeletonCumul(save.totalSkeletons);
     window.__campaign?.progress?.("skeleton"); window.__contract?.progress?.("skeleton");
   }
 
@@ -409,7 +409,6 @@ k.scene("game", () => {
     window.__tiers?.onApocalypse?.();
     cinematic.play("apocalypse", "APOCALYPSE !");
     spectres.unlock("apocalypse");
-    window.__quests?.onCombo5();
     window.__campaign?.progress?.("apocalypse"); window.__contract?.progress?.("apocalypse");
     save.apocalypseCount = (save.apocalypseCount || 0) + 1;
     persistSave(save);
@@ -478,7 +477,7 @@ k.scene("game", () => {
     if (save.totalCoins >= 50) spectres.unlock("coins_50");
     if (save.totalCoins >= 200) spectres.unlock("coins_200");
     if (save.totalCoins >= 1000) spectres.unlock("coins_1000");
-    window.__quests?.onCoin(); window.__tiers?.onCoin();
+    window.__tiers?.onCoin();
     window.__campaign?.progress?.("coin"); window.__contract?.progress?.("coin");
     showPopup(x, y - 8, `+${pts}`, k.rgb(255, 230, 80), 18);
 
@@ -549,7 +548,7 @@ k.scene("game", () => {
     k, gameState, audio, tileMap,
     tryBoardWagon: (...args) => tryBoardWagon(...args),
     exitWagon: (...args) => exitWagon(...args),
-    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__quests?.onWagonSpawn(); window.__tiers?.onWagonSpawn(); window.__contract?.onWagonSpawned?.(); },
+    spawnWagon: (...args) => { spawnWagon(...args); if (tutorial) tutorial.notifyWagonSpawned(); window.__tiers?.onWagonSpawn(); window.__contract?.onWagonSpawned?.(); },
   });
   _playerConfigs = PLAYER_CONFIGS;
 
@@ -846,7 +845,7 @@ k.scene("game", () => {
     if (!canPlaceHere) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
-    window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
+    window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
     window.__campaign?.onTileEvent?.(selectedTool); window.__contract?.onToolPlaced?.(selectedTool);
     gameState.lastTilePlaced = k.time();
@@ -898,7 +897,7 @@ k.scene("game", () => {
     if (tileMap.has(key) && tileMap.get(key).tileType === selectedTool) return;
     placeTile(col, row, selectedTool);
     if (selectedTool === "lava" && tutorial) tutorial.notifyLavaPlaced();
-    window.__quests?.onTilePlace(selectedTool); window.__tiers?.onTilePlace(selectedTool);
+    window.__tiers?.onTilePlace(selectedTool);
     window.__vquests?.onTilePlaced(selectedTool);
     window.__campaign?.onTileEvent?.(selectedTool); window.__contract?.onToolPlaced?.(selectedTool);
     gameState.lastTilePlaced = k.time();

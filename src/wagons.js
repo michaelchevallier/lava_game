@@ -250,7 +250,6 @@ export function createWagonSystem({
           showPopup(wagon.pos.x + 30, wagon.pos.y - 30, "LOOP +50", k.rgb(180, 80, 240), 22);
           audio.combo();
           window.__juice?.dirShake(0, -1, 6, 0.2);
-          window.__quests?.onLoop();
           window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
           for (const p of (wagon.passengerEntities || [])) {
             if (p.exists()) p.angle = 0;
@@ -866,8 +865,7 @@ export function createWagonSystem({
               showPopup(wagon.pos.x + 30, wagon.pos.y - 50, `LOOP x${wagon.loopCount}`, k.rgb(255, 80, 220), 36);
               audio.combo();
               window.__juice?.dirShake(0, -1, 6, 0.15);
-              window.__quests?.onLoop();
-              window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
+                  window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
               if (wagon.loopCount >= 3) {
                 window.__spectres?.unlock("triple_loop");
                 wagon.looping = false;

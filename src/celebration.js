@@ -64,7 +64,7 @@ export function createCelebrationSystem({ k, gameState, audio, juice, showPopup,
   });
 
   function checkMilestone() {
-    window.__quests?.onScore(gameState.score); window.__tiers?.onScore(gameState.score);
+    window.__tiers?.onScore(gameState.score);
     while (
       gameState.milestoneIdx < MILESTONES.length &&
       gameState.score >= MILESTONES[gameState.milestoneIdx]
