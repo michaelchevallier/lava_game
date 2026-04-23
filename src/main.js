@@ -1031,7 +1031,6 @@ k.scene("game", () => {
     tutorial.setup();
   }
 
-  // Old daily quest system (Almanach du Forain) DISABLED — the tier system is the single source of truth for objectives now
   if (cfg.enableTiers) window.__tiers = createTierSystem({ k, save, persistSave, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   if (cfg.enableCoinThief) window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableVisitorQuests) window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
