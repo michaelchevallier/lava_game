@@ -44,6 +44,30 @@ const TOOL_DESCRIPTIONS = {
 let __hudIntervalId = null;
 let __hudCogHandler = null;
 
+// Fix: clicking HTML toolbar while holding a movement key shifts focus so
+// some browsers never deliver keyup to window → perso bloqué en déplacement.
+// On synthétise keyup pour tous les bindings connus + reset mobile input.
+const MOVE_KEYS = ["a", "q", "d", "j", "l", "w", "s", "z", "i", "o", "e", "space"];
+function releaseHeldInputs() {
+  for (const key of MOVE_KEYS) {
+    const code = key === "space" ? "Space" : "Key" + key.toUpperCase();
+    window.dispatchEvent(new KeyboardEvent("keyup", { key, code, bubbles: true }));
+  }
+  if (window.__mobileInput) {
+    window.__mobileInput.left = false;
+    window.__mobileInput.right = false;
+    window.__mobileInput.jumpPressed = false;
+    window.__mobileInput.wagonPressed = false;
+  }
+}
+if (typeof window !== "undefined" && !window.__releaseHeldInputsBound) {
+  window.__releaseHeldInputsBound = true;
+  window.addEventListener("blur", releaseHeldInputs);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) releaseHeldInputs();
+  });
+}
+
 export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onToolClick, onCogClick, k, getTiers }) {
   // Cleanup previous setup (R reset re-triggers the scene)
   if (__hudIntervalId) { clearInterval(__hudIntervalId); __hudIntervalId = null; }
@@ -84,33 +108,39 @@ export function setupHtmlHud({ getCurrentTool, gameState, save, settings, onTool
       const btn = document.createElement("button");
       btn.className = "tb-btn";
       btn.dataset.tool = item.tool;
+      btn.tabIndex = -1;
       const descr = TOOL_DESCRIPTIONS[item.tool] || "";
       btn.title = `${item.label} (${item.key})${descr ? " — " + descr : ""}`;
       btn.innerHTML = `<span class="tb-key">${item.key}</span><span class="tb-icon">${TOOL_ICONS[item.tool] || "?"}</span><span class="tb-label">${item.label}</span>`;
-      btn.addEventListener("click", () => onToolClick(item.tool));
-      btn.addEventListener("touchstart", (e) => { e.preventDefault(); onToolClick(item.tool); }, { passive: false });
+      btn.addEventListener("pointerdown", releaseHeldInputs);
+      btn.addEventListener("click", () => { onToolClick(item.tool); btn.blur(); });
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); releaseHeldInputs(); onToolClick(item.tool); }, { passive: false });
       elToolbar.appendChild(btn);
     }
   }
 
   if (elCog) {
+    elCog.tabIndex = -1;
     if (__hudCogHandler) {
       elCog.removeEventListener("click", __hudCogHandler);
       elCog.removeEventListener("touchstart", __hudCogHandler);
     }
-    __hudCogHandler = (e) => { if (e?.preventDefault) e.preventDefault(); onCogClick(); };
+    __hudCogHandler = (e) => { if (e?.preventDefault) e.preventDefault(); releaseHeldInputs(); onCogClick(); elCog.blur?.(); };
     elCog.addEventListener("click", __hudCogHandler);
     elCog.addEventListener("touchstart", __hudCogHandler, { passive: false });
   }
 
   if (elToolbar && elToolbarToggle) {
+    elToolbarToggle.tabIndex = -1;
     const isNarrow = window.innerWidth < 900 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     if (isNarrow) elToolbar.classList.add("collapsed");
     else elToolbarToggle.classList.add("open");
     const toggle = (e) => {
       if (e?.preventDefault) e.preventDefault();
+      releaseHeldInputs();
       const wasCollapsed = elToolbar.classList.toggle("collapsed");
       elToolbarToggle.classList.toggle("open", !wasCollapsed);
+      elToolbarToggle.blur?.();
     };
     elToolbarToggle.addEventListener("click", toggle);
     elToolbarToggle.addEventListener("touchstart", toggle, { passive: false });
