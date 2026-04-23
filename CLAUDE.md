@@ -136,7 +136,7 @@ requestAnimationFrame(tick);
 - [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
 - [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
 - [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
-- [ ] Mini-map HUD (overview monde avec position player + wagons) — tentative f5cf2a0 rollback db2a444 (canvas noir live, cause à investiguer)
+- [x] Mini-map HUD (overview monde position player + wagons + stations + viewport, restaurée après rollback MCP-artifact)
 - [ ] Zones thématiques (col -40..0 = glacier, 0..40 = normal, 40..80 = volcan) via skin tiles par range
 
 ### UX
