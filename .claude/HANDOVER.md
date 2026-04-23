@@ -1,6 +1,35 @@
-# Handover — Milan Lava Park (2026-04-23 fin session G / début session H)
+# Handover — Milan Lava Park (2026-04-23 fin session H)
 
-## ✅ Session G (9 commits : 4 features round 3 + 2 style + 1 splash fix + 2 docs)
+## ✅ Session H (QA live Chrome MCP + 1 bug fix)
+
+**Chrome MCP enfin activé** via `/chrome` + extension installée. QA live des
+5 features round 3 sur `https://michaelchevallier.github.io/lava_game/` (deploy
+`62484fe`) :
+
+| Feature | Status | Note |
+|---|---|---|
+| Labyrinthe 7-4 | ✅ PASS | 24 tiles, hint affiché, objectives coin4+skel1 |
+| Labyrinthe 7-5 | ✅ PASS | VIP spawn, failOn skeleton:1, platinum <2 tuiles |
+| Splash max stars | ✅ PASS | 101/153 affiché (51 levels × 3) |
+| Aire Tir Mobile | ✅ PASS | phase "ducks" observée, duckCount=7 |
+| Boss Goret | 🟡 PARTIAL | `__forceSpawn()` OK mais bloqué par bug GC wagon |
+| Réparation Express | ⏸ NOT TESTED | sandbox start empty, nécessite poser rails |
+| Parade QTE | ⏸ NOT TESTED | nécessite wagon lava fall provoqué |
+| Pas d'erreur console | ✅ PASS | — |
+
+### `916e629` fix(gc): cull wagons hors bounds (Session H unique commit)
+
+**Bug trouvé en live** : wagons Train Fantôme et Inverse Train sortent par Y
+(gravité/lava) et n'étaient jamais GC'd car "wagon" absent de
+`CULLABLE_TAGS`. Mesuré `y = 2_536_854` après 3 min. Fix : +7 L dans gc.js,
+ajout "wagon" avec gardes `!rider && !isRace`, cleanup des
+`passengerEntities`. Bundle 104 KB gz.
+
+**Effet de bord démasqué** : Boss Goret `pickTargetWagon` filtrait tous les
+wagons visibles car ils étaient tous ghost/inverse leak → target null →
+spawn refusé. Le fix GC règle ce symptôme en cascade.
+
+## ✅ Session G (rappel - 9 commits : 4 features round 3 + 2 style + 1 splash fix + 2 docs)
 
 **Round 3 backlog créatif 5/5 FINI**. Tous les items créatifs ouverts sont
 cochés dans CLAUDE.md backlog. `f3f26c4` bonus : splash hardcode `90` max stars
