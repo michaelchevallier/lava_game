@@ -183,6 +183,17 @@ export function createPlayerSystem({
           });
         }
       }
+      const pocket = p._coinsPocket || 0;
+      if (pocket > 0 && !p.ridingWagon) {
+        for (let i = 0; i < pocket; i++) {
+          k.drawCircle({
+            pos: k.vec2(14 - (pocket - 1) * 4 + i * 8, -32),
+            radius: 3,
+            color: k.rgb(255, 220, 60),
+            outline: { color: k.rgb(180, 130, 0), width: 1 },
+          });
+        }
+      }
     });
 
     // Walk animation: squash/stretch bob quand le joueur bouge (horiz), hop subtil en idle.
@@ -266,6 +277,7 @@ export function createPlayerSystem({
     });
     k.onKeyPress(opts.keys.board, () => {
       if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
+      if (window.__bossGoret?.tryThrowCoin?.(p)) return;
       if (window.__reparation?.tryRepair?.(p)) return;
       if (window.__skullStand?.tryFire?.(p)) return;
       if (p.ridingWagon) exitWagon(p);
