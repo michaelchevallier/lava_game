@@ -760,31 +760,26 @@ const SPR_CHIEF = substituteSprite(SPR_PLAYER, { R: "G", r: "g", O: "G", o: "g",
 // Astro 20×30 — combinaison blanche avec visor bleu, dérivé.
 const SPR_ASTRO = substituteSprite(SPR_PLAYER, { R: "C", r: "c", O: "C", o: "c", S: "O", s: "o" });
 
-// Generic skeleton for all new avatars
-const SPR_SKEL_GENERIC = [
-  "....XXXXXX....",
-  "...XXXXXXXX...",
-  "..XXXXXXXXXX..",
-  "..XXXXXXXXXX..",
-  "..XXKKXXKKXX..",
-  "..XXKKXXKKXX..",
-  "..XXxXXXXxXX..",
-  "..XXXXKKXXXX..",
-  "..XXKxKKxKXX..",
-  "..XXKxKKxKXX..",
-  "...XxxxxxxX...",
-  "....XXXXXX....",
-  "..XXXXXXXXXX..",
-  ".XXXKXXXXKXXX.",
-  ".XXXKXXXXKXXX.",
-  ".XXXXKKKKXXXX.",
-  "..XXXXXXXXXX..",
-  "...XXXXXXXX...",
-  "..XXX....XXX..",
-  "..XXX....XXX..",
-  "..XXX....XXX..",
-  "..XXXX..XXXX..",
-];
+// Skeleton variants par avatar (20×30) — dérivés de SPR_PLAYER_SKEL, substitution
+// R/r par la couleur signature de l'avatar.
+const SPR_AVATAR_SKELS = {
+  sonic:    substituteSprite(SPR_PLAYER_SKEL, { R: "U", r: "u" }),
+  link:     substituteSprite(SPR_PLAYER_SKEL, { R: "G", r: "g" }),
+  pacman:   substituteSprite(SPR_PLAYER_SKEL, { R: "Y", r: "y" }),
+  kirby:    substituteSprite(SPR_PLAYER_SKEL, { R: "P", r: "p" }),
+  yoshi:    substituteSprite(SPR_PLAYER_SKEL, { R: "H", r: "h" }),
+  bowser:   substituteSprite(SPR_PLAYER_SKEL, { R: "L", r: "f" }),
+  donkey:   substituteSprite(SPR_PLAYER_SKEL, { R: "B", r: "b" }),
+  mega:     substituteSprite(SPR_PLAYER_SKEL, { R: "U", r: "O" }),
+  samus:    substituteSprite(SPR_PLAYER_SKEL, { R: "L", r: "f" }),
+  crash:    substituteSprite(SPR_PLAYER_SKEL, { R: "F", r: "f" }),
+  steve:    substituteSprite(SPR_PLAYER_SKEL, { R: "U", r: "u" }),
+  pokeball: SPR_PLAYER_SKEL,
+  tetris:   substituteSprite(SPR_PLAYER_SKEL, { R: "P", r: "p" }),
+  invader:  substituteSprite(SPR_PLAYER_SKEL, { R: "H", r: "h" }),
+  chief:    substituteSprite(SPR_PLAYER_SKEL, { R: "T", r: "t" }),
+  astro:    substituteSprite(SPR_PLAYER_SKEL, { R: "C", r: "c" }),
+};
 
 // Procedural magnet sprite 32×32: horseshoe magnet U-shape.
 export function makeMagnetSpriteUrl() {
@@ -1185,7 +1180,6 @@ export function loadAllSprites(k) {
     k.loadSprite("fan", makeSpriteUrl(SPR_FAN, 2)),
     k.loadSprite("cloud", makeSpriteUrl(SPR_CLOUD, 3)),
     k.loadSprite("hill", makeSpriteUrl(SPR_HILL, 4)),
-    k.loadSprite("skeleton_generic", makeSpriteUrl(SPR_SKEL_GENERIC, 2)),
     k.loadSprite("sonic", makeSpriteUrl(SPR_SONIC, 2)),
     k.loadSprite("link", makeSpriteUrl(SPR_LINK, 2)),
     k.loadSprite("pacman", makeSpriteUrl(SPR_PACMAN, 2)),
@@ -1214,5 +1208,8 @@ export function loadAllSprites(k) {
     k.loadSprite("bomb_visual", makeBombSpriteUrl()),
     k.loadSprite("boss_goret_a", makeSpriteUrl(SPR_BOSS_GORET_A, 2)),
     k.loadSprite("boss_goret_b", makeSpriteUrl(SPR_BOSS_GORET_B, 2)),
+    ...Object.entries(SPR_AVATAR_SKELS).map(([name, spr]) =>
+      k.loadSprite(`${name}_skel`, makeSpriteUrl(spr, 2))
+    ),
   ]);
 }
