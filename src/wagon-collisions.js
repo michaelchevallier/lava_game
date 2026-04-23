@@ -2,7 +2,7 @@ import { TILE, GROUND_ROW, gridKey } from "./constants.js";
 
 export function attachWagonCollisions({
   k, wagon, tileMap, gameState, audio, showPopup, placeTile,
-  catapultWagon, transformToSkeleton, reviveFromSkeleton, collectCoin, triggerCarillon,
+  catapultWagon, transformToSkeleton, reviveFromSkeleton, collectCoin, triggerCarillon, triggerParade,
 }) {
   wagon.onCollide("lava", () => {
     if (wagon.invincible) return;
@@ -11,6 +11,7 @@ export function attachWagonCollisions({
     if (hasHuman || wagon.inverseTrain) {
       window.__juice?.hitStop(80);
       transformToSkeleton(wagon);
+      triggerParade?.(wagon);
     } else if (window.__campaign?.getCurrent?.() || window.__contract?.getActive?.()) {
       // En campagne ou contrat : un passage en lave d'un wagon déjà squelette compte aussi
       // (sinon niveaux "N squelettes" avec wagonLimit < N impossibles)

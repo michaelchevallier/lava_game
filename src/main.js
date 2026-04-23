@@ -50,6 +50,7 @@ import { createSceneOverlays } from "./scene-overlays.js";
 import { createSceneDecor } from "./scene-decor.js";
 import { createSandboxSetup } from "./sandbox-setup.js";
 import { attachParticleAndTileUpdates } from "./particle-systems.js";
+import { createParadeQTE } from "./parade-qte.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -510,6 +511,8 @@ k.scene("game", () => {
     checkMilestone();
   }
 
+  const paradeRef = { trigger: null };
+
   const {
     drawWagonBody, spawnWagon, transformToSkeleton, reviveFromSkeleton,
     collectCoin, tryBoardWagon, exitWagon, tryAutoBoardVisitor,
@@ -521,6 +524,7 @@ k.scene("game", () => {
     launchFirework: (...args) => launchFirework(...args),
     placeTile,
     onSkeletonTransform: () => { if (tutorial) tutorial.notifyFirstSkeleton(); },
+    triggerParade: (w) => paradeRef.trigger?.(w),
   });
 
   const constellation = createConstellationSystem({
@@ -550,6 +554,14 @@ k.scene("game", () => {
 
   const activePlayers = spawnPlayers(settings.numPlayers, isMobile, save.avatars || {});
   if (isMobile) spectres.unlock("mobile");
+
+  const paradeSystem = createParadeQTE({
+    k, audio, gameState,
+    showPopup: (...args) => showPopup(...args),
+    getActivePlayers: () => activePlayers,
+  });
+  paradeRef.trigger = paradeSystem.triggerFromWagon;
+  window.__parade = paradeSystem;
 
   let raceSystem = null;
   if (cfg.enableRace) {

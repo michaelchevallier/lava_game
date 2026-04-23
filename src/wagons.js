@@ -6,7 +6,7 @@ import { attachWagonCollisions } from "./wagon-collisions.js";
 
 export function createWagonSystem({
   k, tileMap, gameState, audio, entityCounts, showPopup, registerKill, registerCoin, launchFirework,
-  placeTile, onSkeletonTransform, save,
+  placeTile, onSkeletonTransform, save, triggerParade,
 }) {
   function getRailSlopeYAt(worldX) {
     const col = Math.floor(worldX / TILE);
@@ -942,6 +942,7 @@ export function createWagonSystem({
     attachWagonCollisions({
       k, wagon, tileMap, gameState, audio, showPopup, placeTile,
       catapultWagon, transformToSkeleton, reviveFromSkeleton, collectCoin, triggerCarillon,
+      triggerParade,
     });
   }
 

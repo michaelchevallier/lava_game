@@ -159,6 +159,10 @@ export function createPlayerSystem({
         sizeMult: mult,
       },
     ]);
+    const jumpKeys = Array.isArray(opts.keys.jump) ? opts.keys.jump : [opts.keys.jump];
+    p.parryKeys = jumpKeys;
+    p.parryKeyLabel = jumpKeys[0].toUpperCase();
+
     p.onDraw(() => {
       if (p.ridingWagon) return;
       const nx = 14;
@@ -168,6 +172,16 @@ export function createPlayerSystem({
         k.drawText({ text: opts.name, size: 9, pos: k.vec2(nx + dx, ny + dy), anchor: "center", color: k.rgb(0, 0, 0) });
       }
       k.drawText({ text: opts.name, size: 9, pos: k.vec2(nx, ny), anchor: "center", color: opts.color });
+      if (p.stunnedUntil && k.time() < p.stunnedUntil) {
+        for (let i = 0; i < 3; i++) {
+          const a = k.time() * 5 + i * (Math.PI * 2 / 3);
+          k.drawText({
+            text: "★", size: 10,
+            pos: k.vec2(14 + Math.cos(a) * 14, -24 + Math.sin(a) * 6),
+            anchor: "center", color: k.rgb(255, 220, 80),
+          });
+        }
+      }
     });
 
     // Walk animation: squash/stretch bob quand le joueur bouge (horiz), hop subtil en idle.
@@ -196,6 +210,7 @@ export function createPlayerSystem({
     }
 
     k.onKeyDown(opts.keys.left, () => {
+      if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
       if (p.ridingWagon) {
         p.ridingWagon._riderInput = "left";
         return;
@@ -208,6 +223,7 @@ export function createPlayerSystem({
       }
     });
     k.onKeyDown(opts.keys.right, () => {
+      if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
       if (p.ridingWagon) {
         p.ridingWagon._riderInput = "right";
         return;
@@ -220,6 +236,8 @@ export function createPlayerSystem({
       }
     });
     k.onKeyPress(opts.keys.jump, () => {
+      if (p._paradeConsumedAt === k.time()) return;
+      if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
       if (p.ridingWagon) {
         if (p.ridingWagon.isGrounded()) {
           p.ridingWagon.jump(WAGON_JUMP);
@@ -246,6 +264,7 @@ export function createPlayerSystem({
       }
     });
     k.onKeyPress(opts.keys.board, () => {
+      if (p.stunnedUntil && k.time() < p.stunnedUntil) return;
       if (p.ridingWagon) {
         exitWagon(p);
       } else {
@@ -324,7 +343,8 @@ export function createPlayerSystem({
       let prevJump = false;
       let prevWagon = false;
       k.onUpdate(() => {
-        if (mi.left) {
+        const mobileStunned = p.stunnedUntil && k.time() < p.stunnedUntil;
+        if (!mobileStunned && mi.left) {
           if (p.ridingWagon) {
             p.ridingWagon._riderInput = "left";
           } else {
@@ -332,7 +352,7 @@ export function createPlayerSystem({
             if (p.facing !== "left") { p.flipX = true; p.facing = "left"; }
           }
         }
-        if (mi.right) {
+        if (!mobileStunned && mi.right) {
           if (p.ridingWagon) {
             p.ridingWagon._riderInput = "right";
           } else {
@@ -340,7 +360,7 @@ export function createPlayerSystem({
             if (p.facing !== "right") { p.flipX = false; p.facing = "right"; }
           }
         }
-        if (mi.jumpPressed && !prevJump) {
+        if (!mobileStunned && mi.jumpPressed && !prevJump) {
           if (p.ridingWagon) {
             if (p.ridingWagon.isGrounded()) { p.ridingWagon.jump(WAGON_JUMP); audio.jump(); }
           } else if (p.isGrounded()) {
