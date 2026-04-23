@@ -1,28 +1,37 @@
-# Handover — Milan Lava Park (2026-04-23 fin session L / mini-map HUD)
+# Handover — Milan Lava Park (2026-04-23 fin session L / mini-map tenté + rollback)
 
-## ✅ Session L (mini-map HUD — Round 4 #2)
+## ⚠️ Session L (mini-map HUD tenté, rollback)
 
-**1 commit** autonome, feature Round 4.
+**2 commits** : feature ajoutée, puis entièrement rollback suite à regression live.
 
-### `f5cf2a0` feat(minimap): HUD mini-map for extended world
+### `f5cf2a0` feat(minimap): HUD mini-map — DÉPLOYÉ PUIS RETIRÉ
 
-Strip 220×20 en haut-centre, k.fixed() z=41. Affiche :
-- Cadre noir/edge gris
-- Zone jouable [0, WORLD_WIDTH] en vert sur fond violet sombre (hors-monde)
-- Sol brun 4px bottom
-- Marqueurs stations : ENTREE (vert, x=-TILE*4) / SORTIE (rouge, x=WORLD_WIDTH+TILE)
-- Viewport caméra (rectangle blanc transparent + bordures)
-- Dots wagons (jaune 3×3 au milieu)
-- Dots joueurs (colored par nameColor + outline noir, pleine hauteur)
+Strip 220×20 en haut-centre, k.fixed() z=41. Affiche zone jouable,
+stations, viewport caméra, dots wagons/joueurs. Nouveau fichier
+src/minimap.js (160 L). Bundle `105.39 → 105.87 KB gz`.
 
-Masqué en campaign mode (niveaux mono-écran). Ajouté dans main.js après le
-camFollow setup, ne s'instancie que si `camFollowEnabled`.
+### `db2a444` revert: minimap — live broken black canvas
 
-Nouveau fichier src/minimap.js (160 L). Bundle `105.39 → 105.87 KB gz` (+480 B).
+Après déploiement f5cf2a0, tests MCP chrome sur la live ont montré un
+canvas noir complet (HUD HTML visible, aucun tile/player/sky rendu).
+Scene "game" démarrait (HUD bar reflétait gameState) mais scene-tree
+vide à l'inspection. Pas d'erreur console.
 
-**Note QA** : dev server local (vite dev) semble casser la scene game
-(treeChildren=0 malgré scene="game" et no errors) — issue préexistante
-non liée à mini-map. Build prod OK, déployé sur CI pour validation live.
+Rollback complet (retrait import + appel + suppression src/minimap.js)
+pour sécuriser le live.
+
+**Observation suspecte** : le rollback seul ne suffit pas à récupérer
+le canvas noir en test MCP chrome (même code que 5f5a0d7 qui marchait
+à 23:29). Possibilité que ça soit un artefact de l'automation MCP
+(frame loop throttling, SW cache, ou autre) plutôt qu'une vraie
+regression. À revalider par l'utilisateur en browser réel.
+
+**Pour session M** : avant de re-tenter mini-map, valider d'abord
+en local (vite dev + browser réel, pas MCP) que 5f5a0d7/db2a444
+rend normalement. Si oui, c'est un bug MCP et le mini-map peut être
+re-déployé quasi tel quel (vérifier quand même par screenshot).
+Si non, le canvas noir est une vraie régression depuis session K
+(camera follow befa2eb ou décor 581c577).
 
 ## ✅ Session K+ (décor monde étendu + 3 bugs camera follow)
 
