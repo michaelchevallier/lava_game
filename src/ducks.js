@@ -222,24 +222,43 @@ export function createDuckSystem({ k, tileMap, gameState, audio, showPopup }) {
       }
     });
 
-    duck.onClick(() => {
-      if (!duck.exists()) return;
-      const pts = duck.gold ? 200 : 30;
-      gameState.score += pts;
-      audio.coin();
-      if (duck.gold) {
-        showPopup(duck.pos.x + 9, duck.pos.y - 10, "JACKPOT! +200", k.rgb(255, 215, 0), 26);
-        window.__juice?.dirShake(0, -1, 4, 0.15);
-      } else {
-        showPopup(duck.pos.x + 9, duck.pos.y - 10, "QUACK! +30", k.rgb(255, 230, 80), 20);
-      }
-      gameState._ducksCaught = (gameState._ducksCaught || 0) + 1;
-      spawnFeathers(duck.pos.x + 9, duck.pos.y + 7);
-      if (duck._bill && duck._bill.exists()) k.destroy(duck._bill);
-      if (duck._eye && duck._eye.exists()) k.destroy(duck._eye);
-      k.destroy(duck);
-    });
   }
+
+  function hitDuck(duck) {
+    if (!duck.exists()) return;
+    const pts = duck.gold ? 200 : 30;
+    gameState.score += pts;
+    audio.coin();
+    if (duck.gold) {
+      showPopup(duck.pos.x + 9, duck.pos.y - 10, "JACKPOT! +200", k.rgb(255, 215, 0), 26);
+      window.__juice?.dirShake(0, -1, 4, 0.15);
+    } else {
+      showPopup(duck.pos.x + 9, duck.pos.y - 10, "QUACK! +30", k.rgb(255, 230, 80), 20);
+    }
+    gameState._ducksCaught = (gameState._ducksCaught || 0) + 1;
+    spawnFeathers(duck.pos.x + 9, duck.pos.y + 7);
+    if (duck._bill && duck._bill.exists()) k.destroy(duck._bill);
+    if (duck._eye && duck._eye.exists()) k.destroy(duck._eye);
+    k.destroy(duck);
+  }
+
+  // Explicit click handler (duck.onClick via k.area cassé par camera follow —
+  // isHovering / worldArea déco des positions dynamiques). On résout toWorld
+  // nous-mêmes, teste le bbox AABB, appelle hitDuck.
+  k.onMousePress("left", () => {
+    const w = k.toWorld(k.mousePos());
+    const ducks = k.get("duck");
+    for (const duck of ducks) {
+      if (!duck.exists()) continue;
+      if (
+        w.x >= duck.pos.x && w.x <= duck.pos.x + 18 &&
+        w.y >= duck.pos.y && w.y <= duck.pos.y + 14
+      ) {
+        hitDuck(duck);
+        return;
+      }
+    }
+  });
 
   function startDuckLoop() {
     k.loop(2, () => {
