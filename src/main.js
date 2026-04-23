@@ -253,6 +253,16 @@ const entityState = { count: 0, stamp: 0 };
 k.scene("game", () => {
   const cfg = MODE_CONFIG[router.get().mode] || MODE_CONFIG.sandbox;
   window.__contract = null;
+  // Fix: systems from previous scene survive in window.__X refs (KAPLAY tears
+  // down their entities/loops but not the global handles). Un mode suivant
+  // pouvait lire une poignée morte ou héritée d'un autre mode.
+  window.__tiers = null; window.__weather = null; window.__balloons = null;
+  window.__coinThief = null; window.__minigames = null; window.__vquests = null;
+  window.__race = null; window.__reparation = null; window.__skullStand = null;
+  window.__bossGoret = null; window.__parade = null;
+  for (const id of ["campaign-result", "run-result", "level-intro"]) {
+    document.getElementById(id)?.remove();
+  }
   const tileMap = new Map();
   Object.assign(gameState, {
     skeletons:0, coins:0, rides:0, score:0, comboCount:0, comboExpire:0,
@@ -260,6 +270,10 @@ k.scene("game", () => {
     tilesPlacedThisGame:0, trampolinesThisGame:0, vipStreak:0, portalUses:0,
     _ducksCaught:0, lastConstellationAt:0,
     constellationActive:false, sessionSkeletons:0,
+    maintenanceBonusUntil:0, scoreMultiplier:1, scoreMultiplierUntil:0,
+    _coinStreak:0, _lastCoinAt:0, balloonsPopped:0, missed:0,
+    magnetFields:[], geysers:[], iceCrowns:[], iceRinks:[],
+    lavaTriangles:[], magnetPortals:[], metronomes:[],
   });
 
   entityCounts.particle = 0;
