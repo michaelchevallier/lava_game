@@ -113,5 +113,6 @@ export const audio = (() => {
       setTimeout(() => beep(784, 0.5, "sine", 0.12), 220);
       setTimeout(() => beep(196, 0.6, "triangle", 0.08), 200);
     },
+    boss: () => { beep(110, 0.4, "sawtooth", 0.16, 60); noise(0.3, 0.12); },
   };
 })();

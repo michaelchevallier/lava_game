@@ -1128,6 +1128,41 @@ export function makeLoopSpriteUrl() {
 
 const SPR_TETRIS_COLORED = substituteSprite(SPR_TETRIS, { T: "P", t: "p" });
 
+// Boss Goret 20×14 — cochon rose, yeux rouges, museau gris, 2 frames marche
+const SPR_BOSS_GORET_A = [
+  "....................",
+  "....PPPPPPPPPP......",
+  "...PPPPPPPPPPPpp....",
+  "..PPppPPPPPPPPPPPP..",
+  "..PPppPPPPPPRKPPPn..",
+  "..PPPPPPPPPPKPPPnn..",
+  "..PPPPPPPPPPPPPPnn..",
+  "..PPPPPPPPPPPPPPPP..",
+  "...PPPPPPPPPPPPpp...",
+  "...PP..PP...PP..PP..",
+  "...PP..PP...PP..PP..",
+  "...BB..BB...BB..BB..",
+  "....................",
+  "........ppp.........",
+];
+
+const SPR_BOSS_GORET_B = [
+  "....................",
+  "....PPPPPPPPPP......",
+  "...PPPPPPPPPPPpp....",
+  "..PPppPPPPPPPPPPPP..",
+  "..PPppPPPPPPRKPPPn..",
+  "..PPPPPPPPPPKPPPnn..",
+  "..PPPPPPPPPPPPPPnn..",
+  "..PPPPPPPPPPPPPPPP..",
+  "...PPPPPPPPPPPPpp...",
+  "...PPPP..PPPP..PPPP.",
+  "..PP..PP..PP..PP....",
+  "...BB..BB...BB..BB..",
+  "....................",
+  "........ppp.........",
+];
+
 export function loadAllSprites(k) {
   return Promise.all([
     k.loadSprite("player", makeSpriteUrl(SPR_PLAYER, 2)),
@@ -1177,5 +1212,7 @@ export function loadAllSprites(k) {
     k.loadSprite("portal_b_visual", makePortalSpriteUrl("B")),
     k.loadSprite("tunnel_visual", makeTunnelSpriteUrl()),
     k.loadSprite("bomb_visual", makeBombSpriteUrl()),
+    k.loadSprite("boss_goret_a", makeSpriteUrl(SPR_BOSS_GORET_A, 2)),
+    k.loadSprite("boss_goret_b", makeSpriteUrl(SPR_BOSS_GORET_B, 2)),
   ]);
 }

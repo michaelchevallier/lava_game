@@ -52,6 +52,7 @@ import { createSandboxSetup } from "./sandbox-setup.js";
 import { attachParticleAndTileUpdates } from "./particle-systems.js";
 import { createParadeQTE } from "./parade-qte.js";
 import { createReparationExpress } from "./reparation-express.js";
+import { createBossGoret } from "./boss-goret.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -572,6 +573,18 @@ k.scene("game", () => {
       tileMap,
     });
     window.__reparation = reparation;
+  }
+
+  {
+    const bossGoret = createBossGoret({
+      k, audio, gameState, juice,
+      showPopup: (...args) => showPopup(...args),
+      placeTile, tileMap,
+      getActivePlayers: () => activePlayers,
+      getWagons: () => k.get("wagon"),
+      isCampaign: () => router.get().mode === "campaign",
+    });
+    window.__bossGoret = bossGoret;
   }
 
   let raceSystem = null;
