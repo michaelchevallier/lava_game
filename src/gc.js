@@ -14,6 +14,7 @@ const CULLABLE_TAGS = [
   "skull-part",
   "season-confetti",
   "ground-particle",
+  "wagon",
 ];
 
 export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN }) {
@@ -34,6 +35,8 @@ export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN }) {
         if (!e.exists() || !e.pos) continue;
         // Skip entities currently in animation overrides (constellation, tunnel, loop)
         if (e._constActive || e._inTunnel || e.inLoop) continue;
+        // Skip wagons with active riders or in race mode
+        if (tag === "wagon" && (e.rider || e.isRace)) continue;
         if (e.pos.x < minX || e.pos.x > maxX || e.pos.y > maxY) {
           // For visitors with crown extras, destroy them too
           if (e.crown && Array.isArray(e.crown)) {
@@ -41,6 +44,10 @@ export function createGCSystem({ k, WIDTH, HEIGHT, WORLD_WIDTH, MARGIN }) {
           }
           if (e.parts && Array.isArray(e.parts)) {
             for (const p of e.parts) { if (p.exists()) k.destroy(p); }
+          }
+          // Cleanup passenger entities if wagon is being culled
+          if (tag === "wagon" && e.passengerEntities && Array.isArray(e.passengerEntities)) {
+            for (const p of e.passengerEntities) { if (p.exists()) k.destroy(p); }
           }
           k.destroy(e);
           killed++;
