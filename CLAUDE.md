@@ -132,9 +132,12 @@ requestAnimationFrame(tick);
 
 ### Round 4 (en cours)
 - [x] Tempête Magnétique (weather.js 4e type, x2 score + overlay violet + aimants flottants, 8ede731)
+- [x] **Camera follow** — le monde est désormais 2× plus large visible (befa2eb, sandbox/run)
 - [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
 - [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
 - [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
+- [ ] Mini-map HUD (overview monde avec position player + wagons)
+- [ ] Zones thématiques (col -40..0 = glacier, 0..40 = normal, 40..80 = volcan) via skin tiles par range
 
 ### UX
 - [x] Volume slider + vitesse wagons slider dans settings

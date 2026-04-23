@@ -1,4 +1,93 @@
-# Handover — Milan Lava Park (2026-04-23 fin session J / kickoff Round 4)
+# Handover — Milan Lava Park (2026-04-23 fin session K / Round 4 expansion)
+
+## ✅ Session K (cleanup + 2 bugs + Round 4 mono-écran cassé)
+
+**5 commits** cette session :
+
+| Commit | Type | Résumé |
+|---|---|---|
+| `3565382` | chore | delete src/quests.js dead file (164 L) |
+| `fc5aa77` | fix | perso bloqué après clic toolbar/cog (keyup synthétique + blur + tabIndex=-1) |
+| `40aad2e` | fix | reset gameState timers + system globals au changement de mode |
+| `befa2eb` | **feat** | **camera follow** sandbox/run = monde 2× plus large visible |
+| `9fecff5` | docs | handover session J précédent |
+
+### `3565382` chore: delete src/quests.js (164 L)
+
+Quest system Almanach du Forain abandonné, purge finale (les call-sites
+étaient déjà retirés en session J via `2f9ac48`). Tree-shaking le droppait
+déjà, -0 B sur bundle mais -164 L de source.
+
+### `fc5aa77` fix: perso bloqué en déplacement après clic toolbar
+
+**Bug UX** : cliquer sur un bouton HTML (toolbar/cog/toggle) pendant qu'une
+touche de déplacement était tenue → selon le navigateur le keyup était
+avalé → KAPLAY gardait la touche dans son pressedSet → `p.move()` continuait
+à être appelé par frame.
+
+Fix dans `hud.js` :
+- `tabIndex = -1` sur les boutons HUD (rétention de focus minimale)
+- handler `pointerdown` qui dispatch `KeyboardEvent("keyup")` synthétique
+  sur window pour a/q/d/j/l/w/s/z/i/o/e/space + reset `window.__mobileInput`
+- `.blur()` après click pour renvoyer le focus au body
+- `window.blur` + `visibilitychange` bindés une fois (guard
+  `__releaseHeldInputsBound`) pour couvrir Alt+Tab / minimize
+
+Bundle `104.26 → 104.55 KB gz`.
+
+### `40aad2e` fix: reset au changement de mode
+
+**Bug** : sandbox ↔ campaign ↔ run laissait des bonus timers ouverts
+(`maintenanceBonusUntil`, `scoreMultiplierUntil`, arrays comme `magnetFields`,
+`geysers`, `iceCrowns`, `iceRinks`, `lavaTriangles`, `magnetPortals`,
+`metronomes`) dans gameState entre scenes — leurs effets survivaient dans
+le mode suivant. En parallèle, les `window.__X` de systèmes gated par
+`MODE_CONFIG` (tiers/weather/balloons/coinThief/minigames/vquests/race/
+reparation/skullStand/bossGoret/parade) survivaient au `k.go()` avec
+leurs k.loops détruits → poignées orphelines pointant sur systèmes morts.
+
+Fix dans `k.scene("game", ...)` au start :
+- Null out toutes les `window.__X` gated
+- Retire overlays HTML résiduels (`campaign-result`, `run-result`, `level-intro`)
+- Object.assign(gameState) étendu avec 11 champs manquants
+
+Bundle +110 B gz.
+
+### `befa2eb` feat: CAMERA FOLLOW — brise le mono-écran
+
+**Découverte** : le monde existe déjà de col -80 à +80 (`WORLD_WIDTH=2560` =
+2× screen `WIDTH=1280`). Les stations ENTREE/SORTIE sont positionnées à
+`-TILE*4` et `WORLD_WIDTH+TILE`, hors champ. Jusqu'ici la caméra restait
+centrée à x=640 avec zoom 0.5 → tranche visible [-640, 1920] immuable.
+
+Fix en mode sandbox/run (campaign garde caméra fixe, niveaux conçus
+mono-écran) :
+- `k.onUpdate` lerp `camPos.x` (rate 4.5/s) vers barycentre des joueurs vivants
+- Clamp horizontal `[-WORLD_WIDTH+halfView, WORLD_WIDTH-halfView]`
+- Y verrouillé sur `HEIGHT/2` (pas de scroll vertical pour l'instant)
+
+**GC bounds étendus** : `left = -WORLD_WIDTH-BUFFER` (avant `-BUFFER`)
+pour ne pas culler les mobiles évoluant en col négatif maintenant visible.
+
+Bundle `104.55 → 104.79 KB gz`.
+
+## ➡️ Round 4 backlog (CLAUDE.md:135)
+
+- [x] Tempête Magnétique (8ede731)
+- [x] **Camera follow** (befa2eb)
+- [ ] Mini-map HUD (overview monde position player + wagons)
+- [ ] Zones thématiques (col -40..0 glacier, 0..40 normal, 40..80 volcan)
+- [ ] Saison hiver (neige, ice partout, permanent optionnel)
+- [ ] Course de visiteurs bonus event
+- [ ] Mode coopératif 2P objectifs
+
+## Observations pour QA utilisateur (session K live)
+
+Le deploy `befa2eb` est en cours CI. À tester en vrai navigateur :
+1. **Camera follow** : sandbox, se déplacer à gauche/droite → caméra lerp ✓
+2. **Toolbar fix** : tenir D, cliquer un outil toolbar, relâcher D → perso s'arrête ✓
+3. **Mode switch** : sandbox → campaign → sandbox → vérifier pas de bonus scoreMultiplier carryover + pas d'overlays de résultat résiduels ✓
+4. **Stations** : scroll à droite au max → SORTIE visible à x=2592 ✓
 
 ## ✅ Session J (audits perf + quality + Round 4 kickoff)
 
