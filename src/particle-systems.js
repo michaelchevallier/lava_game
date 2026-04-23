@@ -9,19 +9,23 @@ export function attachParticleAndTileUpdates({ k, tileMap }) {
   k.loop(0.1, () => {
     const PARTICLE_TAGS = ["particle", "particle-grav", "particle-x", "particle-debris", "particle-firework", "fan-puff", "steam"];
     const CAP_PER_TYPE = { "particle-grav": 20, "particle-firework": 24, "particle": 20 };
-    for (const [tag, cap] of Object.entries(CAP_PER_TYPE)) {
-      const batch = k.get(tag);
-      if (batch.length > cap) batch.slice(0, batch.length - cap).forEach(p => k.destroy(p));
-    }
+    const batches = {};
     let total = 0;
-    for (const tag of PARTICLE_TAGS) total += k.get(tag).length;
+    for (const tag of PARTICLE_TAGS) {
+      const b = k.get(tag);
+      batches[tag] = b;
+      total += b.length;
+    }
+    for (const [tag, cap] of Object.entries(CAP_PER_TYPE)) {
+      const b = batches[tag];
+      if (b.length > cap) b.slice(0, b.length - cap).forEach(p => k.destroy(p));
+    }
     if (total <= 60) return;
     const excess = total - 60;
     let destroyed = 0;
     for (const tag of PARTICLE_TAGS) {
       if (destroyed >= excess) break;
-      const batch = k.get(tag);
-      for (const p of batch) {
+      for (const p of batches[tag]) {
         if (destroyed >= excess) break;
         k.destroy(p);
         destroyed++;

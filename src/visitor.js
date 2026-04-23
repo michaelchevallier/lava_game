@@ -6,6 +6,9 @@ export function createVisitorSystem({
   boardingFn,
 }) {
   const W_RIGHT = WORLD_WIDTH || WIDTH;
+  let _cachedWagons = [];
+  k.loop(0.1, () => { _cachedWagons = k.get("wagon"); });
+
   const VISITOR_TINTS = [
     [255, 180, 180], [180, 255, 180], [180, 180, 255], [255, 255, 180],
     [255, 180, 255], [180, 255, 255], [255, 200, 150], [200, 180, 255],
@@ -81,7 +84,7 @@ export function createVisitorSystem({
       }
       if (boardingFn && (!v._autoBoardCd || k.time() > v._autoBoardCd)) {
         v._autoBoardCd = k.time() + 0.5;
-        for (const w of k.get("wagon")) {
+        for (const w of _cachedWagons) {
           if (!w.passengers || w.passengers.length >= 4) continue;
           const dx = w.pos.x + 30 - (v.pos.x + 14);
           const dy = w.pos.y + 15 - (v.pos.y + 20);
@@ -270,17 +273,12 @@ export function createVisitorSystem({
         k.destroy(v);
       }
     });
-    return v;
-  }
-
-  k.onDraw(() => {
-    const visitors = k.get("visitor");
-    for (const v of visitors) {
+    v.onDraw(() => {
       if (v._deadCross && v._deadCross > k.time()) {
         const bobY = Math.sin(k.time() * 8) * 1;
         k.drawText({
           text: "X",
-          pos: k.vec2(v.pos.x + 14, v.pos.y - 10 + bobY),
+          pos: k.vec2(14, -10 + bobY),
           size: 18,
           color: k.rgb(220, 40, 40),
           anchor: "center",
@@ -291,14 +289,15 @@ export function createVisitorSystem({
         const bobY = Math.sin(k.time() * 6) * 2;
         k.drawText({
           text: symbol,
-          pos: k.vec2(v.pos.x + 14, v.pos.y - 10 + bobY),
+          pos: k.vec2(14, -10 + bobY),
           size: 16,
           color,
           anchor: "center",
         });
       }
-    }
-  });
+    });
+    return v;
+  }
 
   return { spawn: spawnVisitor, spawnAt: (col, row, opts = {}) => spawnVisitor({ col, row, ...opts }) };
 }
