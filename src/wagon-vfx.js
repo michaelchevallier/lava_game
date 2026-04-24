@@ -7,6 +7,27 @@ export function createWagonVfx({ k, audio, gameState, tileMap, showPopup, regist
     const cx = c.pos.x;
     const cy = c.pos.y;
     gameState.coins += 1;
+    if (c._golden) {
+      c._golden = false;
+      gameState.coins += 9;
+      gameState.score += 100;
+      showPopup(cx, cy - 30, "PIECE D'OR +100", k.rgb(255, 240, 80), 24);
+      audio.gold?.();
+      window.__juice?.dirShake?.(0, -1, 6, 0.2);
+      for (let gi = 0; gi < 16; gi++) {
+        const ga = (Math.PI * 2 * gi) / 16;
+        k.add([
+          k.rect(3, 3),
+          k.pos(cx, cy),
+          k.color(k.rgb(255, 240, 80)),
+          k.opacity(1),
+          k.lifespan(0.7, { fade: 0.4 }),
+          k.z(16),
+          "particle-grav",
+          { vx: Math.cos(ga) * 140, vy: Math.sin(ga) * 140 - 50, grav: 220 },
+        ]);
+      }
+    }
     registerCoin(cx, cy);
     for (let i = 0; i < 10; i++) {
       const angle = (Math.PI * 2 * i) / 10;

@@ -618,10 +618,18 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
     apply({ k: _k, ctx, tileMap: tm, spawnBurst: sb }) {
       const { coinCol, coinRow } = ctx;
       const coinTile = tm.get(gridKey(coinCol, coinRow));
-      if (coinTile) coinTile._golden = true;
+      if (coinTile) {
+        coinTile._golden = true;
+        coinTile.color = _k.rgb(255, 230, 80);
+        if (coinTile.extras && coinTile.extras[0]) {
+          coinTile.extras[0].color = _k.rgb(255, 255, 200);
+        }
+      }
       const cx = coinCol * TILE + TILE / 2;
       const cy = coinRow * TILE + TILE / 2;
-      sb(cx, cy, [255, 240, 80], 8);
+      for (let ring = 0; ring < 2; ring++) {
+        _k.wait(ring * 0.08, () => sb(cx, cy, [255, 240, 80], 10));
+      }
     },
   });
 
