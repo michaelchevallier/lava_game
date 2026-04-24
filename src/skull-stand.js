@@ -92,21 +92,16 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       audio.coin?.();
       for (let i = 0; i < 8; i++) {
         const a = (Math.PI * 2 * i) / 8;
-        const boneParticle = k.add([
+        k.add([
           k.rect(3, 3),
           k.pos(skull.pos.x, skull.pos.y),
           k.color(k.rgb(240, 240, 220)),
           k.opacity(1),
           k.lifespan(0.7, { fade: 0.5 }),
           k.z(10),
-          "particle",
-          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30 },
+          "particle-grav",
+          { vx: Math.cos(a) * 80, vy: Math.sin(a) * 80 - 30, grav: 120 },
         ]);
-        boneParticle.onUpdate(() => {
-          boneParticle.pos.x += boneParticle.vx * k.dt();
-          boneParticle.pos.y += boneParticle.vy * k.dt();
-          boneParticle.vy += 120 * k.dt();
-        });
       }
       if (isGolden) {
         for (let c = 0; c < 5; c++) {
@@ -209,7 +204,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
     for (let i = 0; i < 6; i++) {
       const a = Math.random() * Math.PI * 2;
       const spd = 60 + Math.random() * 60;
-      const f = k.add([
+      k.add([
         k.rect(5, 2),
         k.pos(cx, cy),
         k.color(k.rgb(255, 255, 255)),
@@ -217,14 +212,9 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
         k.rotate(Math.random() * 360),
         k.lifespan(0.6, { fade: 0.4 }),
         k.z(14),
-        "particle",
-        { vx: Math.cos(a) * spd, vy: Math.sin(a) * spd - 30 },
+        "particle-grav",
+        { vx: Math.cos(a) * spd, vy: Math.sin(a) * spd - 30, grav: 120 },
       ]);
-      f.onUpdate(() => {
-        f.pos.x += f.vx * k.dt();
-        f.pos.y += f.vy * k.dt();
-        f.vy += 120 * k.dt();
-      });
     }
   }
 
@@ -242,7 +232,7 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       window.__juice?.dirShake?.(0, 1, 10, 0.25);
       for (let i = 0; i < 24; i++) {
         const a = (Math.PI * 2 * i) / 24;
-        const fp = k.add([
+        k.add([
           k.circle(3),
           k.pos(duck.pos.x + 9, duck.pos.y),
           k.color(k.rgb(255, 120 + Math.random() * 120, 60)),
@@ -252,10 +242,6 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
           "particle",
           { vx: Math.cos(a) * 120, vy: Math.sin(a) * 120 - 40 },
         ]);
-        fp.onUpdate(() => {
-          fp.pos.x += fp.vx * k.dt();
-          fp.pos.y += fp.vy * k.dt();
-        });
       }
       st.hits = [];
     }

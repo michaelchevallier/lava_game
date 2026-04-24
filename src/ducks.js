@@ -70,7 +70,7 @@ export function createDuckSystem({ k, tileMap, gameState, audio, showPopup }) {
     for (let i = 0; i < 6; i++) {
       const a = (Math.PI * 2 * i) / 6 + (Math.random() - 0.5) * 0.6;
       const sp = 60 + Math.random() * 60;
-      const p = k.add([
+      k.add([
         k.rect(5, 2),
         k.pos(x, y),
         k.anchor("center"),
@@ -79,14 +79,9 @@ export function createDuckSystem({ k, tileMap, gameState, audio, showPopup }) {
         k.rotate((a * 180) / Math.PI),
         k.lifespan(0.9, { fade: 0.6 }),
         k.z(12),
-        { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30 },
+        "particle-grav",
+        { vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30, grav: 120, spin: 200 },
       ]);
-      p.onUpdate(() => {
-        p.pos.x += p.vx * k.dt();
-        p.pos.y += p.vy * k.dt();
-        p.vy += 120 * k.dt();
-        p.angle += 200 * k.dt();
-      });
     }
   }
 

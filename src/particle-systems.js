@@ -110,9 +110,11 @@ export function attachParticleAndTileUpdates({ k, tileMap }) {
   });
 
   k.onUpdate("particle-grav", (p) => {
-    p.pos.x += p.vx * k.dt();
-    p.pos.y += p.vy * k.dt();
-    p.vy += p.grav * k.dt();
+    const dt = k.dt();
+    p.pos.x += p.vx * dt;
+    p.pos.y += p.vy * dt;
+    p.vy += p.grav * dt;
+    if (p.spin) p.angle += p.spin * dt;
   });
 
   k.onUpdate("particle-x", (p) => {
