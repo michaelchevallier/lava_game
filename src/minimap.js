@@ -4,6 +4,9 @@ import { WIDTH, WORLD_WIDTH, TILE } from "./constants.js";
 // Masqué en campaign (niveaux mono-écran). Strip 220x20 en haut-centre,
 // affiche bornes monde, zone jouable, viewport, stations, joueurs, wagons.
 export function createMinimap({ k, getActivePlayers, getMode }) {
+  let _cachedWagons = [];
+  k.loop(0.1, () => { _cachedWagons = k.get("wagon"); });
+
   const MAP_W = 220;
   const MAP_H = 20;
   const MAP_X = Math.round((WIDTH - MAP_W) / 2);
@@ -118,7 +121,7 @@ export function createMinimap({ k, getActivePlayers, getMode }) {
         k.drawRect({ pos: k.vec2(vpL, MAP_Y), width: 1, height: MAP_H, color: COL_VIEWPORT });
         k.drawRect({ pos: k.vec2(vpL + vpW - 1, MAP_Y), width: 1, height: MAP_H, color: COL_VIEWPORT });
 
-        const wagons = k.get("wagon");
+        const wagons = _cachedWagons;
         for (const w of wagons) {
           const mx = toMap(w.pos.x + 16);
           if (mx < MAP_X - 2 || mx > MAP_X + MAP_W + 2) continue;

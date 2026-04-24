@@ -471,14 +471,22 @@ export function createHUD({
       const age = k.time() - p.born;
       const fadeAge = p.lifespan - p.fadeStart;
       const opacity = age > fadeAge ? 1 - (age - fadeAge) / p.fadeStart : 1;
-      drawTextOutlined({
+      // drawTextShadow (2 drawText) au lieu de drawTextOutlined (5 drawText).
+      // Popups frequents — -60% draw calls par popup.
+      k.drawText({
+        text: p.popText,
+        size: p.popSize,
+        pos: k.vec2(2, 2),
+        anchor: "center",
+        color: C_BLACK,
+        opacity,
+      });
+      k.drawText({
         text: p.popText,
         size: p.popSize,
         pos: k.vec2(0, 0),
         anchor: "center",
         color: k.rgb(p.popColor.r, p.popColor.g, p.popColor.b),
-        outlineColor: k.rgb(0, 0, 0),
-        outlineThickness: 2,
         opacity,
       });
     });
