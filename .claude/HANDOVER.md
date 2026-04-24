@@ -1,3 +1,105 @@
+# Handover — Milan Lava Park (2026-04-24 fin session Q / P0.5 batch 6 types)
+
+## ✅ Session Q (P0.5 — 6 nouveaux batches per-entity → global dispatcher)
+
+**Contexte** : session P a livré P0.4 (wheel batch + cap wheel-coins). User n'a pas
+encore testé `?perf=1` post-P0.4 en live avant cette session. Session Q lancée en
+autonomie, perf-auditor délégué avec consigne "mesure FPS si possible, sinon
+applique P0.5 mini-pass". MCP Chrome indisponible cette session — pas de mesure
+live. Décision : appliquer 6 batches candidats identifiés à l'audit statique.
+
+### `9eba7a0` perf(batch): batch onUpdate trampoline/fan/skull/dart/balloon/rain-coin
+
+6 types d'entités avec `per-entity.onUpdate()` → **1 `k.onUpdate(tag)` global** par type.
+Même pattern que sessions N/O/P, applique le principe "1 closure scene-level au lieu
+de N closures par instance".
+
+| Fichier | Tag | Nb instances typiques | Note |
+|---|---|---|---|
+| `src/tiles.js` | `trampoline` | 1-5 | pulse scale sin |
+| `src/tiles.js` | `fan` | 1-3 | loop `_cachedWagons`, capture col/row via props |
+| `src/skull-stand.js` | `skull-target` | 5 | move + bounces, `skullIdx` prop pour phase sin |
+| `src/skull-stand.js` | `duck-stand` | 7 | move + respawn random |
+| `src/skull-stand.js` | `dart` | 0-N | physics + auto-destroy timer |
+| `src/balloons.js` | `balloon` | 0-3 | float + drift + string pos sync (str stored in `bal._str`) |
+| `src/weather.js` | `rain-coin` | 0-40 pendant event | gravity + floor clamp |
+
+Plus suppression `drop.onUpdate` redondant dans `tiles.js:762-771` (tag `particle`
+déjà géré par handler global dans `particle-systems.js:4`). Ajout `vx: 0` sur les
+drops pour compat handler global qui lit `p.vx + p.vy`.
+
+Bundle 106.79 → **106.84 KB gz** (+50B, import overhead compense). Build OK.
+
+**Non appliqué (candidats P0.6 ultérieurs)** :
+- `ducks.js:84` feather particles avec gravité + rotation (nouveau tag à créer)
+- `skull-stand.js` boneParticles/fp sous tag `particle` mais avec `vy +=` non géré
+  par global → changer leur tag en `particle-grav` (handler existant gère grav)
+- `visitor.js:72` — onUpdate ~200L par visitor, max 3 idle sandbox, peut peser 15+
+  en campagne (à batcher avec prudence, gros handler qui mute state)
+
+---
+
+## 🎯 Comment valider la session Q (action user)
+
+**Non mesuré live cette session** (Chrome MCP non connecté). User doit tester :
+
+1. Attendre deploy CI (commit `9eba7a0`, bundle `index-CKGcgN7a.js`)
+2. `https://michaelchevallier.github.io/lava_game/?perf=1` en idle sandbox normal
+3. **Smoke tests fonctionnels** (non-régression, zones touchées) :
+   - Placer trampoline → pulse visible ✓ (scale anim)
+   - Placer fan près d'un rail → wagon s'élève en passant au-dessus ✓
+   - Laisser tomber un wagon sur water avec cascade → gouttes bleues pleuvent ✓
+   - Déclencher Aire Tir Mobile (cycle 30s, hit 3 canards en 5s pour JACKPOT) :
+     crânes bougent ✓, canards défilent ✓, fléchettes volent ✓
+   - Attendre ballon ambient (45-70s) → float + drift + string suivent ✓
+   - Déclencher weather coinrain → pièces tombent et s'arrêtent au sol ✓
+
+**Valeurs FPS attendues** (estimation conservative) :
+- Baseline session P : avg 46 / p95 39 / p1 37 sous stress 200 wheels
+- P0.5 gain estimé : +2-5 FPS en idle normal (peu d'instances touchées en idle),
+  +5-10 FPS en stress avec beaucoup de darts/rain-coins/balloons actifs
+
+---
+
+## 📋 Session R suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session Q + plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1 post-Q, FPS idle = XX, stress = YY.
+
+Si idle ≥ 55 stable → P0 done, GO P1.1 :
+  - Créer src/combo-system.js (~350L) : createComboSystem({k, tileMap,
+    gameState, audio, showPopup, spectres}), API registerCombo(def) +
+    checkCombos(col,row,placedType) + index COMBOS_BY_TRIGGER + patterns
+    déclaratifs (neighbors/diagonal/radius).
+  - Fork src/museum.js → src/combo-codex.js (~250L) onglet Alchimie.
+  - Migrer détection 8 combos existants en définitions data-driven
+    (mais garder logic dans tiles.js, injecter test()/apply() callbacks).
+  - 6 nouveaux combos faciles difficulty 1-2 : OBSIDIAN, FISSURE, CATAPULTE,
+    BACKFLIP, PLUME ASCENSION, TÉLÉPORT D'OR.
+  - Popups combo via showComboPopup() nouveau dans hud.js.
+
+Si idle 50-54 → P0.6 mini-pass :
+  - ducks.js feather particles (6 closures/pop → 1 global via nouveau tag
+    ou migration vers particle-grav)
+  - skull-stand boneParticles/fp : re-tag en particle-grav
+  - Puis re-mesure
+
+Si idle < 50 → flame graph Chrome DevTools Performance 5s idle, identifier
+  vrai bottleneck (draw WebGL ? k.get residuel ? GC ?) avant autre refactor.
+
+Commits atomiques, handover propre, suggérer clear à la fin.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session R. Le handover + plan
+suffisent à repartir frais.
+
+---
+
+## 🗂 Historique antérieur
+
 # Handover — Milan Lava Park (2026-04-24 fin session P / P0.4 wheel batch + cap)
 
 ## ✅ Session P (P0.4 — batch wheel dispatcher + cap wheel-coins 40)
