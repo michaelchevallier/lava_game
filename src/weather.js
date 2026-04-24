@@ -170,6 +170,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
     k.z(18),
     {
       draw() {
+        if (!warning && !active) return;
         if (warning) {
           const ratio = (warning.until - k.time()) / 3;
           const opacity = (1 - ratio) * 0.3;
