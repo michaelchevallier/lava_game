@@ -7,6 +7,84 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
   let _cachedWagons = [];
   k.loop(0.1, () => { _cachedWagons = k.get("wagon"); });
 
+  // Cap global des wheel-coins en vol. Stress test (200 wheels → 107 wheel-coins
+  // simultanés) = 107 entités × onUpdate. On plafonne à 40 pour que 3 coins
+  // × 7s intervalle × 40/3 ≈ 13 wheels simultanées drop, les autres skippent
+  // le drop ce cycle (retry 7s plus tard).
+  const WHEEL_COIN_CAP = 40;
+  let _wheelCoinCount = 0;
+
+  // Dispatchers globaux batch wheel + wheel-coin. 1 closure au scene level
+  // au lieu de N par instance. Hook offscreen hide gate l'exécution (entités
+  // "tile" hors viewport ont hub.hidden = true → pas de rotation inutile).
+  k.onUpdate("wheel", (hub) => {
+    if (hub.hidden) return;
+    const DEG_PER_SEC = 12;
+    hub.wheelAngle += DEG_PER_SEC * k.dt();
+    if (hub.wheelAngle >= 360) hub.wheelAngle -= 360;
+    hub.angle = hub.wheelAngle;
+    const now = k.time();
+    if (now < hub.nextDrop) return;
+    hub.nextDrop = now + 7;
+    const cx = hub.pos.x;
+    const cy = hub.pos.y;
+    const armLen = 44;
+    const isVIP = Math.random() < 1 / 15;
+    if (isVIP) {
+      showPopup(cx, cy - armLen - 30, "VIP +200pts", k.rgb(255, 210, 50), 22);
+      gameState.score += 200;
+      const vip = k.add([
+        k.rect(10, 18),
+        k.pos(cx, cy - armLen),
+        k.anchor("center"),
+        k.color(k.rgb(255, 210, 50)),
+        k.outline(1, k.rgb(180, 140, 20)),
+        k.opacity(1),
+        k.lifespan(3, { fade: 1 }),
+        k.z(8),
+        { vy: -80, vx: (Math.random() - 0.5) * 60 },
+      ]);
+      vip.onUpdate(() => {
+        vip.vy += 400 * k.dt();
+        vip.pos.y += vip.vy * k.dt();
+        vip.pos.x += vip.vx * k.dt();
+      });
+      return;
+    }
+    if (_wheelCoinCount >= WHEEL_COIN_CAP) return;
+    for (let d = 0; d < 3; d++) {
+      if (_wheelCoinCount >= WHEEL_COIN_CAP) break;
+      const dc = k.add([
+        k.circle(9),
+        k.pos(cx + (d - 1) * 18, cy - armLen),
+        k.anchor("center"),
+        k.color(k.rgb(255, 210, 50)),
+        k.outline(2, k.rgb(160, 110, 0)),
+        k.opacity(1),
+        k.z(8),
+        "wheel-coin",
+        { vy: -60 - Math.random() * 40, vx: (d - 1) * 30 + (Math.random() - 0.5) * 20 },
+      ]);
+      _wheelCoinCount++;
+      dc.onDestroy(() => { _wheelCoinCount--; });
+    }
+  });
+  k.onUpdate("wheel-coin", (dc) => {
+    dc.vy += 400 * k.dt();
+    dc.pos.y += dc.vy * k.dt();
+    dc.pos.x += dc.vx * k.dt();
+    if (dc.pos.y > (GROUND_ROW + 1) * TILE) { k.destroy(dc); return; }
+    for (const w of _cachedWagons) {
+      if (Math.abs(w.pos.x + 16 - dc.pos.x) < 26 && Math.abs(w.pos.y + 20 - dc.pos.y) < 26) {
+        gameState.coins++;
+        gameState.score += 10;
+        audio.coin();
+        k.destroy(dc);
+        return;
+      }
+    }
+  });
+
   function spawnSteamBurst(col, row) {
     const cx = col * TILE + TILE / 2;
     const cy = row * TILE + TILE / 2;
@@ -350,7 +428,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
     } else if (type === "wheel") {
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
-      const armLen = 44;
       // Grande Roue : 1 sprite pré-rendu rotat\u00e9 (avant : hub + 4 beams + outerRing + 4 nacelles = 10 entit\u00e9s)
       const hub = k.add([
         k.sprite("wheel_visual"),
@@ -369,66 +446,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
           extras: [],
         },
       ]);
-      hub.onUpdate(() => {
-        const DEG_PER_SEC = 12;
-        hub.wheelAngle += DEG_PER_SEC * k.dt();
-        if (hub.wheelAngle >= 360) hub.wheelAngle -= 360;
-        hub.angle = hub.wheelAngle;
-        const now = k.time();
-        if (now >= hub.nextDrop) {
-          hub.nextDrop = now + 7;
-          const isVIP = Math.random() < 1 / 15;
-          if (isVIP) {
-            showPopup(cx, cy - armLen - 30, "VIP +200pts", k.rgb(255, 210, 50), 22);
-            gameState.score += 200;
-            const vip = k.add([
-              k.rect(10, 18),
-              k.pos(cx, cy - armLen),
-              k.anchor("center"),
-              k.color(k.rgb(255, 210, 50)),
-              k.outline(1, k.rgb(180, 140, 20)),
-              k.opacity(1),
-              k.lifespan(3, { fade: 1 }),
-              k.z(8),
-              { vy: -80, vx: (Math.random() - 0.5) * 60 },
-            ]);
-            vip.onUpdate(() => {
-              vip.vy += 400 * k.dt();
-              vip.pos.y += vip.vy * k.dt();
-              vip.pos.x += vip.vx * k.dt();
-            });
-          } else {
-            for (let d = 0; d < 3; d++) {
-              const dc = k.add([
-                k.circle(9),
-                k.pos(cx + (d - 1) * 18, cy - armLen),
-                k.anchor("center"),
-                k.color(k.rgb(255, 210, 50)),
-                k.outline(2, k.rgb(160, 110, 0)),
-                k.opacity(1),
-                k.z(8),
-                "wheel-coin",
-                { vy: -60 - Math.random() * 40, vx: (d - 1) * 30 + (Math.random() - 0.5) * 20 },
-              ]);
-              dc.onUpdate(() => {
-                dc.vy += 400 * k.dt();
-                dc.pos.y += dc.vy * k.dt();
-                dc.pos.x += dc.vx * k.dt();
-                if (dc.pos.y > (GROUND_ROW + 1) * TILE) { k.destroy(dc); return; }
-                for (const w of _cachedWagons) {
-                  if (Math.abs(w.pos.x + 16 - dc.pos.x) < 26 && Math.abs(w.pos.y + 20 - dc.pos.y) < 26) {
-                    gameState.coins++;
-                    gameState.score += 10;
-                    audio.coin();
-                    k.destroy(dc);
-                    return;
-                  }
-                }
-              });
-            }
-          }
-        }
-      });
       tileMap.set(key, hub);
     } else if (type === "rail_loop") {
       // Loop 2×2 (occupe 2 tiles horizontales, 2 verticales). Ancré sur col/row top-left.
