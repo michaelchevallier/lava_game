@@ -284,17 +284,35 @@ k.scene("game", () => {
   k.onAdd("particle", () => { entityCounts.particle++; });
   k.onDestroy("particle", () => { entityCounts.particle--; });
 
-  // Auto-cull viewport : KAPLAY skip draw() quand hidden=true. Le composant
-  // offscreen({ hide: true }) bascule hidden automatiquement sur exitView /
-  // enterView. Applique aux tags à forte population — gros gain draw rate
-  // avec camera follow et mondes étendus. Collisions/area() non impactées.
-  const OFFSCREEN_HIDE_TAGS = [
-    "tile", "wagon-part", "passenger", "visitor", "crowd",
-    "duck", "duck-part", "wheel-coin", "skull-target", "skull-part",
+  // Auto-cull viewport : KAPLAY skip draw() quand hidden=true + skip update
+  // quand paused=true. 3 modes selon nature entité :
+  //   HIDE     — entité statique ou contrôlée externement (pos mutée par parent)
+  //   HIDE_PAUSE — entité avec onUpdate autonome qu'on peut geler hors vue
+  //   DESTROY  — entité éphémère, nettoyage immédiat hors viewport
+  // Collisions/area() non impactées par hidden.
+  const OFFSCREEN_HIDE = [
+    "tile", "wagon-part", "passenger", "visitor-hat",
+    "balloon", "balloon-string",
   ];
-  for (const tag of OFFSCREEN_HIDE_TAGS) {
+  const OFFSCREEN_HIDE_PAUSE = [
+    "visitor", "crowd", "duck", "skull-target",
+  ];
+  const OFFSCREEN_DESTROY = [
+    "wheel-coin", "duck-part", "skull-part", "rain-coin",
+  ];
+  for (const tag of OFFSCREEN_HIDE) {
     k.onAdd(tag, (e) => {
       try { e.use(k.offscreen({ hide: true, distance: 300 })); } catch {}
+    });
+  }
+  for (const tag of OFFSCREEN_HIDE_PAUSE) {
+    k.onAdd(tag, (e) => {
+      try { e.use(k.offscreen({ hide: true, pause: true, unpause: true, distance: 300 })); } catch {}
+    });
+  }
+  for (const tag of OFFSCREEN_DESTROY) {
+    k.onAdd(tag, (e) => {
+      try { e.use(k.offscreen({ destroy: true, distance: 400 })); } catch {}
     });
   }
   // Apply persisted zoom (or default 0.5 = vue large)
