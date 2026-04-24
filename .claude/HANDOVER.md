@@ -1,4 +1,95 @@
-# Handover — Milan Lava Park (2026-04-23 fin session L / mini-map tenté + rollback)
+# Handover — Milan Lava Park (2026-04-24 fin session M / P0.1 perf pass session 1)
+
+## ✅ Session M (P0.1 — perf harness + 4 quick wins)
+
+**Contexte** : user signale 20-26 FPS idle avec ~370 entités = inacceptable.
+Un audit perf avait identifié ~60-80 ms/frame dépensés dans des draws non-gardés
+(magnet fields, hills, world-walls, weather overlays, flags).
+
+Plan d'ensemble (approuvé) : `/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md` —
+P0 perf → P1 physique chimique émergente (~20 combos) → P2 sous-mondes (LAVA/ARCTIC/SKY).
+
+Cette session = P0.1 (harness + quick wins cheap). P0.2 suit.
+
+**4 commits** cette session (plus bb3d945 feat minimap + f121e33 fix ducks en préamb).
+
+### `20b2c01` feat(perf): harness FPS + entities overlay via `?perf=1`
+
+Nouveau `src/perf-harness.js`. Sans `?perf=1` dans l'URL : zero cost, early
+return. Avec : overlay HTML fixe top-right affiche :
+- FPS rolling 60 frames (avg, p95, p1)
+- Total entities + untagged count
+- Top 6 tags par count
+
+**Préalable obligatoire** aux quick wins — sans mesure, on ne sait pas si
+on casse ou améliore. Widen aussi `window.__getStats` tag list (flag-pole,
+night-deco, season-confetti).
+
+### `f82769d` perf(overlays): guard draws when no fields/portals/wagons
+
+`src/scene-overlays.js` draw z=8 itérait gameState.magnetFields + magnetPortals
++ k.get("wagon") à chaque frame même vides. Cache en tête + early return si
+rien à draw. ROI ~2-4 FPS idle.
+
+### `0c76292` perf(weather): early return if no warning ni active
+
+`src/weather.js` draw z=18 faisait toujours 3 if-checks. Early return unique
+si warning === null && active === null (95% du temps). Gain marginal mais
+propre. Le vrai gain magstorm (42 drawRect pendant event 10s) reste à faire
+en P0.2 (viewport-aware ou batch sprite).
+
+### `88122b8` perf(decor): cull hills + world-walls + batch 40 flags
+
+3 fixes cumulés dans `src/scene-decor.js` :
+
+1. **Hills** : 31 drawSprite/frame → ~8 via cull viewport camera ±1 step
+2. **World-walls** : 26+ draws/frame → 0 quand camera est dans zone jouable
+   (montagnes hors-monde dessinées uniquement si viewport franchit ±WORLD_W)
+3. **Flags** : 40 drapeaux × 3 entités (pole+cap+cloth) = 120 entités +
+   `k.onUpdate("flag-deco")` appelé 40×/frame → remplacé par 1 entité draw
+   qui boucle sur `flagData[]` avec cull viewport. **Économie -120 entités
+   scene-tree + -40 onUpdate/frame**.
+
+ROI cumulé estimé ~15-25 FPS idle. **À vérifier par user** via `?perf=1`.
+
+---
+
+## 🎯 Comment valider la session M (action user)
+
+1. Attendre déploiement CI (bundle `index-*.js` hash change)
+2. Ouvrir `https://michaelchevallier.github.io/lava_game/?perf=1` sur machine cible
+3. Attendre splash → sandbox → attendre 10s idle
+4. Lire overlay top-right : **FPS avg devrait être >= 40-50** (contre 20-26 avant)
+5. Se déplacer gauche/droite avec camera follow → FPS doit rester stable
+6. Rapport user → décide si P0.2 (refactors structurels) nécessaire
+
+**Si FPS >= 55 stable** → skip P0.2 refactors, go direct P1.1 chimique.
+**Si FPS 40-54** → P0.2 session 1 avec 2 refactors les plus rentables.
+**Si FPS < 40** → P0.2 session complète + low-end mode toggle settings.
+
+---
+
+## 📋 Session N suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session M + le plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1 en local browser réel, FPS avg =  XX.
+[Adapter selon résultat]
+
+Continue P0.2 si besoin, sinon enchaîne sur P1.1 (combo-system.js).
+Toujours découper en commits atomiques et finir par handover propre
++ suggestion de clear contexte.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session N. Cette session est lourde
+(plan mode + exploration + 4 commits). Le handover + le plan file suffisent
+à repartir frais.
+
+---
+
+## 🗂 Historique antérieur
 
 ## ⚠️ Session L (mini-map HUD tenté, rollback)
 
