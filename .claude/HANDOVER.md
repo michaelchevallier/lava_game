@@ -1,3 +1,31 @@
+# Handover — Milan Lava Park (2026-04-24 fin session S / P1.1 combo-system complet)
+
+## Session S — P1.1 Combo System — 7 commits total
+
+### Résumé
+
+- Commits 1-3 (session precedente, SHA `d6c6da9` / `b274590` / `417e1c1`) : scaffold API, showComboPopup, migration 8 combos existants.
+- Commit 4 (`9e4a10b`) : 6 nouveaux combos difficulty 1-2 (OBSIDIENNE, FISSURE, PLUME D'ASCENSION, CATAPULTE DOREE, BACKFLIP, TELEPORT D'OR), bitIndex 8-13.
+- Commit 5 (`2bd62df`) : `src/combo-codex.js` + onglet Alchimie Musee — grille 4 colonnes, 14 combos, blur si non-decouvert.
+- Commit 6 (`359aa3f`) : fireCombo persist bitmask + fanfare audio.gold + confetti 12 au 1er declenchement.
+- Commit 7 (ce commit) : def "test" supprimee, backlog coché, handover.
+
+### Etat final
+
+- `window.__comboSystem.listCombos().length` = 14 (8 migres + 6 nouveaux, dummy test supprime)
+- Bundle prod : **110.91 KB gz** (cap 115 KB)
+- Musée onglet Alchimie : 14 combos, blur si non-decouvert, compteur X/14
+- Persistance : `save.combos` bitmask uint32, migrate loadSave si absent
+- Fanfare 1ere decouverte : popup 2.2s + audio.gold + confetti 12 particules
+
+### GO / NO-GO next
+
+**GO P1.2** suggestion : Zones thématiques (col -40..0 glacier / 0..40 normal / 40..80 volcan) — skin tiles par range, visuellement distinct. Ou Saison hiver. Les deux sont dans le backlog Round 4.
+
+**Suggestion** : /clear avant prochaine session (contexte charge ~7 commits de P1.1).
+
+---
+
 # Handover — Milan Lava Park (2026-04-24 fin session R / P0.6 batch particles + QA live)
 
 ## ✅ QA globale fin session R (user n'a pas testé → Claude a testé live via MCP)

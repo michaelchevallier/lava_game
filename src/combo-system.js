@@ -374,21 +374,6 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
     apply() {},
   });
 
-  registerCombo({
-    id: "test",
-    bitIndex: 31,
-    name: "TEST",
-    color: [200, 200, 200],
-    score: 0,
-    difficulty: 1,
-    triggerType: "manual",
-    codexEmoji: "🧪",
-    codexDesc: "Combo de test interne",
-    codexTiles: ["?"],
-    test() { return {}; },
-    apply() {},
-  });
-
   // ─── 6 NOUVEAUX COMBOS difficulty 1-2 ─────────────────────────────────────
 
   registerCombo({

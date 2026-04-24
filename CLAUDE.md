@@ -133,6 +133,7 @@ requestAnimationFrame(tick);
 ### Round 4 (en cours)
 - [x] Tempête Magnétique (weather.js 4e type, x2 score + overlay violet + aimants flottants, 8ede731)
 - [x] **Camera follow** — le monde est désormais 2× plus large visible (befa2eb, sandbox/run)
+- [x] **Combo system data-driven** — 14 combos registre + Codex Alchimie Musée + bitmask persist (P1.1, 9e4a10b/2bd62df/359aa3f)
 - [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
 - [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
 - [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
