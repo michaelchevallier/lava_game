@@ -253,7 +253,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "water", waterPhase: 0, cascadeActive: false, extras: [] },
       ]);
       tileMap.set(key, t);
-      checkCascade(col, row);
     } else if (type === "rail") {
       const x = col * TILE;
       const y = row * TILE + TILE - 10;
@@ -424,7 +423,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       t.extras = [inner];
       t._sparkleCd = Math.random() * 2;
       tileMap.set(key, t);
-      checkCoinResonance(col, row);
     } else if (type === "wheel") {
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
@@ -601,6 +599,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       tileMap.set(key, t);
     }
+    window.__comboSystem?.checkCombos(col, row, type);
   }
 
   k.onUpdate("portal", (ring) => {

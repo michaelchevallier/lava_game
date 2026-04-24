@@ -700,76 +700,47 @@ export function createWagonSystem({
         }
       }
 
-      // Geyser combo: wagon dans la colonne fan+water -> pousse vers le haut
-      {
-        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
-        for (const g of gameState.geysers || []) {
-          if (g.col === wCol) {
-            const wRow = Math.floor((wagon.pos.y + 15) / TILE);
-            if (wRow >= g.fanRow - 3 && wRow <= g.row) {
-              if (wagon.vel) wagon.vel.y = -300;
-              if (!wagon._geyserCdUntil || k.time() > wagon._geyserCdUntil) {
-                wagon._geyserCdUntil = k.time() + 1;
-                window.__campaign?.progress?.("geyser"); window.__contract?.progress?.("geyser");
-                window.__spectres?.unlock?.("geyser_master");
-              }
-            }
-          }
+      // Geyser, IceRink, Vortex, Metronome : détection déléguée au combo system
+      window.__comboSystem?.tickWagon(wagon);
+
+      // Effet glide ice rink (par frame, activé par comboSystem def ice_rink)
+      if (wagon.glideUntil > k.time() && !wagon.rider) {
+        wagon.move(wagon.glideBonus || 0, 0);
+        if (Math.random() < 0.4) {
+          k.add([
+            k.rect(8, 2),
+            k.pos(wagon.pos.x + 8 + Math.random() * 40, wagon.pos.y + 32),
+            k.color(k.rgb(220, 240, 255)),
+            k.opacity(0.7),
+            k.lifespan(0.3, { fade: 0.2 }),
+            k.z(2),
+            "particle",
+          ]);
         }
       }
 
-      // Ice rink: 3+ ice horizontaux → glide momentum bonus
-      {
-        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
-        for (const r of gameState.iceRinks || []) {
-          if (wCol >= r.startCol && wCol < r.startCol + r.len && r.row === Math.floor((wagon.pos.y + 40) / TILE)) {
-            wagon.glideUntil = k.time() + 0.8;
-            wagon.glideBonus = (r.len - 2) * 30;
-            break;
-          }
-        }
-        if (wagon.glideUntil > k.time() && !wagon.rider) {
-          wagon.move(wagon.glideBonus, 0);
-          if (Math.random() < 0.4) {
+      // Effet force vortex (par frame, activé par comboSystem def vortex)
+      if (!wagon.rider && wagon._vortexTarget && wagon._vortexTarget.until > k.time()) {
+        const { px, py } = wagon._vortexTarget;
+        const vdx = px - (wagon.pos.x + 30);
+        const vdy = py - (wagon.pos.y + 15);
+        const vdist = Math.hypot(vdx, vdy);
+        const range = 3 * TILE;
+        if (vdist < range && vdist > TILE * 0.4) {
+          const force = (1 - vdist / range) * 320;
+          wagon.move((vdx / vdist) * force * k.dt(), (vdy / vdist) * force * k.dt());
+          if (Math.random() < 0.18 && entityCounts.particle < 280) {
+            const ang = Math.random() * Math.PI * 2;
             k.add([
-              k.rect(8, 2),
-              k.pos(wagon.pos.x + 8 + Math.random() * 40, wagon.pos.y + 32),
-              k.color(k.rgb(220, 240, 255)),
-              k.opacity(0.7),
-              k.lifespan(0.3, { fade: 0.2 }),
-              k.z(2),
+              k.rect(3, 3),
+              k.pos(wagon.pos.x + 30 + Math.cos(ang) * 18, wagon.pos.y + 15 + Math.sin(ang) * 18),
+              k.color(k.rgb(180, 80, 240)),
+              k.opacity(0.9),
+              k.lifespan(0.45, { fade: 0.3 }),
+              k.z(4),
               "particle",
+              { vx: Math.cos(ang + Math.PI / 2) * 30, vy: Math.sin(ang + Math.PI / 2) * 30 },
             ]);
-          }
-        }
-      }
-
-      // Téléport magnétique: portail adjacent à un magnet attire les wagons (vortex)
-      // Skip si rider pour pas overrider le contrôle joueur
-      if (!wagon.rider) {
-        for (const mp of gameState.magnetPortals || []) {
-          const dx = (mp.x + TILE / 2) - (wagon.pos.x + 30);
-          const dy = (mp.y + TILE / 2) - (wagon.pos.y + 15);
-          const dist = Math.hypot(dx, dy);
-          const range = 3 * TILE;
-          if (dist < range && dist > TILE * 0.4) {
-            const force = (1 - dist / range) * 320;
-            const nx = dx / dist;
-            const ny = dy / dist;
-            wagon.move(nx * force * k.dt(), ny * force * k.dt());
-            if (Math.random() < 0.18 && entityCounts.particle < 280) {
-              const ang = Math.random() * Math.PI * 2;
-              k.add([
-                k.rect(3, 3),
-                k.pos(wagon.pos.x + 30 + Math.cos(ang) * 18, wagon.pos.y + 15 + Math.sin(ang) * 18),
-                k.color(k.rgb(180, 80, 240)),
-                k.opacity(0.9),
-                k.lifespan(0.45, { fade: 0.3 }),
-                k.z(4),
-                "particle",
-                { vx: Math.cos(ang + Math.PI / 2) * 30, vy: Math.sin(ang + Math.PI / 2) * 30 },
-              ]);
-            }
           }
         }
       }
@@ -789,36 +760,6 @@ export function createWagonSystem({
             wagon.jump?.(850);
             window.__juice?.dirShake(0, -1, 4, 0.12);
             audio.boost();
-          }
-        }
-      }
-
-      // Métronome Infernal: 2 boosts verticaux (gap 3, lava entre) traversés top→bottom en <0.8s
-      {
-        const wCol = Math.floor((wagon.pos.x + 30) / TILE);
-        const wRow = Math.floor((wagon.pos.y + 30) / TILE);
-        for (const m of gameState.metronomes || []) {
-          if (m.col !== wCol) continue;
-          if (wRow === m.topRow && !wagon._metroEntry) {
-            wagon._metroEntry = k.time();
-            wagon._metroCol = m.col;
-          } else if (wRow === m.bottomRow && wagon._metroEntry && k.time() - wagon._metroEntry < 0.8) {
-            wagon._metroEntry = null;
-            window.__campaign?.progress?.("metronome"); window.__contract?.progress?.("metronome");
-            gameState.scoreMultiplier = 2;
-            gameState.scoreMultiplierUntil = k.time() + 3;
-            for (const w of k.get("wagon")) {
-              w.boostUntil = Math.max(w.boostUntil || 0, k.time() + 3);
-            }
-            for (let i = 0; i < 4; i++) {
-              k.wait(i * 0.083, () => {
-                window.__juice?.dirShake(0, 1, 6, 0.08);
-                audio.combo();
-              });
-            }
-            showPopup(WIDTH / 2, HEIGHT / 2 - 80, "METRONOME INFERNAL ! x2 3s", k.rgb(255, 80, 80), 24);
-          } else if (wRow > m.bottomRow + 1) {
-            wagon._metroEntry = null;
           }
         }
       }

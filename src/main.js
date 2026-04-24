@@ -359,7 +359,7 @@ k.scene("game", () => {
   window.__cinematic = cinematic;
   cinematic.reset();
 
-  const { placeTile, checkCoinResonance, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectMetronomes, detectLavaTriangles, detectIceCrowns } = createTileSystem({
+  const { placeTile, detectMagnetFields, detectGeysers, detectIceRinks, detectMagnetPortals, detectLavaTriangles, detectIceCrowns } = createTileSystem({
     k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
   });
@@ -368,7 +368,7 @@ k.scene("game", () => {
     k, tileMap, gameState, audio,
     showPopup: (...args) => showPopup(...args),
     showComboPopup: (...args) => hud.showComboPopup?.(...args),
-    spectres, save, persistSave,
+    spectres, save, persistSave, placeTile,
   });
   window.__comboSystem = comboSystem;
 
@@ -379,27 +379,16 @@ k.scene("game", () => {
   startDuckLoop();
 
   k.loop(1, () => { gameState.magnetFields = detectMagnetFields(); });
-  k.loop(0.5, () => {
-    const newG = detectGeysers();
-    if (newG.length > 0 && (gameState.geysers?.length || 0) === 0) {
-      window.__tiers?.onGeyser?.();
-    }
-    gameState.geysers = newG;
-  });
-  gameState.iceRinks = [];
-  k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
-  gameState.magnetPortals = [];
-  k.loop(0.5, () => {
-    const newMP = detectMagnetPortals();
-    if (newMP.length > 0 && (gameState.magnetPortals?.length || 0) === 0) {
-      window.__tiers?.onVortex?.();
-    }
-    gameState.magnetPortals = newMP;
-  });
-  k.loop(0.5, () => { gameState.metronomes = detectMetronomes(); });
   gameState.lavaTriangles = [];
   k.loop(0.5, () => { gameState.lavaTriangles = detectLavaTriangles(); });
   k.loop(0.5, () => { gameState.iceCrowns = detectIceCrowns(); });
+  gameState.geysers = [];
+  k.loop(0.5, () => { gameState.geysers = detectGeysers(); });
+  gameState.iceRinks = [];
+  k.loop(0.5, () => { gameState.iceRinks = detectIceRinks(); });
+  gameState.magnetPortals = [];
+  k.loop(0.5, () => { gameState.magnetPortals = detectMagnetPortals(); });
+  gameState.metronomes = [];
 
   k.loop(0.5, () => constellation.check());
 
