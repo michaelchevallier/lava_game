@@ -54,7 +54,14 @@ export function createSceneOverlays({ k, gameState, entityCounts, audio, showPop
     k.z(8),
     {
       draw() {
-        for (const f of gameState.magnetFields) {
+        const fields = gameState.magnetFields;
+        const portals = gameState.magnetPortals;
+        const hasFields = fields && fields.length;
+        const hasPortals = portals && portals.length;
+        const wagons = k.get("wagon");
+        const hasLeader = wagons.length >= 2;
+        if (!hasFields && !hasPortals && !hasLeader) return;
+        for (const f of (hasFields ? fields : [])) {
           const ax = f.a.gridCol * TILE + TILE / 2;
           const ay = f.a.gridRow * TILE + TILE / 2;
           const bx = f.b.gridCol * TILE + TILE / 2;
@@ -67,7 +74,7 @@ export function createSceneOverlays({ k, gameState, entityCounts, audio, showPop
             k.drawCircle({ pos: k.vec2(x, y + 7), radius: 2.5, color: k.rgb(180, 100, 220), opacity });
           }
         }
-        for (const mp of gameState.magnetPortals || []) {
+        for (const mp of (hasPortals ? portals : [])) {
           const cx = mp.x + TILE / 2;
           const cy = mp.y + TILE / 2;
           const pulse = 0.5 + 0.5 * Math.sin(k.time() * 4);
@@ -88,19 +95,17 @@ export function createSceneOverlays({ k, gameState, entityCounts, audio, showPop
             });
           }
         }
-        const allWagons = k.get("wagon").filter((w) => !w.inverseTrain);
-        if (allWagons.length >= 2) {
-          let leader = allWagons[0];
-          for (const w of allWagons) {
-            if (w.pos.x > leader.pos.x) leader = w;
+        if (hasLeader) {
+          const filtered = wagons.filter((w) => !w.inverseTrain);
+          if (filtered.length >= 2) {
+            let leader = filtered[0];
+            for (const w of filtered) {
+              if (w.pos.x > leader.pos.x) leader = w;
+            }
+            const cx = leader.pos.x + 30;
+            const cy = leader.pos.y - 18 + Math.sin(k.time() * 4) * 2;
+            k.drawText({ text: "👑", pos: k.vec2(cx - 12, cy), size: 20 });
           }
-          const cx = leader.pos.x + 30;
-          const cy = leader.pos.y - 18 + Math.sin(k.time() * 4) * 2;
-          k.drawText({
-            text: "👑",
-            pos: k.vec2(cx - 12, cy),
-            size: 20,
-          });
         }
       },
     },
