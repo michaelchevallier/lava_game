@@ -1,3 +1,96 @@
+# Handover — Milan Lava Park (2026-04-24 fin session P / P0.4 wheel batch + cap)
+
+## ✅ Session P (P0.4 — batch wheel dispatcher + cap wheel-coins 40)
+
+**Diagnostic user post-session O (stress test 200 wheels + 9 wagons)** :
+- FPS avg 46 / p95 39 / p1 37
+- ENT total 709 : tile 200, wheel 200, wheel-coin 107, wagon-part 92
+- Lecture : le ground cull + offscreen hide ont aidé, mais 200 wheels =
+  200 `hub.onUpdate()` closures par frame + 107 wheel-coins éphémères
+  avec chacun son `dc.onUpdate()`. Plancher = charge par-wheel.
+
+Cible de cette session : **réduire la charge par wheel**, pas le nombre
+de wheels (200 wheels = stress test artificiel, idle normal ~1-3 wheels).
+
+### `65f5f28` perf(wheel): batch onUpdate global + cap wheel-coins 40
+
+3 optims cumulées dans `src/tiles.js` tête de `createTileSystem()` :
+
+1. **Batch rotation + drop logic** : 200 `hub.onUpdate(() => {...})`
+   closures → **1 `k.onUpdate("wheel", hub => {...})`** dispatcher
+   scene-level. Early return `if (hub.hidden) return;` (hook offscreen
+   via tag "tile" gate la rotation inutile). Closure allocation par
+   instance éliminée, garbage collector moins sollicité.
+
+2. **Cap wheel-coins 40 simultanés** (avant 107 au stress test).
+   Module-level `_wheelCoinCount`, incrémenté au spawn, décrémenté via
+   `dc.onDestroy(() => _wheelCoinCount--)`. Si saturé au `nextDrop`
+   tick, la wheel skip ce cycle (retry 7s plus tard). ~60% de réduction
+   d'entités wheel-coin actives, donc -60% draw + -60% onUpdate.
+
+3. **Batch wheel-coin onUpdate** : 107 `dc.onUpdate` closures → 1
+   `k.onUpdate("wheel-coin", dc => {...})` global. Physique gravité +
+   collision wagons via `_cachedWagons` (déjà en place depuis session N).
+
+Bundle 106.79 KB gz (stable, +closure global compense les 3 closures par
+instance supprimées). Pas de régression fonctionnelle : VIP drop 1/15
+préservé, 3 coins drop préservé, pop VIP conservé.
+
+---
+
+## 🎯 Comment valider la session P (action user)
+
+1. Attendre deploy CI (commit `65f5f28`)
+2. `https://michaelchevallier.github.io/lava_game/?perf=1` avec idle normal
+3. Re-tester stress 200 wheels : FPS devrait monter vs baseline 46
+4. Observer `wheel-coin` dans top-tags : count capped à 40 (plus de 107)
+
+**Si idle normal FPS ≥ 55 stable** → P0 done, **go P1.1 combo-system.js**
+  (architecture + migration détection 8 combos existants + 6 combos
+  faciles diff 1-2 + popups combo + début onglet Codex Alchimie fork
+  museum.js).
+
+**Si FPS 50-54** → encore quelques candidats P0.5 avant P1 :
+  - Stars/fireflies pré-bake canvas (mais déjà gated isNight, ROI faible)
+  - Wagon monolithic draw (1 entité wagon draw ses 10 parts en
+    drawRect inline au lieu de 10 entités wagon-part séparées) —
+    retiré des OFFSCREEN_HIDE si fait, change le shape du wagon
+  - Audit `onUpdate` agent perf-auditor pour trouver d'autres batches
+
+**Si FPS < 50** → flame graph Chrome DevTools Performance tab, record 5s
+  idle, chercher longues tasks >16ms pour identifier le vrai bottleneck
+  (potentiellement draw-side WebGL si trop de switch sprite/atlas).
+
+---
+
+## 📋 Session Q suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session P + plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1 post-P0.4, FPS idle = XX, stress 200 wheels = YY.
+
+Si idle ≥ 55 → go P1.1 : créer src/combo-system.js + combo-codex.js
+  (fork museum.js) + migrer détection 8 combos existants en définitions
+  data-driven + 6 combos faciles (OBSIDIAN, FISSURE, PLUME ASCENSION,
+  CATAPULTE, BACKFLIP, TÉLÉPORT D'OR). Popups combo via showComboPopup
+  dans hud.js. Tests placement side-by-side.
+
+Si idle 50-54 → P0.5 mini-pass : wagon monolithic draw OU audit
+  perf-auditor pour batches restants.
+
+Si idle < 50 → Chrome DevTools flame graph avant refactor aveugle.
+
+Commits atomiques, handover propre, suggérer clear à la fin.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session Q.
+
+---
+
+## 🗂 Historique antérieur
+
 # Handover — Milan Lava Park (2026-04-24 fin session O / P0.2 bonus + P0.3 drawside)
 
 ## ✅ Session O (P0.3 — attaque draw-side après diagnostic stress test)
