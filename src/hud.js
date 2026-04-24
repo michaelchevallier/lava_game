@@ -451,6 +451,39 @@ export function createHUD({
     k.drawText({ ...opts, color: origColor });
   }
 
+  let _lastComboPopupAt = 0;
+
+  function showComboPopup(name, color, score, opts = {}) {
+    const now = k.time();
+    const lifespan = opts.fanfare ? 2.2 : 1.5;
+    const yBase = (now - _lastComboPopupAt < 0.5) ? 120 : 80;
+    _lastComboPopupAt = now;
+    const p = k.add([
+      k.pos(WIDTH / 2, yBase),
+      k.fixed(),
+      k.z(45),
+      { born: now, lifespan, nameText: name, scoreVal: score, col: color, fanfare: !!opts.fanfare },
+    ]);
+    p.onUpdate(() => {
+      if (k.time() - p.born >= p.lifespan) p.destroy();
+    });
+    p.onDraw(() => {
+      const age = k.time() - p.born;
+      let scale = 1;
+      if (age < 0.12) scale = (age / 0.12) * 1.3;
+      else if (age < 0.24) scale = 1.3 - ((age - 0.12) / 0.12) * 0.3;
+      const opacity = age > p.lifespan - 0.4 ? Math.max(0, (p.lifespan - age) / 0.4) : 1;
+      const sz = Math.round(28 * scale);
+      k.drawText({ text: p.nameText, size: sz, pos: k.vec2(1, 1), anchor: "center", color: C_BLACK, opacity });
+      k.drawText({ text: p.nameText, size: sz, pos: k.vec2(0, 0), anchor: "center", color: k.rgb(p.col[0], p.col[1], p.col[2]), opacity });
+      if (p.scoreVal > 0) {
+        const sz2 = Math.round(18 * scale);
+        k.drawText({ text: `+${p.scoreVal}`, size: sz2, pos: k.vec2(0, 22 * scale), anchor: "center", color: k.rgb(255, 240, 120), opacity });
+      }
+    });
+    return p;
+  }
+
   function showPopup(x, y, text, color, size = 20) {
     const born = k.time();
     const lifespan = 1.0;
@@ -694,6 +727,7 @@ export function createHUD({
   return {
     setup,
     showPopup,
+    showComboPopup,
     drawTextOutlined,
   };
 }
