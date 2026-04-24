@@ -109,19 +109,6 @@ export function attachParticleAndTileUpdates({ k, tileMap }) {
     t.angle = Math.sin(k.time() * 8 + t.gridCol) * 3;
   });
 
-  k.onUpdate("coin", (t) => {
-    if (t.magnetLocked) return;
-    t.pos.y = t.baseY + Math.sin(k.time() * 3 + t.gridCol * 0.4) * 4;
-    t.scale = k.vec2(1, 1);
-    t.color = k.rgb(255, 210, 0);
-    if (t.extras && t.extras[0] && t.extras[0].exists()) {
-      const inner = t.extras[0];
-      inner.pos.x = t.pos.x;
-      inner.pos.y = t.pos.y;
-      inner.scale = k.vec2(Math.abs(Math.cos(k.time() * 4 + t.gridCol * 0.4)), 1);
-    }
-  });
-
   k.onUpdate("particle-grav", (p) => {
     p.pos.x += p.vx * k.dt();
     p.pos.y += p.vy * k.dt();

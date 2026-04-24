@@ -1,4 +1,9 @@
 export function createSceneOverlays({ k, gameState, entityCounts, audio, showPopup, TILE }) {
+  // Cache wagons 10Hz — évite k.get("wagon") par frame dans le draw z=8
+  // (leader-couronne check).
+  let _cachedWagons = [];
+  k.loop(0.1, () => { _cachedWagons = k.get("wagon"); });
+
   k.onUpdate(() => {
     for (const g of gameState.geysers) {
       if (entityCounts.particle > 120) break;
@@ -58,7 +63,7 @@ export function createSceneOverlays({ k, gameState, entityCounts, audio, showPop
         const portals = gameState.magnetPortals;
         const hasFields = fields && fields.length;
         const hasPortals = portals && portals.length;
-        const wagons = k.get("wagon");
+        const wagons = _cachedWagons;
         const hasLeader = wagons.length >= 2;
         if (!hasFields && !hasPortals && !hasLeader) return;
         for (const f of (hasFields ? fields : [])) {

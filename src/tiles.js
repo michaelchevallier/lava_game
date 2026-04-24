@@ -716,6 +716,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
   });
 
   k.onUpdate("coin", (t) => {
+    if (t.magnetLocked) return;
     t.pos.y = t.baseY + Math.sin(k.time() * 2.5 + t.coinPhase) * 3;
     if (t.extras && t.extras[0]) {
       t.extras[0].pos.y = t.pos.y;
