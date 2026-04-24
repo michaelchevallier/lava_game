@@ -1,3 +1,111 @@
+# Handover — Milan Lava Park (2026-04-24 fin session O / P0.2 bonus + P0.3 drawside)
+
+## ✅ Session O (P0.3 — attaque draw-side après diagnostic stress test)
+
+**Diagnostic clé** : user signale incohérence FPS counter (top 48 / bottom 10).
+Cause = HUD bottom pushait fpsBuffer dans `draw()`, perf-harness dans
+`k.onUpdate()`. Divergence = le GPU/browser throttle draws quand trop
+d'entités à rendre. **Le plancher est côté rendu, pas update.**
+
+User stress test (32 wagons, 807 entités) → draw rate ~10 fps mais update
+~48 fps. Confirme : attaquer le nombre d'entités dessinées par frame.
+
+### `91d02aa` fix(hud): FPS sample via k.onUpdate (cohérence perf-harness)
+
+fpsBuffer push migré dans k.onUpdate. Bottom et top counters désormais
+alignés sur la même source (update rate).
+
+### `8daabf7` perf(draw): auto-hide offscreen entities via k.offscreen
+
+KAPLAY a un composant `offscreen({ hide: true })` qui toggle
+`entity.hidden = true` sur exitView (KAPLAY draw() = `if(this.hidden)return;`).
+
+Hook global `k.onAdd(tag, e => e.use(k.offscreen({ hide: true, distance: 300 })))`
+appliqué à 10 tags. Distance 300px marge pour éviter flicker.
+
+### `7b2949c` perf(draw): split offscreen hook en 3 modes
+
+Extension du hook d'auto-cull :
+- **HIDE** : tile, wagon-part, passenger, visitor-hat, balloon,
+  balloon-string (pos mutée externement, ne pas pauser)
+- **HIDE+PAUSE** : visitor, crowd, duck, skull-target (onUpdate
+  autonome lourd — gel complet quand hors vue, unpause retour)
+- **DESTROY** : wheel-coin, duck-part, skull-part, rain-coin (éphémères)
+
+Visitors ont un onUpdate lourd (gravité + boarding + stuck + hésitation
+3-tile + tile type lookup). Pause sur ceux hors viewport = gain CPU en
+plus du gain draw.
+
+### `1939d7b` perf(draw): cache minimap wagons + popups shadow
+
+2 optims cumulées :
+- minimap.js : `_cachedWagons` 10Hz, évite k.get("wagon") par frame
+  dans draw() toujours actif (sauf campaign).
+- hud.js showPopup : drawTextOutlined (5 drawText = 4 offsets + fill)
+  remplacé par inline shadow (2 drawText). **-60% draw calls par popup**.
+
+### `e46d1e9` perf(ground): cull drawGround à la tranche viewport caméra
+
+**Le plus gros win probable de la session.** `drawGround()` itérait
+de -WORLD_COLS à +WORLD_COLS (160 cols) × 4 rows = **jusqu'à 640
+drawSprite/frame constants**, même pour cols hors-écran.
+
+Après : calcule startCol/endCol depuis camPos + camScale, clampe à
+WORLD_COLS bounds. Viewport zoom 0.5 ≈ 80 cols visibles → 320
+drawSprite/frame. Zoomé scale 1 ≈ 40 cols → 160.
+
+---
+
+## 🎯 Comment valider la session O (action user)
+
+1. Attendre déploiement CI
+2. Ouvrir `https://michaelchevallier.github.io/lava_game/?perf=1`
+3. Tester 2 scénarios :
+   - **Idle sandbox normale** (3 wagons auto) : FPS devrait être
+     largement ≥ 55-60, avec gros gain du ground cull + offscreen hide
+   - **Stress test** (spam wagons à la main via `x`) : FPS devrait
+     mieux tenir grâce au pause+destroy offscreen des entités lointaines
+4. Bottom counter HUD et top overlay doivent afficher la même valeur
+
+**Si FPS ≥ 55 stable en idle** → P0 done, go P1.1 chimique.
+**Si FPS 50-54** → investiguer flame graph Chrome DevTools
+  (Performance tab, record 5s idle, chercher longues tasks).
+**Si FPS < 50** → les offscreen hooks n'ont peut-être pas pris effet
+  (vérifier erreur console). Logs `window.__k.get("wagon-part")[0]`
+  pour inspecter si `hidden` toggle bien.
+
+---
+
+## 📋 Session P suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session O + le plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1, FPS avg idle = XX, stress test = YY.
+
+Si FPS idle ≥ 55 → go P1.1 combo-system.js + 6 combos faciles +
+  popups + Codex onglet Alchimie (fork museum.js).
+
+Si FPS 50-54 → candidats restants :
+  - Pré-bake stars/fireflies night-mode en canvas unique (drawImage
+    au lieu de 76 drawCircle/frame)
+  - Réduire parts/wagon via wagon.onDraw monolithique (1 entité + 10
+    drawRect vs 10 entités chacune avec draw)
+  - Pré-bake hills+world-walls en offscreen canvas (le plan P0.3
+    original, reporté car hills déjà culled en M)
+
+Si FPS < 50 → flame graph Chrome DevTools + diagnostic profond.
+
+Commits atomiques, handover, suggérer clear.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session P.
+
+---
+
+## 🗂 Historique antérieur
+
 # Handover — Milan Lava Park (2026-04-24 fin session N / P0.2 perf pass session 2)
 
 ## ✅ Session N (P0.2 — 2 refactors ciblés caching/dedup)
