@@ -14,9 +14,25 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
   const WHEEL_COIN_CAP = 40;
   let _wheelCoinCount = 0;
 
-  // Dispatchers globaux batch wheel + wheel-coin. 1 closure au scene level
-  // au lieu de N par instance. Hook offscreen hide gate l'exécution (entités
-  // "tile" hors viewport ont hub.hidden = true → pas de rotation inutile).
+  // Dispatchers globaux batch : 1 closure au scene level au lieu de N par instance.
+  k.onUpdate("trampoline", (t) => {
+    const pulse = 0.5 + 0.5 * Math.sin(k.time() * 5);
+    const s = 1 + 0.08 * pulse;
+    t.scale = k.vec2(s, 1 + 0.04 * pulse);
+  });
+
+  k.onUpdate("fan", (t) => {
+    const cx = t.gridCol * TILE + TILE / 2;
+    const row = t.gridRow;
+    for (const w of _cachedWagons) {
+      const dx = Math.abs(w.pos.x + 30 - cx);
+      const dy = w.pos.y + 30 - (row * TILE);
+      if (dx < 60 && dy < 0 && dy > -220) {
+        if (w.vel) w.vel.y -= 600 * k.dt();
+      }
+    }
+  });
+
   k.onUpdate("wheel", (hub) => {
     if (hub.hidden) return;
     const DEG_PER_SEC = 12;
@@ -278,12 +294,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         { gridCol: col, gridRow: row, tileType: "trampoline", extras: [] },
       ]);
       tileMap.set(key, t);
-      // Pulse via scale (pas d'entité extra)
-      t.onUpdate(() => {
-        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 5);
-        const s = 1 + 0.08 * pulse;
-        t.scale = k.vec2(s, 1 + 0.04 * pulse);
-      });
     } else if (type === "boost") {
       const t = k.add([
         k.sprite("boost"),
@@ -389,16 +399,6 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         "fan",
         { gridCol: col, gridRow: row, tileType: "fan", extras: [] },
       ]);
-      t.onUpdate(() => {
-        const cx = col * TILE + TILE / 2;
-        for (const w of _cachedWagons) {
-          const dx = Math.abs(w.pos.x + 30 - cx);
-          const dy = w.pos.y + 30 - (row * TILE);
-          if (dx < 60 && dy < 0 && dy > -220) {
-            if (w.vel) w.vel.y -= 600 * k.dt();
-          }
-        }
-      });
       tileMap.set(key, t);
     } else if (type === "coin") {
       const cx = col * TILE + TILE / 2;
@@ -761,7 +761,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
         }
       } else if (t.tileType === "water" && t.cascadeActive) {
         if (Math.random() < 0.6) {
-          const drop = k.add([
+          k.add([
             k.circle(2 + Math.random() * 2),
             k.pos(t.pos.x + Math.random() * TILE, t.pos.y),
             k.color(k.rgb(80, 180, 230)),
@@ -769,11 +769,8 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
             k.lifespan(0.6, { fade: 0.4 }),
             k.z(2),
             "particle",
-            { vy: 200 + Math.random() * 100 },
+            { vx: 0, vy: 200 + Math.random() * 100 },
           ]);
-          drop.onUpdate(() => {
-            drop.pos.y += drop.vy * k.dt();
-          });
         }
         const botTile = tileMap.get(gridKey(t.gridCol, t.gridRow + 1));
         if (!botTile && Math.random() < 0.25) {

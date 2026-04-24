@@ -40,22 +40,7 @@ export function createBalloonSystem({ k, gameState, audio, showPopup, WIDTH, GRO
       "balloon-string",
     ]);
     bal.string = str;
-    bal.onUpdate(() => {
-      if (bal.popped) return;
-      const age = k.time() - bal.bornAt;
-      bal.opacity = Math.min(1, age * 2);
-      bal.pos.y += bal.vy * k.dt();
-      bal.pos.x += Math.sin(age * 2 + bal.driftPhase) * 10 * k.dt();
-      if (str?.exists?.()) {
-        str.pos.x = bal.pos.x;
-        str.pos.y = bal.pos.y + 12;
-        str.opacity = bal.opacity * 0.7;
-      }
-      if (bal.pos.y < -40) {
-        if (str?.exists?.()) k.destroy(str);
-        k.destroy(bal);
-      }
-    });
+    bal._str = str;
   }
 
   function popBalloon(bal) {
@@ -85,6 +70,24 @@ export function createBalloonSystem({ k, gameState, audio, showPopup, WIDTH, GRO
     if (bal.string?.exists?.()) k.destroy(bal.string);
     k.destroy(bal);
   }
+
+  k.onUpdate("balloon", (bal) => {
+    if (bal.popped) return;
+    const age = k.time() - bal.bornAt;
+    bal.opacity = Math.min(1, age * 2);
+    bal.pos.y += bal.vy * k.dt();
+    bal.pos.x += Math.sin(age * 2 + bal.driftPhase) * 10 * k.dt();
+    const str = bal._str;
+    if (str?.exists?.()) {
+      str.pos.x = bal.pos.x;
+      str.pos.y = bal.pos.y + 12;
+      str.opacity = bal.opacity * 0.7;
+    }
+    if (bal.pos.y < -40) {
+      if (str?.exists?.()) k.destroy(str);
+      k.destroy(bal);
+    }
+  });
 
   k.onClick("balloon", popBalloon);
 

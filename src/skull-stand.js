@@ -80,15 +80,8 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
     ]);
     skull.parts = [eye1, eye2];
 
-    skull.onUpdate(() => {
-      if (skull.dead) return;
-      skull.pos.x += skull.dir * 35 * k.dt();
-      skull.pos.y = skull.baseY + Math.sin(k.time() * 3 + idx) * 4;
-      eye1.pos.x = skull.pos.x - 3; eye1.pos.y = skull.pos.y - 2;
-      eye2.pos.x = skull.pos.x + 3; eye2.pos.y = skull.pos.y - 2;
-      if (skull.pos.x > STAND_X + STAND_W - 12) skull.dir = -1;
-      if (skull.pos.x < STAND_X + 12) skull.dir = 1;
-    });
+    skull._eye1 = eye1;
+    skull._eye2 = eye2;
 
     skull.onClick(() => {
       if (skull.dead) return;
@@ -182,14 +175,6 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
     ]);
     d._renderer = renderer;
 
-    d.onUpdate(() => {
-      if (d.dead) return;
-      d.pos.x += d.vx * k.dt();
-      if (d.pos.x < STAND_X - 40) {
-        d.pos.x = STAND_X + STAND_W + 60 + Math.random() * 40;
-        d.gold = Math.random() < 0.12;
-      }
-    });
 
     ducks.push(d);
   }
@@ -293,16 +278,6 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
       "dart",
       { vx: vxInit, vy: vyInit, life: 0, shooter },
     ]);
-    dart.onUpdate(() => {
-      dart.life += k.dt();
-      dart.pos.x += dart.vx * k.dt();
-      dart.pos.y += dart.vy * k.dt();
-      dart.vy += 200 * k.dt();
-      dart.angle = Math.atan2(dart.vy, dart.vx) * 180 / Math.PI;
-      if (dart.life > 2 || dart.pos.y > STAND_Y + STAND_H + 80) {
-        if (dart.exists?.()) k.destroy(dart);
-      }
-    });
     darts.push(dart);
   }
 
@@ -390,6 +365,36 @@ export function createSkullStand({ k, gameState, audio, showPopup, registerCoin,
         ]);
         return;
       }
+    }
+  });
+
+  k.onUpdate("skull-target", (skull) => {
+    if (skull.dead) return;
+    skull.pos.x += skull.dir * 35 * k.dt();
+    skull.pos.y = skull.baseY + Math.sin(k.time() * 3 + skull.skullIdx) * 4;
+    if (skull._eye1?.exists?.()) { skull._eye1.pos.x = skull.pos.x - 3; skull._eye1.pos.y = skull.pos.y - 2; }
+    if (skull._eye2?.exists?.()) { skull._eye2.pos.x = skull.pos.x + 3; skull._eye2.pos.y = skull.pos.y - 2; }
+    if (skull.pos.x > STAND_X + STAND_W - 12) skull.dir = -1;
+    if (skull.pos.x < STAND_X + 12) skull.dir = 1;
+  });
+
+  k.onUpdate("duck-stand", (d) => {
+    if (d.dead) return;
+    d.pos.x += d.vx * k.dt();
+    if (d.pos.x < STAND_X - 40) {
+      d.pos.x = STAND_X + STAND_W + 60 + Math.random() * 40;
+      d.gold = Math.random() < 0.12;
+    }
+  });
+
+  k.onUpdate("dart", (dart) => {
+    dart.life += k.dt();
+    dart.pos.x += dart.vx * k.dt();
+    dart.pos.y += dart.vy * k.dt();
+    dart.vy += 200 * k.dt();
+    dart.angle = Math.atan2(dart.vy, dart.vx) * 180 / Math.PI;
+    if (dart.life > 2 || dart.pos.y > STAND_Y + STAND_H + 80) {
+      if (dart.exists?.()) k.destroy(dart);
     }
   });
 

@@ -60,10 +60,6 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       "rain-coin",
       { vy: 80 + Math.random() * 40 },
     ]);
-    coin.onUpdate(() => {
-      coin.pos.y += coin.vy * k.dt();
-      if (coin.pos.y > GROUND_ROW * TILE - 20) coin.vy = 0;
-    });
     coin.onCollide("player", () => {
       gameState.coins += 1;
       gameState.score += 10;
@@ -130,6 +126,11 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       }
     }
   }
+
+  k.onUpdate("rain-coin", (coin) => {
+    coin.pos.y += coin.vy * k.dt();
+    if (coin.pos.y > GROUND_ROW * TILE - 20) coin.vy = 0;
+  });
 
   k.loop(0.1, () => {
     const t = k.time();
