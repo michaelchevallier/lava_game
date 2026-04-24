@@ -1,3 +1,101 @@
+# Handover — Milan Lava Park (2026-04-24 fin session R / P0.6 batch particles)
+
+## ✅ Session R (P0.6 — batch feather/bone/jackpot + diagnostic MCP)
+
+**Contexte** : user a dit "débrouille toi et avance, j'ai fait aucun test".
+Session R menée en autonomie : tentative mesure live Chrome MCP, constat
+d'un cap environnemental, pivot P0.6 candidats identifiés en HANDOVER Q.
+
+### 🔬 Mesure live via MCP : bloquante
+
+- Navigate `?perf=1`, clic sandbox-btn + JOUER → scene game mount OK (254→321 ents)
+- Perf overlay : **FPS avg 47 / p95 40 / p1 40** en idle sandbox
+- Pause des 160 entités `ground` + destroy visitors/clouds/wagons → **FPS inchangé 47**
+- Test indépendant `requestAnimationFrame` brut : **36 FPS**, `document.hasFocus() = false`
+- Conclusion : **cap environnemental MCP** (tab non-focus → rAF throttlé). Les
+  mesures ne reflètent pas la machine user. Impossible de décider P1 vs P0.6
+  sur la base live.
+
+### 🎯 Finding annexe : 160 colliders `ground`
+
+CLAUDE.md mentionne "1 collider unique" en Done. L'implémentation actuelle
+`src/ground.js:22-53` fait **1 collider par colonne** (rebuild par col pour
+supporter dig/fill). En pratique : 160 cols × (1 segment contigu) = 160
+entités avec `area` + `body({isStatic:true})`. Pas le bottleneck ici
+(pause testée, FPS inchangé) mais **candidat P0.7 possible** : merger cols
+adjacents undug en 1 rectangle large (99% du monde n'est jamais creusé).
+
+### `8d7d24a` perf(particles): batch feather/bone/jackpot via particle-grav
+
+4 sites de particles éphémères migrés vers handler global existant :
+
+| Fichier:ligne | Événement | Nb/burst | Migration |
+|---|---|---|---|
+| `ducks.js:73` spawnFeathers | canard touché | 6 | "particle-grav" + grav:120 + spin:200 |
+| `skull-stand.js:95` skull click | crâne détruit | 8 | "particle-grav" + grav:120 |
+| `skull-stand.js:212` duck hit | canard percé | 8 | "particle-grav" + grav:120 |
+| `skull-stand.js:245` jackpot fp | combo 3 canards | 24 | "particle" (pas de grav) redondant onUpdate supprimé |
+
+Extension `particle-systems.js:112` : propriété optionnelle `spin` (rotation
+continue), lecture conditionnelle `if (p.spin) p.angle += p.spin * dt`.
+Jackpot fp avait déjà tag "particle" : global handler `p.pos.x += vx*dt` le
+couvrait, `fp.onUpdate` n'était que duplication.
+
+Bundle **106.84 → 106.82 KB gz** (-20B). Build OK.
+
+---
+
+## 🎯 Comment valider la session R (action user)
+
+**Priorité** : mesurer `?perf=1` dans un **vrai navigateur focus** (pas MCP).
+Cette session n'a aucune mesure live fiable.
+
+1. Attendre deploy CI (commit `8d7d24a`)
+2. `https://michaelchevallier.github.io/lava_game/?perf=1` dans Chrome normal
+3. Relever FPS avg/p95/p1 en :
+   - idle sandbox normal (~10s stabilisé)
+   - burst jackpot canards (fire 3 canards en 5s, voir les 24 fp)
+   - spam skull click (plusieurs crânes = bursts de 8 bones chacun)
+
+**Smoke tests** :
+- Plumes canards touchés gardent rotation visible (spin:200) ✓
+- Os fragments rayonnent puis tombent avec grav ✓
+- Jackpot "orange burst" linéaire (pas de grav, normal) ✓
+
+---
+
+## 📋 Session S suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session R + plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1 post-R en browser focus, FPS idle = XX.
+
+Si idle ≥ 55 → GO P1.1 : créer src/combo-system.js (~350L) +
+  fork src/museum.js → src/combo-codex.js. Migrer détection 8
+  combos existants en définitions data-driven + 6 nouveaux combos
+  faciles (OBSIDIAN, FISSURE, CATAPULTE, BACKFLIP, PLUME ASCENSION,
+  TÉLÉPORT D'OR). Popups via showComboPopup() nouveau dans hud.js.
+
+Si idle 50-54 → P0.7 : merge ground colliders adjacents undug
+  (aujourd'hui 160 per-col, cible ~5 rectangles larges). Voir
+  src/ground.js:22-53 rebuildGroundColliderForCol. Attention digging
+  par col doit rester atomique (rebuild d'un segment adjacent sans
+  invalider les autres).
+
+Si idle < 50 → flame graph Chrome DevTools Performance 5s, identifier
+  vrai bottleneck (draw WebGL, k.get, GC) avant refactor aveugle.
+
+Commits atomiques, handover propre, suggérer clear.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session S.
+
+---
+
+## 🗂 Historique antérieur
+
 # Handover — Milan Lava Park (2026-04-24 fin session Q / P0.5 batch 6 types)
 
 ## ✅ Session Q (P0.5 — 6 nouveaux batches per-entity → global dispatcher)
