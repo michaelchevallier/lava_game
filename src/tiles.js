@@ -1,6 +1,12 @@
 import { TILE, GROUND_ROW, gridKey } from "./constants.js";
 
 export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, showPopup }) {
+  // Cache wagons refreshed 10Hz — évite k.get("wagon") par frame dans les
+  // onUpdate de wheel-coin (~40 instances), fan, bomb. Scene-tree scan coupé
+  // de 42×/frame à 10×/s.
+  let _cachedWagons = [];
+  k.loop(0.1, () => { _cachedWagons = k.get("wagon"); });
+
   function spawnSteamBurst(col, row) {
     const cx = col * TILE + TILE / 2;
     const cy = row * TILE + TILE / 2;
@@ -307,7 +313,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
       ]);
       t.onUpdate(() => {
         const cx = col * TILE + TILE / 2;
-        for (const w of k.get("wagon")) {
+        for (const w of _cachedWagons) {
           const dx = Math.abs(w.pos.x + 30 - cx);
           const dy = w.pos.y + 30 - (row * TILE);
           if (dx < 60 && dy < 0 && dy > -220) {
@@ -409,7 +415,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
                 dc.pos.y += dc.vy * k.dt();
                 dc.pos.x += dc.vx * k.dt();
                 if (dc.pos.y > (GROUND_ROW + 1) * TILE) { k.destroy(dc); return; }
-                for (const w of k.get("wagon")) {
+                for (const w of _cachedWagons) {
                   if (Math.abs(w.pos.x + 16 - dc.pos.x) < 26 && Math.abs(w.pos.y + 20 - dc.pos.y) < 26) {
                     gameState.coins++;
                     gameState.score += 10;
@@ -685,7 +691,7 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
   k.onUpdate("bomb", (t) => {
     if (t.exploded) return;
     // AABB wagon / tile (wagon ~60×40, tile 32×32)
-    for (const w of k.get("wagon")) {
+    for (const w of _cachedWagons) {
       if (w.pos.x + 60 > t.pos.x && w.pos.x < t.pos.x + TILE &&
           w.pos.y + 40 > t.pos.y && w.pos.y < t.pos.y + TILE) {
         explodeBomb(t);
