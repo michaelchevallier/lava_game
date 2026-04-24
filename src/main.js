@@ -54,6 +54,7 @@ import { createReparationExpress } from "./reparation-express.js";
 import { createBossGoret } from "./boss-goret.js";
 import { createMinimap } from "./minimap.js";
 import { createPerfHarness } from "./perf-harness.js";
+import { createComboSystem } from "./combo-system.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -362,6 +363,14 @@ k.scene("game", () => {
     k, tileMap, gameState, audio, entityCounts,
     showPopup: (...args) => showPopup(...args),
   });
+
+  const comboSystem = createComboSystem({
+    k, tileMap, gameState, audio,
+    showPopup: (...args) => showPopup(...args),
+    showComboPopup: (...args) => hud.showComboPopup?.(...args),
+    spectres, save, persistSave,
+  });
+  window.__comboSystem = comboSystem;
 
   const { startDuckLoop } = createDuckSystem({
     k, tileMap, gameState, audio,
