@@ -386,5 +386,253 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
     apply() {},
   });
 
+  // ─── 6 NOUVEAUX COMBOS difficulty 1-2 ─────────────────────────────────────
+
+  registerCombo({
+    id: "obsidienne",
+    bitIndex: 8,
+    name: "OBSIDIENNE !",
+    color: [80, 80, 100],
+    score: 20,
+    difficulty: 1,
+    triggerType: "place",
+    triggerTiles: ["lava", "water"],
+    codexEmoji: "🪨",
+    codexDesc: "Lave et eau adjacentes se solidifient en sol",
+    codexTiles: ["lava", "water"],
+    test(tm, col, row) {
+      const type = tm.get(gridKey(col, row))?.tileType;
+      if (!type) return null;
+      const pairs = { lava: "water", water: "lava" };
+      const target = pairs[type];
+      if (!target) return null;
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nb = tm.get(gridKey(col + dc, row + dr));
+        if (nb?.tileType === target) {
+          return { col, row, adjCol: col + dc, adjRow: row + dr };
+        }
+      }
+      return null;
+    },
+    apply({ k: _k, ctx, spawnBurst: sb }) {
+      const { col, row, adjCol, adjRow } = ctx;
+      const cx1 = col * TILE + TILE / 2;
+      const cy1 = row * TILE + TILE / 2;
+      const cx2 = adjCol * TILE + TILE / 2;
+      const cy2 = adjRow * TILE + TILE / 2;
+      for (let i = 0; i < 10; i++) {
+        _k.add([
+          _k.circle(2 + Math.random() * 2),
+          _k.pos(cx1 + (Math.random() - 0.5) * TILE, cy1),
+          _k.color(_k.rgb(180, 180, 200)),
+          _k.opacity(0.8),
+          _k.lifespan(0.8, { fade: 0.5 }),
+          _k.z(4),
+          "steam",
+          { vy: -50 - Math.random() * 50, vx: (Math.random() - 0.5) * 30 },
+        ]);
+      }
+      sb(cx2, cy2, [80, 80, 120], 8);
+    },
+  });
+
+  registerCombo({
+    id: "fissure",
+    bitIndex: 9,
+    name: "FISSURE !",
+    color: [255, 100, 30],
+    score: 30,
+    difficulty: 1,
+    triggerType: "place",
+    triggerTiles: ["lava"],
+    codexEmoji: "💥",
+    codexDesc: "4 laves alignees horizontalement font glisser les wagons",
+    codexTiles: ["lava x4 ligne"],
+    test(tm, col, row) {
+      const isLava = (c, r) => tm.get(gridKey(c, r))?.tileType === "lava";
+      let start = col;
+      while (isLava(start - 1, row)) start--;
+      let len = 0;
+      while (isLava(start + len, row)) len++;
+      if (len < 4) return null;
+      return { startCol: start, row, len };
+    },
+    apply({ k: _k, ctx, gameState: gs, spawnBurst: sb }) {
+      const { startCol, row, len } = ctx;
+      const wagons = _k.get("wagon");
+      for (const w of wagons) {
+        const wRow = Math.floor((w.pos.y + 40) / TILE);
+        if (wRow === row) w.slideUntil = (_k.time() || 0) + 0.6;
+      }
+      window.__juice?.dirShake(0, 1, 8, 0.1);
+      for (let i = 0; i < len; i++) {
+        sb((startCol + i) * TILE + TILE / 2, row * TILE + TILE / 2, [255, 120, 40], 4);
+      }
+    },
+  });
+
+  registerCombo({
+    id: "plume_ascension",
+    bitIndex: 10,
+    name: "PLUME D'ASCENSION !",
+    color: [100, 200, 255],
+    score: 10,
+    difficulty: 1,
+    triggerType: "place",
+    triggerTiles: ["coin", "fan"],
+    codexEmoji: "🪶",
+    codexDesc: "Fan sous une piece : la piece flotte plus haut",
+    codexTiles: ["fan", "coin"],
+    test(tm, col, row) {
+      const t = tm.get(gridKey(col, row));
+      if (!t) return null;
+      if (t.tileType === "coin") {
+        const below = tm.get(gridKey(col, row + 1));
+        if (below?.tileType === "fan") return { coinCol: col, coinRow: row };
+      }
+      if (t.tileType === "fan") {
+        const above = tm.get(gridKey(col, row - 1));
+        if (above?.tileType === "coin") return { coinCol: col, coinRow: row - 1 };
+      }
+      return null;
+    },
+    apply({ k: _k, ctx, tileMap: tm, spawnBurst: sb }) {
+      const { coinCol, coinRow } = ctx;
+      const coinTile = tm.get(gridKey(coinCol, coinRow));
+      if (coinTile) {
+        coinTile._lifted = true;
+        coinTile._liftBonus = 30;
+      }
+      const cx = coinCol * TILE + TILE / 2;
+      const cy = coinRow * TILE + TILE / 2;
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI * 2 * i) / 6;
+        _k.add([
+          _k.circle(2 + Math.random() * 2),
+          _k.pos(cx + Math.cos(a) * 8, cy + Math.sin(a) * 8),
+          _k.color(_k.rgb(140, 220, 255)),
+          _k.opacity(0.9),
+          _k.lifespan(0.6, { fade: 0.4 }),
+          _k.z(4),
+          "fan-puff",
+          { vy: -80 - Math.random() * 40, vx: Math.cos(a) * 30 },
+        ]);
+      }
+    },
+  });
+
+  registerCombo({
+    id: "catapulte_doree",
+    bitIndex: 11,
+    name: "CATAPULTE DOREE !",
+    color: [255, 180, 40],
+    score: 50,
+    difficulty: 2,
+    triggerType: "place",
+    triggerTiles: ["coin"],
+    codexEmoji: "🏹",
+    codexDesc: "Trampoline + fan au-dessus + piece : catapulte doree",
+    codexTiles: ["trampoline", "fan", "coin"],
+    test(tm, col, row) {
+      const t = tm.get(gridKey(col, row));
+      if (t?.tileType !== "coin") return null;
+      let hasTramp = false;
+      let hasFan = false;
+      for (let dr = -3; dr <= 3; dr++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const nb = tm.get(gridKey(col + dc, row + dr));
+          if (nb?.tileType === "trampoline") hasTramp = true;
+          if (nb?.tileType === "fan") hasFan = true;
+        }
+      }
+      if (!hasTramp || !hasFan) return null;
+      return { col, row };
+    },
+    apply({ k: _k, ctx, spawnBurst: sb }) {
+      const { col, row } = ctx;
+      const cx = col * TILE + TILE / 2;
+      const cy = row * TILE + TILE / 2;
+      for (let i = 0; i < 3; i++) {
+        _k.wait(i * 0.12, () => {
+          sb(cx + (Math.random() - 0.5) * TILE * 2, cy - i * 20, [255, 200, 60], 6);
+        });
+      }
+    },
+  });
+
+  registerCombo({
+    id: "backflip",
+    bitIndex: 12,
+    name: "BACKFLIP !",
+    color: [150, 255, 150],
+    score: 0,
+    difficulty: 2,
+    triggerType: "place",
+    triggerTiles: ["rail_loop"],
+    codexEmoji: "🤸",
+    codexDesc: "Rail montant directement adjacent a un loop",
+    codexTiles: ["rail_up", "rail_loop"],
+    test(tm, col, row) {
+      const t = tm.get(gridKey(col, row));
+      if (t?.tileType !== "rail_loop") return null;
+      for (let dc = -2; dc <= -1; dc++) {
+        const nb = tm.get(gridKey(col + dc, row));
+        if (nb?.tileType === "rail_up") return { loopCol: col, loopRow: row, upCol: col + dc };
+      }
+      return null;
+    },
+    apply({ k: _k, ctx, spawnBurst: sb }) {
+      const { loopCol, loopRow } = ctx;
+      const cx = loopCol * TILE + TILE / 2;
+      const cy = loopRow * TILE + TILE / 2;
+      const colors = [[255, 80, 80], [80, 255, 80], [80, 80, 255], [255, 255, 80]];
+      for (let i = 0; i < 4; i++) {
+        _k.wait(i * 0.08, () => sb(cx, cy - i * 15, colors[i % colors.length], 4));
+      }
+    },
+  });
+
+  registerCombo({
+    id: "teleport_or",
+    bitIndex: 13,
+    name: "TELEPORT D'OR !",
+    color: [255, 240, 80],
+    score: 20,
+    difficulty: 2,
+    triggerType: "place",
+    triggerTiles: ["coin", "portal"],
+    codexEmoji: "✨",
+    codexDesc: "Piece entre deux portails pairies : piece doree",
+    codexTiles: ["portal", "coin", "portal"],
+    test(tm, col, row) {
+      const t = tm.get(gridKey(col, row));
+      if (!t) return null;
+      let coinCol = -1, coinRow = -1;
+      if (t.tileType === "coin") { coinCol = col; coinRow = row; }
+      else if (t.tileType === "portal") {
+        for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nb = tm.get(gridKey(col + dc, row + dr));
+          if (nb?.tileType === "coin") { coinCol = col + dc; coinRow = row + dr; break; }
+        }
+      }
+      if (coinCol < 0) return null;
+      let portalCount = 0;
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0]]) {
+        const nb = tm.get(gridKey(coinCol + dc, coinRow + dr));
+        if (nb?.tileType === "portal") portalCount++;
+      }
+      if (portalCount < 2) return null;
+      return { coinCol, coinRow };
+    },
+    apply({ k: _k, ctx, tileMap: tm, spawnBurst: sb }) {
+      const { coinCol, coinRow } = ctx;
+      const coinTile = tm.get(gridKey(coinCol, coinRow));
+      if (coinTile) coinTile._golden = true;
+      const cx = coinCol * TILE + TILE / 2;
+      const cy = coinRow * TILE + TILE / 2;
+      sb(cx, cy, [255, 240, 80], 8);
+    },
+  });
+
   return { registerCombo, checkCombos, tickWagon, manualFire, listCombos, isDiscovered, spawnBurst };
 }
