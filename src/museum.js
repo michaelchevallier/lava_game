@@ -5,6 +5,7 @@ import { TILE_PRICES, TILE_LABELS, TILE_EMOJI, SKINS, buyTile, buySkin, setActiv
 import { persistSave } from "./serializer.js";
 import { getVipById, pickContract } from "./vips.js";
 import { markAllRead, totalTicketsEarned, listByVip } from "./almanac.js";
+import { renderAlchemyTab } from "./combo-codex.js";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -322,6 +323,7 @@ export function createMuseum({ save }) {
     if (currentTab === "runs") return renderRunsTab();
     if (currentTab === "vip") return renderVipTab();
     if (currentTab === "shop") return renderShopTab();
+    if (currentTab === "alchemy") return renderAlchemyTab(save, window.__comboSystem?.listCombos);
     return "";
   }
 
@@ -343,6 +345,7 @@ export function createMuseum({ save }) {
       { id: "medals", label: "🏅 Médailles" },
       { id: "records", label: "⏱️ Records" },
       { id: "spectres", label: "👻 Spectres" },
+      { id: "alchemy", label: "🧪 Alchimie" },
       { id: "runs", label: "🎰 Runs" },
       { id: "vip", label: "📜 Almanach" },
       { id: "shop", label: "🎫 Boutique" },
