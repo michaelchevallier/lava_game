@@ -53,6 +53,7 @@ import { createParadeQTE } from "./parade-qte.js";
 import { createReparationExpress } from "./reparation-express.js";
 import { createBossGoret } from "./boss-goret.js";
 import { createMinimap } from "./minimap.js";
+import { createPerfHarness } from "./perf-harness.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -101,11 +102,13 @@ window.__juice = juice;
 window.__k = k;
 window.__entityCounts = entityCounts;
 window.__getStats = () => {
-  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part","crowd"];
+  const tags = ["wagon","visitor","passenger","tile","particle","particle-grav","particle-x","particle-debris","particle-firework","fan-puff","steam","ghost","wagon-part","flag-deco","flag-pole","cloud","magnet-spark","coin","lava","water","boost","trampoline","portal","fan","ice","magnet","bridge","wheel","wheel-coin","duck","duck-part","crowd","night-deco","season-confetti"];
   const out = { total: k.get("*").length };
   for (const t of tags) out[t] = k.get(t).length;
   return out;
 };
+const perfHarness = createPerfHarness({ k, getStats: window.__getStats });
+window.__perf = perfHarness;
 
 let splashRef = null;
 let campaignMenuRef = null;
