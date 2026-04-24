@@ -125,9 +125,18 @@ export function createGroundSystem({ k, gameState, audio }) {
     }
   }
 
-  // Draw function: call inside a k.add draw() override
+  // Draw function: call inside a k.add draw() override.
+  // Cull viewport : ne dessine que les colonnes dans la tranche caméra ±1 tile
+  // (avant : 160 cols × 4 rows = 640 drawSprite/frame constants).
   function drawGround() {
-    for (let col = -WORLD_COLS; col < WORLD_COLS; col++) {
+    const camX = (k.camPos?.().x) ?? (COLS * TILE) / 2;
+    const scale = (k.camScale?.().x) || 1;
+    const halfView = (COLS * TILE) / (2 * scale);
+    const minCol = Math.floor((camX - halfView) / TILE) - 1;
+    const maxCol = Math.ceil((camX + halfView) / TILE) + 1;
+    const startCol = Math.max(-WORLD_COLS, minCol);
+    const endCol = Math.min(WORLD_COLS, maxCol);
+    for (let col = startCol; col < endCol; col++) {
       const dug = groundMap.get(col).dug;
       let drewTop = false;
       for (let row = GROUND_ROW; row < ROWS; row++) {
