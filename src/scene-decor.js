@@ -108,32 +108,47 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
     });
   }
 
-  // Hills : répartis sur toute la plage monde (-WORLD_W..+WORLD_W), tous les ~330px
+  // Hills : répartis sur toute la plage monde (-WORLD_W..+WORLD_W), tous les ~330px.
+  // Cull hors viewport camera ±1 écran (évite 31 drawSprite/frame quand seules
+  // ~8 hills sont visibles).
   k.add([
     k.pos(0, 0),
     k.z(-20),
     {
       draw() {
         const step = 330;
-        const startX = Math.floor(-WORLD_W / step) * step;
-        for (let x = startX; x < WORLD_W; x += step) {
+        const camX = (k.camPos?.().x) ?? WIDTH / 2;
+        const scale = (k.camScale?.().x) || 1;
+        const halfView = WIDTH / (2 * scale) + step;
+        const minX = camX - halfView;
+        const maxX = camX + halfView;
+        const startX = Math.max(Math.floor(-WORLD_W / step) * step, Math.floor(minX / step) * step);
+        const endX = Math.min(WORLD_W, maxX);
+        for (let x = startX; x < endX; x += step) {
           k.drawSprite({ sprite: "hill", pos: k.vec2(x - 50, GROUND_ROW * TILE - 64) });
         }
       },
     },
   ]);
 
-  // Murs monde : montagnes sombres au-delà des bornes ±WORLD_W pour fermer
-  // visuellement la scène. Empilement de triangles dégradés gris-foncé, z=-25
-  // (derrière hills). S'étendent sur 3×WIDTH au-delà de chaque borne.
+  // Murs monde : montagnes sombres au-delà des bornes ±WORLD_W. Cull par camera :
+  // ne dessine le côté left/right que si le viewport touche cette zone hors-monde.
   k.add([
     k.pos(0, 0),
     k.z(-25),
     {
       draw() {
         const groundY = GROUND_ROW * TILE;
+        const camX = (k.camPos?.().x) ?? WIDTH / 2;
+        const scale = (k.camScale?.().x) || 1;
+        const halfView = WIDTH / (2 * scale);
+        const viewMin = camX - halfView;
+        const viewMax = camX + halfView;
         for (const side of [-1, 1]) {
           const baseX = side * WORLD_W;
+          // Cull : côté gauche visible seulement si viewMin < -WORLD_W, droite si viewMax > WORLD_W
+          if (side < 0 && viewMin > -WORLD_W) continue;
+          if (side > 0 && viewMax < WORLD_W) continue;
           for (let i = 0; i < 6; i++) {
             const peakX = baseX + side * (80 + i * 180);
             const peakY = groundY - 180 - Math.abs(Math.sin(i * 1.7)) * 80;
@@ -146,7 +161,6 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
               color: k.rgb(shade, shade + 10, shade + 20),
               opacity: 0.95,
             });
-            // snow cap
             k.drawTriangle({
               p1: k.vec2(peakX - 18, peakY + 30),
               p2: k.vec2(peakX + 18, peakY + 30),
@@ -155,7 +169,6 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
               opacity: 0.9,
             });
           }
-          // fond plein au-delà du dernier pic
           const fillStart = baseX + side * (6 * 180 + 200);
           const fillEnd = side > 0 ? fillStart + 6000 : fillStart - 6000;
           k.drawRect({
@@ -174,42 +187,46 @@ export function createSceneDecor({ k, WIDTH, HEIGHT, TILE, GROUND_ROW }) {
     [230, 60, 60], [60, 180, 230], [255, 210, 63], [140, 220, 100],
     [230, 100, 200], [255, 140, 40], [120, 100, 230], [255, 255, 255],
   ];
-  // Drapeaux : 40 (10 → 40) répartis sur plage monde
+  // Drapeaux : 40 drapeaux en 1 seule entité draw (au lieu de 120 entités +
+  // k.onUpdate("flag-deco") appelé 40×/frame). Cull viewport ±1 écran.
   const FLAG_COUNT = 40;
+  const flagData = [];
   for (let i = 0; i < FLAG_COUNT; i++) {
     const fx = -WORLD_W + (i / FLAG_COUNT) * 2 * WORLD_W + 40 + Math.random() * 40;
     const poleH = 60 + Math.random() * 30;
     const poleY = GROUND_ROW * TILE - poleH;
-    k.add([
-      k.rect(3, poleH),
-      k.pos(fx, poleY),
-      k.color(k.rgb(80, 70, 60)),
-      k.z(-8),
-      "flag-pole",
-    ]);
-    k.add([
-      k.circle(3),
-      k.pos(fx + 1, poleY),
-      k.color(k.rgb(255, 210, 63)),
-      k.z(-7),
-      "flag-pole",
-    ]);
     const col = FLAG_COLORS[i % FLAG_COLORS.length];
-    k.add([
-      k.rect(22, 14),
-      k.pos(fx + 3, poleY + 2),
-      k.color(k.rgb(col[0], col[1], col[2])),
-      k.z(-7),
-      "flag-deco",
-      { baseX: fx + 3, baseY: poleY + 2, phase: Math.random() * 6 },
-    ]);
+    flagData.push({
+      fx, poleH, poleY,
+      color: k.rgb(col[0], col[1], col[2]),
+      phase: Math.random() * 6,
+    });
   }
-
-  k.onUpdate("flag-deco", (flag) => {
-    const w = Math.sin(k.time() * 3 + flag.phase);
-    flag.pos.x = flag.baseX + w * 1.5;
-    flag.pos.y = flag.baseY + Math.abs(w) * 1;
-  });
+  const POLE_COLOR = k.rgb(80, 70, 60);
+  const CAP_COLOR = k.rgb(255, 210, 63);
+  k.add([
+    k.pos(0, 0),
+    k.z(-8),
+    {
+      draw() {
+        const camX = (k.camPos?.().x) ?? WIDTH / 2;
+        const scale = (k.camScale?.().x) || 1;
+        const halfView = WIDTH / (2 * scale) + 40;
+        const minX = camX - halfView;
+        const maxX = camX + halfView;
+        const t = k.time();
+        for (const f of flagData) {
+          if (f.fx < minX || f.fx > maxX) continue;
+          k.drawRect({ pos: k.vec2(f.fx, f.poleY), width: 3, height: f.poleH, color: POLE_COLOR });
+          k.drawCircle({ pos: k.vec2(f.fx + 1, f.poleY), radius: 3, color: CAP_COLOR });
+          const w = Math.sin(t * 3 + f.phase);
+          const clothX = f.fx + 3 + w * 1.5;
+          const clothY = f.poleY + 2 + Math.abs(w) * 1;
+          k.drawRect({ pos: k.vec2(clothX, clothY), width: 22, height: 14, color: f.color });
+        }
+      },
+    },
+  ]);
 
   k.onUpdate("cloud", (c) => {
     c.pos.x += c.speed * k.dt();
