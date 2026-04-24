@@ -1,3 +1,96 @@
+# Handover — Milan Lava Park (2026-04-24 fin session N / P0.2 perf pass session 2)
+
+## ✅ Session N (P0.2 — 2 refactors ciblés caching/dedup)
+
+**Contexte** : après session M, user a testé `?perf=1` en browser réel →
+FPS avg 48 / p95 39 / p1 39. Gain réel vs 20-26 avant, mais pas encore au
+target 55+. Zone 40-54 → on applique 2 refactors P0.2.
+
+Observation clé user : `wheel 53` + `wheel-coin 42` = 95 entités dominent le
+top-6 tags. Chaque wheel-coin a son propre `onUpdate` qui appelait
+`k.get("wagon")` par frame → 42 scans scene-tree/frame = plancher CPU.
+
+Le plan initial prévoyait "offscreen bake hills+walls" mais après audit le
+culling viewport (session M) a déjà réduit hills à 8 drawSprite/frame et
+world-walls à 0 drawSprite la plupart du temps. ROI bake marginal.
+
+Pivot : cibler les hot-paths restants dans `onUpdate` et éliminer doubles.
+
+### `ac2097d` perf(tiles): cache `k.get("wagon")` 10Hz pour wheel-coin/fan/bomb
+
+Nouveau cache module-level `_cachedWagons` dans `createTileSystem`, refresh
+via `k.loop(0.1)`. Remplace 3 call-sites qui fire dans des onUpdate per-frame
+per-entity :
+
+- `wheel-coin` onUpdate (L412) — 42 instances × k.get/frame
+- `fan` tile onUpdate (L310) — N fans × k.get/frame
+- `bomb` tile onUpdate (L688) — bombs × k.get/frame
+
+Scan scene-tree coupé de ~45×/frame à 10×/s. ROI attendu **+5-10 FPS**.
+
+Call-sites non migrés (déclenchements ponctuels hors per-frame) laissés en
+`k.get("wagon")` : freeze variant (L652), wind variant (L655) — OK.
+
+### `dd641cc` perf(coin/overlays): dedup onUpdate("coin") + cache wagons scene-overlays
+
+2 optims cumulées :
+
+1. **Suppression doublon** `k.onUpdate("coin")` dans `particle-systems.js`
+   (L112). Le handler de `tiles.js` (L712) gère déjà anim bob + scale inner.
+   Le 2e écrasait bêtement `t.pos.y` avec une autre formule, forçait
+   `t.color=jaune` et `t.scale=1` chaque frame. Economise 1 sin/cos/coin
+   + mutations inutiles. Ajouté le check `magnetLocked` au handler restant.
+
+2. **Cache wagons** dans `scene-overlays.js` draw z=8 (leader-couronne).
+   `_cachedWagons` refresh 10Hz, élimine 1 scene-tree scan/frame sur draw
+   toujours actif.
+
+Bundle 106.70 → **106.43 KB gz** (-270 B, handler dupliqué supprimé).
+
+---
+
+## 🎯 Comment valider la session N (action user)
+
+1. Attendre déploiement CI (bundle `index-Ct6hTv2q.js` hash)
+2. Ouvrir `https://michaelchevallier.github.io/lava_game/?perf=1` machine cible
+3. Attendre splash → sandbox → attendre 10s idle
+4. Lire overlay top-right : **FPS avg devrait être 53-60** (contre 48 après M)
+5. Vérifier que `wheel-coin` n'est plus dominant ou n'impacte plus les FPS
+
+**Si FPS avg ≥ 55 stable** → P0 done, go P1.1 (combo-system.js).
+**Si FPS 48-54** → P0.3 session avec refactors structurels restants
+  (offscreen bake si besoin, low-end toggle, star pre-render).
+**Si FPS < 48** → le bottleneck n'était pas les k.get/wagons — investiguer
+  (Chrome DevTools Performance flame graph, voir si c'est draw calls,
+  physique KAPLAY, ou GC).
+
+---
+
+## 📋 Session O suivante — prompt suggéré
+
+```
+Lis .claude/HANDOVER.md section Session N + le plan complet dans
+/Users/mike/.claude/plans/je-dirais-3-puis-structured-sloth.md
+
+J'ai testé ?perf=1, FPS avg = XX.
+[Adapter selon résultat]
+
+Si FPS ≥ 55 → go P1.1 (combo-system.js, 6 combos faciles + popups + Codex
+  onglet Alchimie fork museum.js).
+Si FPS 48-54 → P0.3 : offscreen bake hills/walls, star pre-render, toggle
+  low-end Settings. Puis re-mesurer.
+Si FPS < 48 → flame graph Chrome DevTools pour identifier vrai bottleneck
+  avant refactor aveugle.
+
+Commits atomiques, handover propre, suggérer clear à la fin.
+```
+
+**⚠️ CLEAR CONTEXTE recommandé** avant session O.
+
+---
+
+## 🗂 Historique antérieur
+
 # Handover — Milan Lava Park (2026-04-24 fin session M / P0.1 perf pass session 1)
 
 ## ✅ Session M (P0.1 — perf harness + 4 quick wins)
