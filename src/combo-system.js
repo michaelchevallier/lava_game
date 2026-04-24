@@ -404,23 +404,26 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
     },
     apply({ k: _k, ctx, spawnBurst: sb }) {
       const { col, row, adjCol, adjRow } = ctx;
-      const cx1 = col * TILE + TILE / 2;
-      const cy1 = row * TILE + TILE / 2;
-      const cx2 = adjCol * TILE + TILE / 2;
-      const cy2 = adjRow * TILE + TILE / 2;
-      for (let i = 0; i < 10; i++) {
-        _k.add([
-          _k.circle(2 + Math.random() * 2),
-          _k.pos(cx1 + (Math.random() - 0.5) * TILE, cy1),
-          _k.color(_k.rgb(180, 180, 200)),
-          _k.opacity(0.8),
-          _k.lifespan(0.8, { fade: 0.5 }),
-          _k.z(4),
-          "steam",
-          { vy: -50 - Math.random() * 50, vx: (Math.random() - 0.5) * 30 },
-        ]);
+      for (const [c, r] of [[col, row], [adjCol, adjRow]]) {
+        const cx = c * TILE + TILE / 2;
+        const cy = r * TILE + TILE / 2;
+        for (let i = 0; i < 8; i++) {
+          _k.add([
+            _k.circle(2 + Math.random() * 2),
+            _k.pos(cx + (Math.random() - 0.5) * TILE, cy),
+            _k.color(_k.rgb(210, 230, 240)),
+            _k.opacity(0.85),
+            _k.lifespan(1, { fade: 0.6 }),
+            _k.z(6),
+            "steam",
+            { vy: -60 - Math.random() * 60, vx: (Math.random() - 0.5) * 40 },
+          ]);
+        }
       }
-      sb(cx2, cy2, [80, 80, 120], 8);
+      placeTile?.(col, row, "ground");
+      placeTile?.(adjCol, adjRow, "ground");
+      window.__juice?.dirShake?.(0, 1, 4, 0.12);
+      sb(col * TILE + TILE / 2, row * TILE + TILE / 2, [80, 80, 120], 6);
     },
   });
 
