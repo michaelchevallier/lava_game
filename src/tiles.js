@@ -733,10 +733,30 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
 
   k.onUpdate("coin", (t) => {
     if (t.magnetLocked) return;
-    t.pos.y = t.baseY + Math.sin(k.time() * 2.5 + t.coinPhase) * 3;
+    const lift = t._lifted ? (t._liftHeight || 0) : 0;
+    const amp = t._lifted ? 8 : 3;
+    t.pos.y = t.baseY - lift + Math.sin(k.time() * 2.5 + t.coinPhase) * amp;
     if (t.extras && t.extras[0]) {
       t.extras[0].pos.y = t.pos.y;
       t.extras[0].width = 2 + Math.abs(Math.cos(k.time() * 4 + t.coinPhase)) * 5;
+    }
+    if (t._lifted && t._nextSpawnAt && k.time() > t._nextSpawnAt) {
+      t._nextSpawnAt = k.time() + 6;
+      const pc = window.__entityCounts?.particle || 0;
+      if (pc < 240) {
+        const dc = k.add([
+          k.circle(7),
+          k.pos(t.pos.x, t.pos.y - 40),
+          k.anchor("center"),
+          k.color(k.rgb(255, 210, 50)),
+          k.outline(2, k.rgb(160, 110, 0)),
+          k.opacity(1),
+          k.lifespan(2.5, { fade: 0.5 }),
+          k.z(6),
+          "wheel-coin",
+          { vy: 40 + Math.random() * 20, vx: (Math.random() - 0.5) * 30 },
+        ]);
+      }
     }
   });
 

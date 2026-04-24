@@ -508,7 +508,8 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
       const coinTile = tm.get(gridKey(coinCol, coinRow));
       if (coinTile) {
         coinTile._lifted = true;
-        coinTile._liftBonus = 30;
+        coinTile._liftHeight = 2 * TILE;
+        coinTile._nextSpawnAt = _k.time() + 6;
       }
       const cx = coinCol * TILE + TILE / 2;
       const cy = coinRow * TILE + TILE / 2;
@@ -519,7 +520,7 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
           _k.pos(cx + Math.cos(a) * 8, cy + Math.sin(a) * 8),
           _k.color(_k.rgb(140, 220, 255)),
           _k.opacity(0.9),
-          _k.lifespan(0.6, { fade: 0.4 }),
+          _k.lifespan(0.8, { fade: 0.5 }),
           _k.z(4),
           "fan-puff",
           { vy: -80 - Math.random() * 40, vx: Math.cos(a) * 30 },
