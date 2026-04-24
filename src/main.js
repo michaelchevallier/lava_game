@@ -283,6 +283,20 @@ k.scene("game", () => {
   entityCounts.particle = 0;
   k.onAdd("particle", () => { entityCounts.particle++; });
   k.onDestroy("particle", () => { entityCounts.particle--; });
+
+  // Auto-cull viewport : KAPLAY skip draw() quand hidden=true. Le composant
+  // offscreen({ hide: true }) bascule hidden automatiquement sur exitView /
+  // enterView. Applique aux tags à forte population — gros gain draw rate
+  // avec camera follow et mondes étendus. Collisions/area() non impactées.
+  const OFFSCREEN_HIDE_TAGS = [
+    "tile", "wagon-part", "passenger", "visitor", "crowd",
+    "duck", "duck-part", "wheel-coin", "skull-target", "skull-part",
+  ];
+  for (const tag of OFFSCREEN_HIDE_TAGS) {
+    k.onAdd(tag, (e) => {
+      try { e.use(k.offscreen({ hide: true, distance: 300 })); } catch {}
+    });
+  }
   // Apply persisted zoom (or default 0.5 = vue large)
   try { k.camScale(gameState.zoom || 0.5); } catch (e) {}
   let _playerConfigs = null;
