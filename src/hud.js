@@ -486,6 +486,17 @@ export function createHUD({
   }
 
   function setup() {
+    // FPS sample via k.onUpdate (pas draw) : cohérence avec perf-harness
+    // qui utilise la même source. Evite divergence draw-rate vs update-rate.
+    k.onUpdate(() => {
+      const now = performance.now();
+      fpsBuffer.push(now);
+      while (fpsBuffer.length && fpsBuffer[0] < now - 1000) fpsBuffer.shift();
+      if (now - fpsState.lastSec > 250) {
+        fpsState.value = fpsBuffer.length;
+        fpsState.lastSec = now;
+      }
+    });
     // Wrap the HUD in a fixed-camera entity so it doesn't scale/translate
     // with k.camScale / k.camPos (zoom + future camera moves).
     k.add([
@@ -511,12 +522,6 @@ export function createHUD({
     const selectedTool = getCurrentTool();
 
       const now = performance.now();
-      fpsBuffer.push(now);
-      while (fpsBuffer.length && fpsBuffer[0] < now - 1000) fpsBuffer.shift();
-      if (now - fpsState.lastSec > 250) {
-        fpsState.value = fpsBuffer.length;
-        fpsState.lastSec = now;
-      }
       if (now - entityState.stamp > 500) {
         entityState.count = k.get("*").length;
         entityState.stamp = now;
