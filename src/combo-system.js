@@ -628,8 +628,10 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
       }
       return null;
     },
-    apply({ k: _k, ctx, spawnBurst: sb }) {
+    apply({ k: _k, ctx, tileMap: tm, spawnBurst: sb }) {
       const { loopCol, loopRow } = ctx;
+      const loopTile = tm.get(gridKey(loopCol, loopRow));
+      if (loopTile) loopTile._backflipArmed = true;
       const cx = loopCol * TILE + TILE / 2;
       const cy = loopRow * TILE + TILE / 2;
       const colors = [[255, 80, 80], [80, 255, 80], [80, 80, 255], [255, 255, 80]];

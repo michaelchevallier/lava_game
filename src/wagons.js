@@ -251,6 +251,15 @@ export function createWagonSystem({
           audio.combo();
           window.__juice?.dirShake(0, -1, 6, 0.2);
           window.__campaign?.progress?.("loop"); window.__contract?.progress?.("loop");
+          if (wagon._backflipPending) {
+            wagon._backflipPending = false;
+            gameState.scoreMultiplier = 3;
+            gameState.scoreMultiplierUntil = k.time() + 4;
+            showPopup(wagon.pos.x + 30, wagon.pos.y - 50, "BACKFLIP x3 !", k.rgb(150, 255, 150), 26);
+            audio.combo();
+            window.__juice?.dirShake(0, -1, 10, 0.25);
+            window.__spectres?.unlock?.("backflip");
+          }
           for (const p of (wagon.passengerEntities || [])) {
             if (p.exists()) p.angle = 0;
           }

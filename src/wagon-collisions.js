@@ -281,6 +281,11 @@ export function attachWagonCollisions({
     const fromLeft = wagon.pos.x + 30 < loopTile.loopCx;
     wagon.loopDir = fromLeft ? 1 : -1;
     wagon.loopExitX = fromLeft ? loopTile.loopCx + loopTile.loopRx + 30 : loopTile.loopCx - loopTile.loopRx - 30 - 60;
+    if (loopTile._backflipArmed) {
+      loopTile._backflipArmed = false;
+      wagon._backflipPending = true;
+      wagon.loopDir = -wagon.loopDir;
+    }
   });
 
   wagon.onCollide("tunnel", (tunnel) => {
