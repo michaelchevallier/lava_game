@@ -1,4 +1,4 @@
-import { TILE, gridKey } from "./constants.js";
+import { TILE, HEIGHT, gridKey } from "./constants.js";
 
 export function createComboSystem({ k, tileMap, gameState, audio, showPopup, showComboPopup, spectres, save, persistSave, placeTile }) {
   const DEFS = [];
@@ -44,11 +44,14 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
       save.combos |= (1 << def.bitIndex);
       persistSave(save);
       showComboPopup(`DECOUVERT ! ${def.name}`, def.color, def.score, { fanfare: true });
+      audio.gold?.();
+      const cp = k.camPos();
+      spawnBurst(cp.x, cp.y - HEIGHT / 4, def.color, 12);
     } else {
       showComboPopup(def.name, def.color, def.score);
+      audio.combo?.();
     }
     if (def.score > 0) gameState.score += def.score;
-    audio.combo?.();
     def.apply({ k, ctx, gameState, tileMap, audio, showPopup, spectres, def, spawnBurst });
   }
 
