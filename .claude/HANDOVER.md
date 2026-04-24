@@ -1,4 +1,45 @@
-# Handover — Milan Lava Park (2026-04-24 fin session R / P0.6 batch particles)
+# Handover — Milan Lava Park (2026-04-24 fin session R / P0.6 batch particles + QA live)
+
+## ✅ QA globale fin session R (user n'a pas testé → Claude a testé live via MCP)
+
+**Verdict** : **GO pour P1.1 combo-system**. Aucune régression détectée.
+
+### Protocole exécuté
+
+1. Navigate `?perf=1` → splash OK
+2. Clic `JOUER` (bouton HTML) → scene `game` mount OK (255 entités boot)
+3. Key `d` down 3s → 2 wagons, 310 ents, player mobile
+4. 4 snapshots x 15s (0s, 15s, 30s, 45s) avec key `d` held : totaux 307 / 292 / 304 / 310 → **pas de fuite**
+5. Force spawn balloons×10 + `__bossGoret.__forceSpawn()` → 326 ents, 10 balloons
+6. FPS mesure rAF : 41 fps (boot) → 35 fps (à T+50s) — **cap environnemental MCP** (tab non-focus, rAF throttlé). Overlay perf intégré reste dispo mais ne réflète pas machine user.
+7. Console : 0 error, 0 warning matching `error|TypeError|Cannot|undefined|NaN`
+
+### Entity counts clés (stabilité 45s)
+
+| Tag | t=0 | t=15s | t=30s | t=45s |
+|---|---|---|---|---|
+| `total` | 307 | 292 | 304 | 310 |
+| `particle-grav` | 0 | 0 | 0 | 0 |
+| `particle` | 6 | 1 | 3 | 4 |
+| `wheel-coin` | 0 | 0 | 0 | 0 |
+| `wagon` | 2 | 1 | 2 | 2 |
+| `visitor` | 3 | 3 | 3 | 3 |
+| `balloon` | 0 | 4 | 0 | 0 |
+
+**Observation** : Tags batched (wheel-coin, skull, dart, rain-coin, trampoline, fan, particle-grav) restent à 0 idle — attendu, ces systèmes sont event-driven. Les handlers globaux sont présents (visibles via tags dans `__getStats()`) — aucun crash au boot alors que P0.5/P0.6 ont migré 9 onUpdate per-entity → global. Refactor considéré stable.
+
+### ⚠️ Limites de cette QA
+
+- **Pas de test visuel** des particles (spin bones/feather). Détection d'un bug de rotation nécessite œil humain ou capture GIF — non faite.
+- **Pas de trigger skull stand / wheel** (besoin tile placée + proximité wagon). Je n'ai pas reproduit les conditions exactes de spawn pour `wheel-coin`, `skull`, `dart`.
+- **FPS non fiable** (MCP non-focus throttling). `?perf=1` overlay en Chrome focus réel restera la seule mesure valide machine-user.
+- **Pas de test 2P** (F2 race, split-screen Pika J/L/I/O).
+
+### Recommandation
+
+**Session S peut partir sur P1.1 combo-system** (spec HANDOVER ligne ~800+ "Combo manager"). Si user ressent gamefeel dégradé en vrai (particles statiques, bones ne spinnent pas) : lancer `bug-fixer` avec repro précise. Sinon les batched refactors tiennent.
+
+---
 
 ## ✅ Session R (P0.6 — batch feather/bone/jackpot + diagnostic MCP)
 
