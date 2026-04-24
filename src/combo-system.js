@@ -556,15 +556,54 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
       if (!hasTramp || !hasFan) return null;
       return { col, row };
     },
-    apply({ k: _k, ctx, spawnBurst: sb }) {
+    apply({ k: _k, ctx, tileMap: tm, spawnBurst: sb }) {
       const { col, row } = ctx;
       const cx = col * TILE + TILE / 2;
       const cy = row * TILE + TILE / 2;
-      for (let i = 0; i < 3; i++) {
-        _k.wait(i * 0.12, () => {
-          sb(cx + (Math.random() - 0.5) * TILE * 2, cy - i * 20, [255, 200, 60], 6);
-        });
-      }
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      const landCol = col + dir * (6 + Math.floor(Math.random() * 5));
+      const landRow = row;
+      const landX = landCol * TILE + TILE / 2;
+      const flightTime = 1.2;
+      const vx0 = (landX - cx) / flightTime;
+      const vy0 = -260;
+      const GRAV = (2 * 260) / flightTime;
+      placeTile?.(col, row, "erase");
+      const proj = _k.add([
+        _k.circle(9),
+        _k.pos(cx, cy),
+        _k.anchor("center"),
+        _k.color(_k.rgb(255, 210, 50)),
+        _k.outline(2, _k.rgb(160, 110, 0)),
+        _k.opacity(1),
+        _k.z(10),
+        "catapult-coin",
+        { vx: vx0, vy: vy0, tStart: _k.time() },
+      ]);
+      proj.onUpdate(() => {
+        proj.vy += GRAV * _k.dt();
+        proj.pos.x += proj.vx * _k.dt();
+        proj.pos.y += proj.vy * _k.dt();
+        if (Math.random() < 0.6) {
+          _k.add([
+            _k.circle(2 + Math.random() * 2),
+            _k.pos(proj.pos.x, proj.pos.y),
+            _k.color(_k.rgb(255, 220, 80)),
+            _k.opacity(0.85),
+            _k.lifespan(0.5, { fade: 0.3 }),
+            _k.z(9),
+            "particle",
+          ]);
+        }
+        if (_k.time() - proj.tStart >= flightTime) {
+          _k.destroy(proj);
+          if (!tm.get(gridKey(landCol, landRow))) {
+            placeTile?.(landCol, landRow, "coin");
+          }
+          sb(landX, landRow * TILE + TILE / 2, [255, 220, 80], 12);
+          window.__juice?.dirShake(0, 1, 6, 0.14);
+        }
+      });
     },
   });
 
