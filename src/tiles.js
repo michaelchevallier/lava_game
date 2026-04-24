@@ -758,6 +758,16 @@ export function createTileSystem({ k, tileMap, gameState, audio, entityCounts, s
             { vx: (Math.random() - 0.5) * 8, vy: -22 - Math.random() * 18 },
           ]);
         }
+        if (t._fissureGlowUntil && t._fissureGlowUntil > k.time() && pCount < 270) {
+          k.add([
+            k.rect(TILE, 3),
+            k.pos(t.pos.x, t.pos.y - 2),
+            k.color(k.rgb(255, 60, 40)),
+            k.opacity(0.4 + 0.4 * Math.sin(k.time() * 12)),
+            k.lifespan(0.2, { fade: 0.1 }),
+            k.z(8),
+          ]);
+        }
       } else if (t.tileType === "water" && t.cascadeActive) {
         if (Math.random() < 0.6) {
           k.add([

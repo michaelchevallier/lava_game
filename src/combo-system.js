@@ -448,16 +448,32 @@ export function createComboSystem({ k, tileMap, gameState, audio, showPopup, sho
       if (len < 4) return null;
       return { startCol: start, row, len };
     },
-    apply({ k: _k, ctx, gameState: gs, spawnBurst: sb }) {
+    apply({ k: _k, ctx, gameState: gs, spawnBurst: sb, tileMap: tm }) {
       const { startCol, row, len } = ctx;
       const wagons = _k.get("wagon");
       for (const w of wagons) {
         const wRow = Math.floor((w.pos.y + 40) / TILE);
         if (wRow === row) w.slideUntil = (_k.time() || 0) + 0.6;
       }
-      window.__juice?.dirShake(0, 1, 8, 0.1);
+      window.__juice?.dirShake(0, 1, 10, 0.14);
       for (let i = 0; i < len; i++) {
-        sb((startCol + i) * TILE + TILE / 2, row * TILE + TILE / 2, [255, 120, 40], 4);
+        const cx = (startCol + i) * TILE + TILE / 2;
+        const cy = row * TILE + TILE / 2;
+        _k.add([
+          _k.rect(8, 10),
+          _k.pos(cx, cy),
+          _k.anchor("center"),
+          _k.color(_k.rgb(230, 230, 210)),
+          _k.outline(1, _k.rgb(60, 30, 30)),
+          _k.opacity(1),
+          _k.lifespan(1.2, { fade: 0.4 }),
+          _k.z(14),
+          "particle-grav",
+          { vx: (Math.random() - 0.5) * 120, vy: -180 - Math.random() * 80, grav: 500 },
+        ]);
+        const lavaT = tm.get(gridKey(startCol + i, row));
+        if (lavaT) lavaT._fissureGlowUntil = _k.time() + 2;
+        sb(cx, cy, [255, 120, 40], 4);
       }
     },
   });
