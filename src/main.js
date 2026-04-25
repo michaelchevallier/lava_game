@@ -35,6 +35,7 @@ import { createGCSystem } from "./gc.js";
 import { createVisitorQuestSystem } from "./visitor-quests.js";
 import { createCoinThiefSystem } from "./coin-thief.js";
 import { createWeatherSystem } from "./weather.js";
+import { createVisitorRace } from "./visitor-race.js";
 import { createMinigames } from "./minigames.js";
 import { createCelebrationSystem } from "./celebration.js";
 import { createRaceSystem } from "./race.js";
@@ -1145,6 +1146,7 @@ k.scene("game", () => {
   if (cfg.enableCoinThief) window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableVisitorQuests) window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
   if (cfg.enableWeather) window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
+  if (cfg.enableWeather) window.__visitorRace = createVisitorRace({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, WORLD_WIDTH, GROUND_ROW, TILE });
   if (cfg.enableBalloons) window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableMinigames) window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
 
