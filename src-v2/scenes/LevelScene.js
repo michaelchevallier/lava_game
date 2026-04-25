@@ -8,7 +8,7 @@ import { MagnetBomb } from "../entities/MagnetBomb.js";
 import { Catapult } from "../entities/Catapult.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
-import level11 from "../data/levels/world1-1.json";
+import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import {
   GRID,
   cellToPixel,
@@ -26,6 +26,11 @@ export class LevelScene extends Phaser.Scene {
     super("LevelScene");
   }
 
+  init(data) {
+    const wantedId = data?.levelId || getFirstLevelId();
+    this.level = getLevel(wantedId) || getLevel(getFirstLevelId());
+  }
+
   create() {
     const { width, height } = this.scale;
 
@@ -36,8 +41,6 @@ export class LevelScene extends Phaser.Scene {
     this.gridState = createGridState();
     this.drawGrid();
     this.drawEntryExit();
-
-    this.level = level11;
     this.escaped = 0;
     this.killed = 0;
     this.coins = this.level.startCoins ?? 100;
@@ -299,46 +302,18 @@ export class LevelScene extends Phaser.Scene {
 
   endLevel(win) {
     this.gameOver = true;
-    const { width, height } = this.scale;
-    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.65).setDepth(100);
-    const title = this.add.text(width / 2, height / 2 - 80, win ? "VICTOIRE !" : "DÉFAITE", {
-      fontFamily: "system-ui",
-      fontSize: "72px",
-      fontStyle: "bold",
-      color: win ? "#90ff90" : "#ff8080",
-      stroke: "#000",
-      strokeThickness: 8,
-    }).setOrigin(0.5).setDepth(101);
-    let starsCount = 0;
-    if (win) {
-      starsCount = computeStars(this.level, this.escaped);
-      const starText = "★".repeat(starsCount) + "☆".repeat(3 - starsCount);
-      this.add.text(width / 2, height / 2, starText, {
-        fontFamily: "system-ui",
-        fontSize: "64px",
-        color: "#ffd23f",
-        stroke: "#000",
-        strokeThickness: 6,
-      }).setOrigin(0.5).setDepth(101);
-    }
-    const stats = this.add.text(
-      width / 2, height / 2 + 80,
-      "Tués : " + this.killed + "  •  Échappés : " + this.escaped + "  •  Pièces : " + this.coins,
-      {
-        fontFamily: "system-ui",
-        fontSize: "20px",
-        color: "#fff",
-      },
-    ).setOrigin(0.5).setDepth(101);
-    const retry = this.add.text(width / 2, height / 2 + 140, "[ R ] Rejouer", {
-      fontFamily: "system-ui",
-      fontSize: "22px",
-      color: "#ffd23f",
-      stroke: "#000",
-      strokeThickness: 4,
-    }).setOrigin(0.5).setDepth(101);
-    this.input.keyboard.once("keydown-R", () => this.scene.restart());
-    this.input.once("pointerdown", () => this.scene.restart());
+    const stars = win ? computeStars(this.level, this.escaped) : 0;
+    this.time.delayedCall(800, () => {
+      this.scene.start("LevelResultScene", {
+        win,
+        stars,
+        killed: this.killed,
+        escaped: this.escaped,
+        coins: this.coins,
+        levelId: this.level.id,
+        levelName: this.level.name,
+      });
+    });
   }
 
   checkProjectileHits() {

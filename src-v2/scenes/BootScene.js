@@ -57,12 +57,12 @@ export class BootScene extends Phaser.Scene {
       ease: "Sine.inOut",
     });
 
-    this.add.text(width / 2, height - 40, "Démarrage du niveau dans 2s…", {
+    this.add.text(width / 2, height - 40, "Chargement de la campagne…", {
       fontFamily: "system-ui, monospace",
       fontSize: "14px",
       color: "#cccccc",
     }).setOrigin(0.5);
 
-    this.time.delayedCall(2000, () => this.scene.start("LevelScene"));
+    this.time.delayedCall(1500, () => this.scene.start("CampaignMenuScene"));
   }
 }
