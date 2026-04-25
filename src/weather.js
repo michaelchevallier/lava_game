@@ -3,7 +3,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
   let warning = null;
   let active = null;
 
-  const TYPES = ["lightning", "coinrain", "wind", "magstorm"];
+  const TYPES = ["lightning", "coinrain", "wind", "magstorm", "winter"];
 
   function startWarning() {
     const type = TYPES[Math.floor(Math.random() * TYPES.length)];
@@ -14,6 +14,7 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       coinrain: "PLUIE D'OR DANS 3s !",
       wind: "VENT VIOLENT DANS 3s !",
       magstorm: "TEMPÊTE MAGNÉTIQUE DANS 3s !",
+      winter: "BLIZZARD DANS 3s !",
     };
     showPopup(WIDTH / 2, 100, labels[type], k.rgb(255, 200, 100), 22);
   }
@@ -43,6 +44,13 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       audio.combo?.();
       audio.crack?.();
       window.__juice?.dirShake?.(0, 1, 6, 0.3);
+    } else if (type === "winter") {
+      const DUR = 20;
+      active = { type, until: k.time() + DUR };
+      gameState.scoreMultiplier = 1.5;
+      gameState.scoreMultiplierUntil = k.time() + DUR;
+      audio.crack?.();
+      audio.combo?.();
     }
   }
 
@@ -142,6 +150,9 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       if (active.type === "magstorm") {
         gameState.score += 50;
         showPopup(WIDTH / 2, 100, "TEMPÊTE PASSÉE +50", k.rgb(180, 120, 255), 24);
+      } else if (active.type === "winter") {
+        gameState.score += 75;
+        showPopup(WIDTH / 2, 100, "BLIZZARD PASSE +75", k.rgb(200, 230, 255), 24);
       }
       active = null;
     }
@@ -158,6 +169,11 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
       }
       for (const p of k.get("player")) {
         p.pos.x += 60 * active.dir * 0.1 * k.dt() * 10;
+      }
+    } else if (active?.type === "winter") {
+      for (const w of k.get("wagon")) {
+        w.glideUntil = k.time() + 0.5;
+        w.glideBonus = 30;
       }
     }
     if (!warning && !active && t > nextWeatherAt) {
@@ -232,6 +248,29 @@ export function createWeatherSystem({ k, gameState, audio, showPopup, WIDTH, HEI
               height: 8,
               color: k.rgb(220, 60, 60),
               opacity: 0.8,
+            });
+          }
+        }
+        if (active?.type === "winter") {
+          const t = k.time();
+          const pulse = 0.14 + 0.06 * Math.sin(t * 3);
+          k.drawRect({
+            pos: k.vec2(0, 0),
+            width: WIDTH,
+            height: HEIGHT,
+            color: k.rgb(200, 230, 255),
+            opacity: pulse,
+          });
+          for (let i = 0; i < 50; i++) {
+            const baseX = (i * 67 + Math.sin(t * 1.2 + i) * 30) % WIDTH;
+            const baseY = ((i * 41 + t * (90 + (i % 4) * 15)) % HEIGHT);
+            const size = 2 + (i % 3);
+            k.drawRect({
+              pos: k.vec2(baseX, baseY),
+              width: size,
+              height: size,
+              color: k.rgb(245, 250, 255),
+              opacity: 0.85,
             });
           }
         }
