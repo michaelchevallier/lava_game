@@ -2,6 +2,8 @@ import * as Phaser from "phaser";
 import { Visitor } from "../entities/Visitor.js";
 import { LavaTower } from "../entities/LavaTower.js";
 import { CoinGenerator } from "../entities/CoinGenerator.js";
+import { WaterBlock } from "../entities/WaterBlock.js";
+import { Fan } from "../entities/Fan.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import {
   GRID,
@@ -80,10 +82,23 @@ export class LevelScene extends Phaser.Scene {
       this.refreshCoinsText();
     });
 
-    this.events.on("update", () => {
+    this.events.on("update", (time, delta) => {
       this.visitors = this.visitors.filter((v) => v.active);
       this.projectiles = this.projectiles.filter((p) => p.active);
+      this.towers = this.towers.filter((t) => t.active);
       this.checkProjectileHits();
+      this.updateBlockers(time, delta);
+    });
+
+    this.events.on("tile-destroyed", (tile) => {
+      for (let r = 0; r < this.gridState.length; r++) {
+        for (let c = 0; c < this.gridState[r].length; c++) {
+          if (this.gridState[r][c] === tile) {
+            this.gridState[r][c] = null;
+            return;
+          }
+        }
+      }
     });
 
     this.placementDef = null;
@@ -191,12 +206,15 @@ export class LevelScene extends Phaser.Scene {
     let entity = null;
     if (this.placementDef.id === "lava") {
       entity = new LavaTower(this, x, y, { fireRate: 1500, damage: 1 });
-      this.towers.push(entity);
     } else if (this.placementDef.id === "coin") {
       entity = new CoinGenerator(this, x, y, { amount: 25, intervalMs: 8000 });
-      this.towers.push(entity);
+    } else if (this.placementDef.id === "water") {
+      entity = new WaterBlock(this, x, y, { hp: 8 });
+    } else if (this.placementDef.id === "fan") {
+      entity = new Fan(this, x, y);
     }
     if (!entity) return;
+    this.towers.push(entity);
     setCell(this.gridState, cell.col, cell.row, entity);
     this.coins -= this.placementDef.cost;
     this.refreshCoinsText();
@@ -206,6 +224,25 @@ export class LevelScene extends Phaser.Scene {
 
   refreshCoinsText() {
     this.coinsText.setText("¢ " + this.coins);
+  }
+
+  updateBlockers(time, delta) {
+    const dtSec = delta / 1000;
+    for (const v of this.visitors) {
+      if (!v.active || v._dying) continue;
+      const cellAhead = pixelToCell(v.x - 35, v.y);
+      let blocker = null;
+      if (cellAhead) {
+        const t = this.gridState[cellAhead.row][cellAhead.col];
+        if (t && t.isBlocking && !t._dying) blocker = t;
+      }
+      if (blocker) {
+        v.blocked = true;
+        if (typeof blocker.takeDamage === "function") blocker.takeDamage(0.6 * dtSec);
+      } else {
+        v.blocked = false;
+      }
+    }
   }
 
   spawnVisitor(row) {

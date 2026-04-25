@@ -7,7 +7,9 @@ export class Visitor extends Phaser.GameObjects.Container {
     this.hp = opts.hp ?? 1;
     this.maxHp = this.hp;
     this.speed = opts.speed ?? 60;
+    this.baseSpeed = this.speed;
     this._dying = false;
+    this.blocked = false;
 
     const body = scene.add.rectangle(0, 0, 32, 48, 0x6cce5c).setStrokeStyle(2, 0x244a1a);
     const head = scene.add.circle(0, -32, 12, 0xffd2a8).setStrokeStyle(2, 0x6b4226);
@@ -28,6 +30,7 @@ export class Visitor extends Phaser.GameObjects.Container {
 
   tick(time, delta) {
     if (!this.scene || this._dying) return;
+    if (this.blocked) return;
     const dx = this.speed * (delta / 1000);
     this.x -= dx;
     if (this.x < -50) {

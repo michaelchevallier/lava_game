@@ -1,8 +1,10 @@
 import * as Phaser from "phaser";
 
 export const TILE_DEFS = [
-  { id: "coin", label: "Coin Generator", cost: 50, color: 0xffd23f, accent: 0xc88a00 },
+  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00 },
   { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066 },
+  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a },
+  { id: "fan", label: "Fan", cost: 100, color: 0xddeeff, accent: 0x666 },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
