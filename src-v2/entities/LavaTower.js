@@ -27,6 +27,7 @@ export class LavaTower extends Phaser.GameObjects.Container {
   }
 
   tick(time) {
+    if (!this.scene) return;
     const target = this.findTarget();
     if (!target) return;
     if (time - this.lastShotAt < this.fireRate) return;

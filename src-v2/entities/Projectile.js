@@ -26,6 +26,7 @@ export class Projectile extends Phaser.GameObjects.Container {
   }
 
   tick() {
+    if (!this.scene || this._dead) return;
     if (this.x > this.scene.scale.width + 40) this.kill();
   }
 

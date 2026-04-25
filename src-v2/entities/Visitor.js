@@ -27,7 +27,7 @@ export class Visitor extends Phaser.GameObjects.Container {
   }
 
   tick(time, delta) {
-    if (this._dying) return;
+    if (!this.scene || this._dying) return;
     const dx = this.speed * (delta / 1000);
     this.x -= dx;
     if (this.x < -50) {
