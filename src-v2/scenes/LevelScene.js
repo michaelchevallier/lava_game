@@ -248,10 +248,12 @@ export class LevelScene extends Phaser.Scene {
       this.ghost = null;
     }
     if (def) {
-      this.ghost = this.add.rectangle(0, 0, 60, 60, def.color, 0.45)
-        .setStrokeStyle(2, def.accent)
+      this.ghost = this.add.rectangle(0, 0, 84, 84, def.color, 0.4)
+        .setStrokeStyle(3, def.accent)
         .setVisible(false)
         .setDepth(40);
+      const p = this.input?.activePointer;
+      if (p) this.updateGhost(p);
     }
   }
 
@@ -370,6 +372,7 @@ export class LevelScene extends Phaser.Scene {
         levelId: this.level.id,
         levelName: this.level.name,
       });
+      this.scene.stop();
     });
   }
 

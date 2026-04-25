@@ -30,7 +30,7 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
     TILE_DEFS.forEach((def, i) => {
       const x = startX + i * (btnW + 12) + btnW / 2;
-      const btn = this.makeButton(def, x, h / 2, btnW, btnH);
+      const btn = this.makeButton(def, x, h / 2, btnW, btnH, i + 1);
       this.buttons.push(btn);
       this.add(btn);
     });
@@ -40,15 +40,34 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
     this._refreshHandler = () => this.refreshAfford();
     scene.events.on("update", this._refreshHandler);
+
+    this._keyHandler = (e) => {
+      if (!this.scene || !this.active) return;
+      const m = e.code && e.code.match(/^Digit([1-6])$/);
+      if (m) {
+        const idx = parseInt(m[1], 10) - 1;
+        const def = TILE_DEFS[idx];
+        if (def) {
+          const btn = this.buttons.find((b) => b._defId === def.id);
+          if (btn && btn._affordable) this.select(def.id);
+        }
+        return;
+      }
+      if (e.code === "Escape") this.clearSelection();
+    };
+    scene.input.keyboard.on("keydown", this._keyHandler);
+
     scene.events.once("shutdown", () => {
       scene.events.off("update", this._refreshHandler);
+      scene.input.keyboard.off("keydown", this._keyHandler);
     });
     scene.events.once("destroy", () => {
       scene.events.off("update", this._refreshHandler);
+      scene.input.keyboard.off("keydown", this._keyHandler);
     });
   }
 
-  makeButton(def, x, y, w, h) {
+  makeButton(def, x, y, w, h, shortcut) {
     const c = this.scene.add.container(x, y);
 
     const back = this.scene.add.rectangle(0, 0, w, h, 0x222840).setStrokeStyle(2, 0x4a4a6a);
@@ -64,8 +83,15 @@ export class Toolbar extends Phaser.GameObjects.Container {
       fontStyle: "bold",
       color: "#ffd23f",
     }).setOrigin(0.5);
+    const shortcutBg = this.scene.add.rectangle(w / 2 - 12, -h / 2 + 12, 18, 18, 0x000, 0.55).setStrokeStyle(1, 0xffd23f);
+    const shortcutText = this.scene.add.text(w / 2 - 12, -h / 2 + 12, String(shortcut), {
+      fontFamily: "system-ui",
+      fontSize: "13px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+    }).setOrigin(0.5);
 
-    c.add([back, icon, label, costLabel]);
+    c.add([back, icon, label, costLabel, shortcutBg, shortcutText]);
     c.setSize(w, h);
     c.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
     c._defId = def.id;

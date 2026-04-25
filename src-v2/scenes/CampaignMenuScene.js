@@ -127,7 +127,11 @@ export class CampaignMenuScene extends Phaser.Scene {
 
         cell.on("pointerover", () => { cell.setFillStyle(done ? 0x3a6a3a : 0x33405a); Audio.ui(); });
         cell.on("pointerout", () => cell.setFillStyle(done ? 0x2a4a2a : 0x222840));
-        cell.on("pointerdown", () => { Audio.click(); this.scene.start("LevelScene", { levelId }); });
+        cell.on("pointerdown", () => {
+          Audio.click();
+          this.scene.start("LevelScene", { levelId });
+          this.scene.stop();
+        });
       }
 
       x += cellW + gap;

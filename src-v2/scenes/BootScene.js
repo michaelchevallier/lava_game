@@ -63,6 +63,9 @@ export class BootScene extends Phaser.Scene {
       color: "#cccccc",
     }).setOrigin(0.5);
 
-    this.time.delayedCall(1500, () => this.scene.start("CampaignMenuScene"));
+    this.time.delayedCall(1500, () => {
+      this.scene.start("CampaignMenuScene");
+      this.scene.stop();
+    });
   }
 }

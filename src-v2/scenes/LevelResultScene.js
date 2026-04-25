@@ -90,11 +90,11 @@ export class LevelResultScene extends Phaser.Scene {
     if (win) {
       const next = getNextLevelId(levelId);
       if (next) {
-        buttons.push({ label: "[ N ] Niveau suivant", color: 0x4ed8a3, key: "N", action: () => this.scene.start("LevelScene", { levelId: next }) });
+        buttons.push({ label: "[ N ] Niveau suivant", color: 0x4ed8a3, key: "N", action: () => { this.scene.start("LevelScene", { levelId: next }); this.scene.stop(); } });
       }
     }
-    buttons.push({ label: "[ R ] Rejouer", color: 0xffd23f, key: "R", action: () => this.scene.start("LevelScene", { levelId }) });
-    buttons.push({ label: "[ M ] Menu", color: 0xddeeff, key: "M", action: () => this.scene.start("CampaignMenuScene") });
+    buttons.push({ label: "[ R ] Rejouer", color: 0xffd23f, key: "R", action: () => { this.scene.start("LevelScene", { levelId }); this.scene.stop(); } });
+    buttons.push({ label: "[ M ] Menu", color: 0xddeeff, key: "M", action: () => { this.scene.start("CampaignMenuScene"); this.scene.stop(); } });
 
     const totalW = buttons.length * (200 + 20) - 20;
     let x = width / 2 - totalW / 2 + 100;

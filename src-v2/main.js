@@ -74,5 +74,10 @@ window.__pd_stats = () => {
 };
 
 window.__pd_goto = (levelId) => {
+  for (const s of game.scene.scenes) {
+    if (s.scene.isActive() && s.scene.key !== "BootScene") {
+      game.scene.stop(s.scene.key);
+    }
+  }
   game.scene.start("LevelScene", { levelId });
 };
