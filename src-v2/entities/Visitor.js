@@ -6,6 +6,7 @@ const TYPE_DEFS = {
   vip:      { hp: 3, speed: 60,  bodyColor: 0x8a4ad8, bodyStroke: 0x4a1a8a, immune: [], canFly: false, hat: "tophat" },
   skeleton: { hp: 1, speed: 70,  bodyColor: 0xeeeeee, bodyStroke: 0x666666, immune: ["lava"], canFly: false, hat: null },
   flying:   { hp: 1, speed: 80,  bodyColor: 0xffd23f, bodyStroke: 0xc88a00, immune: [], canFly: true, hat: "wing" },
+  boss:     { hp: 30, speed: 38, bodyColor: 0xa01030, bodyStroke: 0x4a0010, immune: [], canFly: false, hat: "horn", scale: 1.7 },
 };
 
 export class Visitor extends Phaser.GameObjects.Container {
@@ -40,7 +41,13 @@ export class Visitor extends Phaser.GameObjects.Container {
       const wing2 = scene.add.triangle(18, -10, 0, 0, -16, -8, -16, 8, 0xffeebb).setStrokeStyle(1, 0xc8a060);
       this.add([wing1, wing2]);
       this.wings = [wing1, wing2];
+    } else if (def.hat === "horn") {
+      const horn1 = scene.add.triangle(-10, -42, 0, 0, 6, -14, -6, 0, 0xffe6c8).setStrokeStyle(1, 0x6b3a0a);
+      const horn2 = scene.add.triangle(10, -42, 0, 0, 6, 0, -6, -14, 0xffe6c8).setStrokeStyle(1, 0x6b3a0a);
+      this.add([horn1, horn2]);
     }
+
+    if (def.scale && def.scale !== 1) this.setScale(def.scale);
 
     if (this.maxHp > 1) {
       this.hpBarBg = scene.add.rectangle(0, -52, 30, 4, 0x000, 0.6);

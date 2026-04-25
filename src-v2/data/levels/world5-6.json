@@ -1,0 +1,52 @@
+{
+  "id": "5.6",
+  "name": "APOCALYPSE — boss rush",
+  "world": 5,
+  "startCoins": 300,
+  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
+  "loseEscaped": 1,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "vip", "lane": 0, "delayMs": 1500 },
+        { "type": "vip", "lane": 4, "delayMs": 1500 }
+      ]
+    },
+    {
+      "delayMs": 18000,
+      "visitors": [
+        { "type": "boss", "lane": 1, "delayMs": 0 },
+        { "type": "boss", "lane": 3, "delayMs": 0 },
+        { "type": "skeleton", "lane": 2, "delayMs": 1500 },
+        { "type": "flying", "lane": 0, "delayMs": 3000 },
+        { "type": "flying", "lane": 2, "delayMs": 3000 },
+        { "type": "flying", "lane": 4, "delayMs": 3000 }
+      ]
+    },
+    {
+      "delayMs": 34000,
+      "visitors": [
+        { "type": "boss", "lane": 0, "delayMs": 0 },
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "boss", "lane": 4, "delayMs": 0 },
+        { "type": "vip", "lane": 1, "delayMs": 2000 },
+        { "type": "vip", "lane": 3, "delayMs": 2000 },
+        { "type": "skeleton", "lane": 0, "delayMs": 3500 },
+        { "type": "skeleton", "lane": 2, "delayMs": 3500 },
+        { "type": "skeleton", "lane": 4, "delayMs": 3500 },
+        { "type": "flying", "lane": 1, "delayMs": 5500 },
+        { "type": "flying", "lane": 3, "delayMs": 5500 },
+        { "type": "boss", "lane": 1, "delayMs": 8000 },
+        { "type": "boss", "lane": 3, "delayMs": 8000 },
+        { "type": "vip", "lane": 2, "delayMs": 10000 }
+      ]
+    }
+  ],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 0 },
+    "1": { "escapedMax": 0 }
+  }
+}
