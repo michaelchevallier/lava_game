@@ -1,168 +1,148 @@
-# Milan Lava Park — Instructions Claude
+# Park Defense — Instructions Claude
 
 ## Projet
 
-Jeu 2D "Fête Foraine en Lave" pour Milan. KAPLAY + Vite + JS vanilla, 100% client-side.
-Live : https://michaelchevallier.github.io/lava_game/
+Jeu 2D Tower Defense « Park Defense — Foire en Lave » pour Milan. **Phaser 4 + Vite + JS vanilla**, 100% client-side, inspiré Plants vs Zombies.
+Live legacy KAPLAY (archivé) : https://michaelchevallier.github.io/lava_game/ (branche `main` jusqu'à Sprint 12)
+Live nouveau (à venir) : URL Pages après bascule prod
 Repo : https://github.com/michaelchevallier/lava_game
+Branche dev active : `phaser-pivot`
 
-**Stack immuable** — ne pas migrer vers Godot ou autre moteur. Question posée 3 fois, refusée 3 fois (Godot bundle = 100× plus gros).
+## Pivot du 2026-04-26
+
+L'ancien jeu KAPLAY (sandbox tile-placement + 14 combos cachés + 5 weather + course visiteurs) a été remplacé par un vrai Tower Defense campagne-driven. Le pivot a été décidé après diagnostic (« le jeu manque plus d'objectifs que de mécaniques », sprites pas beaux, libs présentation OK à changer).
+
+- **Snapshot KAPLAY pré-pivot** : tag `v1.0-kaplay-final` (commit `9ea6db3`). Restaurer via `git checkout v1.0-kaplay-final`.
+- **Plan complet du pivot** : `/Users/mike/.claude/plans/travaille-sur-va-dans-radiant-spindle.md`
+- **Branche actuelle** : `phaser-pivot`. À mergrer dans `main` au Sprint 12.
+
+## Le jeu
+
+5 lanes horizontales, visiteurs (= zombies PvZ) entrent par la droite et marchent vers la gauche pour atteindre la sortie. Le joueur place des **tiles défensives** (= plants) dans les cellules vides pour les transformer en squelettes / ralentir / repousser. Économie en pièces. Niveau gagné si tous les visiteurs sont éliminés ; perdu si trop atteignent la sortie.
+
+**30 niveaux campagne** prévus (5 mondes × 6 niveaux). Loop 3-5 min par niveau, 3 étoiles selon perf.
+
+### Mapping tiles (8 prévus, 1 livré)
+
+| Tile | Coût | Rôle | Status |
+|---|---|---|---|
+| **Lava Tower** (Peashooter) | 100 | tire 1 dmg / 1.5s | ✅ Sprint 1b |
+| **Coin Generator** (Sunflower) | 50 | génère 25 coins / 8s | Sprint 3 |
+| **Water Block** (Wall-nut) | 50 | tank 8 HP, bloque | Sprint 4 |
+| **Magnet Bomb** (Cherry-bomb) | 150 | AOE 3×3 explosion 1.5s | Sprint 4 |
+| **Fan** (Blover) | 100 | push-back lane | Sprint 4 |
+| **Frost Trampoline** (Snow Pea) | 175 | slow + dmg | Sprint 4 |
+| **Portal** (Squash) | 175 | téléporte 3 cases derrière | Sprint 4 |
+| **Catapult** (Cabbage-pult) | 125 | ballistique, ignore obstacles | Sprint 4 |
+
+### Visiteurs (7 prévus, 1 livré)
+
+Basique 1HP, VIP Casque 3HP, Coin Thief, Skeleton (immune Lava), Volant, Pousseur, Boss Goret.
 
 ## Architecture
 
 ```
-src/
-  main.js         (~1700 lignes) — scene setup, game loop, players, HUD draw
-  constants.js    (~70 lignes)   — TILE, WIDTH, WAGON_THEMES, TOOLBAR_ORDER
-  audio.js        (~85 lignes)   — Web Audio procedural (jump/coin/transform...)
-  sprites.js      (~410 lignes)  — PALETTE + SPR_* + loadAllSprites(k)
-  serializer.js   (~95 lignes)   — loadSave/persistSave + export/import code btoa
-  tiles.js        (~410 lignes)  — createTileSystem({k,...}) → placeTile, checkCoinResonance
-  wagons.js       (~770 lignes)  — createWagonSystem({k,...}) → spawnWagon, transform, revive, board
+src-v2/
+  main.js                  Phaser game config + scenes register
+  scenes/
+    BootScene.js           splash 2s puis scene.start("LevelScene")
+    LevelScene.js          gameplay : grille, lanes, spawn, placement
+  systems/
+    Grid.js                grille 5×12 cellSize 90, cellToPixel/pixelToCell/state/isEmpty/setCell
+  entities/
+    Visitor.js             Container HP/speed, marche →gauche, takeDamage, kill, events
+    LavaTower.js           Container, ciblage nearest in lane, fireRate, fire()
+    Projectile.js          Container boule lave, vélocité X+, hit() applique damage
+  ui/
+    Toolbar.js             bottom 100px, boutons tile, sélection visible (border or)
 public/
-  sw.js           — Service Worker network-first
-  manifest.json   — PWA
-.github/workflows/deploy.yml — CI auto-deploy to GitHub Pages
+  sw.js                    kill-switch SW (unregister + clear caches), legacy purge
+index.html                 désinstalle SW + caches AVANT charger /src-v2/main.js
 ```
 
-**Règle taille** : `> 1500 lignes` dans un fichier = bloquant, refactorer avant feature.
+**Legacy KAPLAY** (`src/`, 65 fichiers, 17 800 lignes) reste dans le repo pour référence jusqu'au Sprint 12, mais n'est plus chargé. Sera supprimé à la bascule prod.
 
 ## Conventions
 
-- **Commits atomiques** : `feat:` `fix:` `refactor:` `chore:` `build:` `perf:` `style:` `docs:`. Un commit = une chose.
-- **Pas de commentaires** sauf si WHY non-obvious (KAPLAY workaround, invariant subtil).
-- **Pas de `console.log`** en prod. Debug exposés via `window.__k` et `window.__getStats()`.
-- **Performance** : MAX_WAGONS=3, particules capées 300, dedupé via `k.onUpdate(tag)` global.
+- **Commits atomiques** : `feat(pivot):`, `feat(combo/...)`, `fix(pivot):`, `refactor:`, `chore:`. Préfixe `pivot` pour les commits de la migration tant qu'on est sur la branche `phaser-pivot`. Co-Authored-By Claude Opus 4.7 toujours en footer.
+- **Pas de commentaires** sauf si WHY non-obvious (workaround Phaser, invariant subtil).
+- **Pas de `console.log`** en prod. Debug exposé via `window.__game = scene` au besoin.
+- **Pas de TypeScript** — JS vanilla, ESM imports.
+- **Performance** : viser 60 FPS, ≤ 1 MB bundle gzippé (actuel ~360 KB Phaser + code), entités pooled si > 50 actives.
 
-## ⚠️ Pièges KAPLAY (catalogue de douleurs)
+## Pièges Phaser 4 (rencontrés, à éviter)
 
-- **`frame`/`animFrame`** propriétés custom = collision avec sprite component → `Duplicate component property` error
-- **`obj.use(k.sprite("name"))`** crash → utiliser `obj.sprite = "name"` directement
-- **`[...]` ou `\`** dans `drawText` = parse error styled tags → utiliser `(...)` et éviter backslash
-- **`k.fixed()`** sur overlay fullscreen = WebGL feedback loop → ne pas faire
-- **`const WAGON_THEMES`** dans scene callback = TDZ si lu par fonction appelée tôt → mettre au module level
-- **Touches D et L** = conflit Mario right + Pika right → INTERDITES comme shortcuts globaux
-- **`letterbox: true`** + viewport != ratio jeu = canvas redimensionné au viewport, perf killer
-- **160 static bodies** (ground tiles individuels) = collision O(N×M) à 60fps = 4 FPS. **TOUJOURS** un seul gros collider invisible pour le sol, visuels séparés
-- **`k.get("*")`** = full scene tree iteration, à utiliser parcimonieusement (pas par frame)
+- **Pas de `import Phaser from "phaser"`** — Phaser 4 exporte en named only. Toujours `import * as Phaser from "phaser"`.
+- **`Container` n'a PAS de `preUpdate` auto-call** — il faut écouter `scene.events.on("update", tick)` manuellement et le `off()` au destroy. (Sprite a preUpdate auto, lui.)
+- **`tick()` peut tourner après `destroy()`** — toujours guard `if (!this.scene || this._dying) return;` au début. (cf fix Sprint 2.)
+- **`area`/`setInteractive` sur Container** — Phaser ne calcule pas la hitbox tout seul, passer `new Phaser.Geom.Rectangle(...)` + `Phaser.Geom.Rectangle.Contains` explicitement.
+- **`drawText` style** — Phaser utilise `add.text(x, y, str, { fontFamily, fontSize, color, stroke, strokeThickness })`, pas la signature KAPLAY.
+- **Service Worker legacy** — l'ancien KAPLAY SW (`lava-park-v6`) cache agressivement. Le `public/sw.js` actuel est un kill-switch qui se désinstalle à l'activate. NE PAS le réactiver tant que l'audience legacy n'est pas complètement migrée.
+- **Bundle Phaser 4 = 1.6 MB minifié** (357 KB gz). Pas dramatique mais ne pas ajouter d'autres deps lourdes sans réfléchir.
 
 ## Performance cibles
 
-- Bundle prod : < 100 KB gzippé (actuel ~85 KB)
-- 60 FPS sur laptop 2015 / Mac Retina (rendu 1280×576 interne, CSS upscale)
-- < 5 MB RAM client
-- Loading < 1s sur 4G
-- Zéro requête runtime (tout inline / data URL)
+- Bundle prod : < 1 MB gzippé (actuel ~360 KB)
+- 60 FPS sur laptop 2018 / Mac Retina
+- < 10 MB RAM client
+- Loading < 2s sur 4G
+- 0 requête runtime hors le bundle initial (sprites Kenney en atlas local)
 
 ## Workflow session
 
 1. Lire ce fichier
-2. `git log --oneline | head -10` pour voir l'état
-3. `wc -l src/*.js` — si main.js > 1500 lignes, refactorer
-4. **Déléguer aux agents** : `.claude/agents/*.md` définit `spec-writer` (opus) + `feature-dev` / `perf-auditor` / `qa-tester` (sonnet)
-5. Pattern : opus écrit le spec → sonnet exécutent en parallèle → on commit/push → CI redeploy automatique
+2. `git log --oneline | head -10` pour voir l'état (commits Sprint 0 → en cours)
+3. `git branch --show-current` doit retourner `phaser-pivot`
+4. Sprint courant indiqué dans le plan markdown `/Users/mike/.claude/plans/travaille-sur-va-dans-radiant-spindle.md`
+5. **Déléguer aux agents** quand le scope dépasse 1h de boulot : `feature-dev` pour exécuter un sprint spécifié, `Explore` pour audit ciblé, `spec-writer` (opus) pour designs en amont
+6. Pattern : 1 sprint = 1 ou 2 commits cohérents qui buildent et tournent. Push après chaque sprint pour CI redeploy auto sur la branche.
 
-## Tester perf en live
+## Tester en local
 
-```js
-// Via Chrome MCP ou DevTools console sur https://michaelchevallier.github.io/lava_game/
-window.__getStats()  // entity counts par tag
-window.__k.get("*").length  // total entities
+```bash
+npm run dev              # Vite dev server
+# ouvrir http://localhost:5173
+# DevTools : Application > Service Workers > Unregister si l'ancien SW colle
 ```
 
-Profile FPS :
-```js
-let f=0, s=performance.now();
-const tick = () => { f++; if(performance.now()-s<2000) requestAnimationFrame(tick); else console.log('FPS', Math.round(f/2)); };
-requestAnimationFrame(tick);
+```bash
+npm run build            # build production
+ls -la dist/             # vérifier taille bundle
 ```
 
-## Backlog (cocher quand fait)
+Debug runtime :
+```js
+// dans la console DevTools
+const scene = window.game?.scene?.scenes?.find(s => s.scene.key === "LevelScene");
+scene?.visitors    // liste visiteurs actifs
+scene?.towers      // liste tours posées
+scene?.gridState   // état grille [row][col]
+```
+*(Note: `window.game` n'est pas exposé par défaut, à ajouter dans main.js si besoin debug.)*
 
-### Polish
-- [x] Physique transition rail horizontal ↔ diagonal (lissage Y, rotation visuelle)
-- [x] Règles de passage tile/entité
-- [x] Lisibilité textes (drawTextOutlined 8 offsets)
-- [x] Players.js extraction
-- [x] Hud.js extraction
-- [x] main.js < 1200 lignes (actuel 1090 — particle-systems.js extrait, 94b1f1c)
-- [x] wagons.js < 1300 lignes (actuel 1079 — wagon-collisions.js extrait, e1c820d)
+## Backlog Park Defense (sprints incrémentaux)
 
-### Bugs perf / GC (à fix)
-- [x] **GC trop agressif côté gauche** (fix fb64c4a) — left cull at -0.3×WIDTH
-- [x] **Wagons despawn prématuré** (fix fb64c4a) — 30% viewport buffer
+- [x] Sprint -1 — tag `v1.0-kaplay-final`
+- [x] Sprint 0 — Phaser boot scene "PARK DEFENSE"
+- [x] Sprint 1a — Visitor entity + LevelScene 1 lane
+- [x] Sprint 1b — LavaTower + Projectile + collision kill
+- [x] Sprint 2 — Grille 5×12 + Toolbar + placement-mode
+- [ ] Sprint 3 — Économie pièces (Coin Generator + HUD coins + coût tiles)
+- [ ] Sprint 4 — 7 autres tile types (Water/Magnet/Fan/Frost/Portal/Catapult)
+- [ ] Sprint 5 — Wave system + JSON niveau + écran résultat stars
+- [ ] Sprint 6 — Campaign Menu grille 30 + save progress + 6 niveaux World 1
+- [ ] Sprint 7 — 5 visiteur types + 6 niveaux World 2
+- [ ] Sprint 8 — Boss Goret + 12 niveaux Worlds 3-4
+- [ ] Sprint 9 — 6 niveaux World 5 boss-rush final
+- [ ] Sprint 10 — Polish UI + tutoriel + audio + sprites Kenney intégrés
+- [ ] Sprint 11 — 2P coop split-screen (optionnel)
+- [ ] Sprint 12 — Bascule prod : `main` ← `phaser-pivot`, archive legacy
 
-### Features parc d'attractions
-- [x] Grande Roue 3x3
-- [x] Pêche aux Canards
-- [x] Bullet-Time Combo
-- [x] Manège Magnétique (Téléport Magnétique combo)
-- [x] Carnet des Spectres (24 collectibles bitmask, all unlocks wired)
-- [x] Roue de fortune (combo c821926)
-- [x] Pluie de pièces aléatoire (weather.js)
-- [x] Mini-jeu chamboule-tout (combo c821926)
-- [x] Maison Hantée (combo 0a82c1c)
-- [x] Tunnel de l'Amour Maudit (5028227)
-- [x] Course de Wagons 2P (F2)
+## Références techniques
 
-### Tiles → sprites pré-rendus (perf)
-- [x] Rail Loop (1 sprite au lieu de 90 entités)
-- [x] Magnet, Trampoline (964f472)
-- [x] Bridge, Wheel (9e7b890)
-- [x] Ice, Portal, Tunnel (09f9ffb)
-- [x] Fan (déjà 1 sprite)
-
-### Sprites personnages (20×30) — tous upgradés
-- [x] Mario, Luigi, Toad (vue de profil — e31cf54)
-- [x] Pika (fe4f4e7)
-- [x] Sonic, Link, Pacman, Kirby (1cea9db)
-- [x] Yoshi, Bowser, Pokeball, Tetris, Invader (e9a9eac)
-- [x] DK, Mega, Samus, Crash, Steve, Chief, Astro via substituteSprite (02b131d)
-- [x] Skeleton variants par avatar (16 sprites 20×30 via substituteSprite, cb2f07b)
-
-### Ambient / Décor
-- [x] Gares ENTREE/SORTIE aux bords du monde (9bca3ca/47c3e2e)
-- [x] Diversité visiteurs (scale variation 0.85-1.15 — c84d89c)
-- [x] Ballons flottants ambient toutes 45-70s (f1cc008)
-- [x] Parade Lave QTE (combo Surfeur 5x = +200pts, 8acc407)
-- [x] Réparation Express (rail cassée, streak 5 = MAINTENANCE PRO bonus vitesse 90s, cd59add)
-- [x] Aire Tir Mobile (extension skull-stand, cycle 30s crânes/canards, JACKPOT +300, afc4d36)
-- [x] Boss Goret (spawn 4min, 3 pièces pour vaincre, drop portal+trampoline, 5ae35ea/bf5b8a1)
-- [x] Labyrinthe (2 niveaux campagne 7-4 + 7-5 Dédale final, f68c206)
-
-### Round 4 (en cours)
-- [x] Tempête Magnétique (weather.js 4e type, x2 score + overlay violet + aimants flottants, 8ede731)
-- [x] **Camera follow** — le monde est désormais 2× plus large visible (befa2eb, sandbox/run)
-- [x] **Combo system data-driven** — 14 combos registre + Codex Alchimie Musée + bitmask persist (P1.1, 9e4a10b/2bd62df/359aa3f)
-- [ ] Saison hiver (neige, ice partout, visuel hiver permanent optionnel)
-- [ ] Course de visiteurs bonus event (visiteurs racing droite→gauche, catchable)
-- [ ] Mode coopératif objectifs 2P (points communs, no-skele zone)
-- [x] Mini-map HUD (overview monde position player + wagons + stations + viewport, restaurée après rollback MCP-artifact)
-- [ ] Zones thématiques (col -40..0 = glacier, 0..40 = normal, 40..80 = volcan) via skin tiles par range
-
-### UX
-- [x] Volume slider + vitesse wagons slider dans settings
-- [x] Splash screen sélection nb joueurs avec preview persos
-- [x] Tutoriel interactif (flèches animées)
-- [x] Achievements visuels (badges popup zoom-bounce)
-- [x] Tips rotation HUD bottom
-- [x] Score ticker animé
-- [x] Progress bar palier suivant
-
-## Done (référence)
-
-- ✅ 1-2 joueurs sur 1 clavier (Mario QSDE/AZ/Space/E, Pika JLI/O). Luigi/Toad dispos comme avatars via picker.
-- ✅ Mobile touch controls (4 boutons overlay, ?mobile=1 override)
-- ✅ Tiles : lava, water, rail, rail_up/down, coin, boost, trampoline, fan, portal, ice, magnet, bridge, erase
-- ✅ Mécaniques émergentes : auto-tamponneuses, Dette Fantôme, Chaîne d'Or 3 pièces diag, vapeur eau+lave, Téléport Magnétique, Pluie d'Or
-- ✅ APOCALYPSE combo x5 cascade transforms + Crowd cheer "BRAVO!"
-- ✅ Train Fantôme noir +100pts toutes 45s
-- ✅ Inverse Apocalypse Train anti-AFK 20s, +500pts kill
-- ✅ Wagon doré 7% spawn, 2x points
-- ✅ Cog settings + Mode Démo récursif (portails fin → début airborne)
-- ✅ Export/Import parc par code (modal HTML)
-- ✅ Service Worker v4 network-first + auto-update reload
-- ✅ Fix perf monumentale : 160 ground bodies → 1 collider unique (4 → 71 FPS)
-- ✅ Ambiance jour : soleil souriant, nuages parallax
-- ✅ Ambiance nuit : lune, étoiles, lucioles, étoiles filantes
-- ✅ Visuels tile : trampoline pulse, bridge danger, lava bubbles, coin spin/bob/sparkle
+- Phaser 4 docs : https://phaser.io/docs (l'API 3 → 4 est rétro-compatible large majorité)
+- Kenney assets CC0 (à intégrer Sprint 10) :
+  - Tower Defense Kit https://kenney.nl/assets/tower-defense-kit (160 sprites)
+  - Tower Defense Top-Down https://kenney.nl/assets/tower-defense-top-down (300 sprites)
+  - UI Pack https://kenney.nl/assets/ui-pack
+- Tutorial PvZ-like Phaser 3 : https://phaser.io/news/2018/12/tower-defense-tutorial
