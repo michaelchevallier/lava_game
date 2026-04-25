@@ -1,14 +1,16 @@
 import * as Phaser from "phaser";
 
-const TILE_DEFS = [
-  { id: "lava", label: "Lava Tower", color: 0xff4400, accent: 0xffe066 },
+export const TILE_DEFS = [
+  { id: "coin", label: "Coin Generator", cost: 50, color: 0xffd23f, accent: 0xc88a00 },
+  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066 },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
-  constructor(scene, y, onSelect) {
+  constructor(scene, y, onSelect, getCoins) {
     super(scene, 0, y);
     this.scene = scene;
     this.onSelect = onSelect;
+    this.getCoins = getCoins ?? (() => 0);
     this.selectedId = null;
 
     const w = scene.scale.width;
@@ -17,7 +19,7 @@ export class Toolbar extends Phaser.GameObjects.Container {
     this.add(bg);
 
     this.buttons = [];
-    const btnW = 110;
+    const btnW = 130;
     const btnH = 84;
     const totalW = TILE_DEFS.length * (btnW + 12) - 12;
     const startX = w / 2 - totalW / 2;
@@ -31,35 +33,68 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
     scene.add.existing(this);
     this.setDepth(50);
+
+    scene.events.on("update", () => this.refreshAfford());
   }
 
   makeButton(def, x, y, w, h) {
     const c = this.scene.add.container(x, y);
 
     const back = this.scene.add.rectangle(0, 0, w, h, 0x222840).setStrokeStyle(2, 0x4a4a6a);
-    const icon = this.scene.add.rectangle(0, -10, 36, 30, def.color).setStrokeStyle(2, def.accent);
-    const label = this.scene.add.text(0, 28, def.label, {
+    const icon = this.scene.add.rectangle(0, -14, 36, 30, def.color).setStrokeStyle(2, def.accent);
+    const label = this.scene.add.text(0, 18, def.label, {
       fontFamily: "system-ui",
-      fontSize: "13px",
+      fontSize: "12px",
       color: "#dde",
     }).setOrigin(0.5);
+    const costLabel = this.scene.add.text(0, 34, def.cost + " ¢", {
+      fontFamily: "system-ui",
+      fontSize: "13px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+    }).setOrigin(0.5);
 
-    c.add([back, icon, label]);
+    c.add([back, icon, label, costLabel]);
     c.setSize(w, h);
     c.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
     c._defId = def.id;
     c._back = back;
+    c._icon = icon;
+    c._costLabel = costLabel;
     c._def = def;
+    c._affordable = true;
 
     c.on("pointerover", () => {
-      if (this.selectedId !== def.id) back.setStrokeStyle(2, 0xffd23f);
+      if (this.selectedId !== def.id && c._affordable) back.setStrokeStyle(2, 0xffd23f);
     });
     c.on("pointerout", () => {
-      if (this.selectedId !== def.id) back.setStrokeStyle(2, 0x4a4a6a);
+      if (this.selectedId !== def.id) back.setStrokeStyle(2, c._affordable ? 0x4a4a6a : 0x6a2222);
     });
-    c.on("pointerdown", () => this.select(def.id));
+    c.on("pointerdown", () => {
+      if (!c._affordable) return;
+      this.select(def.id);
+    });
 
     return c;
+  }
+
+  refreshAfford() {
+    const coins = this.getCoins();
+    for (const b of this.buttons) {
+      const can = coins >= b._def.cost;
+      if (can === b._affordable) continue;
+      b._affordable = can;
+      b._icon.setAlpha(can ? 1 : 0.4);
+      b._costLabel.setColor(can ? "#ffd23f" : "#ff8888");
+      if (this.selectedId !== b._defId) {
+        b._back.setStrokeStyle(2, can ? 0x4a4a6a : 0x6a2222);
+      }
+      if (!can && this.selectedId === b._defId) {
+        this.selectedId = null;
+        this.refreshButtons();
+        this.onSelect?.(null);
+      }
+    }
   }
 
   select(id) {
@@ -78,7 +113,8 @@ export class Toolbar extends Phaser.GameObjects.Container {
   refreshButtons() {
     for (const b of this.buttons) {
       const isSel = b._defId === this.selectedId;
-      b._back.setStrokeStyle(isSel ? 3 : 2, isSel ? 0xffd23f : 0x4a4a6a);
+      const baseStroke = b._affordable ? 0x4a4a6a : 0x6a2222;
+      b._back.setStrokeStyle(isSel ? 3 : 2, isSel ? 0xffd23f : baseStroke);
       b._back.setFillStyle(isSel ? 0x33405a : 0x222840);
     }
   }

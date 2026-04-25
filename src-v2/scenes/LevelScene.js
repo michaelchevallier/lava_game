@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { Visitor } from "../entities/Visitor.js";
 import { LavaTower } from "../entities/LavaTower.js";
+import { CoinGenerator } from "../entities/CoinGenerator.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import {
   GRID,
@@ -32,25 +33,34 @@ export class LevelScene extends Phaser.Scene {
 
     this.escaped = 0;
     this.killed = 0;
+    this.coins = 100;
     this.visitors = [];
     this.projectiles = [];
     this.towers = [];
 
-    this.scoreText = this.add.text(20, 20, "Échappés : 0", {
+    this.coinsText = this.add.text(20, 16, "¢ 100", {
       fontFamily: "system-ui",
-      fontSize: "20px",
+      fontSize: "28px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+      stroke: "#000",
+      strokeThickness: 5,
+    });
+    this.scoreText = this.add.text(20, 56, "Échappés : 0", {
+      fontFamily: "system-ui",
+      fontSize: "18px",
       color: "#ffaaaa",
       stroke: "#000",
       strokeThickness: 4,
     });
-    this.killText = this.add.text(20, 50, "Tués : 0", {
+    this.killText = this.add.text(20, 82, "Tués : 0", {
       fontFamily: "system-ui",
-      fontSize: "20px",
+      fontSize: "18px",
       color: "#90ff90",
       stroke: "#000",
       strokeThickness: 4,
     });
-    this.add.text(width / 2, 20, "Sprint 2 — pose des Lava Towers sur la grille", {
+    this.add.text(width / 2, 20, "Sprint 3 — économie pièces, pose Coin Gen + Lava Tower", {
       fontFamily: "system-ui",
       fontSize: "16px",
       color: "#ffd23f",
@@ -65,6 +75,11 @@ export class LevelScene extends Phaser.Scene {
       this.killText.setText("Tués : " + this.killed);
     });
 
+    this.events.on("coins-earned", (amount) => {
+      this.coins += amount;
+      this.refreshCoinsText();
+    });
+
     this.events.on("update", () => {
       this.visitors = this.visitors.filter((v) => v.active);
       this.projectiles = this.projectiles.filter((p) => p.active);
@@ -73,7 +88,12 @@ export class LevelScene extends Phaser.Scene {
 
     this.placementDef = null;
     this.ghost = null;
-    this.toolbar = new Toolbar(this, height - 100, (def) => this.setPlacement(def));
+    this.toolbar = new Toolbar(
+      this,
+      height - 100,
+      (def) => this.setPlacement(def),
+      () => this.coins,
+    );
 
     this.input.on("pointermove", (p) => this.updateGhost(p));
     this.input.on("pointerdown", (p) => this.tryPlace(p));
@@ -166,12 +186,26 @@ export class LevelScene extends Phaser.Scene {
     const cell = pixelToCell(pointer.x, pointer.y);
     if (!cell) return;
     if (!isEmpty(this.gridState, cell.col, cell.row)) return;
+    if (this.coins < this.placementDef.cost) return;
     const { x, y } = cellToPixel(cell.col, cell.row);
-    const tower = new LavaTower(this, x, y, { fireRate: 1500, damage: 1 });
-    this.towers.push(tower);
-    setCell(this.gridState, cell.col, cell.row, tower);
+    let entity = null;
+    if (this.placementDef.id === "lava") {
+      entity = new LavaTower(this, x, y, { fireRate: 1500, damage: 1 });
+      this.towers.push(entity);
+    } else if (this.placementDef.id === "coin") {
+      entity = new CoinGenerator(this, x, y, { amount: 25, intervalMs: 8000 });
+      this.towers.push(entity);
+    }
+    if (!entity) return;
+    setCell(this.gridState, cell.col, cell.row, entity);
+    this.coins -= this.placementDef.cost;
+    this.refreshCoinsText();
     this.toolbar.clearSelection();
     this.setPlacement(null);
+  }
+
+  refreshCoinsText() {
+    this.coinsText.setText("¢ " + this.coins);
   }
 
   spawnVisitor(row) {
