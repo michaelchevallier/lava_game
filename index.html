@@ -21,11 +21,29 @@
       }
     </style>
     <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then((regs) => {
-          for (const r of regs) r.unregister();
-        });
-      }
+      (async () => {
+        try {
+          let killed = false;
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) {
+              await r.unregister();
+              killed = true;
+            }
+          }
+          if ("caches" in window) {
+            const names = await caches.keys();
+            if (names.length) {
+              await Promise.all(names.map((n) => caches.delete(n)));
+              killed = true;
+            }
+          }
+          if (killed && !sessionStorage.getItem("__pivot_reloaded")) {
+            sessionStorage.setItem("__pivot_reloaded", "1");
+            location.reload();
+          }
+        } catch (e) {}
+      })();
     </script>
   </head>
   <body>
