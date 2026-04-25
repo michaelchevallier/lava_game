@@ -1,0 +1,56 @@
+{
+  "id": "5.4",
+  "name": "Apocalypse 4",
+  "world": 5,
+  "startCoins": 260,
+  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
+  "loseEscaped": 3,
+  "waves": [
+    {
+      "delayMs": 5500,
+      "visitors": [
+        { "type": "vip", "lane": 0, "delayMs": 0 },
+        { "type": "vip", "lane": 4, "delayMs": 0 },
+        { "type": "skeleton", "lane": 2, "delayMs": 1200 },
+        { "type": "flying", "lane": 1, "delayMs": 2200 },
+        { "type": "flying", "lane": 3, "delayMs": 2200 }
+      ]
+    },
+    {
+      "delayMs": 16000,
+      "visitors": [
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "vip", "lane": 1, "delayMs": 1500 },
+        { "type": "vip", "lane": 3, "delayMs": 1500 },
+        { "type": "skeleton", "lane": 0, "delayMs": 3000 },
+        { "type": "skeleton", "lane": 4, "delayMs": 3000 },
+        { "type": "flying", "lane": 2, "delayMs": 4500 },
+        { "type": "tank", "lane": 1, "delayMs": 5500 },
+        { "type": "tank", "lane": 3, "delayMs": 6000 }
+      ]
+    },
+    {
+      "delayMs": 30000,
+      "visitors": [
+        { "type": "boss", "lane": 1, "delayMs": 0 },
+        { "type": "boss", "lane": 3, "delayMs": 0 },
+        { "type": "vip", "lane": 0, "delayMs": 1500 },
+        { "type": "vip", "lane": 2, "delayMs": 1500 },
+        { "type": "vip", "lane": 4, "delayMs": 1500 },
+        { "type": "skeleton", "lane": 1, "delayMs": 3500 },
+        { "type": "skeleton", "lane": 3, "delayMs": 3500 },
+        { "type": "flying", "lane": 0, "delayMs": 5500 },
+        { "type": "flying", "lane": 2, "delayMs": 6000 },
+        { "type": "flying", "lane": 4, "delayMs": 6500 },
+        { "type": "boss", "lane": 2, "delayMs": 8500 },
+        { "type": "tank", "lane": 1, "delayMs": 10500 },
+        { "type": "tank", "lane": 3, "delayMs": 10500 }
+      ]
+    }
+  ],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 0 },
+    "1": { "escapedMax": 3 }
+  }
+}

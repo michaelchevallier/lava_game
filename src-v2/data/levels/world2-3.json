@@ -1,0 +1,46 @@
+{
+  "id": "2.3",
+  "name": "Visiteurs volants",
+  "world": 2,
+  "startCoins": 200,
+  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
+  "loseEscaped": 4,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "flying", "lane": 1, "delayMs": 0 },
+        { "type": "flying", "lane": 3, "delayMs": 1500 },
+        { "type": "basic", "lane": 0, "delayMs": 3000 }
+      ]
+    },
+    {
+      "delayMs": 18000,
+      "visitors": [
+        { "type": "flying", "lane": 2, "delayMs": 0 },
+        { "type": "flying", "lane": 0, "delayMs": 1000 },
+        { "type": "flying", "lane": 4, "delayMs": 2000 },
+        { "type": "tank", "lane": 1, "delayMs": 3500 },
+        { "type": "tank", "lane": 3, "delayMs": 4500 }
+      ]
+    },
+    {
+      "delayMs": 32000,
+      "visitors": [
+        { "type": "flying", "lane": 0, "delayMs": 0 },
+        { "type": "flying", "lane": 1, "delayMs": 500 },
+        { "type": "flying", "lane": 2, "delayMs": 1000 },
+        { "type": "flying", "lane": 3, "delayMs": 1500 },
+        { "type": "flying", "lane": 4, "delayMs": 2000 },
+        { "type": "tank", "lane": 1, "delayMs": 4500 },
+        { "type": "tank", "lane": 3, "delayMs": 5500 },
+        { "type": "vip", "lane": 2, "delayMs": 7500 }
+      ]
+    }
+  ],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 1 },
+    "1": { "escapedMax": 3 }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "3.6",
+  "name": "Tempête — finale",
+  "world": 3,
+  "startCoins": 250,
+  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
+  "loseEscaped": 3,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "tank", "lane": 1, "delayMs": 0 },
+        { "type": "tank", "lane": 3, "delayMs": 0 },
+        { "type": "skeleton", "lane": 2, "delayMs": 1500 }
+      ]
+    },
+    {
+      "delayMs": 18000,
+      "visitors": [
+        { "type": "vip", "lane": 0, "delayMs": 0 },
+        { "type": "vip", "lane": 4, "delayMs": 0 },
+        { "type": "flying", "lane": 1, "delayMs": 1500 },
+        { "type": "flying", "lane": 3, "delayMs": 1500 },
+        { "type": "skeleton", "lane": 2, "delayMs": 3500 },
+        { "type": "tank", "lane": 0, "delayMs": 5000 },
+        { "type": "tank", "lane": 4, "delayMs": 5500 }
+      ]
+    },
+    {
+      "delayMs": 34000,
+      "visitors": [
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "vip", "lane": 0, "delayMs": 1500 },
+        { "type": "vip", "lane": 4, "delayMs": 1500 },
+        { "type": "skeleton", "lane": 1, "delayMs": 3500 },
+        { "type": "skeleton", "lane": 3, "delayMs": 3500 },
+        { "type": "flying", "lane": 0, "delayMs": 5500 },
+        { "type": "flying", "lane": 2, "delayMs": 6000 },
+        { "type": "flying", "lane": 4, "delayMs": 6500 },
+        { "type": "tank", "lane": 1, "delayMs": 8000 },
+        { "type": "tank", "lane": 3, "delayMs": 8500 }
+      ]
+    }
+  ],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 1 },
+    "1": { "escapedMax": 2 }
+  }
+}
