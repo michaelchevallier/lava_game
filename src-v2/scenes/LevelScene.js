@@ -4,6 +4,8 @@ import { LavaTower } from "../entities/LavaTower.js";
 import { CoinGenerator } from "../entities/CoinGenerator.js";
 import { WaterBlock } from "../entities/WaterBlock.js";
 import { Fan } from "../entities/Fan.js";
+import { MagnetBomb } from "../entities/MagnetBomb.js";
+import { Catapult } from "../entities/Catapult.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import {
   GRID,
@@ -212,6 +214,10 @@ export class LevelScene extends Phaser.Scene {
       entity = new WaterBlock(this, x, y, { hp: 8 });
     } else if (this.placementDef.id === "fan") {
       entity = new Fan(this, x, y);
+    } else if (this.placementDef.id === "magnet") {
+      entity = new MagnetBomb(this, x, y);
+    } else if (this.placementDef.id === "catapult") {
+      entity = new Catapult(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);

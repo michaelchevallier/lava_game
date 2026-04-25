@@ -5,6 +5,8 @@ export const TILE_DEFS = [
   { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066 },
   { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a },
   { id: "fan", label: "Fan", cost: 100, color: 0xddeeff, accent: 0x666 },
+  { id: "magnet", label: "Magnet Bomb", cost: 150, color: 0x66001a, accent: 0xff2222 },
+  { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
