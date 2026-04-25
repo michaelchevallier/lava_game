@@ -6,6 +6,8 @@ import { WaterBlock } from "../entities/WaterBlock.js";
 import { Fan } from "../entities/Fan.js";
 import { MagnetBomb } from "../entities/MagnetBomb.js";
 import { Catapult } from "../entities/Catapult.js";
+import { FrostTramp } from "../entities/FrostTramp.js";
+import { Portal } from "../entities/Portal.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
@@ -291,6 +293,10 @@ export class LevelScene extends Phaser.Scene {
       entity = new MagnetBomb(this, x, y);
     } else if (this.placementDef.id === "catapult") {
       entity = new Catapult(this, x, y);
+    } else if (this.placementDef.id === "frost") {
+      entity = new FrostTramp(this, x, y);
+    } else if (this.placementDef.id === "portal") {
+      entity = new Portal(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);
