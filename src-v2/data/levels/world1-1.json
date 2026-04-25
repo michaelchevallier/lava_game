@@ -1,0 +1,46 @@
+{
+  "id": "1.1",
+  "name": "Premier jour",
+  "world": 1,
+  "startCoins": 150,
+  "allowedTiles": ["coin", "lava", "water"],
+  "loseEscaped": 5,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "basic", "lane": 2, "delayMs": 0 },
+        { "type": "basic", "lane": 4, "delayMs": 2500 },
+        { "type": "basic", "lane": 1, "delayMs": 5000 }
+      ]
+    },
+    {
+      "delayMs": 18000,
+      "visitors": [
+        { "type": "basic", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 3, "delayMs": 1500 },
+        { "type": "basic", "lane": 2, "delayMs": 3000 },
+        { "type": "basic", "lane": 4, "delayMs": 5000 },
+        { "type": "basic", "lane": 1, "delayMs": 6500 }
+      ]
+    },
+    {
+      "delayMs": 32000,
+      "visitors": [
+        { "type": "basic", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 1, "delayMs": 800 },
+        { "type": "basic", "lane": 2, "delayMs": 1600 },
+        { "type": "basic", "lane": 3, "delayMs": 2400 },
+        { "type": "basic", "lane": 4, "delayMs": 3200 },
+        { "type": "basic", "lane": 2, "delayMs": 5000 },
+        { "type": "basic", "lane": 0, "delayMs": 6500 },
+        { "type": "basic", "lane": 4, "delayMs": 7500 }
+      ]
+    }
+  ],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 1 },
+    "1": { "escapedMax": 4 }
+  }
+}

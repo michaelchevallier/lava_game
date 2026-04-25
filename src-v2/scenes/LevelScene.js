@@ -7,6 +7,8 @@ import { Fan } from "../entities/Fan.js";
 import { MagnetBomb } from "../entities/MagnetBomb.js";
 import { Catapult } from "../entities/Catapult.js";
 import { Toolbar } from "../ui/Toolbar.js";
+import { WaveManager, computeStars } from "../systems/WaveManager.js";
+import level11 from "../data/levels/world1-1.json";
 import {
   GRID,
   cellToPixel,
@@ -35,14 +37,16 @@ export class LevelScene extends Phaser.Scene {
     this.drawGrid();
     this.drawEntryExit();
 
+    this.level = level11;
     this.escaped = 0;
     this.killed = 0;
-    this.coins = 100;
+    this.coins = this.level.startCoins ?? 100;
     this.visitors = [];
     this.projectiles = [];
     this.towers = [];
+    this.gameOver = false;
 
-    this.coinsText = this.add.text(20, 16, "¢ 100", {
+    this.coinsText = this.add.text(20, 16, "¢ " + this.coins, {
       fontFamily: "system-ui",
       fontSize: "28px",
       fontStyle: "bold",
@@ -64,9 +68,17 @@ export class LevelScene extends Phaser.Scene {
       stroke: "#000",
       strokeThickness: 4,
     });
-    this.add.text(width / 2, 20, "Sprint 3 — économie pièces, pose Coin Gen + Lava Tower", {
+    this.levelTitleText = this.add.text(width / 2, 16, "Niveau " + this.level.id + " — " + this.level.name, {
       fontFamily: "system-ui",
-      fontSize: "16px",
+      fontSize: "20px",
+      fontStyle: "bold",
+      color: "#fff",
+      stroke: "#000",
+      strokeThickness: 4,
+    }).setOrigin(0.5, 0);
+    this.waveStatusText = this.add.text(width / 2, 44, "Préparation…", {
+      fontFamily: "system-ui",
+      fontSize: "14px",
       color: "#ffd23f",
     }).setOrigin(0.5, 0);
 
@@ -90,6 +102,11 @@ export class LevelScene extends Phaser.Scene {
       this.towers = this.towers.filter((t) => t.active);
       this.checkProjectileHits();
       this.updateBlockers(time, delta);
+      if (this.waveManager && !this.gameOver) {
+        this.waveManager.tick(time);
+        this.refreshWaveStatus(time);
+        this.checkEndCondition();
+      }
     });
 
     this.events.on("tile-destroyed", (tile) => {
@@ -115,13 +132,8 @@ export class LevelScene extends Phaser.Scene {
     this.input.on("pointermove", (p) => this.updateGhost(p));
     this.input.on("pointerdown", (p) => this.tryPlace(p));
 
-    this.spawnerEvent = this.time.addEvent({
-      delay: 2500,
-      loop: true,
-      callback: () => this.spawnVisitorRandomLane(),
-    });
-
-    for (let r = 0; r < GRID.rows; r++) this.spawnVisitor(r);
+    this.waveManager = new WaveManager(this, this.level);
+    this.waveManager.start();
   }
 
   drawGrid() {
@@ -251,17 +263,82 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
-  spawnVisitor(row) {
+  spawnVisitor(row, type = "basic") {
     const y = rowToY(row);
     const x = rightEdgeX() + 50;
-    const v = new Visitor(this, x, y, { hp: 1, speed: 60 });
+    let opts = { hp: 1, speed: 60 };
+    if (type === "tank") opts = { hp: 3, speed: 50 };
+    const v = new Visitor(this, x, y, opts);
     v.row = row;
+    v.type = type;
     this.visitors.push(v);
   }
 
-  spawnVisitorRandomLane() {
-    const r = Math.floor(Math.random() * GRID.rows);
-    this.spawnVisitor(r);
+  refreshWaveStatus(time) {
+    const total = this.waveManager.totalVisitors();
+    const spawned = this.waveManager.spawnedCount();
+    const alive = this.visitors.length;
+    const next = this.waveManager.nextWaveAtMs(time);
+    if (next != null && next > 100) {
+      this.waveStatusText.setText("Prochaine vague dans " + Math.ceil(next / 1000) + "s — " + spawned + "/" + total);
+    } else {
+      this.waveStatusText.setText("En cours — visiteurs vivants : " + alive + " / " + total + " — échappés " + this.escaped + "/" + (this.level.loseEscaped || 5));
+    }
+  }
+
+  checkEndCondition() {
+    if (this.gameOver) return;
+    if (this.escaped >= (this.level.loseEscaped || 5)) {
+      this.endLevel(false);
+      return;
+    }
+    if (this.waveManager.allSpawned && this.visitors.length === 0) {
+      this.endLevel(true);
+    }
+  }
+
+  endLevel(win) {
+    this.gameOver = true;
+    const { width, height } = this.scale;
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.65).setDepth(100);
+    const title = this.add.text(width / 2, height / 2 - 80, win ? "VICTOIRE !" : "DÉFAITE", {
+      fontFamily: "system-ui",
+      fontSize: "72px",
+      fontStyle: "bold",
+      color: win ? "#90ff90" : "#ff8080",
+      stroke: "#000",
+      strokeThickness: 8,
+    }).setOrigin(0.5).setDepth(101);
+    let starsCount = 0;
+    if (win) {
+      starsCount = computeStars(this.level, this.escaped);
+      const starText = "★".repeat(starsCount) + "☆".repeat(3 - starsCount);
+      this.add.text(width / 2, height / 2, starText, {
+        fontFamily: "system-ui",
+        fontSize: "64px",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 6,
+      }).setOrigin(0.5).setDepth(101);
+    }
+    const stats = this.add.text(
+      width / 2, height / 2 + 80,
+      "Tués : " + this.killed + "  •  Échappés : " + this.escaped + "  •  Pièces : " + this.coins,
+      {
+        fontFamily: "system-ui",
+        fontSize: "20px",
+        color: "#fff",
+      },
+    ).setOrigin(0.5).setDepth(101);
+    const retry = this.add.text(width / 2, height / 2 + 140, "[ R ] Rejouer", {
+      fontFamily: "system-ui",
+      fontSize: "22px",
+      color: "#ffd23f",
+      stroke: "#000",
+      strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(101);
+    this.input.keyboard.once("keydown-R", () => this.scene.restart());
+    this.input.once("pointerdown", () => this.scene.restart());
   }
 
   checkProjectileHits() {
