@@ -57,10 +57,12 @@ export class BootScene extends Phaser.Scene {
       ease: "Sine.inOut",
     });
 
-    this.add.text(width / 2, height - 40, "v1.0-kaplay-final taggé • Sprint 0 livré", {
+    this.add.text(width / 2, height - 40, "Démarrage du niveau dans 2s…", {
       fontFamily: "system-ui, monospace",
       fontSize: "14px",
       color: "#cccccc",
     }).setOrigin(0.5);
+
+    this.time.delayedCall(2000, () => this.scene.start("LevelScene"));
   }
 }
