@@ -22,4 +22,49 @@ const config = {
   scene: [BootScene, CampaignMenuScene, LevelScene, LevelResultScene],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+window.__game = game;
+
+window.__pd_scene = () => game.scene.scenes.find((s) => s.scene.key === "LevelScene" && s.scene.isActive());
+
+window.__pd_place = (toolId, col, row) => {
+  const scene = window.__pd_scene();
+  if (!scene) return "no LevelScene active";
+  const def = (scene.toolbar?.constructor?.TILE_DEFS) ||
+    [
+      { id: "coin", cost: 50, color: 0xffd23f, accent: 0xc88a00 },
+      { id: "lava", cost: 100, color: 0xff4400, accent: 0xffe066 },
+      { id: "water", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a },
+      { id: "fan", cost: 100, color: 0xddeeff, accent: 0x666666 },
+      { id: "magnet", cost: 150, color: 0x66001a, accent: 0xff2222 },
+      { id: "catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a },
+    ];
+  const d = def.find((x) => x.id === toolId);
+  if (!d) return "unknown tool " + toolId;
+  scene.placementDef = d;
+  const px = 100 + col * 90 + 45;
+  const py = 130 + row * 90 + 45;
+  scene.tryPlace({ x: px, y: py });
+  return scene.coins;
+};
+
+window.__pd_stats = () => {
+  const scene = window.__pd_scene();
+  if (!scene) return null;
+  return {
+    levelId: scene.level?.id,
+    coins: scene.coins,
+    killed: scene.killed,
+    escaped: scene.escaped,
+    visitorsAlive: scene.visitors?.length,
+    towersPlaced: scene.towers?.length,
+    waveAllSpawned: scene.waveManager?.allSpawned,
+    waveSpawned: scene.waveManager?.spawnedCount(),
+    waveTotal: scene.waveManager?.totalVisitors(),
+    gameOver: scene.gameOver,
+  };
+};
+
+window.__pd_goto = (levelId) => {
+  game.scene.start("LevelScene", { levelId });
+};
