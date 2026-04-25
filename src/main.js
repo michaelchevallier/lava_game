@@ -56,6 +56,7 @@ import { createBossGoret } from "./boss-goret.js";
 import { createMinimap } from "./minimap.js";
 import { createPerfHarness } from "./perf-harness.js";
 import { createComboSystem } from "./combo-system.js";
+import { createMissions } from "./missions.js";
 
 const k = kaplay({
   canvas: document.getElementById("game"),
@@ -1146,6 +1147,7 @@ k.scene("game", () => {
   if (cfg.enableCoinThief) window.__coinThief = createCoinThiefSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableVisitorQuests) window.__vquests = createVisitorQuestSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT });
   if (cfg.enableWeather) window.__weather = createWeatherSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, HEIGHT, GROUND_ROW, TILE });
+  window.__missions = createMissions({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH });
   if (cfg.enableWeather) window.__visitorRace = createVisitorRace({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, WORLD_WIDTH, GROUND_ROW, TILE });
   if (cfg.enableBalloons) window.__balloons = createBalloonSystem({ k, gameState, audio, showPopup: (...args) => showPopup(...args), WIDTH, GROUND_ROW, TILE });
   if (cfg.enableMinigames) window.__minigames = createMinigames({ k, tileMap, gameState, audio, showPopup: (...args) => showPopup(...args) });
