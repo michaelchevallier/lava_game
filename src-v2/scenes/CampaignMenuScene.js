@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { WORLDS, getLevel, isWorldUnlocked, isLevelUnlocked, totalLevels } from "../data/levels/index.js";
 import { loadSave, getStars, isCompleted, totalStars } from "../systems/SaveSystem.js";
+import { Audio } from "../systems/Audio.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
   constructor() {
@@ -124,9 +125,9 @@ export class CampaignMenuScene extends Phaser.Scene {
           color: stars > 0 ? "#ffd23f" : "#666",
         }).setOrigin(0.5);
 
-        cell.on("pointerover", () => cell.setFillStyle(done ? 0x3a6a3a : 0x33405a));
+        cell.on("pointerover", () => { cell.setFillStyle(done ? 0x3a6a3a : 0x33405a); Audio.ui(); });
         cell.on("pointerout", () => cell.setFillStyle(done ? 0x2a4a2a : 0x222840));
-        cell.on("pointerdown", () => this.scene.start("LevelScene", { levelId }));
+        cell.on("pointerdown", () => { Audio.click(); this.scene.start("LevelScene", { levelId }); });
       }
 
       x += cellW + gap;

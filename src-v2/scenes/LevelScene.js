@@ -9,6 +9,8 @@ import { Catapult } from "../entities/Catapult.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
+import { Audio } from "../systems/Audio.js";
+import { Tutorial } from "../ui/Tutorial.js";
 import {
   GRID,
   cellToPixel,
@@ -92,11 +94,17 @@ export class LevelScene extends Phaser.Scene {
     this.events.on("visitor-killed", () => {
       this.killed++;
       this.killText.setText("Tués : " + this.killed);
+      Audio.kill();
     });
 
     this.events.on("coins-earned", (amount) => {
       this.coins += amount;
       this.refreshCoinsText();
+      Audio.coin();
+    });
+
+    this.events.on("visitor-escaped", () => {
+      Audio.hit();
     });
 
     this.events.on("update", (time, delta) => {
@@ -137,6 +145,31 @@ export class LevelScene extends Phaser.Scene {
 
     this.waveManager = new WaveManager(this, this.level);
     this.waveManager.start();
+
+    Audio.resume();
+
+    if (this.level.id === "1.1") {
+      this.tutorial = new Tutorial(this, [
+        {
+          text: "Bienvenue à Park Defense ! Place une Coin Generator pour gagner des pièces régulièrement.",
+          hint: "Clique sur le bouton Coin Gen en bas",
+          arrowAt: { x: this.scale.width / 2 - 200, y: this.scale.height - 130 },
+          condition: (s) => s.towers.some((t) => t.constructor.name === "CoinGenerator"),
+        },
+        {
+          text: "Maintenant pose une Lava Tower pour transformer les visiteurs en squelettes.",
+          hint: "Drag depuis le bouton Lava Tower",
+          arrowAt: { x: this.scale.width / 2 - 60, y: this.scale.height - 130 },
+          condition: (s) => s.towers.some((t) => t.constructor.name === "LavaTower"),
+        },
+        {
+          text: "Parfait ! Les visiteurs arrivent par la droite, ils marchent vers la sortie à gauche. Ne les laisse pas passer !",
+          hint: "À toi de jouer",
+          timeout: 4000,
+        },
+      ]);
+      this.tutorial.start();
+    }
   }
 
   drawGrid() {
@@ -239,6 +272,7 @@ export class LevelScene extends Phaser.Scene {
     setCell(this.gridState, cell.col, cell.row, entity);
     this.coins -= this.placementDef.cost;
     this.refreshCoinsText();
+    Audio.place();
     this.toolbar.clearSelection();
     this.setPlacement(null);
   }
@@ -300,7 +334,9 @@ export class LevelScene extends Phaser.Scene {
 
   endLevel(win) {
     this.gameOver = true;
+    if (this.tutorial) this.tutorial.cleanup();
     const stars = win ? computeStars(this.level, this.escaped) : 0;
+    if (win) Audio.win(); else Audio.lose();
     this.time.delayedCall(800, () => {
       this.scene.start("LevelResultScene", {
         win,

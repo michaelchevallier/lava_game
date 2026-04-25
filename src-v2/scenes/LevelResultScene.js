@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { saveProgress } from "../systems/SaveSystem.js";
 import { getNextLevelId } from "../data/levels/index.js";
+import { Audio } from "../systems/Audio.js";
 
 export class LevelResultScene extends Phaser.Scene {
   constructor() {
@@ -108,10 +109,10 @@ export class LevelResultScene extends Phaser.Scene {
         strokeThickness: 3,
       }).setOrigin(0.5);
       bg.setInteractive();
-      bg.on("pointerover", () => bg.setFillStyle(0x33405a));
+      bg.on("pointerover", () => { bg.setFillStyle(0x33405a); Audio.ui(); });
       bg.on("pointerout", () => bg.setFillStyle(0x222840));
-      bg.on("pointerdown", b.action);
-      this.input.keyboard.once("keydown-" + b.key, b.action);
+      bg.on("pointerdown", () => { Audio.click(); b.action(); });
+      this.input.keyboard.once("keydown-" + b.key, () => { Audio.click(); b.action(); });
       x += 220;
     });
   }

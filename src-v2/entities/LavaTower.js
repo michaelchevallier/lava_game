@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { Projectile } from "./Projectile.js";
+import { Audio } from "../systems/Audio.js";
 
 export class LavaTower extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -59,6 +60,7 @@ export class LavaTower extends Phaser.GameObjects.Container {
       damage: this.damage,
     });
     this.scene.projectiles.push(proj);
+    Audio.fire();
     this.scene.tweens.add({
       targets: this,
       scaleX: 1.15,
