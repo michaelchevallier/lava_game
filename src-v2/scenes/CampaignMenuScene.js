@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import { WORLDS, getLevel } from "../data/levels/index.js";
+import { WORLDS, getLevel, isWorldUnlocked, isLevelUnlocked, totalLevels } from "../data/levels/index.js";
 import { loadSave, getStars, isCompleted, totalStars } from "../systems/SaveSystem.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
@@ -34,7 +34,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const total = totalStars();
-    this.add.text(width - 30, 30, "★ " + total + " / 18", {
+    this.add.text(width - 30, 30, "★ " + total + " / " + (totalLevels() * 3), {
       fontFamily: "system-ui",
       fontSize: "26px",
       fontStyle: "bold",
@@ -83,37 +83,51 @@ export class CampaignMenuScene extends Phaser.Scene {
       return;
     }
 
+    if (!isWorldUnlocked(world)) {
+      this.add.text(width / 2, y + cellH / 2, "🔒 Termine " + world.requires + " pour débloquer", {
+        fontFamily: "system-ui",
+        fontSize: "18px",
+        color: "#aaa",
+      }).setOrigin(0.5);
+      return;
+    }
+
     let x = startX;
     for (const levelId of world.levels) {
       const level = getLevel(levelId);
       if (!level) continue;
       const stars = getStars(levelId);
       const done = isCompleted(levelId);
+      const unlocked = isLevelUnlocked(levelId);
       const cellY = y + cellH / 2;
-      const cell = this.add.rectangle(x + cellW / 2, cellY, cellW, cellH, done ? 0x2a4a2a : 0x222840)
-        .setStrokeStyle(2, done ? 0x90ff90 : 0x4a4a6a)
-        .setInteractive();
-      this.add.text(x + cellW / 2, cellY - 18, levelId, {
+      const fill = !unlocked ? 0x1a1a22 : (done ? 0x2a4a2a : 0x222840);
+      const stroke = !unlocked ? 0x333 : (done ? 0x90ff90 : 0x4a4a6a);
+      const cell = this.add.rectangle(x + cellW / 2, cellY, cellW, cellH, fill).setStrokeStyle(2, stroke);
+      if (unlocked) cell.setInteractive();
+      const titleColor = unlocked ? "#fff" : "#666";
+      this.add.text(x + cellW / 2, cellY - 18, unlocked ? levelId : "🔒", {
         fontFamily: "system-ui",
         fontSize: "16px",
         fontStyle: "bold",
-        color: "#fff",
+        color: titleColor,
       }).setOrigin(0.5);
-      this.add.text(x + cellW / 2, cellY + 2, level.name, {
-        fontFamily: "system-ui",
-        fontSize: "11px",
-        color: "#bbb",
-      }).setOrigin(0.5);
-      const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
-      this.add.text(x + cellW / 2, cellY + 22, starText, {
-        fontFamily: "system-ui",
-        fontSize: "14px",
-        color: stars > 0 ? "#ffd23f" : "#666",
-      }).setOrigin(0.5);
+      if (unlocked) {
+        this.add.text(x + cellW / 2, cellY + 2, level.name, {
+          fontFamily: "system-ui",
+          fontSize: "11px",
+          color: "#bbb",
+        }).setOrigin(0.5);
+        const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
+        this.add.text(x + cellW / 2, cellY + 22, starText, {
+          fontFamily: "system-ui",
+          fontSize: "14px",
+          color: stars > 0 ? "#ffd23f" : "#666",
+        }).setOrigin(0.5);
 
-      cell.on("pointerover", () => cell.setFillStyle(done ? 0x3a6a3a : 0x33405a));
-      cell.on("pointerout", () => cell.setFillStyle(done ? 0x2a4a2a : 0x222840));
-      cell.on("pointerdown", () => this.scene.start("LevelScene", { levelId }));
+        cell.on("pointerover", () => cell.setFillStyle(done ? 0x3a6a3a : 0x33405a));
+        cell.on("pointerout", () => cell.setFillStyle(done ? 0x2a4a2a : 0x222840));
+        cell.on("pointerdown", () => this.scene.start("LevelScene", { levelId }));
+      }
 
       x += cellW + gap;
     }

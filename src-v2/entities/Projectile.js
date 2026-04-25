@@ -6,6 +6,7 @@ export class Projectile extends Phaser.GameObjects.Container {
 
     this.speed = opts.speed ?? 380;
     this.damage = opts.damage ?? 1;
+    this.source = opts.source ?? "lava";
     this._dead = false;
 
     const core = scene.add.circle(0, 0, 8, 0xff5a1c).setStrokeStyle(2, 0xffe066);
@@ -33,7 +34,7 @@ export class Projectile extends Phaser.GameObjects.Container {
   hit(visitor) {
     if (this._dead) return;
     this._dead = true;
-    visitor.takeDamage(this.damage);
+    visitor.takeDamage(this.damage, this.source);
     const burst = this.scene.add.circle(this.x, this.y, 14, 0xffd23f, 0.9);
     this.scene.tweens.add({
       targets: burst,

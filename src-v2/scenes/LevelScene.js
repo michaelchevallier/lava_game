@@ -251,6 +251,7 @@ export class LevelScene extends Phaser.Scene {
     const dtSec = delta / 1000;
     for (const v of this.visitors) {
       if (!v.active || v._dying) continue;
+      if (v.canFly) { v.blocked = false; continue; }
       const cellAhead = pixelToCell(v.x - 35, v.y);
       let blocker = null;
       if (cellAhead) {
@@ -269,11 +270,8 @@ export class LevelScene extends Phaser.Scene {
   spawnVisitor(row, type = "basic") {
     const y = rowToY(row);
     const x = rightEdgeX() + 50;
-    let opts = { hp: 1, speed: 60 };
-    if (type === "tank") opts = { hp: 3, speed: 50 };
-    const v = new Visitor(this, x, y, opts);
+    const v = new Visitor(this, x, y, { type });
     v.row = row;
-    v.type = type;
     this.visitors.push(v);
   }
 
