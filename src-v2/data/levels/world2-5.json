@@ -2,7 +2,7 @@
   "id": "2.5",
   "name": "Crépuscule rouge",
   "world": 2,
-  "startCoins": 200,
+  "startCoins": 320,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 3,
   "waves": [

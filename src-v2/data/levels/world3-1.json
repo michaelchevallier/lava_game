@@ -2,7 +2,7 @@
   "id": "3.1",
   "name": "Tempête 1",
   "world": 3,
-  "startCoins": 165,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 4,
   "waves": [

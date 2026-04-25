@@ -2,7 +2,7 @@
   "id": "2.6",
   "name": "Crépuscule — finale",
   "world": 2,
-  "startCoins": 175,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 3,
   "waves": [

@@ -2,7 +2,7 @@
   "id": "2.4",
   "name": "Marée mixte",
   "world": 2,
-  "startCoins": 225,
+  "startCoins": 320,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 4,
   "waves": [

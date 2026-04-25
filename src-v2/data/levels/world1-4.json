@@ -2,9 +2,9 @@
   "id": "1.4",
   "name": "Catapulte foraine",
   "world": 1,
-  "startCoins": 225,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult"],
-  "loseEscaped": 4,
+  "loseEscaped": 5,
   "waves": [
     {
       "delayMs": 6000,

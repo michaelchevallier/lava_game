@@ -2,7 +2,7 @@
   "id": "4.6",
   "name": "Volcan — finale",
   "world": 4,
-  "startCoins": 250,
+  "startCoins": 350,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 2,
   "waves": [

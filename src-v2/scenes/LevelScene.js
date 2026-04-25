@@ -36,9 +36,21 @@ export class LevelScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    this.add.rectangle(width / 2, 0, width, height, 0x6ec1e4).setOrigin(0.5, 0);
+    const skyGrad = this.add.graphics();
+    skyGrad.fillGradientStyle(0x87ceeb, 0x87ceeb, 0xffd2a8, 0xffd2a8, 1);
+    skyGrad.fillRect(0, 0, width, GRID.originY);
+
+    for (let i = 0; i < 5; i++) {
+      const cx = (i * 280 + 80) % width;
+      const cy = 30 + (i * 7) % 60;
+      const cloud = this.add.ellipse(cx, cy, 80, 22, 0xffffff, 0.85);
+      this.tweens.add({ targets: cloud, x: cloud.x + 1280, duration: 80000 + i * 12000, repeat: -1 });
+    }
+
     const groundY = GRID.originY + GRID.rows * GRID.cellSize;
-    this.add.rectangle(width / 2, groundY, width, height - groundY, 0x4a8a3a).setOrigin(0.5, 0);
+    const groundGrad = this.add.graphics();
+    groundGrad.fillGradientStyle(0x4a8a3a, 0x4a8a3a, 0x2a5a1a, 0x2a5a1a, 1);
+    groundGrad.fillRect(0, groundY, width, height - groundY);
 
     this.gridState = createGridState();
     this.drawGrid();
@@ -173,25 +185,36 @@ export class LevelScene extends Phaser.Scene {
   }
 
   drawGrid() {
-    const g = this.add.graphics();
-    g.lineStyle(1, 0x244a1a, 0.4);
     for (let r = 0; r < GRID.rows; r++) {
       const y0 = GRID.originY + r * GRID.cellSize;
       const stripe = this.add.rectangle(
         GRID.originX + (GRID.cols * GRID.cellSize) / 2,
         y0 + GRID.cellSize / 2,
         GRID.cols * GRID.cellSize,
-        GRID.cellSize - 4,
-        r % 2 === 0 ? 0x5fb04c : 0x4ea03c,
-        0.85,
+        GRID.cellSize - 2,
+        r % 2 === 0 ? 0x6ac74a : 0x58b438,
+        1,
       );
-      stripe.setStrokeStyle(2, 0x244a1a);
+      stripe.setStrokeStyle(1, 0x2a5a1a);
+    }
+    const cellG = this.add.graphics();
+    cellG.lineStyle(1, 0x2a5a1a, 0.25);
+    for (let r = 0; r <= GRID.rows; r++) {
+      const y = GRID.originY + r * GRID.cellSize;
+      cellG.lineBetween(GRID.originX, y, GRID.originX + GRID.cols * GRID.cellSize, y);
     }
     for (let c = 1; c < GRID.cols; c++) {
       const x = GRID.originX + c * GRID.cellSize;
-      g.lineBetween(x, GRID.originY, x, GRID.originY + GRID.rows * GRID.cellSize);
+      cellG.lineBetween(x, GRID.originY, x, GRID.originY + GRID.rows * GRID.cellSize);
     }
-    g.setDepth(2);
+    cellG.setDepth(2);
+
+    for (let i = 0; i < 30; i++) {
+      const x = GRID.originX + Math.random() * (GRID.cols * GRID.cellSize);
+      const y = GRID.originY + Math.random() * (GRID.rows * GRID.cellSize);
+      const blade = this.add.rectangle(x, y, 1, 4, 0x3a7a2a, 0.5);
+      blade.setDepth(3);
+    }
   }
 
   drawEntryExit() {

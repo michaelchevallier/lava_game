@@ -2,9 +2,9 @@
   "id": "1.5",
   "name": "Bombe à retardement",
   "world": 1,
-  "startCoins": 200,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
-  "loseEscaped": 4,
+  "loseEscaped": 5,
   "waves": [
     {
       "delayMs": 5000,

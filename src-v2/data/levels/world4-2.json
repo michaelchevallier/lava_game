@@ -2,7 +2,7 @@
   "id": "4.2",
   "name": "Volcan 2",
   "world": 4,
-  "startCoins": 205,
+  "startCoins": 350,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 4,
   "waves": [

@@ -2,7 +2,7 @@
   "id": "3.6",
   "name": "Tempête — finale",
   "world": 3,
-  "startCoins": 250,
+  "startCoins": 320,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 3,
   "waves": [

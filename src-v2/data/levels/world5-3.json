@@ -2,7 +2,7 @@
   "id": "5.3",
   "name": "Apocalypse 3",
   "world": 5,
-  "startCoins": 245,
+  "startCoins": 350,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
   "loseEscaped": 3,
   "waves": [

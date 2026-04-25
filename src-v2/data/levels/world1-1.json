@@ -2,45 +2,39 @@
   "id": "1.1",
   "name": "Premier jour",
   "world": 1,
-  "startCoins": 150,
+  "startCoins": 250,
   "allowedTiles": ["coin", "lava", "water"],
-  "loseEscaped": 5,
+  "loseEscaped": 6,
   "waves": [
     {
-      "delayMs": 6000,
+      "delayMs": 12000,
       "visitors": [
         { "type": "basic", "lane": 2, "delayMs": 0 },
-        { "type": "basic", "lane": 4, "delayMs": 2500 },
         { "type": "basic", "lane": 1, "delayMs": 5000 }
       ]
     },
     {
-      "delayMs": 18000,
+      "delayMs": 28000,
       "visitors": [
         { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 3, "delayMs": 1500 },
-        { "type": "basic", "lane": 2, "delayMs": 3000 },
-        { "type": "basic", "lane": 4, "delayMs": 5000 },
-        { "type": "basic", "lane": 1, "delayMs": 6500 }
+        { "type": "basic", "lane": 4, "delayMs": 1500 },
+        { "type": "basic", "lane": 2, "delayMs": 4000 }
       ]
     },
     {
-      "delayMs": 32000,
+      "delayMs": 48000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 800 },
-        { "type": "basic", "lane": 2, "delayMs": 1600 },
-        { "type": "basic", "lane": 3, "delayMs": 2400 },
-        { "type": "basic", "lane": 4, "delayMs": 3200 },
-        { "type": "basic", "lane": 2, "delayMs": 5000 },
-        { "type": "basic", "lane": 0, "delayMs": 6500 },
+        { "type": "basic", "lane": 1, "delayMs": 0 },
+        { "type": "basic", "lane": 3, "delayMs": 1200 },
+        { "type": "basic", "lane": 2, "delayMs": 3500 },
+        { "type": "basic", "lane": 0, "delayMs": 5500 },
         { "type": "basic", "lane": 4, "delayMs": 7500 }
       ]
     }
   ],
   "stars": {
     "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 1 },
-    "1": { "escapedMax": 4 }
+    "2": { "escapedMax": 2 },
+    "1": { "escapedMax": 5 }
   }
 }

@@ -6,18 +6,52 @@ export class LavaTower extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
     super(scene, x, y);
 
-    this.fireRate = opts.fireRate ?? 1500;
+    this.fireRate = opts.fireRate ?? 1100;
     this.range = opts.range ?? 1400;
     this.damage = opts.damage ?? 1;
     this.lastShotAt = 0;
 
-    const base = scene.add.rectangle(0, 18, 56, 16, 0x6b3a0a).setStrokeStyle(2, 0x2a1a04);
-    const body = scene.add.rectangle(0, -4, 44, 36, 0xff4400).setStrokeStyle(2, 0xffe066);
-    const cannon = scene.add.rectangle(16, -4, 28, 12, 0x222).setStrokeStyle(2, 0xffe066);
-    const eye = scene.add.circle(-6, -8, 4, 0xffe066);
+    const shadow = scene.add.ellipse(0, 26, 60, 10, 0x000, 0.35);
+    const base = scene.add.rectangle(0, 22, 60, 14, 0x4a2a04).setStrokeStyle(2, 0x2a1a04);
+    const baseTop = scene.add.rectangle(0, 14, 56, 4, 0x6b3a0a).setStrokeStyle(1, 0x2a1a04);
+    const lavaPool = scene.add.ellipse(0, 6, 40, 16, 0xff7722).setStrokeStyle(2, 0xffe066);
+    const bubble1 = scene.add.circle(-10, 4, 3, 0xffd23f, 0.85);
+    const bubble2 = scene.add.circle(8, 7, 2.5, 0xffe066, 0.9);
+    const body = scene.add.rectangle(0, -8, 38, 30, 0xc63a10).setStrokeStyle(2, 0x6b1a04);
+    const bodyShine = scene.add.rectangle(-10, -14, 6, 14, 0xff7744, 0.6);
+    this.cannon = scene.add.rectangle(20, -8, 28, 14, 0x1a1a1a).setStrokeStyle(2, 0xffe066);
+    this.cannon.setOrigin(0.2, 0.5);
+    const muzzleRing = scene.add.circle(36, -8, 5, 0x000).setStrokeStyle(1, 0xffe066);
+    const eyeBg = scene.add.circle(-8, -12, 5, 0xfff8c8);
+    const eye = scene.add.circle(-8, -12, 3, 0xff2200);
+    const eyeShine = scene.add.circle(-7, -13, 1, 0xffffff);
 
-    this.add([base, body, cannon, eye]);
-    this.setSize(56, 70);
+    this.add([shadow, base, baseTop, lavaPool, bubble1, bubble2, body, bodyShine, this.cannon, muzzleRing, eyeBg, eye, eyeShine]);
+    this.bubbles = [bubble1, bubble2];
+
+    scene.tweens.add({
+      targets: bubble1,
+      y: -2,
+      scale: 0.4,
+      alpha: 0,
+      duration: 1100,
+      yoyo: false,
+      repeat: -1,
+      ease: "Sine.out",
+    });
+    scene.tweens.add({
+      targets: bubble2,
+      y: 0,
+      scale: 0.5,
+      alpha: 0,
+      duration: 900,
+      delay: 400,
+      yoyo: false,
+      repeat: -1,
+      ease: "Sine.out",
+    });
+
+    this.setSize(60, 80);
     this.setDepth(8);
 
     scene.add.existing(this);
@@ -55,17 +89,35 @@ export class LavaTower extends Phaser.GameObjects.Container {
   }
 
   fire(target) {
-    const proj = new Projectile(this.scene, this.x + 30, this.y - 4, {
-      speed: 420,
+    const proj = new Projectile(this.scene, this.x + 36, this.y - 8, {
+      speed: 460,
       damage: this.damage,
     });
     this.scene.projectiles.push(proj);
     Audio.fire();
+
+    const flash = this.scene.add.circle(this.x + 42, this.y - 8, 10, 0xffe066, 0.95);
+    flash.setDepth(15);
+    this.scene.tweens.add({
+      targets: flash,
+      alpha: 0,
+      scale: 1.6,
+      duration: 160,
+      onComplete: () => flash.destroy(),
+    });
+
+    this.scene.tweens.add({
+      targets: this.cannon,
+      x: 12,
+      duration: 60,
+      yoyo: true,
+      ease: "Cubic.out",
+    });
     this.scene.tweens.add({
       targets: this,
-      scaleX: 1.15,
-      scaleY: 0.9,
-      duration: 70,
+      scaleX: 1.1,
+      scaleY: 0.95,
+      duration: 80,
       yoyo: true,
     });
   }

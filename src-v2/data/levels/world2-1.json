@@ -2,7 +2,7 @@
   "id": "2.1",
   "name": "Le maire arrive",
   "world": 2,
-  "startCoins": 175,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult"],
   "loseEscaped": 4,
   "waves": [

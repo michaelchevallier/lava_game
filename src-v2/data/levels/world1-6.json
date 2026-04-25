@@ -2,9 +2,9 @@
   "id": "1.6",
   "name": "Plein été — finale",
   "world": 1,
-  "startCoins": 175,
+  "startCoins": 300,
   "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
-  "loseEscaped": 3,
+  "loseEscaped": 4,
   "waves": [
     {
       "delayMs": 5000,

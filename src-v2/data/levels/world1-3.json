@@ -2,48 +2,43 @@
   "id": "1.3",
   "name": "Vent du soir",
   "world": 1,
-  "startCoins": 200,
+  "startCoins": 275,
   "allowedTiles": ["coin", "lava", "water", "fan"],
-  "loseEscaped": 4,
+  "loseEscaped": 5,
   "waves": [
     {
-      "delayMs": 5000,
+      "delayMs": 10000,
       "visitors": [
         { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 4, "delayMs": 1500 },
-        { "type": "tank", "lane": 2, "delayMs": 3000 }
+        { "type": "basic", "lane": 4, "delayMs": 2000 },
+        { "type": "tank", "lane": 2, "delayMs": 4500 }
       ]
     },
     {
-      "delayMs": 18000,
+      "delayMs": 26000,
       "visitors": [
         { "type": "basic", "lane": 1, "delayMs": 0 },
-        { "type": "tank", "lane": 3, "delayMs": 1200 },
-        { "type": "basic", "lane": 0, "delayMs": 2400 },
-        { "type": "basic", "lane": 2, "delayMs": 3600 },
-        { "type": "tank", "lane": 4, "delayMs": 4800 },
-        { "type": "basic", "lane": 1, "delayMs": 6000 }
+        { "type": "tank", "lane": 3, "delayMs": 1500 },
+        { "type": "basic", "lane": 2, "delayMs": 3500 },
+        { "type": "tank", "lane": 4, "delayMs": 5000 },
+        { "type": "basic", "lane": 0, "delayMs": 6500 }
       ]
     },
     {
-      "delayMs": 36000,
+      "delayMs": 44000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 500 },
-        { "type": "basic", "lane": 2, "delayMs": 1000 },
-        { "type": "basic", "lane": 3, "delayMs": 1500 },
-        { "type": "basic", "lane": 4, "delayMs": 2000 },
-        { "type": "tank", "lane": 2, "delayMs": 4000 },
-        { "type": "tank", "lane": 0, "delayMs": 5500 },
-        { "type": "tank", "lane": 4, "delayMs": 7000 },
-        { "type": "basic", "lane": 1, "delayMs": 8500 },
-        { "type": "basic", "lane": 3, "delayMs": 9500 }
+        { "type": "tank", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 1, "delayMs": 1000 },
+        { "type": "tank", "lane": 2, "delayMs": 2500 },
+        { "type": "basic", "lane": 3, "delayMs": 4000 },
+        { "type": "tank", "lane": 4, "delayMs": 5500 },
+        { "type": "basic", "lane": 2, "delayMs": 7500 }
       ]
     }
   ],
   "stars": {
     "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 1 },
-    "1": { "escapedMax": 3 }
+    "2": { "escapedMax": 2 },
+    "1": { "escapedMax": 4 }
   }
 }
