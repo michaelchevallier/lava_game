@@ -25,6 +25,14 @@ const config = {
 const game = new Phaser.Game(config);
 window.__game = game;
 
+const resumeAudioOnce = () => {
+  import("./systems/Audio.js").then((m) => m.Audio.resume());
+  window.removeEventListener("pointerdown", resumeAudioOnce);
+  window.removeEventListener("keydown", resumeAudioOnce);
+};
+window.addEventListener("pointerdown", resumeAudioOnce);
+window.addEventListener("keydown", resumeAudioOnce);
+
 window.__pd_scene = () => game.scene.scenes.find((s) => s.scene.key === "LevelScene" && s.scene.isActive());
 
 window.__pd_place = (toolId, col, row) => {

@@ -38,7 +38,14 @@ export class Toolbar extends Phaser.GameObjects.Container {
     scene.add.existing(this);
     this.setDepth(50);
 
-    scene.events.on("update", () => this.refreshAfford());
+    this._refreshHandler = () => this.refreshAfford();
+    scene.events.on("update", this._refreshHandler);
+    scene.events.once("shutdown", () => {
+      scene.events.off("update", this._refreshHandler);
+    });
+    scene.events.once("destroy", () => {
+      scene.events.off("update", this._refreshHandler);
+    });
   }
 
   makeButton(def, x, y, w, h) {
@@ -83,8 +90,10 @@ export class Toolbar extends Phaser.GameObjects.Container {
   }
 
   refreshAfford() {
+    if (!this.scene || !this.active) return;
     const coins = this.getCoins();
     for (const b of this.buttons) {
+      if (!b || !b.scene || !b._back || !b._back.scene || !b._costLabel || !b._costLabel.scene) continue;
       const can = coins >= b._def.cost;
       if (can === b._affordable) continue;
       b._affordable = can;
