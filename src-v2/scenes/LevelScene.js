@@ -278,11 +278,11 @@ export class LevelScene extends Phaser.Scene {
     const { x, y } = cellToPixel(cell.col, cell.row);
     let entity = null;
     if (this.placementDef.id === "lava") {
-      entity = new LavaTower(this, x, y, { fireRate: 1500, damage: 1 });
+      entity = new LavaTower(this, x, y);
     } else if (this.placementDef.id === "coin") {
-      entity = new CoinGenerator(this, x, y, { amount: 25, intervalMs: 8000 });
+      entity = new CoinGenerator(this, x, y);
     } else if (this.placementDef.id === "water") {
-      entity = new WaterBlock(this, x, y, { hp: 8 });
+      entity = new WaterBlock(this, x, y);
     } else if (this.placementDef.id === "fan") {
       entity = new Fan(this, x, y);
     } else if (this.placementDef.id === "magnet") {
