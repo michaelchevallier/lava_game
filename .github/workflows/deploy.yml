@@ -13,17 +13,38 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout main (KAPLAY legacy)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install + build legacy
+        run: |
+          npm ci
+          npm run build
 
-      - name: Upload artifact
+      - name: Checkout phaser-pivot into ./pivot
+        run: |
+          git fetch origin phaser-pivot
+          git worktree add pivot origin/phaser-pivot
+
+      - name: Build Park Defense (subpath /v2/)
+        env:
+          PARKDEF_BASE: /lava_game/v2/
+        run: |
+          cd pivot
+          npm ci
+          npm run build
+          cd ..
+          mkdir -p dist/v2
+          cp -r pivot/dist/* dist/v2/
+
+      - name: Upload combined artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
