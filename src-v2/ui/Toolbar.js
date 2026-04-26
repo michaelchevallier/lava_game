@@ -29,9 +29,9 @@ export class Toolbar extends Phaser.GameObjects.Container {
     this.add(bg);
 
     this.buttons = [];
-    const btnW = 105;
+    const btnW = 92;
     const btnH = 84;
-    const gap = 8;
+    const gap = 6;
     const totalW = TILE_DEFS.length * (btnW + gap) - gap;
     const startX = w / 2 - totalW / 2;
 
