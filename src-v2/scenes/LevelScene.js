@@ -17,6 +17,7 @@ import { Audio } from "../systems/Audio.js";
 import { Flash } from "../systems/Flash.js";
 import { Tutorial } from "../ui/Tutorial.js";
 import { getTheme } from "../systems/Theme.js";
+import { LavaMeter } from "../systems/LavaMeter.js";
 import {
   GRID,
   cellToPixel,
@@ -62,6 +63,10 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("tile-destroyed");
     this.events.removeAllListeners("sun-collected");
     this.events.removeAllListeners("mower-fired");
+    this.events.removeAllListeners("lava-erupt");
+    this.events.removeAllListeners("lava-overflow");
+    this.events.removeAllListeners("lava-safe");
+    if (this.lavaMeter) { this.lavaMeter.destroy(); this.lavaMeter = null; }
 
     this.gridState = createGridState();
     this.drawGrid();
@@ -76,6 +81,9 @@ export class LevelScene extends Phaser.Scene {
     this.suns = [];
     this.mowers = [];
     this.gameOver = false;
+    this._coinMultiplier = 1;
+
+    this.lavaMeter = new LavaMeter(this, { x: 30, y: 130, height: 450 });
 
     this.coinsText = this.add.text(20, 16, "¢ " + this.coins, {
       fontFamily: "system-ui",
@@ -116,22 +124,30 @@ export class LevelScene extends Phaser.Scene {
     this.events.on("visitor-escaped", () => {
       this.escaped++;
       this.scoreText.setText("Échappés : " + this.escaped);
+      this.lavaMeter.addEscape();
+      Audio.hit();
     });
     this.events.on("visitor-killed", () => {
       this.killed++;
       this.killText.setText("Tués : " + this.killed);
+      this.lavaMeter.addKill();
       Audio.kill();
     });
 
     this.events.on("sun-collected", (amount) => {
-      this.coins += amount;
+      const mult = this.lavaMeter?.coinMultiplier ?? 1;
+      this.coins += Math.round(amount * mult);
       this.refreshCoinsText();
       Audio.coin();
       Flash.hud(this.coinsText, 0xffd23f, 250);
     });
 
-    this.events.on("visitor-escaped", () => {
-      Audio.hit();
+    this.events.on("lava-erupt", ({ row }) => {
+      this._handleLavaErupt(row);
+    });
+
+    this.events.on("lava-overflow", () => {
+      this.endLevel(false);
     });
 
     this.events.on("mower-fired", () => {
@@ -661,6 +677,58 @@ export class LevelScene extends Phaser.Scene {
         this.scene.stop();
       });
     });
+  }
+
+  _handleLavaErupt(row) {
+    const duration = 5000;
+    const dmgPerSec = 5;
+    const affectedTiles = [];
+
+    for (let c = 0; c < GRID.cols; c++) {
+      const tile = this.gridState[row][c];
+      if (!tile || tile._dying) continue;
+      if (tile.constructor.name === "WaterBlock") continue;
+      affectedTiles.push(tile);
+    }
+
+    const laneX = GRID.originX + (GRID.cols * GRID.cellSize) / 2;
+    const laneY = rowToY(row);
+    const laneW = GRID.cols * GRID.cellSize;
+
+    for (let i = 0; i < 18; i++) {
+      const fx = GRID.originX + Math.random() * laneW;
+      const flame = this.add.triangle(fx, laneY, 0, 10, 5, -12, 10, 10, 0xff4400, 0.75).setDepth(30);
+      this.tweens.add({
+        targets: flame,
+        scale: { from: 0.6, to: 1.4 },
+        y: laneY - 10 - Math.random() * 20,
+        alpha: 0,
+        duration: 600 + Math.random() * 400,
+        yoyo: false,
+        repeat: Math.floor(duration / 600),
+        ease: "Sine.inOut",
+        onComplete: () => flame.destroy(),
+      });
+    }
+
+    const startMs = this.time.now;
+    const ticker = this.time.addEvent({
+      delay: 100,
+      loop: true,
+      callback: () => {
+        const elapsed = this.time.now - startMs;
+        if (elapsed >= duration) { ticker.remove(); return; }
+        const dtSec = 0.1;
+        for (const tile of affectedTiles) {
+          if (!tile.active || tile._dying) continue;
+          if (typeof tile.takeDamage === "function") {
+            tile.takeDamage(dmgPerSec * dtSec);
+          }
+        }
+      },
+    });
+
+    this.showWaveBanner("ERUPTION !", "#ff4400");
   }
 
   checkProjectileHits() {
