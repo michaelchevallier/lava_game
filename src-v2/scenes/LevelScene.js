@@ -10,6 +10,7 @@ import { FrostTramp } from "../entities/FrostTramp.js";
 import { Portal } from "../entities/Portal.js";
 import { LawnMower } from "../entities/LawnMower.js";
 import { Sun } from "../entities/Sun.js";
+import { TreasureChest } from "../entities/TreasureChest.js";
 import { CottonCandy } from "../entities/CottonCandy.js";
 import { Mine } from "../entities/Mine.js";
 import { NeonLamp } from "../entities/NeonLamp.js";
@@ -286,6 +287,23 @@ export class LevelScene extends Phaser.Scene {
         this.suns.push(sun);
       },
     });
+
+    if (!this.conveyorMode) {
+      this._chestsSpawned = 0;
+      this.time.addEvent({
+        delay: 38000 + Math.random() * 12000,
+        loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          if (this._chestsSpawned >= 3) return;
+          this._chestsSpawned++;
+          const col = 4 + Math.floor(Math.random() * 7);
+          const row = Math.floor(Math.random() * GRID.rows);
+          const { x, y } = cellToPixel(col, row);
+          new TreasureChest(this, x, y);
+        },
+      });
+    }
 
     Audio.resume();
     MusicManager.play("calm");
