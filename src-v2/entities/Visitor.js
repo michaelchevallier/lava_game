@@ -484,20 +484,48 @@ export class Visitor extends Phaser.GameObjects.Container {
     }
 
     const sx = this.x, sy = this.y;
-    for (let i = 0; i < 8; i++) {
-      const a = (Math.PI * 2 * i) / 8;
-      const part = this.scene.add.rectangle(sx, sy, 4, 4, 0xffeecc).setDepth(20).setStrokeStyle(1, 0x666);
+    const def = TYPE_DEFS[this.type] || TYPE_DEFS.basic;
+    const baseColor = def.shirtColor || 0xffeecc;
+    const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss";
+    const burst = isBoss ? 18 : 10;
+    for (let i = 0; i < burst; i++) {
+      const a = (Math.PI * 2 * i) / burst + Math.random() * 0.3;
+      const colors = [baseColor, def.skin || 0xffeecc, 0xffd23f, 0xffffff];
+      const c = colors[i % colors.length];
+      const r = isBoss ? (4 + Math.random() * 4) : (3 + Math.random() * 2);
+      const part = this.scene.add.circle(sx, sy, r, c, 1).setDepth(20);
       this.scene.tweens.add({
         targets: part,
-        x: sx + Math.cos(a) * (40 + Math.random() * 40),
-        y: sy + Math.sin(a) * (40 + Math.random() * 40),
+        x: sx + Math.cos(a) * (50 + Math.random() * (isBoss ? 80 : 50)),
+        y: sy + Math.sin(a) * (50 + Math.random() * (isBoss ? 80 : 50)) - 30,
         alpha: 0,
-        angle: 360 * (Math.random() > 0.5 ? 1 : -1),
-        duration: 600,
+        scale: 0.2,
+        duration: 600 + Math.random() * 200,
         ease: "Cubic.out",
         onComplete: () => part.destroy(),
       });
     }
+    if (isBoss) {
+      const ring = this.scene.add.circle(sx, sy, 10, 0, 0).setStrokeStyle(4, 0xffd23f).setDepth(20);
+      this.scene.tweens.add({
+        targets: ring, radius: 100, alpha: 0, duration: 500,
+        onUpdate: (tw, t) => t.setRadius(t.radius),
+        onComplete: () => ring.destroy(),
+      });
+    }
+    const popup = this.scene.add.text(sx, sy - 20, isBoss ? "BOSS DOWN!" : "+1", {
+      fontFamily: "system-ui",
+      fontSize: isBoss ? "22px" : "16px",
+      fontStyle: "bold",
+      color: isBoss ? "#ffd23f" : "#90ff90",
+      stroke: "#000",
+      strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(35);
+    this.scene.tweens.add({
+      targets: popup, y: popup.y - 40, alpha: 0,
+      duration: 800, ease: "Cubic.out",
+      onComplete: () => popup.destroy(),
+    });
     this.scene.tweens.add({
       targets: this,
       scaleY: 0.2,
