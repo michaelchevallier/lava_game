@@ -3,42 +3,154 @@
   "name": "Vent du soir",
   "world": 1,
   "startCoins": 275,
-  "allowedTiles": ["coin", "lava", "water", "fan"],
-  "loseEscaped": 5,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan"
+  ],
+  "loseEscaped": 7,
   "waves": [
     {
       "delayMs": 10000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 4, "delayMs": 2000 },
-        { "type": "tank", "lane": 2, "delayMs": 4500 }
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 2000
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 4500
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 5700
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 6400
+        }
       ]
     },
     {
       "delayMs": 26000,
       "visitors": [
-        { "type": "basic", "lane": 1, "delayMs": 0 },
-        { "type": "tank", "lane": 3, "delayMs": 1500 },
-        { "type": "basic", "lane": 2, "delayMs": 3500 },
-        { "type": "tank", "lane": 4, "delayMs": 5000 },
-        { "type": "basic", "lane": 0, "delayMs": 6500 }
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 1500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 3500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 5000
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 6500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 7700
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 8400
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 9100
+        }
       ]
     },
     {
       "delayMs": 44000,
       "visitors": [
-        { "type": "tank", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 1000 },
-        { "type": "tank", "lane": 2, "delayMs": 2500 },
-        { "type": "basic", "lane": 3, "delayMs": 4000 },
-        { "type": "tank", "lane": 4, "delayMs": 5500 },
-        { "type": "basic", "lane": 2, "delayMs": 7500 }
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 1000
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 2500
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 4000
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 5500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 7500
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 8700
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 9400
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 10100
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 10800
+        }
       ]
     }
   ],
   "stars": {
-    "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 2 },
-    "1": { "escapedMax": 4 }
+    "1": {
+      "escapedMax": 6
+    },
+    "2": {
+      "escapedMax": 4
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

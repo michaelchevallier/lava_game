@@ -3,47 +3,196 @@
   "name": "Volcan — finale",
   "world": 4,
   "startCoins": 350,
-  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
-  "loseEscaped": 2,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "catapult",
+    "magnet"
+  ],
+  "loseEscaped": 4,
   "waves": [
     {
       "delayMs": 6000,
       "visitors": [
-        { "type": "boss", "lane": 2, "delayMs": 0 },
-        { "type": "tank", "lane": 0, "delayMs": 1500 },
-        { "type": "tank", "lane": 4, "delayMs": 1500 }
+        {
+          "type": "boss",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 1500
+        },
+        {
+          "type": "boss",
+          "lane": 2,
+          "delayMs": 2700
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 3400
+        }
       ]
     },
     {
       "delayMs": 20000,
       "visitors": [
-        { "type": "boss", "lane": 1, "delayMs": 0 },
-        { "type": "boss", "lane": 3, "delayMs": 1500 },
-        { "type": "vip", "lane": 0, "delayMs": 3000 },
-        { "type": "vip", "lane": 4, "delayMs": 3000 },
-        { "type": "flying", "lane": 2, "delayMs": 4500 }
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 1500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 3000
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 3000
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 4500
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 5700
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 6400
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 7100
+        }
       ]
     },
     {
       "delayMs": 38000,
       "visitors": [
-        { "type": "boss", "lane": 0, "delayMs": 0 },
-        { "type": "boss", "lane": 4, "delayMs": 0 },
-        { "type": "vip", "lane": 1, "delayMs": 1500 },
-        { "type": "vip", "lane": 3, "delayMs": 1500 },
-        { "type": "skeleton", "lane": 2, "delayMs": 3000 },
-        { "type": "flying", "lane": 0, "delayMs": 5000 },
-        { "type": "flying", "lane": 2, "delayMs": 5500 },
-        { "type": "flying", "lane": 4, "delayMs": 6000 },
-        { "type": "boss", "lane": 2, "delayMs": 8000 },
-        { "type": "tank", "lane": 1, "delayMs": 10000 },
-        { "type": "tank", "lane": 3, "delayMs": 10500 }
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "boss",
+          "lane": 4,
+          "delayMs": 0
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 1500
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 1500
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 3000
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 5000
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 5500
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 6000
+        },
+        {
+          "type": "boss",
+          "lane": 2,
+          "delayMs": 8000
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 10000
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 10500
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 11700
+        },
+        {
+          "type": "boss",
+          "lane": 4,
+          "delayMs": 12400
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 13100
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 13800
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 14500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 15200
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 15900
+        }
       ]
     }
   ],
   "stars": {
-    "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 1 },
-    "1": { "escapedMax": 1 }
+    "1": {
+      "escapedMax": 3
+    },
+    "2": {
+      "escapedMax": 3
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

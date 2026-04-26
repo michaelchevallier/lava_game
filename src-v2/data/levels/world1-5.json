@@ -3,48 +3,201 @@
   "name": "Bombe à retardement",
   "world": 1,
   "startCoins": 300,
-  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
-  "loseEscaped": 5,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "catapult",
+    "magnet"
+  ],
+  "loseEscaped": 7,
   "waves": [
     {
       "delayMs": 5000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 500 },
-        { "type": "basic", "lane": 2, "delayMs": 1000 },
-        { "type": "basic", "lane": 3, "delayMs": 1500 },
-        { "type": "basic", "lane": 4, "delayMs": 2000 }
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 1000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 1500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 2000
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 3200
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 3900
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 4600
+        }
       ]
     },
     {
       "delayMs": 18000,
       "visitors": [
-        { "type": "tank", "lane": 1, "delayMs": 0 },
-        { "type": "tank", "lane": 2, "delayMs": 800 },
-        { "type": "tank", "lane": 3, "delayMs": 1600 },
-        { "type": "basic", "lane": 0, "delayMs": 3000 },
-        { "type": "basic", "lane": 4, "delayMs": 3500 }
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 800
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 1600
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 3000
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 3500
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 4700
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 5400
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 6100
+        }
       ]
     },
     {
       "delayMs": 32000,
       "visitors": [
-        { "type": "tank", "lane": 0, "delayMs": 0 },
-        { "type": "tank", "lane": 4, "delayMs": 0 },
-        { "type": "tank", "lane": 2, "delayMs": 1500 },
-        { "type": "basic", "lane": 1, "delayMs": 3000 },
-        { "type": "basic", "lane": 3, "delayMs": 3000 },
-        { "type": "tank", "lane": 0, "delayMs": 5000 },
-        { "type": "tank", "lane": 4, "delayMs": 5500 },
-        { "type": "basic", "lane": 2, "delayMs": 7000 },
-        { "type": "tank", "lane": 1, "delayMs": 8500 },
-        { "type": "tank", "lane": 3, "delayMs": 9000 }
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 1500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 3000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 3000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 5000
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 5500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 7000
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 8500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 9000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 10200
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 10900
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 11600
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 12300
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 13000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 13700
+        }
       ]
     }
   ],
   "stars": {
-    "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 1 },
-    "1": { "escapedMax": 3 }
+    "1": {
+      "escapedMax": 5
+    },
+    "2": {
+      "escapedMax": 3
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

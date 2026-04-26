@@ -3,48 +3,206 @@
   "name": "Crépuscule rouge",
   "world": 2,
   "startCoins": 320,
-  "allowedTiles": ["coin", "lava", "water", "fan", "catapult", "magnet"],
-  "loseEscaped": 3,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "catapult",
+    "magnet"
+  ],
+  "loseEscaped": 5,
   "waves": [
     {
       "delayMs": 5000,
       "visitors": [
-        { "type": "skeleton", "lane": 0, "delayMs": 0 },
-        { "type": "skeleton", "lane": 4, "delayMs": 0 },
-        { "type": "flying", "lane": 2, "delayMs": 1500 }
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 0
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 1500
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 2700
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 3400
+        }
       ]
     },
     {
       "delayMs": 16000,
       "visitors": [
-        { "type": "vip", "lane": 1, "delayMs": 0 },
-        { "type": "vip", "lane": 3, "delayMs": 0 },
-        { "type": "flying", "lane": 0, "delayMs": 1500 },
-        { "type": "flying", "lane": 4, "delayMs": 1500 },
-        { "type": "skeleton", "lane": 2, "delayMs": 3500 },
-        { "type": "tank", "lane": 1, "delayMs": 4500 }
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 0
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 1500
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 3500
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 4500
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 5700
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 6400
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 7100
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 7800
+        }
       ]
     },
     {
       "delayMs": 30000,
       "visitors": [
-        { "type": "skeleton", "lane": 0, "delayMs": 0 },
-        { "type": "skeleton", "lane": 1, "delayMs": 400 },
-        { "type": "skeleton", "lane": 2, "delayMs": 800 },
-        { "type": "skeleton", "lane": 3, "delayMs": 1200 },
-        { "type": "skeleton", "lane": 4, "delayMs": 1600 },
-        { "type": "vip", "lane": 1, "delayMs": 4000 },
-        { "type": "vip", "lane": 3, "delayMs": 4500 },
-        { "type": "flying", "lane": 0, "delayMs": 6500 },
-        { "type": "flying", "lane": 2, "delayMs": 7000 },
-        { "type": "flying", "lane": 4, "delayMs": 7500 },
-        { "type": "tank", "lane": 2, "delayMs": 9500 }
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "skeleton",
+          "lane": 1,
+          "delayMs": 400
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 800
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 1200
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 1600
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 4000
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 4500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 6500
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 7000
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 7500
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 9500
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 10700
+        },
+        {
+          "type": "skeleton",
+          "lane": 1,
+          "delayMs": 11400
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 12100
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 12800
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 13500
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 14200
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 14900
+        }
       ]
     }
   ],
   "stars": {
-    "3": { "escapedMax": 0 },
-    "2": { "escapedMax": 1 },
-    "1": { "escapedMax": 2 }
+    "1": {
+      "escapedMax": 4
+    },
+    "2": {
+      "escapedMax": 3
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }
