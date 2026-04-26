@@ -695,6 +695,15 @@ export class LevelScene extends Phaser.Scene {
   }
 
   refreshWaveStatus(time) {
+    if (this.waveManager.infinite) {
+      const next = this.waveManager.nextWaveAtMs(time);
+      const wave = this.waveManager.endlessWave;
+      this.waveStatusText.setText(
+        "Vague " + wave + " — alive " + this.visitors.length + " — kills " + this.killed +
+          (next > 100 ? " — next " + Math.ceil(next / 1000) + "s" : "")
+      );
+      return;
+    }
     const total = this.waveManager.totalVisitors();
     const spawned = this.waveManager.spawnedCount();
     const alive = this.visitors.length;
@@ -712,6 +721,7 @@ export class LevelScene extends Phaser.Scene {
       this.endLevel(false);
       return;
     }
+    if (this.waveManager.infinite) return;
     if (this.waveManager.allSpawned && this.visitors.length === 0) {
       this.endLevel(true);
     }
@@ -720,6 +730,7 @@ export class LevelScene extends Phaser.Scene {
   endLevel(win) {
     this.gameOver = true;
     if (this.tutorial) this.tutorial.cleanup();
+    const isEndless = !!this.waveManager?.infinite;
     const stars = win ? computeStars(this.level, this.escaped) : 0;
     if (win) Audio.win(); else Audio.lose();
     this.time.delayedCall(600, () => {
@@ -733,6 +744,8 @@ export class LevelScene extends Phaser.Scene {
           coins: this.coins,
           levelId: this.level.id,
           levelName: this.level.name,
+          endless: isEndless,
+          endlessWave: this.waveManager?.endlessWave ?? 0,
         });
         this.scene.stop();
       });

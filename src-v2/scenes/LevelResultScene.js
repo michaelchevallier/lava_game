@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import { saveProgress } from "../systems/SaveSystem.js";
+import { saveProgress, saveEndlessRun, getEndlessTop } from "../systems/SaveSystem.js";
 import { getNextLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
@@ -15,13 +15,15 @@ export class LevelResultScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
-    const { win, stars, killed, escaped, coins, levelId, levelName } = this.payload;
+    const { win, stars, killed, escaped, coins, levelId, levelName, endless, endlessWave } = this.payload;
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
 
     MusicManager.play("menu");
 
-    if (win) saveProgress(levelId, stars);
+    if (endless) {
+      saveEndlessRun(killed || 0, endlessWave || 0);
+    } else if (win) saveProgress(levelId, stars);
 
     const bg = this.add.graphics();
     if (win) {
@@ -48,7 +50,7 @@ export class LevelResultScene extends Phaser.Scene {
       }
     }
 
-    const titleText = win ? "VICTOIRE !" : "DÉFAITE";
+    const titleText = endless ? "FIN DU RUN" : (win ? "VICTOIRE !" : "DÉFAITE");
     const title = this.add.text(width / 2, 120, titleText, {
       fontFamily: "system-ui",
       fontSize: "84px",
@@ -71,7 +73,41 @@ export class LevelResultScene extends Phaser.Scene {
       color: "#ddd",
     }).setOrigin(0.5);
 
-    if (win) {
+    if (endless) {
+      this.add.text(width / 2, 280, "Vague atteinte : " + (endlessWave || 0), {
+        fontFamily: "system-ui",
+        fontSize: "30px",
+        fontStyle: "bold",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 5,
+      }).setOrigin(0.5);
+      this.add.text(width / 2, 320, "Score (kills) : " + (killed || 0), {
+        fontFamily: "system-ui",
+        fontSize: "26px",
+        color: "#ffeebb",
+      }).setOrigin(0.5);
+
+      const top = getEndlessTop();
+      this.add.text(width / 2, 370, "🏆 Top 5 local", {
+        fontFamily: "system-ui",
+        fontSize: "20px",
+        fontStyle: "bold",
+        color: "#fff",
+      }).setOrigin(0.5);
+      top.slice(0, 5).forEach((r, i) => {
+        const isCurrent = r.score === (killed || 0) && r.wave === (endlessWave || 0);
+        const medals = ["🥇", "🥈", "🥉", "4.", "5."];
+        this.add.text(width / 2, 400 + i * 24,
+          (medals[i] || (i + 1) + ".") + " " + r.score + " kills • Vague " + r.wave,
+          {
+            fontFamily: "system-ui",
+            fontSize: "16px",
+            color: isCurrent ? "#ffd23f" : "#ddd",
+            fontStyle: isCurrent ? "bold" : "normal",
+          }).setOrigin(0.5);
+      });
+    } else if (win) {
       const starsX = width / 2;
       const starsY = 320;
       const gap = 110;

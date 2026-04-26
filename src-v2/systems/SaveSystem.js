@@ -50,3 +50,17 @@ export function totalStars() {
   const save = loadSave();
   return Object.values(save.levels).reduce((s, l) => s + (l.stars || 0), 0);
 }
+
+export function saveEndlessRun(score, wave) {
+  const save = loadSave();
+  if (!save.endless) save.endless = { runs: [] };
+  save.endless.runs.push({ score, wave, ts: Date.now() });
+  save.endless.runs.sort((a, b) => b.score - a.score);
+  save.endless.runs = save.endless.runs.slice(0, 5);
+  saveSave(save);
+  return save;
+}
+
+export function getEndlessTop() {
+  return loadSave().endless?.runs ?? [];
+}

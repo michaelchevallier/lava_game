@@ -28,6 +28,7 @@ import w53 from "./world5-3.json";
 import w54 from "./world5-4.json";
 import w55 from "./world5-5.json";
 import w56 from "./world5-6.json";
+import endless from "./endless.json";
 
 import { isCompleted } from "../../systems/SaveSystem.js";
 
@@ -37,6 +38,7 @@ const LEVELS_LIST = [
   w31, w32, w33, w34, w35, w36,
   w41, w42, w43, w44, w45, w46,
   w51, w52, w53, w54, w55, w56,
+  endless,
 ];
 const LEVELS_MAP = {};
 for (const lvl of LEVELS_LIST) LEVELS_MAP[lvl.id] = lvl;

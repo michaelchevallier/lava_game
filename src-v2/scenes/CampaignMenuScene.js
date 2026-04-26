@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { WORLDS, getLevel, isWorldUnlocked, isLevelUnlocked, totalLevels } from "../data/levels/index.js";
-import { loadSave, getStars, isCompleted, totalStars } from "../systems/SaveSystem.js";
+import { loadSave, getStars, isCompleted, totalStars, getEndlessTop } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { getTheme } from "../systems/Theme.js";
@@ -66,8 +66,80 @@ export class CampaignMenuScene extends Phaser.Scene {
     let y = 150;
     for (const world of WORLDS) {
       this.drawWorldRow(world, y);
-      y += 105;
+      y += 95;
     }
+    this.drawEndlessButton(y + 8);
+  }
+
+  drawEndlessButton(y) {
+    const { width } = this.scale;
+    const top = getEndlessTop();
+    const best = top[0]?.score ?? 0;
+    const bestWave = top[0]?.wave ?? 0;
+
+    const card = this.add.graphics();
+    card.fillStyle(0x000000, 0.55);
+    card.fillRoundedRect(20, y - 4, width - 40, 88, 10);
+    card.lineStyle(3, 0xff4400, 1);
+    card.strokeRoundedRect(20, y - 4, width - 40, 88, 10);
+
+    const indic = this.add.rectangle(38, y + 42, 6, 78, 0xff2200);
+    this.tweens.add({ targets: indic, alpha: { from: 0.6, to: 1 }, duration: 1000, yoyo: true, repeat: -1 });
+
+    this.add.text(100, y + 22, "🌋 LA COULÉE", {
+      fontFamily: "system-ui",
+      fontSize: "26px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+      stroke: "#000",
+      strokeThickness: 4,
+    });
+    this.add.text(100, y + 54, "Mode Endless — survis le plus longtemps", {
+      fontFamily: "system-ui",
+      fontSize: "14px",
+      color: "#ffeebb",
+    });
+
+    if (best > 0) {
+      this.add.text(width - 360, y + 22, "Meilleur :", {
+        fontFamily: "system-ui",
+        fontSize: "14px",
+        color: "#bbb",
+      });
+      this.add.text(width - 360, y + 42, "★ " + best + " kills • Vague " + bestWave, {
+        fontFamily: "system-ui",
+        fontSize: "16px",
+        fontStyle: "bold",
+        color: "#ffd23f",
+      });
+    }
+
+    const btn = this.add.graphics();
+    btn.fillStyle(0xc63a3a, 1);
+    btn.fillRoundedRect(width - 200, y + 18, 160, 50, 8);
+    btn.lineStyle(2, 0xff8800, 1);
+    btn.strokeRoundedRect(width - 200, y + 18, 160, 50, 8);
+
+    const lbl = this.add.text(width - 120, y + 43, "▶ JOUER", {
+      fontFamily: "system-ui",
+      fontSize: "20px",
+      fontStyle: "bold",
+      color: "#fff",
+      stroke: "#000",
+      strokeThickness: 3,
+    }).setOrigin(0.5);
+
+    const hit = this.add.rectangle(width - 120, y + 43, 160, 50, 0x000, 0).setInteractive();
+    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(width - 200, y + 18, 160, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(width - 200, y + 18, 160, 50, 8); Audio.ui(); });
+    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(width - 200, y + 18, 160, 50, 8); btn.lineStyle(2, 0xff8800, 1); btn.strokeRoundedRect(width - 200, y + 18, 160, 50, 8); });
+    hit.on("pointerdown", () => {
+      Audio.click();
+      this.cameras.main.fadeOut(300, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("LevelScene", { levelId: "endless" });
+        this.scene.stop();
+      });
+    });
   }
 
   drawWorldRow(world, y) {

@@ -1,0 +1,15 @@
+{
+  "id": "endless",
+  "name": "La Coulée — Endless",
+  "world": 5,
+  "startCoins": 350,
+  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "catapult", "frost", "portal", "tamer", "cottoncandy"],
+  "loseEscaped": 99,
+  "infinite": true,
+  "waves": [],
+  "stars": {
+    "3": { "escapedMax": 0 },
+    "2": { "escapedMax": 0 },
+    "1": { "escapedMax": 99 }
+  }
+}
