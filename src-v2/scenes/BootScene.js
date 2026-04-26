@@ -26,14 +26,14 @@ export class BootScene extends Phaser.Scene {
       this.tweens.add({ targets: flame, scale: { from: 0.6, to: 1.3 }, duration: 700 + Math.random() * 600, yoyo: true, repeat: -1 });
     }
 
-    const titleShadow = this.add.text(width / 2 + 4, 200 + 4, "PARK DEFENSE", {
+    const titleShadow = this.add.text(width / 2 + 4, 200 + 4, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
       fontSize: "92px",
       fontStyle: "bold",
       color: "#000",
     }).setOrigin(0.5).setAlpha(0.5);
 
-    const title = this.add.text(width / 2, 200, "PARK DEFENSE", {
+    const title = this.add.text(width / 2, 200, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
       fontSize: "92px",
       fontStyle: "bold",

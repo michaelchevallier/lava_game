@@ -66,6 +66,9 @@ export class Tutorial {
       });
     }
 
+    bg.setInteractive(new Phaser.Geom.Rectangle(-350, -40, 700, 80), Phaser.Geom.Rectangle.Contains);
+    bg.on("pointerdown", () => { if (this.active) this.next(); });
+
     this.popup = { bg, txt, hint, arrow };
 
     if (step.condition) {
@@ -73,13 +76,21 @@ export class Tutorial {
         delay: 200,
         loop: true,
         callback: () => {
-          if (step.condition(this.scene)) {
-            checker.remove();
-            this.next();
-          }
+          try {
+            if (step.condition(this.scene)) {
+              checker.remove();
+              this.next();
+            }
+          } catch (e) {}
         },
       });
       this.popup.checker = checker;
+      const fallback = this.scene.time.delayedCall(step.maxWaitMs ?? 25000, () => {
+        if (this.active && this.popup && this.popup.checker === checker) {
+          this.next();
+        }
+      });
+      this.popup.fallback = fallback;
     } else {
       this.scene.time.delayedCall(step.timeout || 4000, () => {
         if (this.active) this.next();
@@ -94,6 +105,7 @@ export class Tutorial {
     this.popup.hint?.destroy();
     this.popup.arrow?.destroy();
     this.popup.checker?.remove();
+    this.popup.fallback?.remove();
     this.popup = null;
   }
 

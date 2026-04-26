@@ -12,6 +12,7 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       compress: { drop_console: true, drop_debugger: true },
+      keep_classnames: true,
     },
     rollupOptions: {
       output: { manualChunks: { kaplay: ["kaplay"] } },

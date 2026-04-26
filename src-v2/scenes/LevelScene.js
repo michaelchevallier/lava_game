@@ -221,7 +221,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.level.id === "1.1") {
       this.tutorial = new Tutorial(this, [
         {
-          text: "Bienvenue à Park Defense ! Place une Coin Generator pour gagner des pièces régulièrement.",
+          text: "Bienvenue à Milan Park Defense ! Place une Coin Generator pour gagner des pièces régulièrement.",
           hint: "Clique sur le bouton Coin Gen en bas",
           arrowAt: { x: this.scale.width / 2 - 200, y: this.scale.height - 130 },
           condition: (s) => s.towers.some((t) => t.constructor.name === "CoinGenerator"),

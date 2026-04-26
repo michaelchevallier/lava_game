@@ -26,14 +26,14 @@ export class CampaignMenuScene extends Phaser.Scene {
       this.tweens.add({ targets: star, alpha: { from: 0.2, to: 0.9 }, duration: 800 + Math.random() * 1500, yoyo: true, repeat: -1 });
     }
 
-    const titleShadow = this.add.text(width / 2 + 3, 50 + 3, "PARK DEFENSE", {
+    const titleShadow = this.add.text(width / 2 + 3, 50 + 3, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
       fontSize: "56px",
       fontStyle: "bold",
       color: "#000",
     }).setOrigin(0.5).setAlpha(0.5);
 
-    this.add.text(width / 2, 50, "PARK DEFENSE", {
+    this.add.text(width / 2, 50, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
       fontSize: "56px",
       fontStyle: "bold",
