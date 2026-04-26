@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import { saveProgress } from "../systems/SaveSystem.js";
 import { getNextLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
+import { MusicManager } from "../systems/MusicManager.js";
 
 export class LevelResultScene extends Phaser.Scene {
   constructor() {
@@ -17,6 +18,8 @@ export class LevelResultScene extends Phaser.Scene {
     const { win, stars, killed, escaped, coins, levelId, levelName } = this.payload;
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
+
+    MusicManager.play("menu");
 
     if (win) saveProgress(levelId, stars);
 

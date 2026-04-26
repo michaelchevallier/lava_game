@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { MusicManager } from "../systems/MusicManager.js";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -7,6 +8,8 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    MusicManager.init();
 
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x1a0a2a, 0x1a0a2a, 0xff6b1c, 0xff4400, 1);
@@ -98,6 +101,45 @@ export class BootScene extends Phaser.Scene {
         this.scene.start("CampaignMenuScene");
         this.scene.stop();
       });
+    });
+
+    this._buildVolumeSlider(width, height);
+  }
+
+  _buildVolumeSlider(width, height) {
+    const sliderX = width - 110;
+    const sliderY = height - 70;
+    const trackW = 120;
+    const trackH = 6;
+    const knobR = 9;
+
+    const saved = parseFloat(localStorage.getItem("parkdef:volume") ?? "0.5");
+    let vol = isNaN(saved) ? 0.5 : Math.max(0, Math.min(1, saved));
+
+    this.add.text(sliderX - trackW / 2, sliderY - 18, "Volume", {
+      fontFamily: "system-ui",
+      fontSize: "12px",
+      color: "#aaa",
+    });
+
+    const track = this.add.rectangle(sliderX, sliderY, trackW, trackH, 0x555555).setOrigin(0.5);
+    const fill = this.add.rectangle(sliderX - trackW / 2, sliderY, trackW * vol, trackH, 0x4ed8a3).setOrigin(0, 0.5);
+    const knob = this.add.circle(sliderX - trackW / 2 + trackW * vol, sliderY, knobR, 0xffffff)
+      .setInteractive({ draggable: true, useHandCursor: true });
+
+    const updateVol = (px) => {
+      const minX = sliderX - trackW / 2;
+      const maxX = sliderX + trackW / 2;
+      const clampedX = Math.max(minX, Math.min(maxX, px));
+      vol = (clampedX - minX) / trackW;
+      knob.setPosition(clampedX, sliderY);
+      fill.setSize(trackW * vol, trackH);
+      MusicManager.setVolume(vol);
+    };
+
+    this.input.setDraggable(knob);
+    this.input.on("drag", (_ptr, obj, dragX) => {
+      if (obj === knob) updateVol(dragX);
     });
   }
 }

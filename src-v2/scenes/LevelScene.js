@@ -14,6 +14,7 @@ import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
+import { MusicManager } from "../systems/MusicManager.js";
 import { Flash } from "../systems/Flash.js";
 import { Tutorial } from "../ui/Tutorial.js";
 import { getTheme } from "../systems/Theme.js";
@@ -222,6 +223,21 @@ export class LevelScene extends Phaser.Scene {
     });
 
     Audio.resume();
+    MusicManager.play("calm");
+
+    this._lastMusicCheck = 0;
+    this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => {
+        if (!this.scene.isActive() || this.gameOver || !this.waveManager) return;
+        if (this.waveManager.allSpawned && this.visitors.length >= 5) {
+          MusicManager.play("intense");
+        } else if (MusicManager.currentTrack === "intense" && this.visitors.length < 5) {
+          MusicManager.play("calm");
+        }
+      },
+    });
 
     this.level.waves.forEach((wave, i) => {
       const at = Math.max(0, wave.delayMs - 1200);

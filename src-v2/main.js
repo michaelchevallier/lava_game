@@ -4,6 +4,7 @@ import { CampaignMenuScene } from "./scenes/CampaignMenuScene.js";
 import { LevelScene } from "./scenes/LevelScene.js";
 import { LevelResultScene } from "./scenes/LevelResultScene.js";
 import { TILE_DEFS } from "./ui/Toolbar.js";
+import { MusicManager } from "./systems/MusicManager.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -28,6 +29,8 @@ window.__game = game;
 
 const resumeAudioOnce = () => {
   import("./systems/Audio.js").then((m) => m.Audio.resume());
+  MusicManager.resume();
+  MusicManager.play("menu");
   window.removeEventListener("pointerdown", resumeAudioOnce);
   window.removeEventListener("keydown", resumeAudioOnce);
 };

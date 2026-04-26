@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import { WORLDS, getLevel, isWorldUnlocked, isLevelUnlocked, totalLevels } from "../data/levels/index.js";
 import { loadSave, getStars, isCompleted, totalStars } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
+import { MusicManager } from "../systems/MusicManager.js";
 import { getTheme } from "../systems/Theme.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
@@ -12,6 +13,7 @@ export class CampaignMenuScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    MusicManager.play("menu");
     this.cameras.main.fadeIn(400, 0, 0, 0);
     this.cameras.main.setBackgroundColor("#0a0510");
 
