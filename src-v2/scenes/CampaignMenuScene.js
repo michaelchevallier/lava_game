@@ -299,6 +299,45 @@ export class CampaignMenuScene extends Phaser.Scene {
     });
   }
 
+  _showLevelTip(level, x, y) {
+    this._hideLevelTip();
+    const waveCount = level.waves?.length ?? 0;
+    const tileCount = (level.allowedTiles || []).length;
+    const visitorTypes = new Set();
+    for (const w of level.waves || []) {
+      for (const v of w.visitors || []) visitorTypes.add(v.type);
+    }
+    const lines = [
+      "Vagues : " + waveCount + " • Tiles : " + tileCount,
+      "Sortie max : " + (level.loseEscaped ?? "?"),
+      "Visiteurs : " + Array.from(visitorTypes).join(", "),
+    ];
+    const text = lines.join("\n");
+    const tip = this.add.container(x, y).setDepth(220);
+    const txt = this.add.text(0, -8, text, {
+      fontFamily: "system-ui",
+      fontSize: "11px",
+      color: "#ffeebb",
+      align: "center",
+      stroke: "#000",
+      strokeThickness: 3,
+    }).setOrigin(0.5, 1);
+    const w = txt.width + 16;
+    const h = txt.height + 12;
+    const bg = this.add.rectangle(0, -h / 2 - 8, w, h, 0x000, 0.85).setStrokeStyle(1, 0xffd23f);
+    tip.add([bg, txt]);
+    tip.setAlpha(0);
+    this.tweens.add({ targets: tip, alpha: 1, duration: 120 });
+    this._levelTip = tip;
+  }
+
+  _hideLevelTip() {
+    if (this._levelTip) {
+      this._levelTip.destroy();
+      this._levelTip = null;
+    }
+  }
+
   drawWorldRow(world, y) {
     const { width } = this.scale;
     const labelX = 100;
@@ -396,8 +435,8 @@ export class CampaignMenuScene extends Phaser.Scene {
         const hoverBg = this.add.graphics();
         hoverBg.fillStyle(stroke, 0.2);
         hoverBg.fillRoundedRect(x, cellY - cellH / 2, cellW, cellH, 6).setVisible(false);
-        hit.on("pointerover", () => { hoverBg.setVisible(true); Audio.ui(); });
-        hit.on("pointerout", () => hoverBg.setVisible(false));
+        hit.on("pointerover", () => { hoverBg.setVisible(true); Audio.ui(); this._showLevelTip(level, x + cellW / 2, cellY - cellH / 2 - 6); });
+        hit.on("pointerout", () => { hoverBg.setVisible(false); this._hideLevelTip(); });
         hit.on("pointerdown", () => {
           Audio.click();
           this.cameras.main.fadeOut(300, 0, 0, 0);
