@@ -62,10 +62,10 @@ export class CampaignMenuScene extends Phaser.Scene {
     this.drawTrophyButton();
     this.drawStatsButton();
 
-    let y = 150;
+    let y = 142;
     for (const world of WORLDS) {
       this.drawWorldRow(world, y);
-      y += 95;
+      y += 80;
     }
     this.drawEndlessButton(y + 8);
     this.drawCarnivalButton(y + 8);
@@ -342,9 +342,9 @@ export class CampaignMenuScene extends Phaser.Scene {
     const { width } = this.scale;
     const labelX = 100;
     const startX = 340;
-    const cellW = 130;
-    const cellH = 84;
-    const gap = 10;
+    const cellW = 122;
+    const cellH = 70;
+    const gap = 8;
     const theme = getTheme(world.id);
 
     const rowBg = this.add.graphics();
@@ -408,9 +408,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       if (unlocked) hit.setInteractive();
 
       const titleColor = unlocked ? "#fff" : "#666";
-      this.add.text(x + cellW / 2, cellY - 22, unlocked ? levelId : "🔒", {
+      this.add.text(x + cellW / 2, cellY - 18, unlocked ? levelId : "🔒", {
         fontFamily: "system-ui",
-        fontSize: "18px",
+        fontSize: "16px",
         fontStyle: "bold",
         color: titleColor,
         stroke: "#000",
@@ -420,13 +420,13 @@ export class CampaignMenuScene extends Phaser.Scene {
       if (unlocked) {
         this.add.text(x + cellW / 2, cellY - 2, level.name, {
           fontFamily: "system-ui",
-          fontSize: "11px",
+          fontSize: "10px",
           color: "#ddd",
         }).setOrigin(0.5);
         const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
-        this.add.text(x + cellW / 2, cellY + 22, starText, {
+        this.add.text(x + cellW / 2, cellY + 18, starText, {
           fontFamily: "system-ui",
-          fontSize: "16px",
+          fontSize: "14px",
           color: stars > 0 ? "#ffd23f" : "#666",
           stroke: "#000",
           strokeThickness: 2,

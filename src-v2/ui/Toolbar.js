@@ -12,6 +12,7 @@ export const TILE_DEFS = [
   { id: "portal", label: "Portal", cost: 300, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 22000 },
   { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000 },
   { id: "mine", label: "Mine", cost: 100, color: 0x4a2a4a, accent: 0xff8800, cooldownMs: 12000 },
+  { id: "neon", label: "Néon", cost: 200, color: 0xff66ff, accent: 0xffaaff, cooldownMs: 14000 },
   { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
@@ -29,9 +30,9 @@ export class Toolbar extends Phaser.GameObjects.Container {
     this.add(bg);
 
     this.buttons = [];
-    const btnW = 92;
+    const btnW = 86;
     const btnH = 84;
-    const gap = 6;
+    const gap = 4;
     const totalW = TILE_DEFS.length * (btnW + gap) - gap;
     const startX = w / 2 - totalW / 2;
 
@@ -293,6 +294,13 @@ export function makeTileIcon(s, id, x, y) {
       c.add(s.add.circle(0, -8, 9, 0xffaaee).setStrokeStyle(1, 0xff66cc));
       c.add(s.add.circle(-7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
       c.add(s.add.circle(7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
+    } else if (id === "neon") {
+      c.add(s.add.rectangle(0, 12, 8, 4, 0x222));
+      c.add(s.add.rectangle(0, -2, 4, 18, 0x444));
+      c.add(s.add.rectangle(0, -14, 18, 6, 0x222).setStrokeStyle(1, 0x111));
+      c.add(s.add.rectangle(0, -14, 14, 3, 0xff66ff).setStrokeStyle(1, 0xffaaff));
+      c.add(s.add.ellipse(0, -14, 24, 8, 0xff66ff, 0.35));
+      c.add(s.add.ellipse(0, -14, 32, 12, 0xffaaff, 0.18));
     } else if (id === "mine") {
       c.add(s.add.rectangle(0, 8, 26, 4, 0x3a2a1a));
       c.add(s.add.circle(0, -2, 11, 0x4a2a4a).setStrokeStyle(2, 0x222));

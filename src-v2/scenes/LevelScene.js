@@ -12,6 +12,7 @@ import { LawnMower } from "../entities/LawnMower.js";
 import { Sun } from "../entities/Sun.js";
 import { CottonCandy } from "../entities/CottonCandy.js";
 import { Mine } from "../entities/Mine.js";
+import { NeonLamp } from "../entities/NeonLamp.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
@@ -406,6 +407,23 @@ export class LevelScene extends Phaser.Scene {
         this.tweens.add({ targets: flame, scale: { from: 0.8, to: 1.2 }, duration: 800 + Math.random() * 600, yoyo: true, repeat: -1 });
       }
     }
+    if (world === 6) {
+      for (let i = 0; i < 60; i++) {
+        const sx = Math.random() * w;
+        const sy = Math.random() * (GRID.originY - 10);
+        const star = this.add.circle(sx, sy, Math.random() * 1.4 + 0.4, [0xff66ff, 0x66ddff, 0xffffff, 0xffaaee][i % 4], 0.85);
+        this.tweens.add({ targets: star, alpha: { from: 0.2, to: 1 }, duration: 700 + Math.random() * 1500, yoyo: true, repeat: -1 });
+      }
+      for (let i = 0; i < 4; i++) {
+        const aurX = (i * 350 + 100) % w;
+        const aur = this.add.ellipse(aurX, 50 + (i * 13) % 40, 200, 60, [0xff66ff, 0x66ddff][i % 2], 0.18);
+        this.tweens.add({ targets: aur, x: aur.x + 1280, duration: 35000 + i * 6000, repeat: -1 });
+      }
+      for (let i = 0; i < 5; i++) {
+        const beam = this.add.rectangle(Math.random() * w, GRID.originY / 2, 4, GRID.originY, [0xff66ff, 0x66ddff][i % 2], 0.25);
+        this.tweens.add({ targets: beam, alpha: { from: 0.05, to: 0.4 }, duration: 1200 + Math.random() * 800, yoyo: true, repeat: -1 });
+      }
+    }
   }
 
   applyWeather() {
@@ -466,6 +484,29 @@ export class LevelScene extends Phaser.Scene {
           yoyo: true, repeat: -1, ease: "Sine.inOut",
         });
       }
+    } else if (w === "magic") {
+      this.time.addEvent({
+        delay: 200, loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          const sx = Math.random() * this.scale.width;
+          const sy = -10;
+          const colors = [0xff66ff, 0x66ddff, 0xffaaee, 0xaa88ff];
+          const c = colors[Math.floor(Math.random() * colors.length)];
+          const sparkle = this.add.circle(sx, sy, 1.5 + Math.random() * 1.5, c, 0.9).setDepth(45);
+          const drift = (Math.random() - 0.5) * 200;
+          this.tweens.add({
+            targets: sparkle,
+            y: this.scale.height + 20,
+            x: sx + drift,
+            alpha: { from: 0.9, to: 0 },
+            scale: { from: 1, to: 0.4 },
+            duration: 4500 + Math.random() * 2500,
+            ease: "Sine.in",
+            onComplete: () => sparkle.destroy(),
+          });
+        },
+      });
     }
   }
 
@@ -592,6 +633,8 @@ export class LevelScene extends Phaser.Scene {
       entity = new CottonCandy(this, x, y);
     } else if (this.placementDef.id === "mine") {
       entity = new Mine(this, x, y);
+    } else if (this.placementDef.id === "neon") {
+      entity = new NeonLamp(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);
@@ -648,7 +691,7 @@ export class LevelScene extends Phaser.Scene {
     const t = this.gridState[cell.row][cell.col];
     if (!t || t._dying) return;
     let refund = 0;
-    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 125, MagnetBomb: 275, Catapult: 175, FrostTramp: 225, Portal: 300, Tamer: 400, CottonCandy: 75, Mine: 100 };
+    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 125, MagnetBomb: 275, Catapult: 175, FrostTramp: 225, Portal: 300, Tamer: 400, CottonCandy: 75, Mine: 100, NeonLamp: 200 };
     refund = Math.floor((tileMap[t.constructor.name] || 0) / 2);
     this.gridState[cell.row][cell.col] = null;
     this.coins += refund;

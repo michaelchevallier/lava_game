@@ -1,7 +1,7 @@
 {
   "id": "c.3",
   "name": "Train Fantôme",
-  "world": 6,
+  "world": 99,
   "mode": "conveyor",
   "startCoins": 0,
   "conveyorIntervalMs": 4800,

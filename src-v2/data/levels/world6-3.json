@@ -1,0 +1,51 @@
+{
+  "id": "6.3",
+  "name": "Spectacle Lumineux",
+  "world": 6,
+  "startCoins": 450,
+  "allowedTiles": ["coin", "lava", "water", "fan", "frost", "magnet", "catapult", "neon"],
+  "loseEscaped": 4,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "flying", "lane": 1, "delayMs": 0 },
+        { "type": "flying", "lane": 3, "delayMs": 800 },
+        { "type": "vip", "lane": 2, "delayMs": 2500 },
+        { "type": "basic", "lane": 0, "delayMs": 4500 },
+        { "type": "basic", "lane": 4, "delayMs": 5000 },
+        { "type": "magicien", "lane": 2, "delayMs": 7000 }
+      ]
+    },
+    {
+      "delayMs": 26000,
+      "visitors": [
+        { "type": "trompette", "lane": 2, "delayMs": 0 },
+        { "type": "flying", "lane": 0, "delayMs": 1500 },
+        { "type": "flying", "lane": 4, "delayMs": 2000 },
+        { "type": "magicien", "lane": 1, "delayMs": 4000 },
+        { "type": "magicien", "lane": 3, "delayMs": 4500 },
+        { "type": "vip", "lane": 2, "delayMs": 7500 },
+        { "type": "trompette", "lane": 1, "delayMs": 10500 },
+        { "type": "trompette", "lane": 3, "delayMs": 11500 }
+      ]
+    },
+    {
+      "delayMs": 50000,
+      "visitors": [
+        { "type": "boss", "lane": 1, "delayMs": 0 },
+        { "type": "boss", "lane": 3, "delayMs": 1500 },
+        { "type": "flying", "lane": 0, "delayMs": 4000 },
+        { "type": "flying", "lane": 2, "delayMs": 4500 },
+        { "type": "flying", "lane": 4, "delayMs": 5000 },
+        { "type": "magicien", "lane": 2, "delayMs": 8500 },
+        { "type": "trompette", "lane": 1, "delayMs": 11000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 3 },
+    "2": { "escapedMax": 1 },
+    "3": { "escapedMax": 0 }
+  }
+}

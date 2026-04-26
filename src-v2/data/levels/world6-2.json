@@ -1,0 +1,49 @@
+{
+  "id": "6.2",
+  "name": "Cabaret Sombre",
+  "world": 6,
+  "startCoins": 425,
+  "allowedTiles": ["coin", "lava", "water", "fan", "frost", "neon", "mine"],
+  "loseEscaped": 5,
+  "waves": [
+    {
+      "delayMs": 7000,
+      "visitors": [
+        { "type": "thief", "lane": 1, "delayMs": 0 },
+        { "type": "thief", "lane": 3, "delayMs": 1500 },
+        { "type": "vip", "lane": 2, "delayMs": 3500 },
+        { "type": "basic", "lane": 0, "delayMs": 5500 },
+        { "type": "basic", "lane": 4, "delayMs": 6500 }
+      ]
+    },
+    {
+      "delayMs": 26000,
+      "visitors": [
+        { "type": "clown", "lane": 2, "delayMs": 0 },
+        { "type": "thief", "lane": 0, "delayMs": 1500 },
+        { "type": "thief", "lane": 4, "delayMs": 2500 },
+        { "type": "vip", "lane": 1, "delayMs": 4500 },
+        { "type": "vip", "lane": 3, "delayMs": 5500 },
+        { "type": "clown", "lane": 2, "delayMs": 8500 },
+        { "type": "magicien", "lane": 1, "delayMs": 11000 }
+      ]
+    },
+    {
+      "delayMs": 50000,
+      "visitors": [
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "thief", "lane": 0, "delayMs": 3000 },
+        { "type": "thief", "lane": 4, "delayMs": 3500 },
+        { "type": "magicien", "lane": 1, "delayMs": 6000 },
+        { "type": "magicien", "lane": 3, "delayMs": 7000 },
+        { "type": "vip", "lane": 2, "delayMs": 10000 },
+        { "type": "clown", "lane": 1, "delayMs": 12000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 4 },
+    "2": { "escapedMax": 2 },
+    "3": { "escapedMax": 0 }
+  }
+}

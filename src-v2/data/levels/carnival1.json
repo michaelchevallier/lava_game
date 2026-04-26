@@ -1,7 +1,7 @@
 {
   "id": "c.1",
   "name": "Roue de la Fortune",
-  "world": 6,
+  "world": 99,
   "mode": "conveyor",
   "startCoins": 0,
   "conveyorIntervalMs": 5500,

@@ -67,6 +67,23 @@ export const CUTSCENES = {
       "  💀 💀 💀 💀",
     ],
   },
+  6: {
+    title: "Foire Magique",
+    color: "#ff66ff",
+    bgTop: 0x1a0a4a,
+    bgBottom: 0x6a1a8a,
+    panels: [
+      "Tu pensais avoir tout vu. Le Patron de la Foire est tombé.",
+      "Mais une porte s'est ouverte. Au-delà des miroirs, la Foire Magique.",
+      "Des néons. Des illusions. Le Grand Illusionniste t'attend.",
+    ],
+    art: [
+      "    ✨  🎭  ✨",
+      "  💜 💖 💜 💖",
+      "🎪 → 🌟 → 🚪",
+      "  🪄 🃏 🪄",
+    ],
+  },
   5: {
     title: "Apocalypse",
     color: "#ff66ff",

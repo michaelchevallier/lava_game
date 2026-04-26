@@ -1,7 +1,7 @@
 {
   "id": "c.2",
   "name": "Tapis Magique",
-  "world": 6,
+  "world": 99,
   "mode": "conveyor",
   "startCoins": 0,
   "conveyorIntervalMs": 5200,

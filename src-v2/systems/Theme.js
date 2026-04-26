@@ -59,6 +59,18 @@ export const WORLD_THEMES = {
     accent: 0xff2222,
     weather: "lightning",
   },
+  6: {
+    name: "Foire Magique",
+    skyTop: 0x1a0a4a,
+    skyBottom: 0x6a1a8a,
+    groundTop: 0x4a1a6a,
+    groundBottom: 0x1a0a3a,
+    laneA: 0x5a2a7a,
+    laneB: 0x4a1a6a,
+    laneStroke: 0x220a3a,
+    accent: 0xff66ff,
+    weather: "magic",
+  },
 };
 
 export function getTheme(worldId) {
