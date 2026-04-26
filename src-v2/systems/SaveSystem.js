@@ -5,7 +5,7 @@ function defaultSave() {
     version: 1,
     levels: {},
     lastPlayedAt: 0,
-    settings: { volume: 0.7 },
+    settings: { volume: 0.7, muted: false },
   };
 }
 

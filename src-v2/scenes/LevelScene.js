@@ -17,6 +17,7 @@ import { ConveyorBelt } from "../ui/ConveyorBelt.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { getDailyLevel, recordDaily } from "../systems/Daily.js";
+import { loadSave, saveSave } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { Flash } from "../systems/Flash.js";
@@ -804,6 +805,33 @@ export class LevelScene extends Phaser.Scene {
     btn.on("pointerover", () => r.setFillStyle(0x33405a, 0.95));
     btn.on("pointerout", () => r.setFillStyle(0x222840, 0.85));
     btn.on("pointerdown", () => this._togglePause());
+
+    this._setupMuteButton();
+  }
+
+  _setupMuteButton() {
+    const { width } = this.scale;
+    const save = loadSave();
+    let muted = !!save.settings?.muted;
+
+    const btn = this.add.container(width - 100, 30).setDepth(60);
+    const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0x88ccff);
+    const t = this.add.text(0, 0, muted ? "🔇" : "🔊", { fontFamily: "system-ui", fontSize: "16px" }).setOrigin(0.5);
+    btn.add([r, t]);
+    btn.setSize(50, 36);
+    btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
+    btn.on("pointerover", () => r.setFillStyle(0x33405a, 0.95));
+    btn.on("pointerout", () => r.setFillStyle(0x222840, 0.85));
+    btn.on("pointerdown", () => {
+      muted = !muted;
+      t.setText(muted ? "🔇" : "🔊");
+      const s = loadSave();
+      s.settings = s.settings || {};
+      s.settings.muted = muted;
+      saveSave(s);
+      Audio.setVolume?.(muted ? 0 : 1);
+      MusicManager.setVolume?.(muted ? 0 : (s.settings.volume ?? 0.5));
+    });
   }
 
   _togglePause() {

@@ -8,6 +8,7 @@ import { CutsceneScene } from "./scenes/CutsceneScene.js";
 import { StatsScene } from "./scenes/StatsScene.js";
 import { TILE_DEFS } from "./ui/Toolbar.js";
 import { MusicManager } from "./systems/MusicManager.js";
+import { loadSave } from "./systems/SaveSystem.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -31,8 +32,14 @@ const game = new Phaser.Game(config);
 window.__game = game;
 
 const resumeAudioOnce = () => {
-  import("./systems/Audio.js").then((m) => m.Audio.resume());
+  const save = loadSave();
+  const muted = save.settings?.muted;
+  import("./systems/Audio.js").then((m) => {
+    m.Audio.resume();
+    if (muted) m.Audio.setVolume(0);
+  });
   MusicManager.resume();
+  if (muted) MusicManager.setVolume(0);
   MusicManager.play("menu");
   window.removeEventListener("pointerdown", resumeAudioOnce);
   window.removeEventListener("keydown", resumeAudioOnce);
