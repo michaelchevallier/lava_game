@@ -25,12 +25,38 @@ export class CampaignMenuScene extends Phaser.Scene {
     bg.fillGradientStyle(0x1a0a2a, 0x1a0a2a, 0xff6b1c, 0xff4400, 1);
     bg.fillRect(0, 0, width, height);
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       const sx = Math.random() * width;
-      const sy = Math.random() * height * 0.4;
-      const star = this.add.circle(sx, sy, Math.random() * 1.4 + 0.4, 0xffffff, Math.random() * 0.6 + 0.2);
+      const sy = Math.random() * height * 0.5;
+      const star = this.add.circle(sx, sy, Math.random() * 1.4 + 0.4, [0xffffff, 0xffd23f, 0xff66cc, 0x88ccff][i % 4], Math.random() * 0.6 + 0.2);
       this.tweens.add({ targets: star, alpha: { from: 0.2, to: 0.9 }, duration: 800 + Math.random() * 1500, yoyo: true, repeat: -1 });
     }
+    for (let i = 0; i < 4; i++) {
+      const cy = 30 + (i * 23) % 60;
+      const cw = 100 + Math.random() * 80;
+      const cloud = this.add.ellipse((i * 380 + 100) % width, cy, cw, 26, 0x6a4a8a, 0.4);
+      this.tweens.add({ targets: cloud, x: cloud.x + width + 200, duration: 60000 + i * 10000, repeat: -1 });
+    }
+    for (let i = 0; i < 5; i++) {
+      const flame = this.add.triangle(Math.random() * width, height * 0.85 + Math.random() * 80, 0, 14, 8, -10, 16, 14, 0xff8800, 0.35);
+      this.tweens.add({ targets: flame, scale: { from: 0.7, to: 1.3 }, duration: 800 + Math.random() * 600, yoyo: true, repeat: -1 });
+    }
+    this.time.addEvent({
+      delay: 600, loop: true,
+      callback: () => {
+        if (!this.scene.isActive()) return;
+        const sx = Math.random() * width;
+        const ember = this.add.circle(sx, height + 10, 1.5, [0xff8800, 0xffd23f][Math.floor(Math.random() * 2)], 0.85).setDepth(45);
+        this.tweens.add({
+          targets: ember, y: height * 0.4 + Math.random() * 100,
+          x: sx + (Math.random() - 0.5) * 120,
+          alpha: 0,
+          duration: 4500 + Math.random() * 1500,
+          ease: "Sine.out",
+          onComplete: () => ember.destroy(),
+        });
+      },
+    });
 
     const titleShadow = this.add.text(width / 2 + 3, 50 + 3, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
@@ -39,7 +65,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       color: "#000",
     }).setOrigin(0.5).setAlpha(0.5);
 
-    this.add.text(width / 2, 50, "MILAN PARK DEFENSE", {
+    const title = this.add.text(width / 2, 50, "MILAN PARK DEFENSE", {
       fontFamily: "system-ui",
       fontSize: "56px",
       fontStyle: "bold",
@@ -47,6 +73,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       stroke: "#000",
       strokeThickness: 6,
     }).setOrigin(0.5);
+    this.tweens.add({ targets: title, scale: { from: 1, to: 1.02 }, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.inOut" });
 
 
     const total = totalStars();
