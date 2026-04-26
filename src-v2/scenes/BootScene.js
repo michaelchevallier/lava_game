@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { MusicManager } from "../systems/MusicManager.js";
+import { makeClickable } from "../ui/Clickable.js";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -63,31 +64,23 @@ export class BootScene extends Phaser.Scene {
     this.tweens.add({ targets: tile, angle: 360, duration: 4000, repeat: -1, ease: "Linear" });
     this.tweens.add({ targets: tile, scale: { from: 1, to: 1.15 }, duration: 600, yoyo: true, repeat: -1, ease: "Sine.inOut" });
 
-    const playBtn = this.add.container(width / 2, 560);
-    const playBg = this.add.rectangle(0, 0, 280, 70, 0x4ed8a3).setStrokeStyle(4, 0x2a8a5a);
-    const playLabel = this.add.text(0, 0, "▶ JOUER", {
-      fontFamily: "system-ui",
-      fontSize: "32px",
-      fontStyle: "bold",
-      color: "#fff",
-      stroke: "#000",
-      strokeThickness: 4,
-    }).setOrigin(0.5);
-    playBtn.add([playBg, playLabel]);
-    playBtn.setSize(280, 70);
-    playBtn.setInteractive(new Phaser.Geom.Rectangle(-140, -35, 280, 70), Phaser.Geom.Rectangle.Contains);
-
-    this.tweens.add({ targets: playBg, scale: { from: 1, to: 1.05 }, duration: 800, yoyo: true, repeat: -1, ease: "Sine.inOut" });
-
-    playBtn.on("pointerover", () => playBg.setFillStyle(0x66e8b0));
-    playBtn.on("pointerout", () => playBg.setFillStyle(0x4ed8a3));
-    playBtn.on("pointerdown", () => {
-      this.cameras.main.fadeOut(400, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("CampaignMenuScene");
-        this.scene.stop();
-      });
+    const playBtn = makeClickable(this, {
+      x: width / 2, y: 560, width: 280, height: 70,
+      radius: 10,
+      fillColor: 0x4ed8a3, fillAlpha: 1,
+      strokeColor: 0x2a8a5a, strokeWidth: 4,
+      hoverFill: 0x66e8b0, hoverStroke: 0xffd23f,
+      label: "▶ JOUER",
+      labelStyle: { fontFamily: "system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 4 },
+      onClick: () => {
+        this.cameras.main.fadeOut(400, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("CampaignMenuScene");
+          this.scene.stop();
+        });
+      },
     });
+    this.tweens.add({ targets: playBtn, scale: { from: 1, to: 1.05 }, duration: 800, yoyo: true, repeat: -1, ease: "Sine.inOut" });
 
     this.add.text(width / 2, height - 30, "Phaser 4 • CC0 • v1.0 — Click ou ESPACE pour jouer", {
       fontFamily: "system-ui",
