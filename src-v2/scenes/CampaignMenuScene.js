@@ -120,7 +120,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       stroke: "#000",
       strokeThickness: 3,
     }).setOrigin(0.5);
-    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    const hit = this.add.rectangle(x + w / 2, y + 40, w, 88, 0x000, 0).setInteractive();
     hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
     hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff2222, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
     hit.on("pointerdown", () => {
@@ -243,7 +243,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    const hit = this.add.rectangle(x + w / 2, y + 40, w, 88, 0x000, 0).setInteractive();
     hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff66cc, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
     hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xb83a8a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff66cc, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
     hit.on("pointerdown", () => {
@@ -347,7 +347,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    const hit = this.add.rectangle(30 + halfW / 2, y + 40, halfW, 88, 0x000, 0).setInteractive();
     hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
     hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff8800, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
     hit.on("pointerdown", () => {
