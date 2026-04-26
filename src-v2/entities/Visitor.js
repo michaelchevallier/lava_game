@@ -144,6 +144,10 @@ export class Visitor extends Phaser.GameObjects.Container {
       duration: 60,
       yoyo: true,
     });
+    if (typeof this.scene.showDamageNumber === "function" && dmg >= 0.5) {
+      const colorMap = { lava: "#ff8844", frost: "#88ddff" };
+      this.scene.showDamageNumber(this.x + (Math.random() - 0.5) * 16, this.y - 30, dmg.toFixed(dmg < 1 ? 1 : 0), colorMap[source] || "#ffeebb");
+    }
     if (this.hp <= 0) this.kill();
   }
 
@@ -151,6 +155,21 @@ export class Visitor extends Phaser.GameObjects.Container {
     if (this._dying) return;
     this._dying = true;
     this.scene.events.emit("visitor-killed", this);
+    const sx = this.x, sy = this.y;
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI * 2 * i) / 8;
+      const part = this.scene.add.rectangle(sx, sy, 4, 4, 0xffeecc).setDepth(20).setStrokeStyle(1, 0x666);
+      this.scene.tweens.add({
+        targets: part,
+        x: sx + Math.cos(a) * (40 + Math.random() * 40),
+        y: sy + Math.sin(a) * (40 + Math.random() * 40),
+        alpha: 0,
+        angle: 360 * (Math.random() > 0.5 ? 1 : -1),
+        duration: 600,
+        ease: "Cubic.out",
+        onComplete: () => part.destroy(),
+      });
+    }
     this.scene.tweens.add({
       targets: this,
       scaleY: 0.2,
