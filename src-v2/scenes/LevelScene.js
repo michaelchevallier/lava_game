@@ -51,6 +51,13 @@ export class LevelScene extends Phaser.Scene {
     groundGrad.fillGradientStyle(this.theme.groundTop, this.theme.groundTop, this.theme.groundBottom, this.theme.groundBottom, 1);
     groundGrad.fillRect(0, groundY, width, height - groundY);
 
+    this.cameras.main.fadeIn(300, 0, 0, 0);
+
+    this.events.removeAllListeners("coins-earned");
+    this.events.removeAllListeners("visitor-killed");
+    this.events.removeAllListeners("visitor-escaped");
+    this.events.removeAllListeners("tile-destroyed");
+
     this.gridState = createGridState();
     this.drawGrid();
     this.drawEntryExit();
@@ -515,17 +522,20 @@ export class LevelScene extends Phaser.Scene {
     if (this.tutorial) this.tutorial.cleanup();
     const stars = win ? computeStars(this.level, this.escaped) : 0;
     if (win) Audio.win(); else Audio.lose();
-    this.time.delayedCall(800, () => {
-      this.scene.start("LevelResultScene", {
-        win,
-        stars,
-        killed: this.killed,
-        escaped: this.escaped,
-        coins: this.coins,
-        levelId: this.level.id,
-        levelName: this.level.name,
+    this.time.delayedCall(600, () => {
+      this.cameras.main.fadeOut(400, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("LevelResultScene", {
+          win,
+          stars,
+          killed: this.killed,
+          escaped: this.escaped,
+          coins: this.coins,
+          levelId: this.level.id,
+          levelName: this.level.name,
+        });
+        this.scene.stop();
       });
-      this.scene.stop();
     });
   }
 

@@ -16,9 +16,34 @@ export class LevelResultScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const { win, stars, killed, escaped, coins, levelId, levelName } = this.payload;
 
+    this.cameras.main.fadeIn(400, 0, 0, 0);
+
     if (win) saveProgress(levelId, stars);
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x1a1f30, 0.85);
+    const bg = this.add.graphics();
+    if (win) {
+      bg.fillGradientStyle(0x0a3a4a, 0x0a3a4a, 0x4ed8a3, 0x4ed8a3, 1);
+    } else {
+      bg.fillGradientStyle(0x3a0a0a, 0x3a0a0a, 0x6a1a1a, 0x6a1a1a, 1);
+    }
+    bg.fillRect(0, 0, width, height);
+
+    if (win) {
+      for (let i = 0; i < 50; i++) {
+        const cx = Math.random() * width;
+        const cy = -20 - Math.random() * 80;
+        const c = this.add.rectangle(cx, cy, 6, 12, [0xffd23f, 0xff66ff, 0x66ff88, 0x66aaff, 0xff8844][i % 5]).setDepth(50);
+        this.tweens.add({
+          targets: c,
+          y: height + 40,
+          x: cx + (Math.random() - 0.5) * 200,
+          angle: 360 * (Math.random() > 0.5 ? 1 : -1),
+          duration: 2500 + Math.random() * 2000,
+          delay: Math.random() * 800,
+          ease: "Cubic.in",
+        });
+      }
+    }
 
     const titleText = win ? "VICTOIRE !" : "DÉFAITE";
     const title = this.add.text(width / 2, 120, titleText, {
