@@ -5,7 +5,8 @@ export class Sun extends Phaser.GameObjects.Container {
     super(scene, x, y);
 
     this.amount = opts.amount ?? 30;
-    this.lifetimeMs = opts.lifetimeMs ?? 8000;
+    this.lifetimeMs = opts.lifetimeMs ?? 10000;
+    this.autoCollectAt = opts.autoCollectAt ?? 6500;
     this.spawnAt = scene.time.now;
     this._collected = false;
     this.driftToY = opts.driftToY ?? null;
@@ -28,7 +29,7 @@ export class Sun extends Phaser.GameObjects.Container {
 
     scene.add.existing(this);
 
-    this.setInteractive(new Phaser.Geom.Rectangle(-22, -22, 44, 44), Phaser.Geom.Rectangle.Contains);
+    this.setInteractive(new Phaser.Geom.Rectangle(-40, -40, 80, 80), Phaser.Geom.Rectangle.Contains);
     this.on("pointerdown", () => this.collect());
 
     scene.tweens.add({
@@ -66,12 +67,9 @@ export class Sun extends Phaser.GameObjects.Container {
   tick(time) {
     if (!this.scene || this._collected) return;
     const elapsed = time - this.spawnAt;
-    if (elapsed > this.lifetimeMs - 1500) {
-      const blink = Math.floor((time - this.spawnAt) / 150) % 2 === 0;
-      this.alpha = blink ? 1 : 0.4;
-    }
-    if (elapsed > this.lifetimeMs) {
-      this.destroy();
+    if (elapsed > this.autoCollectAt) {
+      this.collect();
+      return;
     }
   }
 
