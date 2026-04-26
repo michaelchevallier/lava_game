@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { Projectile } from "./Projectile.js";
 import { Audio } from "../systems/Audio.js";
+import { JuiceFX } from "../systems/JuiceFX.js";
 
 export class LavaTower extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -95,6 +96,7 @@ export class LavaTower extends Phaser.GameObjects.Container {
     });
     this.scene.projectiles.push(proj);
     Audio.fire();
+    JuiceFX.fire(this.scene);
 
     const flash = this.scene.add.circle(this.x + 42, this.y - 8, 10, 0xffe066, 0.95);
     flash.setDepth(15);

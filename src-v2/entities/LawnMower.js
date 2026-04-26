@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { JuiceFX } from "../systems/JuiceFX.js";
 
 export class LawnMower extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -34,9 +35,7 @@ export class LawnMower extends Phaser.GameObjects.Container {
     if (this.activated || this._dead) return;
     this.activated = true;
     this.scene.events.emit("mower-fired", this);
-    if (this.scene.cameras?.main) {
-      this.scene.cameras.main.shake(280, 0.006);
-    }
+    JuiceFX.shake(this.scene, 8, 280);
   }
 
   tick(time, delta) {

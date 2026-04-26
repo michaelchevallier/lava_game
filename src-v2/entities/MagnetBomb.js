@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { Audio } from "../systems/Audio.js";
+import { JuiceFX } from "../systems/JuiceFX.js";
 
 export class MagnetBomb extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -45,6 +46,7 @@ export class MagnetBomb extends Phaser.GameObjects.Container {
     if (this._exploded) return;
     this._exploded = true;
     Audio.explode();
+    JuiceFX.explode(this.scene);
 
     const flash = this.scene.add.circle(this.x, this.y, this.radius, 0xffd23f, 0.85);
     flash.setDepth(20);

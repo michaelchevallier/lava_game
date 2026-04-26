@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { JuiceFX } from "../systems/JuiceFX.js";
 
 export class Catapult extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -97,6 +98,7 @@ export class Catapult extends Phaser.GameObjects.Container {
     });
 
     scene.time.delayedCall(flightMs, () => {
+      JuiceFX.shake(scene, 3, 80);
       const burst = scene.add.circle(proj.x, proj.y, 18, 0xb8e08a, 0.85);
       scene.tweens.add({
         targets: burst,

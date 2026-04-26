@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { JuiceFX } from "../systems/JuiceFX.js";
 
 const TYPE_DEFS = {
   basic:    { hp: 1, speed: 45,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
@@ -210,6 +211,7 @@ export class Visitor extends Phaser.GameObjects.Container {
   kill() {
     if (this._dying) return;
     this._dying = true;
+    JuiceFX.kill(this.scene);
     this.scene.events.emit("visitor-killed", this);
     const sx = this.x, sy = this.y;
     for (let i = 0; i < 8; i++) {
