@@ -4,8 +4,8 @@
   "world": 6,
   "mode": "conveyor",
   "startCoins": 0,
-  "conveyorIntervalMs": 2600,
-  "allowedTiles": ["coin", "lava", "water", "magnet", "catapult"],
+  "conveyorIntervalMs": 4800,
+  "allowedTiles": ["lava", "water", "magnet", "catapult"],
   "loseEscaped": 5,
   "waves": [
     {

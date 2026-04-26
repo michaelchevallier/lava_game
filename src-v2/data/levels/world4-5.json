@@ -2,7 +2,7 @@
   "id": "4.5",
   "name": "Volcan 5",
   "world": 4,
-  "startCoins": 350,
+  "startCoins": 425,
   "allowedTiles": [
     "coin",
     "lava",

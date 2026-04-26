@@ -4,8 +4,8 @@
   "world": 6,
   "mode": "conveyor",
   "startCoins": 0,
-  "conveyorIntervalMs": 2200,
-  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "catapult", "frost", "portal", "tamer", "cottoncandy"],
+  "conveyorIntervalMs": 4000,
+  "allowedTiles": ["lava", "water", "fan", "magnet", "catapult", "frost", "portal", "tamer", "cottoncandy"],
   "loseEscaped": 4,
   "waves": [
     {

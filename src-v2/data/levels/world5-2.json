@@ -2,7 +2,7 @@
   "id": "5.2",
   "name": "Apocalypse 2",
   "world": 5,
-  "startCoins": 350,
+  "startCoins": 425,
   "allowedTiles": [
     "coin",
     "lava",

@@ -555,6 +555,7 @@ export class LevelScene extends Phaser.Scene {
 
   tryPlace(pointer) {
     if (!this.placementDef) return;
+    if (this._conveyorClickAt && this.time.now - this._conveyorClickAt < 50) return;
     const cell = pixelToCell(pointer.x, pointer.y);
     if (!cell) return;
     if (this.placementDef.removeMode) {
@@ -713,10 +714,10 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
-  spawnVisitor(row, type = "basic") {
+  spawnVisitor(row, type = "basic", opts = {}) {
     const y = rowToY(row);
     const x = rightEdgeX() + 50;
-    const v = new Visitor(this, x, y, { type });
+    const v = new Visitor(this, x, y, { type, ...opts });
     v.row = row;
     this.visitors.push(v);
   }

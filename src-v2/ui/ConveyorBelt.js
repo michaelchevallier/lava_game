@@ -17,10 +17,10 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
     this.tiles = [];
     this._lastSpawn = 0;
 
-    const { width } = scene.scale;
-    const beltY = 138;
+    const { width, height } = scene.scale;
+    const beltY = height - 50;
     const beltW = MAX_SLOTS * (SLOT_W + SLOT_GAP) - SLOT_GAP + 24;
-    const beltX = width - beltW - 16;
+    const beltX = (width - beltW) / 2;
 
     this.beltX = beltX;
     this.beltY = beltY;
@@ -111,7 +111,11 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
     c.on("pointerout", () => {
       if (this.selectedTile !== c) back.setStrokeStyle(2, 0x4a4a6a);
     });
-    c.on("pointerdown", () => this.selectTile(c));
+    c.on("pointerdown", (pointer, lx, ly, ev) => {
+      this.selectTile(c);
+      if (ev && ev.stopPropagation) ev.stopPropagation();
+      this.scene._conveyorClickAt = this.scene.time.now;
+    });
 
     this.tiles.push(c);
     this.scene.tweens.add({

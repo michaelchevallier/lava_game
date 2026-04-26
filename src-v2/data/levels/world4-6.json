@@ -2,7 +2,7 @@
   "id": "4.6",
   "name": "Volcan — finale",
   "world": 4,
-  "startCoins": 350,
+  "startCoins": 425,
   "allowedTiles": [
     "coin",
     "lava",

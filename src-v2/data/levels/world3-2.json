@@ -2,7 +2,7 @@
   "id": "3.2",
   "name": "Tempête 2",
   "world": 3,
-  "startCoins": 300,
+  "startCoins": 360,
   "allowedTiles": [
     "coin",
     "lava",

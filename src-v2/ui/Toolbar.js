@@ -2,15 +2,15 @@ import * as Phaser from "phaser";
 
 export const TILE_DEFS = [
   { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 5000 },
-  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066, cooldownMs: 6000 },
   { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 5000 },
-  { id: "fan", label: "Fan", cost: 100, color: 0xddeeff, accent: 0x666, cooldownMs: 8000 },
-  { id: "magnet", label: "Magnet Bomb", cost: 150, color: 0x66001a, accent: 0xff2222, cooldownMs: 25000 },
-  { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 8000 },
-  { id: "frost", label: "Frost Tramp", cost: 175, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 12000 },
-  { id: "portal", label: "Portal", cost: 175, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 18000 },
-  { id: "tamer", label: "Dompteur", cost: 175, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 30000 },
   { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 8000 },
+  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066, cooldownMs: 6000 },
+  { id: "fan", label: "Fan", cost: 125, color: 0xddeeff, accent: 0x666, cooldownMs: 9000 },
+  { id: "catapult", label: "Catapult", cost: 175, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 10000 },
+  { id: "frost", label: "Frost Tramp", cost: 225, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 14000 },
+  { id: "magnet", label: "Magnet Bomb", cost: 275, color: 0x66001a, accent: 0xff2222, cooldownMs: 30000 },
+  { id: "portal", label: "Portal", cost: 300, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 22000 },
+  { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000 },
   { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
