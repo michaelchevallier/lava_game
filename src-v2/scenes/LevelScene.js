@@ -450,6 +450,10 @@ export class LevelScene extends Phaser.Scene {
     if (!this.placementDef) return;
     const cell = pixelToCell(pointer.x, pointer.y);
     if (!cell) return;
+    if (this.placementDef.removeMode) {
+      this.tryRemove(cell);
+      return;
+    }
     if (!isEmpty(this.gridState, cell.col, cell.row)) return;
     if (this.coins < this.placementDef.cost) return;
     const { x, y } = cellToPixel(cell.col, cell.row);
@@ -515,6 +519,47 @@ export class LevelScene extends Phaser.Scene {
 
   refreshCoinsText() {
     this.coinsText.setText("¢ " + this.coins);
+  }
+
+  tryRemove(cell) {
+    const t = this.gridState[cell.row][cell.col];
+    if (!t || t._dying) return;
+    let refund = 0;
+    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 100, MagnetBomb: 150, Catapult: 125, FrostTramp: 175, Portal: 175 };
+    refund = Math.floor((tileMap[t.constructor.name] || 0) / 2);
+    this.gridState[cell.row][cell.col] = null;
+    this.coins += refund;
+    this.refreshCoinsText();
+    if (refund > 0) {
+      const ping = this.add.text(t.x, t.y - 30, "+" + refund + "¢", {
+        fontFamily: "system-ui",
+        fontSize: "18px",
+        fontStyle: "bold",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(40);
+      this.tweens.add({
+        targets: ping, y: ping.y - 30, alpha: 0, duration: 700,
+        onComplete: () => ping.destroy(),
+      });
+    }
+    Audio.click?.();
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI * 2 * i) / 8;
+      const dust = this.add.circle(t.x, t.y, 3, 0xc8b08a, 0.7).setDepth(20);
+      this.tweens.add({
+        targets: dust, x: t.x + Math.cos(a) * 30, y: t.y + Math.sin(a) * 30, alpha: 0,
+        duration: 350,
+        onComplete: () => dust.destroy(),
+      });
+    }
+    this.tweens.add({
+      targets: t, alpha: 0, scale: 0.4, duration: 250,
+      onComplete: () => t.destroy(),
+    });
+    this.toolbar.clearSelection();
+    this.setPlacement(null);
   }
 
   checkMowerTriggers() {

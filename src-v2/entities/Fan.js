@@ -35,16 +35,18 @@ export class Fan extends Phaser.GameObjects.Container {
 
     if (time - this.lastPushAt < this.cooldownMs) return;
 
+    const maxX = this.scene.scale.width - 100;
     const targets = (this.scene.visitors || []).filter((v) =>
-      v.active && !v._dying && Math.abs(v.y - this.y) < 30 && v.x > this.x && v.x < this.x + 600
+      v.active && !v._dying && Math.abs(v.y - this.y) < 30 && v.x > this.x - 60 && v.x < maxX
     );
     if (targets.length === 0) return;
 
     this.lastPushAt = time;
     for (const v of targets) {
+      const newX = Math.min(v.x + this.pushDistance, maxX);
       this.scene.tweens.add({
         targets: v,
-        x: v.x + this.pushDistance,
+        x: newX,
         duration: 400,
         ease: "Cubic.out",
       });

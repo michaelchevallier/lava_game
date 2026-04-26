@@ -9,6 +9,7 @@ export const TILE_DEFS = [
   { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a },
   { id: "frost", label: "Frost Tramp", cost: 175, color: 0x88c8e8, accent: 0x4a8ab8 },
   { id: "portal", label: "Portal", cost: 175, color: 0x9a4ad8, accent: 0xff66ff },
+  { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
@@ -45,7 +46,7 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
     this._keyHandler = (e) => {
       if (!this.scene || !this.active) return;
-      const m = e.code && e.code.match(/^Digit([1-8])$/);
+      const m = e.code && e.code.match(/^Digit([1-9])$/);
       if (m) {
         const idx = parseInt(m[1], 10) - 1;
         const def = TILE_DEFS[idx];
