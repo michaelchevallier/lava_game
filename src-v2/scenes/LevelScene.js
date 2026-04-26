@@ -789,6 +789,10 @@ export class LevelScene extends Phaser.Scene {
   _setupPauseMenu() {
     this.paused = false;
     this.input.keyboard.on("keydown-P", () => this._togglePause());
+    this.input.keyboard.on("keydown-ESC", () => {
+      if (this.placementDef) return;
+      this._togglePause();
+    });
 
     const { width } = this.scale;
     const btn = this.add.container(width - 40, 30).setDepth(60);

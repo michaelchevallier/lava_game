@@ -60,6 +60,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     starsBox.add([starsBg, starsLabel]);
 
     this.drawTrophyButton();
+    this.drawStatsButton();
 
     let y = 150;
     for (const world of WORLDS) {
@@ -69,6 +70,27 @@ export class CampaignMenuScene extends Phaser.Scene {
     this.drawEndlessButton(y + 8);
     this.drawCarnivalButton(y + 8);
     this.drawDailyButton();
+  }
+
+  drawStatsButton() {
+    const bx = 110;
+    const by = 110;
+    const box = this.add.container(bx, by);
+    const bg = this.add.rectangle(0, 0, 200, 38, 0x000, 0.5).setStrokeStyle(2, 0x88aaff);
+    const lbl = this.add.text(0, 0, "📊 Stats", { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" }).setOrigin(0.5);
+    box.add([bg, lbl]);
+    box.setSize(200, 38);
+    box.setInteractive(new Phaser.Geom.Rectangle(-100, -19, 200, 38), Phaser.Geom.Rectangle.Contains);
+    box.on("pointerover", () => { bg.setFillStyle(0x1a3a6a, 0.7); Audio.ui(); });
+    box.on("pointerout", () => { bg.setFillStyle(0x000, 0.5); });
+    box.on("pointerdown", () => {
+      Audio.click();
+      this.cameras.main.fadeOut(250, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("StatsScene");
+        this.scene.stop();
+      });
+    });
   }
 
   drawDailyButton() {
