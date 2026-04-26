@@ -511,7 +511,11 @@ export class LevelScene extends Phaser.Scene {
   }
 
   showWaveBanner(text, color) {
-    const t = this.add.text(this.scale.width / 2, 200, text, {
+    const w = this.scale.width;
+    const stripe = this.add.rectangle(w / 2, 200, w, 90, 0x000000, 0.55).setDepth(69);
+    stripe.scaleX = 0;
+    this.tweens.add({ targets: stripe, scaleX: 1, duration: 250, ease: "Cubic.out" });
+    const t = this.add.text(w / 2, 200, text, {
       fontFamily: "system-ui",
       fontSize: "56px",
       fontStyle: "bold",
@@ -522,9 +526,23 @@ export class LevelScene extends Phaser.Scene {
     this.tweens.add({
       targets: t, scale: 1, duration: 350, ease: "Back.out",
     });
+    for (let i = 0; i < 20; i++) {
+      const px = Math.random() * w;
+      const part = this.add.circle(px, 200, 2 + Math.random() * 2, color, 0.85).setDepth(70);
+      this.tweens.add({
+        targets: part, y: part.y + (Math.random() - 0.5) * 100,
+        x: part.x + (Math.random() - 0.5) * 200,
+        alpha: 0, duration: 800, ease: "Cubic.out",
+        onComplete: () => part.destroy(),
+      });
+    }
     this.tweens.add({
       targets: t, alpha: 0, duration: 600, delay: 1400,
       onComplete: () => t.destroy(),
+    });
+    this.tweens.add({
+      targets: stripe, alpha: 0, duration: 600, delay: 1400,
+      onComplete: () => stripe.destroy(),
     });
   }
 
