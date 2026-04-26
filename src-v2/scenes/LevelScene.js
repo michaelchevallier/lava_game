@@ -570,15 +570,14 @@ export class LevelScene extends Phaser.Scene {
 
   setPlacement(def) {
     this.placementDef = def;
-    if (this.ghost) {
-      this.ghost.destroy();
-      this.ghost = null;
-    }
+    if (this.ghost) { this.ghost.destroy(); this.ghost = null; }
+    if (this.rangeIndicator) { this.rangeIndicator.destroy(); this.rangeIndicator = null; }
     if (def) {
       this.ghost = this.add.rectangle(0, 0, 84, 84, def.color, 0.4)
         .setStrokeStyle(3, def.accent)
         .setVisible(false)
         .setDepth(40);
+      this.rangeIndicator = this.add.graphics().setDepth(39).setVisible(false);
       const p = this.input?.activePointer;
       if (p) this.updateGhost(p);
     }
@@ -589,6 +588,7 @@ export class LevelScene extends Phaser.Scene {
     const cell = pixelToCell(pointer.x, pointer.y);
     if (!cell) {
       this.ghost.setVisible(false);
+      this.rangeIndicator?.setVisible(false);
       return;
     }
     const { x, y } = cellToPixel(cell.col, cell.row);
@@ -596,6 +596,50 @@ export class LevelScene extends Phaser.Scene {
     const ok = isEmpty(this.gridState, cell.col, cell.row);
     this.ghost.setFillStyle(ok ? this.placementDef.color : 0xff2222, ok ? 0.45 : 0.6);
     this.ghost.setVisible(true);
+    this._drawRangeIndicator(this.placementDef.id, x, y, cell);
+  }
+
+  _drawRangeIndicator(id, x, y, cell) {
+    if (!this.rangeIndicator) return;
+    const g = this.rangeIndicator;
+    g.clear();
+    const color = this.placementDef?.accent ?? 0xffd23f;
+    const cellSize = 90;
+    if (id === "lava" || id === "neon" || id === "tamer" || id === "portal" || id === "catapult") {
+      const fromX = x + cellSize / 2;
+      const toX = 100 + 12 * cellSize;
+      g.fillStyle(color, 0.12);
+      g.fillRect(fromX, y - 38, toX - fromX, 76);
+      g.lineStyle(2, color, 0.5);
+      g.strokeRect(fromX, y - 38, toX - fromX, 76);
+    } else if (id === "fan") {
+      const toX = 100;
+      g.fillStyle(color, 0.12);
+      g.fillRect(toX, y - 38, x - cellSize / 2 - toX, 76);
+      g.lineStyle(2, color, 0.5);
+      g.strokeRect(toX, y - 38, x - cellSize / 2 - toX, 76);
+    } else if (id === "frost") {
+      g.fillStyle(color, 0.15);
+      g.fillRect(x - cellSize, y - cellSize, cellSize * 3, cellSize * 3);
+      g.lineStyle(2, color, 0.55);
+      g.strokeRect(x - cellSize, y - cellSize, cellSize * 3, cellSize * 3);
+    } else if (id === "magnet") {
+      g.fillStyle(color, 0.13);
+      g.fillCircle(x, y, 130);
+      g.lineStyle(2, color, 0.55);
+      g.strokeCircle(x, y, 130);
+    } else if (id === "mine") {
+      g.fillStyle(color, 0.13);
+      g.fillCircle(x, y, 70);
+      g.lineStyle(2, color, 0.55);
+      g.strokeCircle(x, y, 70);
+    } else if (id === "cottoncandy") {
+      g.fillStyle(color, 0.12);
+      g.fillCircle(x, y, 110);
+      g.lineStyle(2, color, 0.5);
+      g.strokeCircle(x, y, 110);
+    }
+    g.setVisible(true);
   }
 
   tryPlace(pointer) {
