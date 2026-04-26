@@ -13,6 +13,7 @@ import { Sun } from "../entities/Sun.js";
 import { CottonCandy } from "../entities/CottonCandy.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Toolbar } from "../ui/Toolbar.js";
+import { ConveyorBelt } from "../ui/ConveyorBelt.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
@@ -227,12 +228,22 @@ export class LevelScene extends Phaser.Scene {
 
     this.placementDef = null;
     this.ghost = null;
-    this.toolbar = new Toolbar(
-      this,
-      height - 100,
-      (def) => this.setPlacement(def),
-      () => this.coins,
-    );
+    this.conveyorMode = this.level.mode === "conveyor";
+    if (this.conveyorMode) {
+      this.toolbar = new ConveyorBelt(this, {
+        allowedTiles: this.level.allowedTiles || [],
+        spawnIntervalMs: this.level.conveyorIntervalMs ?? 3500,
+        onSelect: (def) => this.setPlacement(def),
+      });
+      this.coinsText.setVisible(false);
+    } else {
+      this.toolbar = new Toolbar(
+        this,
+        height - 100,
+        (def) => this.setPlacement(def),
+        () => this.coins,
+      );
+    }
 
     this.input.on("pointermove", (p) => this.updateGhost(p));
     this.input.on("pointerdown", (p) => this.tryPlace(p));
@@ -544,7 +555,7 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
     if (!isEmpty(this.gridState, cell.col, cell.row)) return;
-    if (this.coins < this.placementDef.cost) return;
+    if (!this.conveyorMode && this.coins < this.placementDef.cost) return;
     const { x, y } = cellToPixel(cell.col, cell.row);
     let entity = null;
     if (this.placementDef.id === "lava") {
@@ -571,8 +582,12 @@ export class LevelScene extends Phaser.Scene {
     if (!entity) return;
     this.towers.push(entity);
     setCell(this.gridState, cell.col, cell.row, entity);
-    this.coins -= this.placementDef.cost;
-    this.refreshCoinsText();
+    if (this.conveyorMode) {
+      this.toolbar.consumeSelected?.();
+    } else {
+      this.coins -= this.placementDef.cost;
+      this.refreshCoinsText();
+    }
     Audio.place();
 
     entity.setScale(0.3);

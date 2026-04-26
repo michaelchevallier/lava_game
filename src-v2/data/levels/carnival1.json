@@ -1,0 +1,40 @@
+{
+  "id": "c.1",
+  "name": "Roue de la Fortune",
+  "world": 6,
+  "mode": "conveyor",
+  "startCoins": 0,
+  "conveyorIntervalMs": 3000,
+  "allowedTiles": ["coin", "lava", "water"],
+  "loseEscaped": 6,
+  "waves": [
+    {
+      "delayMs": 8000,
+      "visitors": [
+        { "type": "basic", "lane": 2, "delayMs": 0 },
+        { "type": "basic", "lane": 1, "delayMs": 4000 },
+        { "type": "basic", "lane": 3, "delayMs": 5000 },
+        { "type": "basic", "lane": 0, "delayMs": 7500 },
+        { "type": "basic", "lane": 4, "delayMs": 8200 }
+      ]
+    },
+    {
+      "delayMs": 30000,
+      "visitors": [
+        { "type": "basic", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 1, "delayMs": 1000 },
+        { "type": "basic", "lane": 2, "delayMs": 2000 },
+        { "type": "basic", "lane": 3, "delayMs": 3000 },
+        { "type": "basic", "lane": 4, "delayMs": 4000 },
+        { "type": "vip", "lane": 2, "delayMs": 7000 },
+        { "type": "basic", "lane": 1, "delayMs": 8000 },
+        { "type": "basic", "lane": 3, "delayMs": 9000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 5 },
+    "2": { "escapedMax": 3 },
+    "3": { "escapedMax": 0 }
+  }
+}

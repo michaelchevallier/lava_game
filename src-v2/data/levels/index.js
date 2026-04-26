@@ -29,6 +29,11 @@ import w54 from "./world5-4.json";
 import w55 from "./world5-5.json";
 import w56 from "./world5-6.json";
 import endless from "./endless.json";
+import c1 from "./carnival1.json";
+import c2 from "./carnival2.json";
+import c3 from "./carnival3.json";
+import c4 from "./carnival4.json";
+import c5 from "./carnival5.json";
 
 import { isCompleted } from "../../systems/SaveSystem.js";
 
@@ -38,8 +43,11 @@ const LEVELS_LIST = [
   w31, w32, w33, w34, w35, w36,
   w41, w42, w43, w44, w45, w46,
   w51, w52, w53, w54, w55, w56,
+  c1, c2, c3, c4, c5,
   endless,
 ];
+
+export const CARNIVAL_LEVELS = ["c.1", "c.2", "c.3", "c.4", "c.5"];
 const LEVELS_MAP = {};
 for (const lvl of LEVELS_LIST) LEVELS_MAP[lvl.id] = lvl;
 
@@ -65,6 +73,11 @@ export function isWorldUnlocked(world) {
 export function isLevelUnlocked(levelId) {
   const lvl = LEVELS_MAP[levelId];
   if (!lvl) return false;
+  if (CARNIVAL_LEVELS.includes(levelId)) {
+    const idx = CARNIVAL_LEVELS.indexOf(levelId);
+    if (idx === 0) return true;
+    return isCompleted(CARNIVAL_LEVELS[idx - 1]);
+  }
   const world = WORLDS.find((w) => w.id === lvl.world);
   if (!world) return false;
   if (!isWorldUnlocked(world)) return false;
@@ -79,6 +92,10 @@ export function getLevel(id) {
 }
 
 export function getNextLevelId(id) {
+  if (CARNIVAL_LEVELS.includes(id)) {
+    const idx = CARNIVAL_LEVELS.indexOf(id);
+    return CARNIVAL_LEVELS[idx + 1] || null;
+  }
   for (const w of WORLDS) {
     const idx = w.levels.indexOf(id);
     if (idx >= 0) {

@@ -1,0 +1,40 @@
+{
+  "id": "c.2",
+  "name": "Tapis Magique",
+  "world": 6,
+  "mode": "conveyor",
+  "startCoins": 0,
+  "conveyorIntervalMs": 2800,
+  "allowedTiles": ["coin", "lava", "water", "fan"],
+  "loseEscaped": 5,
+  "waves": [
+    {
+      "delayMs": 7000,
+      "visitors": [
+        { "type": "basic", "lane": 1, "delayMs": 0 },
+        { "type": "basic", "lane": 3, "delayMs": 2000 },
+        { "type": "basic", "lane": 2, "delayMs": 4500 },
+        { "type": "thief", "lane": 0, "delayMs": 6500 },
+        { "type": "basic", "lane": 4, "delayMs": 7500 }
+      ]
+    },
+    {
+      "delayMs": 26000,
+      "visitors": [
+        { "type": "basic", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 4, "delayMs": 1500 },
+        { "type": "vip", "lane": 2, "delayMs": 3500 },
+        { "type": "basic", "lane": 1, "delayMs": 5000 },
+        { "type": "basic", "lane": 3, "delayMs": 6500 },
+        { "type": "thief", "lane": 2, "delayMs": 9000 },
+        { "type": "basic", "lane": 0, "delayMs": 11000 },
+        { "type": "basic", "lane": 4, "delayMs": 12500 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 4 },
+    "2": { "escapedMax": 2 },
+    "3": { "escapedMax": 0 }
+  }
+}

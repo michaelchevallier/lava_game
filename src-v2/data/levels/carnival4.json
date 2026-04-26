@@ -1,0 +1,40 @@
+{
+  "id": "c.4",
+  "name": "Foire d'Hiver",
+  "world": 6,
+  "mode": "conveyor",
+  "startCoins": 0,
+  "conveyorIntervalMs": 2400,
+  "allowedTiles": ["coin", "lava", "water", "fan", "frost", "portal"],
+  "loseEscaped": 5,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "basic", "lane": 0, "delayMs": 0 },
+        { "type": "basic", "lane": 4, "delayMs": 1000 },
+        { "type": "vip", "lane": 2, "delayMs": 3000 },
+        { "type": "flying", "lane": 1, "delayMs": 5500 },
+        { "type": "basic", "lane": 3, "delayMs": 7000 }
+      ]
+    },
+    {
+      "delayMs": 26000,
+      "visitors": [
+        { "type": "thief", "lane": 1, "delayMs": 0 },
+        { "type": "thief", "lane": 3, "delayMs": 1200 },
+        { "type": "flying", "lane": 0, "delayMs": 3000 },
+        { "type": "vip", "lane": 2, "delayMs": 4500 },
+        { "type": "basic", "lane": 4, "delayMs": 6500 },
+        { "type": "vip", "lane": 1, "delayMs": 8500 },
+        { "type": "flying", "lane": 3, "delayMs": 10500 },
+        { "type": "basic", "lane": 2, "delayMs": 12000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 4 },
+    "2": { "escapedMax": 2 },
+    "3": { "escapedMax": 0 }
+  }
+}

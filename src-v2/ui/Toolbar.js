@@ -208,7 +208,11 @@ export class Toolbar extends Phaser.GameObjects.Container {
   }
 
   makeIcon(id, x, y) {
-    const s = this.scene;
+    return makeTileIcon(this.scene, id, x, y);
+  }
+}
+
+export function makeTileIcon(s, id, x, y) {
     const c = s.add.container(x, y);
     if (id === "coin") {
       for (let i = 0; i < 6; i++) {
@@ -284,5 +288,4 @@ export class Toolbar extends Phaser.GameObjects.Container {
       c.add(s.add.rectangle(0, -8, 12, 4, 0x999).setStrokeStyle(1, 0x444));
     }
     return c;
-  }
 }
