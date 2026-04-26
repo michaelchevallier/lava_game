@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { JuiceFX } from "../systems/JuiceFX.js";
+import { Flash } from "../systems/Flash.js";
 
 const TYPE_DEFS = {
   basic:    { hp: 1, speed: 45,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
@@ -190,6 +191,7 @@ export class Visitor extends Phaser.GameObjects.Container {
       });
       return;
     }
+    Flash.entity(this, 0xffffff, 80);
     this.hp -= dmg;
     if (this.hpBar) {
       this.hpBar.setScale(Math.max(0, this.hp / this.maxHp), 1);

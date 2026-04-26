@@ -14,6 +14,7 @@ import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
+import { Flash } from "../systems/Flash.js";
 import { Tutorial } from "../ui/Tutorial.js";
 import { getTheme } from "../systems/Theme.js";
 import {
@@ -126,12 +127,7 @@ export class LevelScene extends Phaser.Scene {
       this.coins += amount;
       this.refreshCoinsText();
       Audio.coin();
-      this.tweens.add({
-        targets: this.coinsText,
-        scale: { from: 1.3, to: 1 },
-        duration: 220,
-        ease: "Cubic.out",
-      });
+      Flash.hud(this.coinsText, 0xffd23f, 250);
     });
 
     this.events.on("visitor-escaped", () => {
@@ -159,6 +155,7 @@ export class LevelScene extends Phaser.Scene {
     });
 
     this.events.on("tile-destroyed", (tile) => {
+      if (tile && tile.active) Flash.entity(tile, 0xff4444, 200);
       for (let r = 0; r < this.gridState.length; r++) {
         for (let c = 0; c < this.gridState[r].length; c++) {
           if (this.gridState[r][c] === tile) {
