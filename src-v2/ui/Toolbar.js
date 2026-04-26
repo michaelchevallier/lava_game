@@ -74,7 +74,7 @@ export class Toolbar extends Phaser.GameObjects.Container {
     const c = this.scene.add.container(x, y);
 
     const back = this.scene.add.rectangle(0, 0, w, h, 0x222840).setStrokeStyle(2, 0x4a4a6a);
-    const icon = this.scene.add.rectangle(0, -14, 36, 30, def.color).setStrokeStyle(2, def.accent);
+    const icon = this.makeIcon(def.id, 0, -14);
     const label = this.scene.add.text(0, 18, def.label, {
       fontFamily: "system-ui",
       fontSize: "12px",
@@ -165,5 +165,66 @@ export class Toolbar extends Phaser.GameObjects.Container {
     if (this.selectedId == null) return;
     this.selectedId = null;
     this.refreshButtons();
+  }
+
+  makeIcon(id, x, y) {
+    const s = this.scene;
+    const c = s.add.container(x, y);
+    if (id === "coin") {
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI * 2 * i) / 6;
+        c.add(s.add.ellipse(Math.cos(a) * 8, Math.sin(a) * 8 - 2, 7, 10, 0xffd23f).setStrokeStyle(1, 0xc88a00));
+      }
+      c.add(s.add.circle(0, -2, 7, 0xff9f1c).setStrokeStyle(1, 0x6b3a0a));
+      c.add(s.add.circle(-2, -3, 1, 0x000));
+      c.add(s.add.circle(2, -3, 1, 0x000));
+    } else if (id === "lava") {
+      c.add(s.add.rectangle(0, 8, 28, 6, 0x4a2a04).setStrokeStyle(1, 0x2a1a04));
+      c.add(s.add.ellipse(0, 0, 22, 10, 0xff7722).setStrokeStyle(1, 0xffe066));
+      c.add(s.add.rectangle(0, -6, 22, 14, 0xc63a10).setStrokeStyle(1, 0x6b1a04));
+      c.add(s.add.rectangle(10, -6, 14, 6, 0x1a1a1a).setStrokeStyle(1, 0xffe066));
+      c.add(s.add.circle(-4, -8, 2, 0xff2200));
+    } else if (id === "water") {
+      c.add(s.add.rectangle(0, 6, 26, 6, 0x244a6a));
+      c.add(s.add.rectangle(0, -2, 24, 18, 0x4ea3d8).setStrokeStyle(1, 0x1a4a6a));
+      c.add(s.add.circle(-4, -4, 1.5, 0x000));
+      c.add(s.add.circle(4, -4, 1.5, 0x000));
+      c.add(s.add.rectangle(0, 1, 6, 1, 0x000));
+    } else if (id === "fan") {
+      c.add(s.add.rectangle(0, 8, 26, 4, 0x444));
+      c.add(s.add.circle(0, -2, 12, 0x222).setStrokeStyle(1, 0x666));
+      const b1 = s.add.rectangle(0, -2, 18, 3, 0xddeeff);
+      const b2 = s.add.rectangle(0, -2, 18, 3, 0xddeeff);
+      b2.angle = 90;
+      c.add([b1, b2]);
+      c.add(s.add.circle(0, -2, 2, 0x88aabb));
+    } else if (id === "magnet") {
+      c.add(s.add.rectangle(0, 8, 26, 5, 0x4a2a04));
+      c.add(s.add.circle(0, -2, 11, 0x66001a).setStrokeStyle(1, 0xff2222));
+      c.add(s.add.rectangle(0, -14, 2, 6, 0x222));
+      c.add(s.add.circle(0, -16, 2, 0xffd23f));
+    } else if (id === "catapult") {
+      c.add(s.add.rectangle(0, 8, 28, 5, 0x4a2a04));
+      const arm = s.add.rectangle(-2, -2, 4, 16, 0x6b3a0a);
+      arm.angle = -20;
+      c.add(arm);
+      c.add(s.add.rectangle(-6, -10, 8, 6, 0x2a1a04));
+      c.add(s.add.circle(6, -8, 4, 0x9bd84a).setStrokeStyle(1, 0x4a8a3a));
+    } else if (id === "frost") {
+      c.add(s.add.rectangle(0, 8, 28, 5, 0x4a6a8a));
+      c.add(s.add.rectangle(0, -2, 22, 14, 0x88c8e8).setStrokeStyle(1, 0x4a8ab8));
+      c.add(s.add.triangle(-6, -6, 0, 0, 4, -6, 8, 0, 0xc8e8ff));
+      c.add(s.add.triangle(6, -6, 0, 0, 4, -6, 8, 0, 0xc8e8ff));
+    } else if (id === "portal") {
+      c.add(s.add.rectangle(0, 8, 26, 5, 0x4a2a4a));
+      c.add(s.add.ellipse(0, -2, 22, 22, 0x9a4ad8).setStrokeStyle(1, 0xff66ff));
+      c.add(s.add.ellipse(0, -2, 14, 14, 0x4a1a8a));
+      c.add(s.add.ellipse(0, -2, 8, 8, 0xff66ff, 0.7));
+    } else if (id === "shovel") {
+      c.add(s.add.rectangle(0, 6, 4, 24, 0x6b3a0a).setStrokeStyle(1, 0x2a1a04));
+      c.add(s.add.triangle(0, -6, 0, 0, -8, -10, 8, -10, 0x999).setStrokeStyle(1, 0x444));
+      c.add(s.add.rectangle(0, -8, 12, 4, 0x999).setStrokeStyle(1, 0x444));
+    }
+    return c;
   }
 }

@@ -9,6 +9,7 @@ import { Catapult } from "../entities/Catapult.js";
 import { FrostTramp } from "../entities/FrostTramp.js";
 import { Portal } from "../entities/Portal.js";
 import { LawnMower } from "../entities/LawnMower.js";
+import { Sun } from "../entities/Sun.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
@@ -189,6 +190,23 @@ export class LevelScene extends Phaser.Scene {
 
     this.waveManager = new WaveManager(this, this.level);
     this.waveManager.start();
+
+    this.skySunsTimer = this.time.addEvent({
+      delay: 11000 + Math.random() * 4000,
+      loop: true,
+      callback: () => {
+        if (!this.scene.isActive() || this.gameOver) return;
+        const sx = GRID.originX + 60 + Math.random() * (GRID.cols * GRID.cellSize - 120);
+        const targetY = GRID.originY + 40 + Math.random() * (GRID.rows * GRID.cellSize - 80);
+        const sun = new Sun(this, sx, -20, {
+          amount: 25,
+          driftToY: targetY,
+          lifetimeMs: 12000,
+          autoCollectAt: 8000,
+        });
+        this.suns.push(sun);
+      },
+    });
 
     Audio.resume();
 
