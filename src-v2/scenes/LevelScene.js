@@ -67,6 +67,8 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("lava-erupt");
     this.events.removeAllListeners("lava-overflow");
     this.events.removeAllListeners("lava-safe");
+    this.events.removeAllListeners("tower-disabled");
+    this.events.removeAllListeners("coins-refund");
     if (this.lavaMeter) { this.lavaMeter.destroy(); this.lavaMeter = null; }
 
     this.gridState = createGridState();
@@ -153,6 +155,22 @@ export class LevelScene extends Phaser.Scene {
 
     this.events.on("mower-fired", () => {
       Audio.explode?.() || Audio.hit();
+    });
+
+    this.events.on("tower-disabled", ({ tower, untilMs }) => {
+      if (!tower || !tower.active) return;
+      tower._disabledUntil = untilMs;
+      tower.setAlpha(0.45);
+      this.time.delayedCall(Math.max(0, untilMs - this.time.now), () => {
+        if (tower && tower.active) tower.setAlpha(1);
+      });
+    });
+
+    this.events.on("coins-refund", (amount) => {
+      if (!amount || amount <= 0) return;
+      this.coins += amount;
+      this.refreshCoinsText();
+      Flash.hud(this.coinsText, 0xff66cc, 280);
     });
 
     this.events.on("update", (time, delta) => {
@@ -627,6 +645,8 @@ export class LevelScene extends Phaser.Scene {
     for (const v of this.visitors) {
       if (!v.active || v._dying) continue;
       if (v.canFly) { v.blocked = false; continue; }
+      if (v.walksOnWater) { v.blocked = false; continue; }
+      if (v._jumpUntil && time < v._jumpUntil) { v.blocked = false; continue; }
       const cellAhead = pixelToCell(v.x - 35, v.y);
       let blocker = null;
       if (cellAhead) {
@@ -748,10 +768,12 @@ export class LevelScene extends Phaser.Scene {
   }
 
   checkProjectileHits() {
+    const now = this.time.now;
     for (const proj of this.projectiles) {
       if (!proj.active || proj._dead) continue;
       for (const v of this.visitors) {
         if (!v.active || v._dying) continue;
+        if (v._jumpUntil && now < v._jumpUntil) continue;
         if (Math.abs(proj.y - v.y) > 36) continue;
         if (Math.abs(proj.x - v.x) > 18) continue;
         proj.hit(v);
