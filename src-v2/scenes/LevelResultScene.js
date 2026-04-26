@@ -3,6 +3,7 @@ import { saveProgress, saveEndlessRun, getEndlessTop } from "../systems/SaveSyst
 import { getNextLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
+import { makeClickable } from "../ui/Clickable.js";
 
 export class LevelResultScene extends Phaser.Scene {
   constructor() {
@@ -161,23 +162,19 @@ export class LevelResultScene extends Phaser.Scene {
     buttons.push({ label: "[ M ] Menu", color: 0xddeeff, key: "M", action: () => { this.scene.start("CampaignMenuScene"); this.scene.stop(); } });
 
     const totalW = buttons.length * (200 + 20) - 20;
-    let x = width / 2 - totalW / 2 + 100;
+    let bx = width / 2 - totalW / 2 + 100;
     buttons.forEach((b) => {
-      const bg = this.add.rectangle(x, btnY, 200, 60, 0x222840).setStrokeStyle(3, b.color);
-      const label = this.add.text(x, btnY, b.label, {
-        fontFamily: "system-ui",
-        fontSize: "18px",
-        fontStyle: "bold",
-        color: "#fff",
-        stroke: "#000",
-        strokeThickness: 3,
-      }).setOrigin(0.5);
-      bg.setInteractive();
-      bg.on("pointerover", () => { bg.setFillStyle(0x33405a); Audio.ui(); });
-      bg.on("pointerout", () => bg.setFillStyle(0x222840));
-      bg.on("pointerdown", () => { Audio.click(); b.action(); });
+      makeClickable(this, {
+        x: bx, y: btnY, width: 200, height: 60,
+        radius: 8,
+        fillColor: 0x222840, strokeColor: b.color, strokeWidth: 3,
+        hoverFill: 0x33405a, hoverStroke: 0xffd23f,
+        label: b.label,
+        labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 3 },
+        onClick: b.action,
+      });
       this.input.keyboard.once("keydown-" + b.key, () => { Audio.click(); b.action(); });
-      x += 220;
+      bx += 220;
     });
   }
 }
