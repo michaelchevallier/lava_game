@@ -102,8 +102,8 @@
       "delayMs": 34000,
       "visitors": [
         {
-          "type": "boss",
-          "lane": 0,
+          "type": "carnivalboss",
+          "lane": 2,
           "delayMs": 0
         },
         {

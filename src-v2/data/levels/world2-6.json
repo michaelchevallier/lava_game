@@ -152,9 +152,9 @@
           "delayMs": 7000
         },
         {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 9000
+          "type": "magicboss",
+          "lane": 2,
+          "delayMs": 0
         },
         {
           "type": "tank",

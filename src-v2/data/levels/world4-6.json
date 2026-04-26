@@ -92,8 +92,8 @@
       "delayMs": 38000,
       "visitors": [
         {
-          "type": "boss",
-          "lane": 0,
+          "type": "lavaqueen",
+          "lane": 2,
           "delayMs": 0
         },
         {

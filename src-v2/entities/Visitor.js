@@ -17,6 +17,9 @@ const TYPE_DEFS = {
   enfant:     { hp: 1,  speed: 55,  shirtColor: 0xff8888, shirtStroke: 0xaa3333, skin: 0xffd2a8, immune: [], canFly: false, hat: "balloon" },
   lavewalker: { hp: 3,  speed: 45,  shirtColor: 0xeeeeee, shirtStroke: 0x888888, skin: 0xffeebb, immune: ["lava", "frost"], canFly: false, hat: null },
   stiltman:   { hp: 2,  speed: 50,  shirtColor: 0x4a4a8a, shirtStroke: 0x222266, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
+  magicboss:  { hp: 25, speed: 26,  shirtColor: 0x4a1a8a, shirtStroke: 0x220050, skin: 0xa0c090, immune: [], canFly: false, hat: "tophat", scale: 1.8 },
+  lavaqueen:  { hp: 35, speed: 22,  shirtColor: 0xc63a10, shirtStroke: 0x4a0010, skin: 0xffaa66, immune: ["lava"], canFly: false, hat: "crown", scale: 1.9 },
+  carnivalboss: { hp: 50, speed: 24, shirtColor: 0xff66cc, shirtStroke: 0x880044, skin: 0xa0c090, immune: [], canFly: false, hat: "wig", scale: 2 },
 };
 
 export class Visitor extends Phaser.GameObjects.Container {
@@ -128,6 +131,13 @@ export class Visitor extends Phaser.GameObjects.Container {
       const horn1 = scene.add.triangle(-9, -34, 0, 0, 5, -14, -5, 0, 0xddd8b8).setStrokeStyle(1, 0x4a4020);
       const horn2 = scene.add.triangle(9, -34, 0, 0, 5, 0, -5, -14, 0xddd8b8).setStrokeStyle(1, 0x4a4020);
       this.add([horn1, horn2]);
+    } else if (def.hat === "crown") {
+      const crownBase = scene.add.rectangle(0, -33, 28, 5, 0xffd23f).setStrokeStyle(1, 0xc88a00);
+      const spike1 = scene.add.triangle(-10, -38, 0, 0, 4, -8, 8, 0, 0xffd23f).setStrokeStyle(1, 0xc88a00);
+      const spike2 = scene.add.triangle(0, -42, 0, 0, 4, -10, 8, 0, 0xffe066).setStrokeStyle(1, 0xc88a00);
+      const spike3 = scene.add.triangle(10, -38, 0, 0, 4, -8, 8, 0, 0xffd23f).setStrokeStyle(1, 0xc88a00);
+      const gem = scene.add.circle(0, -38, 2.5, 0xff2200).setStrokeStyle(1, 0xffaaaa);
+      this.add([crownBase, spike1, spike2, spike3, gem]);
     } else if (def.hat === "wig") {
       // Clown wig: red hirsute hair puffs
       const wigBase = scene.add.ellipse(0, -35, 32, 12, 0xff2200);
@@ -264,6 +274,32 @@ export class Visitor extends Phaser.GameObjects.Container {
         if (this._jumpUntil > 0 && time > this._jumpUntil) {
           this._jumpUntil = 0;
           this.walksOnWater = false;
+        }
+        break;
+
+      case "magicboss":
+        if (time - (this._lastSummonAt ?? 0) > 8000) {
+          this._lastSummonAt = time;
+          this._doMagicBossSummon();
+        }
+        break;
+
+      case "lavaqueen":
+        if (time - (this._lastLavaPuddleAt ?? 0) > 1500) {
+          this._lastLavaPuddleAt = time;
+          this._doLavaQueenTrail();
+        }
+        break;
+
+      case "carnivalboss":
+        const hpPct = this.hp / this.maxHp;
+        if (hpPct <= 0.5 && !this._phase2Triggered) {
+          this._phase2Triggered = true;
+          this._doCarnivalPhase2();
+        }
+        if (hpPct <= 0.25 && !this._phase3Triggered) {
+          this._phase3Triggered = true;
+          this._doCarnivalPhase3();
         }
         break;
     }
@@ -468,5 +504,70 @@ export class Visitor extends Phaser.GameObjects.Container {
       duration: 220,
       onComplete: () => this.destroy(),
     });
+  }
+
+  _doMagicBossSummon() {
+    if (!this.scene || typeof this.scene.spawnVisitor !== "function") return;
+    const myRow = this.row ?? 2;
+    const ring = this.scene.add.circle(this.x, this.y, 36, 0xff66ff, 0.7).setDepth(20);
+    this.scene.tweens.add({
+      targets: ring, scale: 2.2, alpha: 0, duration: 500,
+      onComplete: () => ring.destroy(),
+    });
+    for (let i = 0; i < 2; i++) {
+      const r = (myRow + (i === 0 ? -1 : 1) + 5) % 5;
+      this.scene.spawnVisitor(r, "basic");
+    }
+  }
+
+  _doLavaQueenTrail() {
+    if (!this.scene) return;
+    const puddle = this.scene.add.ellipse(this.x + 10, this.y + 22, 28, 12, 0xff4400, 0.85)
+      .setStrokeStyle(2, 0xffe066).setDepth(4);
+    this.scene.tweens.add({
+      targets: puddle,
+      alpha: { from: 0.85, to: 0 },
+      duration: 6000,
+      onComplete: () => puddle.destroy(),
+    });
+    for (const t of (this.scene.towers || [])) {
+      if (!t.active) continue;
+      if (Math.abs(t.x - this.x - 10) < 30 && Math.abs(t.y - this.y - 22) < 25) {
+        if (typeof t.takeDamage === "function") t.takeDamage(0.5);
+        else if (t._disabledUntil === undefined || this.scene.time.now > t._disabledUntil) {
+          this.scene.events.emit("tower-disabled", { tower: t, untilMs: this.scene.time.now + 2500 });
+        }
+      }
+    }
+  }
+
+  _doCarnivalPhase2() {
+    if (!this.scene) return;
+    const burst = this.scene.add.circle(this.x, this.y, 60, 0xffd23f, 0.6).setDepth(25);
+    this.scene.tweens.add({
+      targets: burst, scale: 2.5, alpha: 0, duration: 700,
+      onComplete: () => burst.destroy(),
+    });
+    if (typeof this.scene.spawnVisitor === "function") {
+      for (let i = 0; i < 8; i++) {
+        const r = Math.floor(Math.random() * 5);
+        this.scene.time.delayedCall(i * 250, () => {
+          if (this.scene?.scene?.isActive()) this.scene.spawnVisitor(r, "basic");
+        });
+      }
+    }
+    this.speed *= 1.4;
+    this.baseSpeed *= 1.4;
+  }
+
+  _doCarnivalPhase3() {
+    if (!this.scene) return;
+    this.immune = ["lava"];
+    const ring = this.scene.add.circle(this.x, this.y, 50, 0xff0000, 0.9).setStrokeStyle(3, 0xff66ff).setDepth(25);
+    this.scene.tweens.add({
+      targets: ring, scale: 0.4, alpha: 0, duration: 600,
+      onComplete: () => ring.destroy(),
+    });
+    if (this.scene.cameras?.main) this.scene.cameras.main.shake(400, 0.012);
   }
 }
