@@ -8,6 +8,7 @@ import { MagnetBomb } from "../entities/MagnetBomb.js";
 import { Catapult } from "../entities/Catapult.js";
 import { FrostTramp } from "../entities/FrostTramp.js";
 import { Portal } from "../entities/Portal.js";
+import { LawnMower } from "../entities/LawnMower.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
@@ -57,6 +58,8 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("visitor-killed");
     this.events.removeAllListeners("visitor-escaped");
     this.events.removeAllListeners("tile-destroyed");
+    this.events.removeAllListeners("sun-collected");
+    this.events.removeAllListeners("mower-fired");
 
     this.gridState = createGridState();
     this.drawGrid();
@@ -68,6 +71,8 @@ export class LevelScene extends Phaser.Scene {
     this.visitors = [];
     this.projectiles = [];
     this.towers = [];
+    this.suns = [];
+    this.mowers = [];
     this.gameOver = false;
 
     this.coinsText = this.add.text(20, 16, "¢ " + this.coins, {
@@ -116,14 +121,14 @@ export class LevelScene extends Phaser.Scene {
       Audio.kill();
     });
 
-    this.events.on("coins-earned", (amount) => {
+    this.events.on("sun-collected", (amount) => {
       this.coins += amount;
       this.refreshCoinsText();
       Audio.coin();
       this.tweens.add({
         targets: this.coinsText,
-        scale: { from: 1.25, to: 1 },
-        duration: 200,
+        scale: { from: 1.3, to: 1 },
+        duration: 220,
         ease: "Cubic.out",
       });
     });
@@ -132,12 +137,19 @@ export class LevelScene extends Phaser.Scene {
       Audio.hit();
     });
 
+    this.events.on("mower-fired", () => {
+      Audio.explode?.() || Audio.hit();
+    });
+
     this.events.on("update", (time, delta) => {
       this.visitors = this.visitors.filter((v) => v.active);
       this.projectiles = this.projectiles.filter((p) => p.active);
       this.towers = this.towers.filter((t) => t.active);
+      this.suns = this.suns.filter((s) => s.active);
+      this.mowers = this.mowers.filter((m) => m.active);
       this.checkProjectileHits();
       this.updateBlockers(time, delta);
+      this.checkMowerTriggers();
       if (this.waveManager && !this.gameOver) {
         this.waveManager.tick(time);
         this.refreshWaveStatus(time);
@@ -167,6 +179,13 @@ export class LevelScene extends Phaser.Scene {
 
     this.input.on("pointermove", (p) => this.updateGhost(p));
     this.input.on("pointerdown", (p) => this.tryPlace(p));
+
+    for (let r = 0; r < GRID.rows; r++) {
+      const mx = leftEdgeX() - 60;
+      const my = rowToY(r);
+      const mower = new LawnMower(this, mx, my, { row: r });
+      this.mowers.push(mower);
+    }
 
     this.waveManager = new WaveManager(this, this.level);
     this.waveManager.start();
@@ -496,6 +515,19 @@ export class LevelScene extends Phaser.Scene {
 
   refreshCoinsText() {
     this.coinsText.setText("¢ " + this.coins);
+  }
+
+  checkMowerTriggers() {
+    for (const v of this.visitors) {
+      if (!v.active || v._dying || v._mowerTriggered) continue;
+      if (v.x < leftEdgeX()) {
+        const mower = this.mowers.find((m) => m.row === v.row && !m.activated && !m._dead);
+        if (mower) {
+          v._mowerTriggered = true;
+          mower.activate();
+        }
+      }
+    }
   }
 
   updateBlockers(time, delta) {

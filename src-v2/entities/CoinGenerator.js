@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { Sun } from "./Sun.js";
 
 export class CoinGenerator extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
@@ -78,35 +79,16 @@ export class CoinGenerator extends Phaser.GameObjects.Container {
     if (!this.scene) return;
     if (time - this.lastTickAt < this.intervalMs) return;
     this.lastTickAt = time;
-    this.scene.events.emit("coins-earned", this.amount, this);
-    this.popPing();
+    this.spawnSun();
   }
 
-  popPing() {
-    const ping = this.scene.add.text(this.x, this.y - 50, "+" + this.amount, {
-      fontFamily: "system-ui",
-      fontSize: "22px",
-      fontStyle: "bold",
-      color: "#ffd23f",
-      stroke: "#000",
-      strokeThickness: 4,
-    }).setOrigin(0.5).setDepth(30);
-    this.scene.tweens.add({
-      targets: ping,
-      y: ping.y - 35,
-      alpha: 0,
-      duration: 900,
-      ease: "Cubic.out",
-      onComplete: () => ping.destroy(),
+  spawnSun() {
+    const offsetX = (Math.random() - 0.5) * 30;
+    const sun = new Sun(this.scene, this.x + offsetX, this.y - 8, {
+      amount: this.amount,
+      driftToY: this.y + 24 + (Math.random() * 12),
+      lifetimeMs: 8000,
     });
-    const burst = this.scene.add.circle(this.x, this.y - 14, 30, 0xffd23f, 0.6);
-    burst.setDepth(11);
-    this.scene.tweens.add({
-      targets: burst,
-      alpha: 0,
-      scale: 1.6,
-      duration: 400,
-      onComplete: () => burst.destroy(),
-    });
+    if (this.scene.suns) this.scene.suns.push(sun);
   }
 }

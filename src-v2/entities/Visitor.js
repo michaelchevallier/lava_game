@@ -1,12 +1,12 @@
 import * as Phaser from "phaser";
 
 const TYPE_DEFS = {
-  basic:    { hp: 1, speed: 45,  bodyColor: 0x6cce5c, bodyStroke: 0x244a1a, skin: 0xffd2a8, immune: [], canFly: false, hat: null },
-  tank:     { hp: 2, speed: 35,  bodyColor: 0x4a8a3a, bodyStroke: 0x244a1a, skin: 0xe8b380, immune: [], canFly: false, hat: null },
-  vip:      { hp: 2, speed: 45,  bodyColor: 0x8a4ad8, bodyStroke: 0x4a1a8a, skin: 0xffd2a8, immune: [], canFly: false, hat: "tophat" },
-  skeleton: { hp: 1, speed: 50,  bodyColor: 0xeeeeee, bodyStroke: 0x666666, skin: 0xeeeeee, immune: ["lava"], canFly: false, hat: null },
-  flying:   { hp: 1, speed: 55,  bodyColor: 0xffd23f, bodyStroke: 0xc88a00, skin: 0xffd2a8, immune: [], canFly: true, hat: "wing" },
-  boss:     { hp: 12, speed: 28, bodyColor: 0xa01030, bodyStroke: 0x4a0010, skin: 0xc88a60, immune: [], canFly: false, hat: "horn", scale: 1.6 },
+  basic:    { hp: 1, speed: 45,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
+  tank:     { hp: 2, speed: 35,  shirtColor: 0x4a4a4a, shirtStroke: 0x222222, skin: 0x88aa78, immune: [], canFly: false, hat: "bucket" },
+  vip:      { hp: 2, speed: 45,  shirtColor: 0x3a3a3a, shirtStroke: 0x111111, skin: 0xa0c090, immune: [], canFly: false, hat: "tophat" },
+  skeleton: { hp: 1, speed: 50,  shirtColor: 0xeeeeee, shirtStroke: 0x666666, skin: 0xeeeeee, immune: ["lava"], canFly: false, hat: null },
+  flying:   { hp: 1, speed: 55,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: true, hat: "wing" },
+  boss:     { hp: 12, speed: 28, shirtColor: 0x4a1a4a, shirtStroke: 0x1a0a1a, skin: 0x9accaa, immune: [], canFly: false, hat: "horn", scale: 1.7 },
 };
 
 export class Visitor extends Phaser.GameObjects.Container {
@@ -24,60 +24,107 @@ export class Visitor extends Phaser.GameObjects.Container {
     this._dying = false;
     this.blocked = false;
     const isSkel = this.type === "skeleton";
+    const isBoss = this.type === "boss";
 
-    this.shadow = scene.add.ellipse(0, 22, 36, 8, 0x000, 0.35);
+    this.shadow = scene.add.ellipse(0, 22, 38, 9, 0x000, 0.4);
     this.add(this.shadow);
 
-    this.legL = scene.add.rectangle(-7, 22, 8, 14, def.bodyStroke).setStrokeStyle(1, 0x000);
-    this.legR = scene.add.rectangle(7, 22, 8, 14, def.bodyStroke).setStrokeStyle(1, 0x000);
+    this.legL = scene.add.rectangle(-7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
+    this.legR = scene.add.rectangle(7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
     this.add([this.legL, this.legR]);
 
-    const body = scene.add.rectangle(0, 4, 30, 36, def.bodyColor).setStrokeStyle(2, def.bodyStroke);
-    const bodyShine = scene.add.rectangle(-7, -4, 6, 14, 0xffffff, 0.18);
-    this.add([body, bodyShine]);
+    const torsoBack = scene.add.rectangle(0, 4, 32, 38, isSkel ? 0xddd8c8 : 0x4a3030).setStrokeStyle(2, def.shirtStroke);
+    const shirt = scene.add.rectangle(0, 6, 28, 26, def.shirtColor).setStrokeStyle(1, def.shirtStroke);
+    this.add([torsoBack, shirt]);
 
-    this.armL = scene.add.rectangle(-15, 4, 6, 22, def.bodyColor).setStrokeStyle(1, def.bodyStroke);
-    this.armR = scene.add.rectangle(15, 4, 6, 22, def.bodyColor).setStrokeStyle(1, def.bodyStroke);
+    if (!isSkel) {
+      const tear1 = scene.add.rectangle(-8, 8, 6, 2, def.shirtStroke);
+      const tear2 = scene.add.rectangle(6, 14, 5, 2, def.shirtStroke);
+      const stain = scene.add.circle(4, 4, 2.5, 0x6a0010, 0.85);
+      this.add([tear1, tear2, stain]);
+    }
+
+    this.armL = scene.add.rectangle(-16, 0, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke);
+    this.armR = scene.add.rectangle(16, 0, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke);
+    this.armL.setOrigin(0.5, 0);
+    this.armR.setOrigin(0.5, 0);
+    this.armL.y = -8;
+    this.armR.y = -8;
     this.add([this.armL, this.armR]);
 
-    const head = scene.add.circle(0, -22, 13, def.skin).setStrokeStyle(2, isSkel ? 0x999 : 0x6b4226);
-    const cheekL = scene.add.circle(-6, -19, 2.5, 0xff9aa2, 0.7);
-    const cheekR = scene.add.circle(6, -19, 2.5, 0xff9aa2, 0.7);
-    const eye1 = scene.add.circle(-4, -24, 2.5, isSkel ? 0xff2222 : 0x222);
-    const eye2 = scene.add.circle(4, -24, 2.5, isSkel ? 0xff2222 : 0x222);
-    const eyeShine1 = scene.add.circle(-3.2, -25, 1, 0xffffff);
-    const eyeShine2 = scene.add.circle(4.8, -25, 1, 0xffffff);
-    const mouth = scene.add.rectangle(0, -16, 6, 1.5, isSkel ? 0x000 : 0x6b3a26);
+    const handL = scene.add.circle(-16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
+    const handR = scene.add.circle(16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
+    this.add([handL, handR]);
+    this.handL = handL;
+    this.handR = handR;
 
-    this.add([head, cheekL, cheekR, eye1, eye2, eyeShine1, eyeShine2, mouth]);
+    const head = scene.add.circle(0, -22, 13, def.skin).setStrokeStyle(2, isSkel ? 0x999 : 0x4a4020);
+    const earL = scene.add.ellipse(-12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
+    const earR = scene.add.ellipse(12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
+
+    if (!isSkel) {
+      const scarL = scene.add.rectangle(-7, -28, 6, 1.5, 0x6a0010);
+      const scarR = scene.add.rectangle(5, -16, 4, 1.5, 0x6a0010);
+      this.add([scarL, scarR]);
+    }
+
+    const eyeBgL = scene.add.circle(-5, -24, 4, 0xfff8d0);
+    const eyeBgR = scene.add.circle(5, -24, 4, 0xfff8d0);
+    const eyeL = scene.add.circle(-5, -24, 2.4, isSkel ? 0xff2222 : 0xffd23f);
+    const eyeR = scene.add.circle(5, -24, 2.4, isSkel ? 0xff2222 : 0xffd23f);
+    const pupilL = scene.add.circle(-5, -24, 1.2, 0x000);
+    const pupilR = scene.add.circle(5, -24, 1.2, 0x000);
+
+    const mouth = scene.add.rectangle(0, -14, 10, 2, 0x000);
+    let teeth = null;
+    if (!isSkel) {
+      teeth = scene.add.rectangle(0, -14, 10, 1, 0xfff8d0);
+    }
+
+    this.add([head, earL, earR, eyeBgL, eyeBgR, eyeL, eyeR, pupilL, pupilR, mouth]);
+    if (teeth) this.add(teeth);
+
+    this.eyes = [eyeL, eyeR, pupilL, pupilR];
 
     if (def.hat === "tophat") {
-      const brim = scene.add.rectangle(0, -33, 24, 3, 0x222);
-      const hat = scene.add.rectangle(0, -42, 16, 14, 0x222);
-      const band = scene.add.rectangle(0, -38, 16, 2.5, 0xffd23f);
+      const brim = scene.add.rectangle(0, -33, 26, 3, 0x111);
+      const hat = scene.add.rectangle(0, -44, 18, 16, 0x222);
+      const band = scene.add.rectangle(0, -39, 18, 2.5, 0xc63a3a);
       this.add([brim, hat, band]);
+    } else if (def.hat === "bucket") {
+      const bucketBrim = scene.add.rectangle(0, -33, 28, 3, 0x666);
+      const bucketBody = scene.add.rectangle(0, -42, 22, 14, 0x888);
+      const bucketHandle = scene.add.arc(0, -47, 10, 180, 360, false, 0x666, 0).setStrokeStyle(2, 0x666);
+      const dent = scene.add.rectangle(-6, -42, 4, 6, 0x444);
+      this.add([bucketBrim, bucketBody, bucketHandle, dent]);
     } else if (def.hat === "wing") {
-      const wing1 = scene.add.triangle(-22, -2, 0, 0, 18, -10, 18, 10, 0xffeebb).setStrokeStyle(1, 0xc8a060);
-      const wing2 = scene.add.triangle(22, -2, 0, 0, -18, -10, -18, 10, 0xffeebb).setStrokeStyle(1, 0xc8a060);
+      const wing1 = scene.add.triangle(-22, -2, 0, 0, 18, -10, 18, 10, 0x444).setStrokeStyle(1, 0x111);
+      const wing2 = scene.add.triangle(22, -2, 0, 0, -18, -10, -18, 10, 0x444).setStrokeStyle(1, 0x111);
       this.add([wing1, wing2]);
       this.wings = [wing1, wing2];
     } else if (def.hat === "horn") {
-      const horn1 = scene.add.triangle(-9, -34, 0, 0, 5, -12, -5, 0, 0xffe6c8).setStrokeStyle(1, 0x6b3a0a);
-      const horn2 = scene.add.triangle(9, -34, 0, 0, 5, 0, -5, -12, 0xffe6c8).setStrokeStyle(1, 0x6b3a0a);
+      const horn1 = scene.add.triangle(-9, -34, 0, 0, 5, -14, -5, 0, 0xddd8b8).setStrokeStyle(1, 0x4a4020);
+      const horn2 = scene.add.triangle(9, -34, 0, 0, 5, 0, -5, -14, 0xddd8b8).setStrokeStyle(1, 0x4a4020);
       this.add([horn1, horn2]);
+    }
+
+    if (isBoss) {
+      const tongue = scene.add.rectangle(0, -10, 6, 4, 0xc63a3a);
+      this.add(tongue);
     }
 
     if (def.scale && def.scale !== 1) this.setScale(def.scale);
 
     if (this.maxHp > 1) {
-      this.hpBarBg = scene.add.rectangle(0, -44, 32, 5, 0x000, 0.7).setStrokeStyle(1, 0x222);
-      this.hpBar = scene.add.rectangle(-16, -44, 32, 5, 0x4ed8a3).setOrigin(0, 0.5);
+      this.hpBarBg = scene.add.rectangle(0, -50, 34, 5, 0x000, 0.7).setStrokeStyle(1, 0x222);
+      this.hpBar = scene.add.rectangle(-17, -50, 34, 5, 0x4ed8a3).setOrigin(0, 0.5);
       this.add([this.hpBarBg, this.hpBar]);
     }
 
     this.setSize(32, 80);
     this.setDepth(10);
     this._walkPhase = Math.random() * Math.PI * 2;
+    this._blinkAt = scene.time.now + 1500 + Math.random() * 4000;
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -94,21 +141,30 @@ export class Visitor extends Phaser.GameObjects.Container {
       const dx = this.speed * (delta / 1000);
       this.x -= dx;
     }
-    const w = (time + this._walkPhase * 200) / 110;
-    const swing = Math.sin(w) * 6;
+    const w = (time + this._walkPhase * 200) / 130;
+    const swing = Math.sin(w) * 5;
     if (this.legL && this.legR) {
       this.legL.y = 22 + Math.max(0, -swing);
       this.legR.y = 22 + Math.max(0, swing);
     }
     if (this.armL && this.armR) {
-      this.armL.angle = swing * 1.5;
-      this.armR.angle = -swing * 1.5;
+      this.armL.angle = 5 + swing * 0.6;
+      this.armR.angle = -5 - swing * 0.6;
+      if (this.handL) this.handL.y = 16 + Math.cos(w) * 1.5;
+      if (this.handR) this.handR.y = 16 - Math.cos(w) * 1.5;
     }
     if (this.canFly && this.wings) {
-      const flap = Math.sin(time / 80) * 12;
+      const flap = Math.sin(time / 80) * 14;
       this.wings[0].angle = -flap;
       this.wings[1].angle = flap;
       this.y += Math.sin(time / 200) * 0.3;
+    }
+    if (this.eyes && time > this._blinkAt) {
+      this._blinkAt = time + 2000 + Math.random() * 4000;
+      const eyes = this.eyes;
+      this.scene.tweens.add({
+        targets: eyes, scaleY: 0.1, duration: 80, yoyo: true,
+      });
     }
     if (this.x < -50) {
       this.scene.events.emit("visitor-escaped", this);
