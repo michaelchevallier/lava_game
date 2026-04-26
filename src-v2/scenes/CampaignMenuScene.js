@@ -5,6 +5,7 @@ import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { getTheme } from "../systems/Theme.js";
 import { unlockedCount, TROPHIES, trophyBonus } from "../systems/Trophies.js";
+import { hasPlayedToday, getDailyResult, getDailyStreak } from "../systems/Daily.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
   constructor() {
@@ -45,13 +46,6 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeThickness: 6,
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 100, "Choisis un niveau", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      color: "#ffeebb",
-      stroke: "#000",
-      strokeThickness: 4,
-    }).setOrigin(0.5);
 
     const total = totalStars();
     const starsBox = this.add.container(width - 110, 50);
@@ -73,6 +67,53 @@ export class CampaignMenuScene extends Phaser.Scene {
     }
     this.drawEndlessButton(y + 8);
     this.drawCarnivalButton(y + 8);
+    this.drawDailyButton();
+  }
+
+  drawDailyButton() {
+    const { width } = this.scale;
+    const played = hasPlayedToday();
+    const result = getDailyResult();
+    const streak = getDailyStreak();
+
+    const x = width / 2;
+    const y = 100;
+    const w = 320;
+    const h = 56;
+
+    const box = this.add.container(x, y);
+    const bg = this.add.rectangle(0, 0, w, h, played ? 0x1a3a1a : 0x3a1a3a, 0.9).setStrokeStyle(2, played ? 0x66ff88 : 0xff66cc);
+    const lblText = played
+      ? "🌟 Défi du Jour " + "★".repeat(result?.stars || 0) + (streak > 1 ? "  •  " + streak + "🔥" : "")
+      : "🎯 Défi du Jour" + (streak > 0 ? "  •  " + streak + "🔥" : "");
+    const lbl = this.add.text(0, -8, lblText, {
+      fontFamily: "system-ui",
+      fontSize: "16px",
+      fontStyle: "bold",
+      color: played ? "#aaffaa" : "#ffd23f",
+    }).setOrigin(0.5);
+    const sub = this.add.text(0, 12, played ? "Terminé — reviens demain" : "1 essai par jour — niveau aléatoire", {
+      fontFamily: "system-ui",
+      fontSize: "11px",
+      color: played ? "#88dd88" : "#ffaaee",
+    }).setOrigin(0.5);
+    box.add([bg, lbl, sub]);
+    box.setSize(w, h);
+    box.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
+    box.on("pointerover", () => { bg.setFillStyle(played ? 0x2a5a2a : 0x5a2a5a, 0.95); Audio.ui(); });
+    box.on("pointerout", () => { bg.setFillStyle(played ? 0x1a3a1a : 0x3a1a3a, 0.9); });
+    box.on("pointerdown", () => {
+      if (played) {
+        this.tweens.add({ targets: box, x: { from: x - 6, to: x + 6 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => { box.x = x; } });
+        return;
+      }
+      Audio.click();
+      this.cameras.main.fadeOut(250, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("LevelScene", { levelId: "daily" });
+        this.scene.stop();
+      });
+    });
   }
 
   drawCarnivalButton(y) {

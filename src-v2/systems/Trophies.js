@@ -16,7 +16,24 @@ export const TROPHIES = [
   { id: "endless_wave10", emoji: "🔥", name: "Endurci", desc: "Atteindre vague 10 en Endless", check: (s, save) => (save.endless?.runs?.[0]?.wave ?? 0) >= 10 },
   { id: "tickets_10", emoji: "🎫", name: "Collectionneur", desc: "Récolter 10 tickets cumulés", check: (s) => s.totalTickets >= 10 },
   { id: "no_escape", emoji: "🛡️", name: "Forteresse", desc: "Finir un niveau avec 0 échappé", check: (s, save) => Object.values(save.levels || {}).some((l) => l.stars === 3) },
+  { id: "daily_first", emoji: "📅", name: "Régulier", desc: "Finir 1 Défi du Jour", check: (s, save) => Object.keys(save.daily || {}).length >= 1 },
+  { id: "daily_streak_3", emoji: "🔥", name: "Sur la Lancée", desc: "Streak de 3 jours d'affilée", check: (s, save) => computeStreak(save) >= 3 },
 ];
+
+function computeStreak(save) {
+  if (!save.daily) return 0;
+  let streak = 0;
+  const d = new Date();
+  while (streak < 30) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const key = y + "-" + m + "-" + day;
+    if (save.daily[key]) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
 
 export function getStats(save) {
   save = save || loadSave();

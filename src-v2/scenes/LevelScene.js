@@ -16,6 +16,7 @@ import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
+import { getDailyLevel, recordDaily } from "../systems/Daily.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { Flash } from "../systems/Flash.js";
@@ -42,7 +43,13 @@ export class LevelScene extends Phaser.Scene {
 
   init(data) {
     const wantedId = data?.levelId || getFirstLevelId();
-    this.level = getLevel(wantedId) || getLevel(getFirstLevelId());
+    if (wantedId === "daily") {
+      this.level = getDailyLevel();
+      this.isDaily = true;
+    } else {
+      this.level = getLevel(wantedId) || getLevel(getFirstLevelId());
+      this.isDaily = false;
+    }
   }
 
   create() {
@@ -752,6 +759,10 @@ export class LevelScene extends Phaser.Scene {
     if (this.tutorial) this.tutorial.cleanup();
     const isEndless = !!this.waveManager?.infinite;
     const stars = win ? computeStars(this.level, this.escaped) : 0;
+    if (this.isDaily) {
+      const newly = recordDaily(stars, this.killed, this.escaped);
+      if (newly && newly.length) this._popTrophies(newly);
+    }
     if (win) Audio.win(); else Audio.lose();
     this.time.delayedCall(600, () => {
       this.cameras.main.fadeOut(400, 0, 0, 0);
