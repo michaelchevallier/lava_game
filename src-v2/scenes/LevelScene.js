@@ -265,6 +265,8 @@ export class LevelScene extends Phaser.Scene {
     this.waveManager = new WaveManager(this, this.level);
     this.waveManager.start();
 
+    this._setupPauseMenu();
+
     this.skySunsTimer = this.time.addEvent({
       delay: 11000 + Math.random() * 4000,
       loop: true,
@@ -782,6 +784,95 @@ export class LevelScene extends Phaser.Scene {
         this.scene.stop();
       });
     });
+  }
+
+  _setupPauseMenu() {
+    this.paused = false;
+    this.input.keyboard.on("keydown-P", () => this._togglePause());
+
+    const { width } = this.scale;
+    const btn = this.add.container(width - 40, 30).setDepth(60);
+    const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0xffd23f);
+    const t = this.add.text(0, 0, "⏸ P", { fontFamily: "system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" }).setOrigin(0.5);
+    btn.add([r, t]);
+    btn.setSize(50, 36);
+    btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
+    btn.on("pointerover", () => r.setFillStyle(0x33405a, 0.95));
+    btn.on("pointerout", () => r.setFillStyle(0x222840, 0.85));
+    btn.on("pointerdown", () => this._togglePause());
+  }
+
+  _togglePause() {
+    if (this.gameOver) return;
+    if (this.paused) {
+      this._closePauseMenu();
+    } else {
+      this._openPauseMenu();
+    }
+  }
+
+  _openPauseMenu() {
+    this.paused = true;
+    this.physics?.world?.pause?.();
+    this.tweens.pauseAll();
+    this.time.paused = true;
+
+    const { width, height } = this.scale;
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.65).setDepth(200).setInteractive();
+    const card = this.add.container(width / 2, height / 2).setDepth(201);
+    const bg = this.add.rectangle(0, 0, 360, 280, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
+    const title = this.add.text(0, -110, "⏸  EN PAUSE", { fontFamily: "system-ui", fontSize: "28px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5);
+    card.add([bg, title]);
+
+    const items = [
+      { label: "▶ Reprendre", color: 0x4ed8a3, action: () => this._closePauseMenu() },
+      { label: "↻ Recommencer", color: 0x88c8e8, action: () => {
+          this._closePauseMenu();
+          this.cameras.main.fadeOut(250, 0, 0, 0);
+          this.cameras.main.once("camerafadeoutcomplete", () => {
+            this.scene.start("LevelScene", { levelId: this.level.id });
+            this.scene.stop();
+          });
+        } },
+      { label: "✕ Quitter", color: 0xff6644, action: () => {
+          this._closePauseMenu();
+          this.cameras.main.fadeOut(250, 0, 0, 0);
+          this.cameras.main.once("camerafadeoutcomplete", () => {
+            this.scene.start("CampaignMenuScene");
+            this.scene.stop();
+          });
+        } },
+    ];
+
+    items.forEach((it, i) => {
+      const y = -40 + i * 56;
+      const btn = this.add.container(0, y);
+      const r = this.add.rectangle(0, 0, 280, 44, 0x222840).setStrokeStyle(2, it.color);
+      const lbl = this.add.text(0, 0, it.label, { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff" }).setOrigin(0.5);
+      btn.add([r, lbl]);
+      btn.setSize(280, 44);
+      btn.setInteractive(new Phaser.Geom.Rectangle(-140, -22, 280, 44), Phaser.Geom.Rectangle.Contains);
+      btn.on("pointerover", () => { r.setFillStyle(0x33405a); Audio.ui?.(); });
+      btn.on("pointerout", () => { r.setFillStyle(0x222840); });
+      btn.on("pointerdown", () => { Audio.click?.(); it.action(); });
+      card.add(btn);
+    });
+
+    const hint = this.add.text(0, 110, "[P] pour reprendre", { fontFamily: "system-ui", fontSize: "12px", color: "#aaa" }).setOrigin(0.5);
+    card.add(hint);
+
+    this._pauseMenu = { overlay, card };
+  }
+
+  _closePauseMenu() {
+    if (!this._pauseMenu) return;
+    this._pauseMenu.overlay.destroy();
+    this._pauseMenu.card.destroy();
+    this._pauseMenu = null;
+    this.paused = false;
+    this.physics?.world?.resume?.();
+    this.tweens.resumeAll();
+    this.time.paused = false;
   }
 
   _popTrophies(newly) {

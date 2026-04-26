@@ -34,9 +34,11 @@ export class Toolbar extends Phaser.GameObjects.Container {
     const totalW = TILE_DEFS.length * (btnW + gap) - gap;
     const startX = w / 2 - totalW / 2;
 
+    const SHORTCUTS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Q", "W", "E", "R", "T"];
     TILE_DEFS.forEach((def, i) => {
       const x = startX + i * (btnW + gap) + btnW / 2;
-      const btn = this.makeButton(def, x, h / 2, btnW, btnH, i + 1);
+      const label = SHORTCUTS[i] || "";
+      const btn = this.makeButton(def, x, h / 2, btnW, btnH, label);
       this.buttons.push(btn);
       this.add(btn);
     });
@@ -47,11 +49,19 @@ export class Toolbar extends Phaser.GameObjects.Container {
     this._refreshHandler = () => this.refreshAfford();
     scene.events.on("update", this._refreshHandler);
 
+    const KEY_TO_INDEX = {
+      Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4,
+      Digit6: 5, Digit7: 6, Digit8: 7, Digit9: 8, Digit0: 9,
+      KeyQ: 10, KeyA: 10,
+      KeyW: 11, KeyZ: 11,
+      KeyE: 12,
+      KeyR: 13,
+      KeyT: 14,
+    };
     this._keyHandler = (e) => {
       if (!this.scene || !this.active) return;
-      const m = e.code && e.code.match(/^Digit([1-9])$/);
-      if (m) {
-        const idx = parseInt(m[1], 10) - 1;
+      const idx = KEY_TO_INDEX[e.code];
+      if (idx !== undefined) {
         const def = TILE_DEFS[idx];
         if (def) {
           const btn = this.buttons.find((b) => b._defId === def.id);
