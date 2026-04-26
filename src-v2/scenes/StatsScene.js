@@ -4,6 +4,7 @@ import { TROPHIES, unlockedCount } from "../systems/Trophies.js";
 import { totalLevels } from "../data/levels/index.js";
 import { getDailyStreak } from "../systems/Daily.js";
 import { Audio } from "../systems/Audio.js";
+import { makeClickable } from "../ui/Clickable.js";
 
 export class StatsScene extends Phaser.Scene {
   constructor() {
@@ -83,21 +84,19 @@ export class StatsScene extends Phaser.Scene {
       });
     });
 
-    const backBtn = this.add.container(80, height - 50);
-    const back = this.add.rectangle(0, 0, 130, 50, 0x222840).setStrokeStyle(2, 0xffd23f);
-    const backLbl = this.add.text(0, 0, "← Retour", { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" }).setOrigin(0.5);
-    backBtn.add([back, backLbl]);
-    backBtn.setSize(130, 50);
-    backBtn.setInteractive(new Phaser.Geom.Rectangle(-65, -25, 130, 50), Phaser.Geom.Rectangle.Contains);
-    backBtn.on("pointerover", () => back.setFillStyle(0x33405a));
-    backBtn.on("pointerout", () => back.setFillStyle(0x222840));
-    backBtn.on("pointerdown", () => {
-      Audio.click?.();
-      this.cameras.main.fadeOut(250, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("CampaignMenuScene");
-        this.scene.stop();
-      });
+    makeClickable(this, {
+      x: 80, y: height - 50, width: 130, height: 50,
+      fillColor: 0x222840, strokeColor: 0xffd23f,
+      hoverFill: 0x33405a,
+      label: "← Retour",
+      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("CampaignMenuScene");
+          this.scene.stop();
+        });
+      },
     });
     this.input.keyboard.once("keydown-ESC", () => {
       this.scene.start("CampaignMenuScene");
