@@ -6,6 +6,7 @@ import { MusicManager } from "../systems/MusicManager.js";
 import { getTheme } from "../systems/Theme.js";
 import { unlockedCount, TROPHIES, trophyBonus } from "../systems/Trophies.js";
 import { hasPlayedToday, getDailyResult, getDailyStreak } from "../systems/Daily.js";
+import { shouldShowCutscene } from "./CutsceneScene.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
   constructor() {
@@ -379,7 +380,12 @@ export class CampaignMenuScene extends Phaser.Scene {
           Audio.click();
           this.cameras.main.fadeOut(300, 0, 0, 0);
           this.cameras.main.once("camerafadeoutcomplete", () => {
-            this.scene.start("LevelScene", { levelId });
+            const isFirstOfWorld = world.levels[0] === levelId;
+            if (isFirstOfWorld && shouldShowCutscene(world.id)) {
+              this.scene.start("CutsceneScene", { worldId: world.id, nextLevelId: levelId });
+            } else {
+              this.scene.start("LevelScene", { levelId });
+            }
             this.scene.stop();
           });
         });
