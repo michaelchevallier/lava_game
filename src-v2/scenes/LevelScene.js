@@ -458,6 +458,38 @@ export class LevelScene extends Phaser.Scene {
     this.coins -= this.placementDef.cost;
     this.refreshCoinsText();
     Audio.place();
+
+    entity.setScale(0.3);
+    entity.alpha = 0.6;
+    this.tweens.add({
+      targets: entity,
+      scale: 1,
+      alpha: 1,
+      duration: 280,
+      ease: "Back.out",
+    });
+    for (let i = 0; i < 10; i++) {
+      const a = (Math.PI * 2 * i) / 10;
+      const dust = this.add.circle(x, y + 20, 3 + Math.random() * 3, 0xc8b08a, 0.7).setDepth(7);
+      this.tweens.add({
+        targets: dust,
+        x: x + Math.cos(a) * (30 + Math.random() * 20),
+        y: y + 20 + Math.sin(a) * 10 - 10 - Math.random() * 10,
+        alpha: 0,
+        duration: 450,
+        ease: "Cubic.out",
+        onComplete: () => dust.destroy(),
+      });
+    }
+    const ring = this.add.circle(x, y, 50, 0, 0).setStrokeStyle(2, this.placementDef.accent || 0xffe066, 0.8).setDepth(9);
+    this.tweens.add({
+      targets: ring,
+      scale: 0.4,
+      alpha: 0,
+      duration: 350,
+      onComplete: () => ring.destroy(),
+    });
+
     this.toolbar.clearSelection();
     this.setPlacement(null);
   }
