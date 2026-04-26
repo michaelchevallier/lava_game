@@ -9,7 +9,8 @@
     "water",
     "fan",
     "catapult",
-    "magnet"
+    "magnet",
+    "mine"
   ],
   "loseEscaped": 5,
   "waves": [

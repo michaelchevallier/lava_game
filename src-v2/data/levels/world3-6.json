@@ -1,6 +1,6 @@
 {
   "id": "3.6",
-  "name": "Tempête — finale",
+  "name": "Temp\u00eate \u2014 finale",
   "world": 3,
   "startCoins": 380,
   "allowedTiles": [
@@ -9,7 +9,8 @@
     "water",
     "fan",
     "catapult",
-    "magnet"
+    "magnet",
+    "mine"
   ],
   "loseEscaped": 5,
   "waves": [

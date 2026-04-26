@@ -11,6 +11,7 @@ export const TILE_DEFS = [
   { id: "magnet", label: "Magnet Bomb", cost: 275, color: 0x66001a, accent: 0xff2222, cooldownMs: 30000 },
   { id: "portal", label: "Portal", cost: 300, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 22000 },
   { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000 },
+  { id: "mine", label: "Mine", cost: 100, color: 0x4a2a4a, accent: 0xff8800, cooldownMs: 12000 },
   { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
@@ -292,6 +293,14 @@ export function makeTileIcon(s, id, x, y) {
       c.add(s.add.circle(0, -8, 9, 0xffaaee).setStrokeStyle(1, 0xff66cc));
       c.add(s.add.circle(-7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
       c.add(s.add.circle(7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
+    } else if (id === "mine") {
+      c.add(s.add.rectangle(0, 8, 26, 4, 0x3a2a1a));
+      c.add(s.add.circle(0, -2, 11, 0x4a2a4a).setStrokeStyle(2, 0x222));
+      for (let k = 0; k < 6; k++) {
+        const a = (Math.PI * 2 * k) / 6;
+        c.add(s.add.circle(Math.cos(a) * 11, -2 + Math.sin(a) * 4, 2, 0x222));
+      }
+      c.add(s.add.circle(0, -8, 2, 0xff4400));
     } else if (id === "shovel") {
       c.add(s.add.rectangle(0, 6, 4, 24, 0x6b3a0a).setStrokeStyle(1, 0x2a1a04));
       c.add(s.add.triangle(0, -6, 0, 0, -8, -10, 8, -10, 0x999).setStrokeStyle(1, 0x444));

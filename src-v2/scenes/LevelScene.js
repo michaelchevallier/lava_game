@@ -11,6 +11,7 @@ import { Portal } from "../entities/Portal.js";
 import { LawnMower } from "../entities/LawnMower.js";
 import { Sun } from "../entities/Sun.js";
 import { CottonCandy } from "../entities/CottonCandy.js";
+import { Mine } from "../entities/Mine.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
@@ -589,6 +590,8 @@ export class LevelScene extends Phaser.Scene {
       entity = new Tamer(this, x, y);
     } else if (this.placementDef.id === "cottoncandy") {
       entity = new CottonCandy(this, x, y);
+    } else if (this.placementDef.id === "mine") {
+      entity = new Mine(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);
@@ -645,7 +648,7 @@ export class LevelScene extends Phaser.Scene {
     const t = this.gridState[cell.row][cell.col];
     if (!t || t._dying) return;
     let refund = 0;
-    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 100, MagnetBomb: 150, Catapult: 125, FrostTramp: 175, Portal: 175, Tamer: 175, CottonCandy: 75 };
+    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 125, MagnetBomb: 275, Catapult: 175, FrostTramp: 225, Portal: 300, Tamer: 400, CottonCandy: 75, Mine: 100 };
     refund = Math.floor((tileMap[t.constructor.name] || 0) / 2);
     this.gridState[cell.row][cell.col] = null;
     this.coins += refund;
@@ -793,6 +796,14 @@ export class LevelScene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ESC", () => {
       if (this.placementDef) return;
       this._togglePause();
+    });
+    this.input.keyboard.on("keydown-R", (e) => {
+      if (!e.shiftKey || this.gameOver) return;
+      this.cameras.main.fadeOut(200, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("LevelScene", { levelId: this.level.id });
+        this.scene.stop();
+      });
     });
 
     const { width } = this.scale;

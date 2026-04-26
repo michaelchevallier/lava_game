@@ -1,6 +1,6 @@
 {
   "id": "3.3",
-  "name": "Tempête 3",
+  "name": "Temp\u00eate 3",
   "world": 3,
   "startCoins": 360,
   "allowedTiles": [
@@ -9,7 +9,8 @@
     "water",
     "fan",
     "catapult",
-    "magnet"
+    "magnet",
+    "mine"
   ],
   "loseEscaped": 6,
   "waves": [
