@@ -69,7 +69,68 @@ export class CampaignMenuScene extends Phaser.Scene {
     }
     this.drawEndlessButton(y + 8);
     this.drawCarnivalButton(y + 8);
+    this.drawBossArenaButton(y + 8);
     this.drawDailyButton();
+  }
+
+  drawBossArenaButton(y) {
+    const { width } = this.scale;
+    const third = (width - 80) / 3;
+    const x = 30 + 2 * (third + 10);
+    const w = third;
+    const unlocked = isLevelUnlocked("boss-arena");
+    const result = isCompleted("boss-arena");
+
+    const card = this.add.graphics();
+    card.fillStyle(0x000000, 0.55);
+    card.fillRoundedRect(x, y - 4, w, 88, 10);
+    card.lineStyle(3, unlocked ? 0xff2222 : 0x4a4a4a, 1);
+    card.strokeRoundedRect(x, y - 4, w, 88, 10);
+
+    this.add.text(x + 14, y + 18, unlocked ? "⚔️ ARÈNE BOSS" : "🔒 ARÈNE BOSS", {
+      fontFamily: "system-ui",
+      fontSize: "20px",
+      fontStyle: "bold",
+      color: unlocked ? "#ff8888" : "#666",
+      stroke: "#000",
+      strokeThickness: 4,
+    });
+    this.add.text(x + 14, y + 48, unlocked ? "3 boss en série — 0 erreur" : "Termine 5.6", {
+      fontFamily: "system-ui",
+      fontSize: "12px",
+      color: unlocked ? "#ffeebb" : "#777",
+    });
+    if (result) {
+      this.add.text(x + 14, y + 66, "✅ Vaincue", { fontFamily: "system-ui", fontSize: "11px", fontStyle: "bold", color: "#90ff90" });
+    }
+
+    if (!unlocked) return;
+
+    const btnX = x + w - 100;
+    const btn = this.add.graphics();
+    btn.fillStyle(0xc63a3a, 1);
+    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
+    btn.lineStyle(2, 0xff2222, 1);
+    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
+    this.add.text(btnX + 43, y + 43, "▶", {
+      fontFamily: "system-ui",
+      fontSize: "20px",
+      fontStyle: "bold",
+      color: "#fff",
+      stroke: "#000",
+      strokeThickness: 3,
+    }).setOrigin(0.5);
+    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
+    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff2222, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
+    hit.on("pointerdown", () => {
+      Audio.click();
+      this.cameras.main.fadeOut(300, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("LevelScene", { levelId: "boss-arena" });
+        this.scene.stop();
+      });
+    });
   }
 
   drawStatsButton() {
@@ -143,48 +204,48 @@ export class CampaignMenuScene extends Phaser.Scene {
     const { width } = this.scale;
     const completed = CARNIVAL_LEVELS.filter((id) => isCompleted(id)).length;
 
-    const half = (width - 60) / 2;
-    const x = 30 + half + 10;
-    const w = half;
+    const third = (width - 80) / 3;
+    const x = 30 + (third + 10);
+    const w = third;
     const card = this.add.graphics();
     card.fillStyle(0x000000, 0.55);
     card.fillRoundedRect(x, y - 4, w, 88, 10);
     card.lineStyle(3, 0xff66cc, 1);
     card.strokeRoundedRect(x, y - 4, w, 88, 10);
 
-    this.add.text(x + 16, y + 22, "🎡 CARNAVAL", {
+    this.add.text(x + 14, y + 18, "🎡 CARNAVAL", {
       fontFamily: "system-ui",
-      fontSize: "26px",
+      fontSize: "20px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
       strokeThickness: 4,
     });
-    this.add.text(x + 16, y + 54, "Tapis roulant — pose ce qui passe (" + completed + "/5)", {
+    this.add.text(x + 14, y + 48, "Conveyor (" + completed + "/5)", {
       fontFamily: "system-ui",
-      fontSize: "13px",
+      fontSize: "12px",
       color: "#ffeebb",
     });
 
     const btn = this.add.graphics();
-    const btnX = x + w - 130;
+    const btnX = x + w - 100;
     btn.fillStyle(0xb83a8a, 1);
-    btn.fillRoundedRect(btnX, y + 18, 110, 50, 8);
+    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
     btn.lineStyle(2, 0xff66cc, 1);
-    btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8);
+    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
 
-    const lbl = this.add.text(btnX + 55, y + 43, "▶ JOUER", {
+    const lbl = this.add.text(btnX + 43, y + 43, "▶", {
       fontFamily: "system-ui",
-      fontSize: "16px",
+      fontSize: "20px",
       fontStyle: "bold",
       color: "#fff",
       stroke: "#000",
       strokeThickness: 3,
     }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(btnX + 55, y + 43, 110, 50, 0x000, 0).setInteractive();
-    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff66cc, 1); btn.fillRoundedRect(btnX, y + 18, 110, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8); Audio.ui(); });
-    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xb83a8a, 1); btn.fillRoundedRect(btnX, y + 18, 110, 50, 8); btn.lineStyle(2, 0xff66cc, 1); btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8); });
+    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff66cc, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
+    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xb83a8a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff66cc, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
     hit.on("pointerdown", () => {
       Audio.click();
       const next = CARNIVAL_LEVELS.find((id) => !isCompleted(id)) || CARNIVAL_LEVELS[0];
@@ -239,56 +300,56 @@ export class CampaignMenuScene extends Phaser.Scene {
 
     const card = this.add.graphics();
     card.fillStyle(0x000000, 0.55);
-    const halfW = (width - 60) / 2;
-    card.fillRoundedRect(20, y - 4, halfW, 88, 10);
+    const halfW = (width - 80) / 3;
+    card.fillRoundedRect(30, y - 4, halfW, 88, 10);
     card.lineStyle(3, 0xff4400, 1);
-    card.strokeRoundedRect(20, y - 4, halfW, 88, 10);
+    card.strokeRoundedRect(30, y - 4, halfW, 88, 10);
 
     const indic = this.add.rectangle(38, y + 42, 6, 78, 0xff2200);
     this.tweens.add({ targets: indic, alpha: { from: 0.6, to: 1 }, duration: 1000, yoyo: true, repeat: -1 });
 
-    this.add.text(100, y + 22, "🌋 LA COULÉE", {
+    this.add.text(50, y + 18, "🌋 LA COULÉE", {
       fontFamily: "system-ui",
-      fontSize: "26px",
+      fontSize: "20px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
       strokeThickness: 4,
     });
-    this.add.text(100, y + 54, "Mode Endless — survis le plus longtemps", {
+    this.add.text(50, y + 48, "Mode Endless", {
       fontFamily: "system-ui",
-      fontSize: "14px",
+      fontSize: "12px",
       color: "#ffeebb",
     });
 
     if (best > 0) {
-      this.add.text(100, y + 70, "★ " + best + " kills • V" + bestWave, {
+      this.add.text(50, y + 66, "★ " + best + " • V" + bestWave, {
         fontFamily: "system-ui",
-        fontSize: "12px",
+        fontSize: "11px",
         fontStyle: "bold",
         color: "#ffd23f",
       });
     }
 
-    const btnX = 20 + halfW - 130;
+    const btnX = 30 + halfW - 100;
     const btn = this.add.graphics();
     btn.fillStyle(0xc63a3a, 1);
-    btn.fillRoundedRect(btnX, y + 18, 110, 50, 8);
+    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
     btn.lineStyle(2, 0xff8800, 1);
-    btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8);
+    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
 
-    const lbl = this.add.text(btnX + 55, y + 43, "▶ JOUER", {
+    const lbl = this.add.text(btnX + 43, y + 43, "▶", {
       fontFamily: "system-ui",
-      fontSize: "16px",
+      fontSize: "20px",
       fontStyle: "bold",
       color: "#fff",
       stroke: "#000",
       strokeThickness: 3,
     }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(btnX + 55, y + 43, 110, 50, 0x000, 0).setInteractive();
-    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 110, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8); Audio.ui(); });
-    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 110, 50, 8); btn.lineStyle(2, 0xff8800, 1); btn.strokeRoundedRect(btnX, y + 18, 110, 50, 8); });
+    const hit = this.add.rectangle(btnX + 43, y + 43, 86, 50, 0x000, 0).setInteractive();
+    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
+    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff8800, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
     hit.on("pointerdown", () => {
       Audio.click();
       this.cameras.main.fadeOut(300, 0, 0, 0);

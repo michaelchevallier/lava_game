@@ -1,0 +1,47 @@
+{
+  "id": "boss-arena",
+  "name": "Arène des Boss",
+  "world": 99,
+  "startCoins": 600,
+  "allowedTiles": ["coin", "lava", "water", "fan", "frost", "magnet", "catapult", "portal", "tamer", "cottoncandy", "neon", "mine"],
+  "loseEscaped": 1,
+  "waves": [
+    {
+      "delayMs": 6000,
+      "visitors": [
+        { "type": "magicboss", "lane": 2, "delayMs": 0 },
+        { "type": "magicien", "lane": 1, "delayMs": 4000 },
+        { "type": "magicien", "lane": 3, "delayMs": 4500 },
+        { "type": "vip", "lane": 0, "delayMs": 7000 },
+        { "type": "vip", "lane": 4, "delayMs": 7500 }
+      ]
+    },
+    {
+      "delayMs": 38000,
+      "visitors": [
+        { "type": "lavaqueen", "lane": 2, "delayMs": 0 },
+        { "type": "lavewalker", "lane": 1, "delayMs": 4000 },
+        { "type": "lavewalker", "lane": 3, "delayMs": 4500 },
+        { "type": "skeleton", "lane": 0, "delayMs": 7000 },
+        { "type": "skeleton", "lane": 4, "delayMs": 7500 },
+        { "type": "boudeur", "lane": 2, "delayMs": 11000 }
+      ]
+    },
+    {
+      "delayMs": 75000,
+      "visitors": [
+        { "type": "carnivalboss", "lane": 2, "delayMs": 0 },
+        { "type": "clown", "lane": 0, "delayMs": 5000 },
+        { "type": "clown", "lane": 4, "delayMs": 5500 },
+        { "type": "trompette", "lane": 1, "delayMs": 8500 },
+        { "type": "trompette", "lane": 3, "delayMs": 9000 },
+        { "type": "stiltman", "lane": 2, "delayMs": 12000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 0 },
+    "2": { "escapedMax": 0 },
+    "3": { "escapedMax": 0 }
+  }
+}

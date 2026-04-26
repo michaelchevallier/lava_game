@@ -29,6 +29,7 @@ import w54 from "./world5-4.json";
 import w55 from "./world5-5.json";
 import w56 from "./world5-6.json";
 import endless from "./endless.json";
+import bossArena from "./bossarena.json";
 import c1 from "./carnival1.json";
 import c2 from "./carnival2.json";
 import c3 from "./carnival3.json";
@@ -51,6 +52,7 @@ const LEVELS_LIST = [
   w51, w52, w53, w54, w55, w56,
   w61, w62, w63, w64, w65, w66,
   c1, c2, c3, c4, c5,
+  bossArena,
   endless,
 ];
 
@@ -82,6 +84,9 @@ export function isWorldUnlocked(world) {
 export function isLevelUnlocked(levelId) {
   const lvl = LEVELS_MAP[levelId];
   if (!lvl) return false;
+  if (levelId === "boss-arena") {
+    return isCompleted("5.6");
+  }
   if (CARNIVAL_LEVELS.includes(levelId)) {
     const idx = CARNIVAL_LEVELS.indexOf(levelId);
     if (idx === 0) return true;
