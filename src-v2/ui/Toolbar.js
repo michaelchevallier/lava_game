@@ -1,15 +1,15 @@
 import * as Phaser from "phaser";
 
 export const TILE_DEFS = [
-  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00 },
-  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066 },
-  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a },
-  { id: "fan", label: "Fan", cost: 100, color: 0xddeeff, accent: 0x666 },
-  { id: "magnet", label: "Magnet Bomb", cost: 150, color: 0x66001a, accent: 0xff2222 },
-  { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a },
-  { id: "frost", label: "Frost Tramp", cost: 175, color: 0x88c8e8, accent: 0x4a8ab8 },
-  { id: "portal", label: "Portal", cost: 175, color: 0x9a4ad8, accent: 0xff66ff },
-  { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true },
+  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 5000 },
+  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066, cooldownMs: 6000 },
+  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 5000 },
+  { id: "fan", label: "Fan", cost: 100, color: 0xddeeff, accent: 0x666, cooldownMs: 8000 },
+  { id: "magnet", label: "Magnet Bomb", cost: 150, color: 0x66001a, accent: 0xff2222, cooldownMs: 25000 },
+  { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 8000 },
+  { id: "frost", label: "Frost Tramp", cost: 175, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 12000 },
+  { id: "portal", label: "Portal", cost: 175, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 18000 },
+  { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
@@ -94,15 +94,23 @@ export class Toolbar extends Phaser.GameObjects.Container {
       color: "#ffd23f",
     }).setOrigin(0.5);
 
-    c.add([back, icon, label, costLabel, shortcutBg, shortcutText]);
+    const cooldownOverlay = this.scene.add.rectangle(0, 0, w, h, 0x000, 0.65).setVisible(false);
+    const cooldownBar = this.scene.add.rectangle(-w / 2, h / 2 - 4, w, 4, 0x66ddff).setOrigin(0, 0.5).setVisible(false);
+
+    c.add([back, icon, label, costLabel, shortcutBg, shortcutText, cooldownOverlay, cooldownBar]);
     c.setSize(w, h);
     c.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
     c._defId = def.id;
     c._back = back;
     c._icon = icon;
     c._costLabel = costLabel;
+    c._cooldownOverlay = cooldownOverlay;
+    c._cooldownBar = cooldownBar;
+    c._cooldownUntil = 0;
+    c._cooldownStartedAt = 0;
     c._def = def;
     c._affordable = true;
+    c._w = w;
 
     c.on("pointerover", () => {
       if (this.selectedId !== def.id && c._affordable) back.setStrokeStyle(2, 0xffd23f);
@@ -112,24 +120,53 @@ export class Toolbar extends Phaser.GameObjects.Container {
     });
     c.on("pointerdown", () => {
       if (!c._affordable) return;
+      if (this.isOnCooldown(def.id)) return;
       this.select(def.id);
     });
 
     return c;
   }
 
+  triggerCooldown(id) {
+    const btn = this.buttons.find((b) => b._defId === id);
+    if (!btn || !btn._def.cooldownMs) return;
+    btn._cooldownStartedAt = this.scene.time.now;
+    btn._cooldownUntil = this.scene.time.now + btn._def.cooldownMs;
+    btn._cooldownOverlay?.setVisible(true);
+    btn._cooldownBar?.setVisible(true);
+  }
+
+  isOnCooldown(id) {
+    const btn = this.buttons.find((b) => b._defId === id);
+    if (!btn) return false;
+    return this.scene.time.now < btn._cooldownUntil;
+  }
+
   refreshAfford() {
     if (!this.scene || !this.active) return;
     const coins = this.getCoins();
+    const now = this.scene.time.now;
     for (const b of this.buttons) {
       if (!b || !b.scene || !b._back || !b._back.scene || !b._costLabel || !b._costLabel.scene) continue;
-      const can = coins >= b._def.cost;
+
+      const onCd = now < b._cooldownUntil;
+      if (onCd) {
+        const dur = b._cooldownUntil - b._cooldownStartedAt;
+        const elapsed = now - b._cooldownStartedAt;
+        const remain = Math.max(0, 1 - elapsed / dur);
+        if (b._cooldownBar) b._cooldownBar.setScale(remain, 1);
+      } else if (b._cooldownOverlay && b._cooldownOverlay.visible) {
+        b._cooldownOverlay.setVisible(false);
+        b._cooldownBar?.setVisible(false);
+      }
+
+      const can = coins >= b._def.cost && !onCd;
       if (can === b._affordable) continue;
       b._affordable = can;
       b._icon.setAlpha(can ? 1 : 0.4);
-      b._costLabel.setColor(can ? "#ffd23f" : "#ff8888");
+      b._costLabel.setColor(can ? "#ffd23f" : (onCd ? "#88ddff" : "#ff8888"));
       if (this.selectedId !== b._defId) {
-        b._back.setStrokeStyle(2, can ? 0x4a4a6a : 0x6a2222);
+        b._back.setStrokeStyle(2, can ? 0x4a4a6a : (onCd ? 0x4a8ab8 : 0x6a2222));
       }
       if (!can && this.selectedId === b._defId) {
         this.selectedId = null;

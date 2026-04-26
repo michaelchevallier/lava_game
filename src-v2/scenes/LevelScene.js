@@ -578,6 +578,7 @@ export class LevelScene extends Phaser.Scene {
       onComplete: () => ring.destroy(),
     });
 
+    this.toolbar.triggerCooldown(this.placementDef.id);
     this.toolbar.clearSelection();
     this.setPlacement(null);
   }
