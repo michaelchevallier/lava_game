@@ -9,6 +9,8 @@ export const TILE_DEFS = [
   { id: "catapult", label: "Catapult", cost: 125, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 8000 },
   { id: "frost", label: "Frost Tramp", cost: 175, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 12000 },
   { id: "portal", label: "Portal", cost: 175, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 18000 },
+  { id: "tamer", label: "Dompteur", cost: 175, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 30000 },
+  { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 8000 },
   { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
@@ -26,13 +28,14 @@ export class Toolbar extends Phaser.GameObjects.Container {
     this.add(bg);
 
     this.buttons = [];
-    const btnW = 130;
+    const btnW = 105;
     const btnH = 84;
-    const totalW = TILE_DEFS.length * (btnW + 12) - 12;
+    const gap = 8;
+    const totalW = TILE_DEFS.length * (btnW + gap) - gap;
     const startX = w / 2 - totalW / 2;
 
     TILE_DEFS.forEach((def, i) => {
-      const x = startX + i * (btnW + 12) + btnW / 2;
+      const x = startX + i * (btnW + gap) + btnW / 2;
       const btn = this.makeButton(def, x, h / 2, btnW, btnH, i + 1);
       this.buttons.push(btn);
       this.add(btn);
@@ -257,6 +260,24 @@ export class Toolbar extends Phaser.GameObjects.Container {
       c.add(s.add.ellipse(0, -2, 22, 22, 0x9a4ad8).setStrokeStyle(1, 0xff66ff));
       c.add(s.add.ellipse(0, -2, 14, 14, 0x4a1a8a));
       c.add(s.add.ellipse(0, -2, 8, 8, 0xff66ff, 0.7));
+    } else if (id === "tamer") {
+      c.add(s.add.rectangle(0, 8, 22, 5, 0x2a0a0a));
+      c.add(s.add.rectangle(0, -2, 14, 16, 0xc63a3a).setStrokeStyle(1, 0x6a0010));
+      c.add(s.add.circle(0, -12, 6, 0xffd2a8).setStrokeStyle(1, 0x6b3a0a));
+      c.add(s.add.rectangle(0, -16, 14, 2, 0x000));
+      c.add(s.add.rectangle(0, -19, 10, 6, 0xc63a3a).setStrokeStyle(1, 0x000));
+      c.add(s.add.rectangle(0, -16, 10, 1.5, 0xffd23f));
+      const whip = s.add.rectangle(8, -2, 10, 1.5, 0x6b3a0a);
+      whip.setOrigin(0, 0.5);
+      whip.angle = 25;
+      c.add(whip);
+    } else if (id === "cottoncandy") {
+      c.add(s.add.rectangle(0, 10, 24, 4, 0x6b3a0a));
+      c.add(s.add.rectangle(0, 4, 22, 8, 0xff66cc).setStrokeStyle(1, 0xc63a8a));
+      c.add(s.add.rectangle(0, -2, 2, 6, 0x6b3a0a));
+      c.add(s.add.circle(0, -8, 9, 0xffaaee).setStrokeStyle(1, 0xff66cc));
+      c.add(s.add.circle(-7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
+      c.add(s.add.circle(7, -7, 6, 0xffaaee).setStrokeStyle(1, 0xff66cc));
     } else if (id === "shovel") {
       c.add(s.add.rectangle(0, 6, 4, 24, 0x6b3a0a).setStrokeStyle(1, 0x2a1a04));
       c.add(s.add.triangle(0, -6, 0, 0, -8, -10, 8, -10, 0x999).setStrokeStyle(1, 0x444));

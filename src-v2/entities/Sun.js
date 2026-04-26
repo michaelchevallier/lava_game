@@ -76,7 +76,11 @@ export class Sun extends Phaser.GameObjects.Container {
   collect() {
     if (this._collected || !this.scene) return;
     this._collected = true;
-    this.scene.events.emit("sun-collected", this.amount, this);
+    if (this._isTicket) {
+      this.scene.events.emit("ticket-collected", this);
+    } else {
+      this.scene.events.emit("sun-collected", this.amount, this);
+    }
 
     const counterX = 80;
     const counterY = 30;

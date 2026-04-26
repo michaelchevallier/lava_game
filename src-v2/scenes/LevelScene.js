@@ -10,6 +10,8 @@ import { FrostTramp } from "../entities/FrostTramp.js";
 import { Portal } from "../entities/Portal.js";
 import { LawnMower } from "../entities/LawnMower.js";
 import { Sun } from "../entities/Sun.js";
+import { CottonCandy } from "../entities/CottonCandy.js";
+import { Tamer } from "../entities/Tamer.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
@@ -69,6 +71,7 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("lava-safe");
     this.events.removeAllListeners("tower-disabled");
     this.events.removeAllListeners("coins-refund");
+    this.events.removeAllListeners("ticket-collected");
     if (this.lavaMeter) { this.lavaMeter.destroy(); this.lavaMeter = null; }
 
     this.gridState = createGridState();
@@ -107,6 +110,15 @@ export class LevelScene extends Phaser.Scene {
       fontFamily: "system-ui",
       fontSize: "18px",
       color: "#90ff90",
+      stroke: "#000",
+      strokeThickness: 4,
+    });
+    this.tickets = 0;
+    this.ticketsText = this.add.text(20, 108, "🎫 0", {
+      fontFamily: "system-ui",
+      fontSize: "18px",
+      fontStyle: "bold",
+      color: "#ff66cc",
       stroke: "#000",
       strokeThickness: 4,
     });
@@ -171,6 +183,13 @@ export class LevelScene extends Phaser.Scene {
       this.coins += amount;
       this.refreshCoinsText();
       Flash.hud(this.coinsText, 0xff66cc, 280);
+    });
+
+    this.events.on("ticket-collected", () => {
+      this.tickets = (this.tickets || 0) + 1;
+      this.ticketsText?.setText("🎫 " + this.tickets);
+      Flash.hud(this.ticketsText, 0xffaaee, 280);
+      Audio.gold?.() || Audio.coin();
     });
 
     this.events.on("update", (time, delta) => {
@@ -539,6 +558,10 @@ export class LevelScene extends Phaser.Scene {
       entity = new FrostTramp(this, x, y);
     } else if (this.placementDef.id === "portal") {
       entity = new Portal(this, x, y);
+    } else if (this.placementDef.id === "tamer") {
+      entity = new Tamer(this, x, y);
+    } else if (this.placementDef.id === "cottoncandy") {
+      entity = new CottonCandy(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);
@@ -591,7 +614,7 @@ export class LevelScene extends Phaser.Scene {
     const t = this.gridState[cell.row][cell.col];
     if (!t || t._dying) return;
     let refund = 0;
-    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 100, MagnetBomb: 150, Catapult: 125, FrostTramp: 175, Portal: 175 };
+    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 100, MagnetBomb: 150, Catapult: 125, FrostTramp: 175, Portal: 175, Tamer: 175, CottonCandy: 75 };
     refund = Math.floor((tileMap[t.constructor.name] || 0) / 2);
     this.gridState[cell.row][cell.col] = null;
     this.coins += refund;
