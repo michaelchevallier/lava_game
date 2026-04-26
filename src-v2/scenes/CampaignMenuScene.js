@@ -105,59 +105,30 @@ export class CampaignMenuScene extends Phaser.Scene {
     const { width } = this.scale;
     const third = (width - 80) / 3;
     const x = 30 + 2 * (third + 10);
-    const w = third;
     const unlocked = isLevelUnlocked("boss-arena");
     const result = isCompleted("boss-arena");
+    const cy = y + 40;
 
-    const card = this.add.graphics();
-    card.fillStyle(0x000000, 0.55);
-    card.fillRoundedRect(x, y - 4, w, 88, 10);
-    card.lineStyle(3, unlocked ? 0xff2222 : 0x4a4a4a, 1);
-    card.strokeRoundedRect(x, y - 4, w, 88, 10);
-
-    this.add.text(x + 14, y + 18, unlocked ? "⚔️ ARÈNE BOSS" : "🔒 ARÈNE BOSS", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: unlocked ? "#ff8888" : "#666",
-      stroke: "#000",
-      strokeThickness: 4,
-    });
-    this.add.text(x + 14, y + 48, unlocked ? "3 boss en série — 0 erreur" : "Termine 5.6", {
-      fontFamily: "system-ui",
-      fontSize: "12px",
-      color: unlocked ? "#ffeebb" : "#777",
-    });
-    if (result) {
-      this.add.text(x + 14, y + 66, "✅ Vaincue", { fontFamily: "system-ui", fontSize: "11px", fontStyle: "bold", color: "#90ff90" });
-    }
-
-    if (!unlocked) return;
-
-    const btnX = x + w - 100;
-    const btn = this.add.graphics();
-    btn.fillStyle(0xc63a3a, 1);
-    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
-    btn.lineStyle(2, 0xff2222, 1);
-    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
-    this.add.text(btnX + 43, y + 43, "▶", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: "#fff",
-      stroke: "#000",
-      strokeThickness: 3,
-    }).setOrigin(0.5);
-    const hit = this.add.rectangle(x + w / 2, y + 40, w, 88, 0x000, 0).setInteractive();
-    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
-    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff2222, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
-    hit.on("pointerdown", () => {
-      Audio.click();
-      this.cameras.main.fadeOut(300, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("LevelScene", { levelId: "boss-arena" });
-        this.scene.stop();
-      });
+    makeClickable(this, {
+      x: x + third / 2, y: cy, width: third, height: 88,
+      radius: 10,
+      fillColor: 0x000000, fillAlpha: 0.55,
+      strokeColor: unlocked ? 0xff2222 : 0x4a4a4a,
+      strokeWidth: 3,
+      hoverFill: unlocked ? 0x2a0a0a : 0x000000,
+      hoverStroke: 0xffd23f,
+      enabled: unlocked,
+      label: (unlocked ? "⚔️ ARÈNE BOSS" : "🔒 ARÈNE BOSS") + (result ? "  ✅" : ""),
+      labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: unlocked ? "#ff8888" : "#666", stroke: "#000", strokeThickness: 4 },
+      sub: unlocked ? "3 boss en série — 0 erreur" : "Termine 5.6",
+      subStyle: { fontFamily: "system-ui", fontSize: "12px", color: unlocked ? "#ffeebb" : "#777" },
+      onClick: () => {
+        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("LevelScene", { levelId: "boss-arena" });
+          this.scene.stop();
+        });
+      },
     });
   }
 
@@ -220,55 +191,25 @@ export class CampaignMenuScene extends Phaser.Scene {
     const completed = CARNIVAL_LEVELS.filter((id) => isCompleted(id)).length;
 
     const third = (width - 80) / 3;
-    const x = 30 + (third + 10);
-    const w = third;
-    const card = this.add.graphics();
-    card.fillStyle(0x000000, 0.55);
-    card.fillRoundedRect(x, y - 4, w, 88, 10);
-    card.lineStyle(3, 0xff66cc, 1);
-    card.strokeRoundedRect(x, y - 4, w, 88, 10);
-
-    this.add.text(x + 14, y + 18, "🎡 CARNAVAL", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: "#ffd23f",
-      stroke: "#000",
-      strokeThickness: 4,
-    });
-    this.add.text(x + 14, y + 48, "Conveyor (" + completed + "/5)", {
-      fontFamily: "system-ui",
-      fontSize: "12px",
-      color: "#ffeebb",
-    });
-
-    const btn = this.add.graphics();
-    const btnX = x + w - 100;
-    btn.fillStyle(0xb83a8a, 1);
-    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
-    btn.lineStyle(2, 0xff66cc, 1);
-    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
-
-    const lbl = this.add.text(btnX + 43, y + 43, "▶", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: "#fff",
-      stroke: "#000",
-      strokeThickness: 3,
-    }).setOrigin(0.5);
-
-    const hit = this.add.rectangle(x + w / 2, y + 40, w, 88, 0x000, 0).setInteractive();
-    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff66cc, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
-    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xb83a8a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff66cc, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
-    hit.on("pointerdown", () => {
-      Audio.click();
-      const next = CARNIVAL_LEVELS.find((id) => !isCompleted(id)) || CARNIVAL_LEVELS[0];
-      this.cameras.main.fadeOut(300, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("LevelScene", { levelId: next });
-        this.scene.stop();
-      });
+    const cx = 30 + (third + 10) + third / 2;
+    makeClickable(this, {
+      x: cx, y: y + 40, width: third, height: 88,
+      radius: 10,
+      fillColor: 0x000000, fillAlpha: 0.55,
+      strokeColor: 0xff66cc, strokeWidth: 3,
+      hoverFill: 0x2a0a2a, hoverStroke: 0xffd23f,
+      label: "🎡 CARNAVAL",
+      labelStyle: { fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
+      sub: "Conveyor (" + completed + "/5)",
+      subStyle: { fontFamily: "system-ui", fontSize: "12px", color: "#ffeebb" },
+      onClick: () => {
+        const next = CARNIVAL_LEVELS.find((id) => !isCompleted(id)) || CARNIVAL_LEVELS[0];
+        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("LevelScene", { levelId: next });
+          this.scene.stop();
+        });
+      },
     });
   }
 
@@ -300,66 +241,28 @@ export class CampaignMenuScene extends Phaser.Scene {
     const top = getEndlessTop();
     const best = top[0]?.score ?? 0;
     const bestWave = top[0]?.wave ?? 0;
-
-    const card = this.add.graphics();
-    card.fillStyle(0x000000, 0.55);
     const halfW = (width - 80) / 3;
-    card.fillRoundedRect(30, y - 4, halfW, 88, 10);
-    card.lineStyle(3, 0xff4400, 1);
-    card.strokeRoundedRect(30, y - 4, halfW, 88, 10);
+    const subText = best > 0
+      ? "Endless  ★ " + best + " • V" + bestWave
+      : "Mode Endless";
 
-    const indic = this.add.rectangle(38, y + 42, 6, 78, 0xff2200);
-    this.tweens.add({ targets: indic, alpha: { from: 0.6, to: 1 }, duration: 1000, yoyo: true, repeat: -1 });
-
-    this.add.text(50, y + 18, "🌋 LA COULÉE", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: "#ffd23f",
-      stroke: "#000",
-      strokeThickness: 4,
-    });
-    this.add.text(50, y + 48, "Mode Endless", {
-      fontFamily: "system-ui",
-      fontSize: "12px",
-      color: "#ffeebb",
-    });
-
-    if (best > 0) {
-      this.add.text(50, y + 66, "★ " + best + " • V" + bestWave, {
-        fontFamily: "system-ui",
-        fontSize: "11px",
-        fontStyle: "bold",
-        color: "#ffd23f",
-      });
-    }
-
-    const btnX = 30 + halfW - 100;
-    const btn = this.add.graphics();
-    btn.fillStyle(0xc63a3a, 1);
-    btn.fillRoundedRect(btnX, y + 18, 86, 50, 8);
-    btn.lineStyle(2, 0xff8800, 1);
-    btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8);
-
-    const lbl = this.add.text(btnX + 43, y + 43, "▶", {
-      fontFamily: "system-ui",
-      fontSize: "20px",
-      fontStyle: "bold",
-      color: "#fff",
-      stroke: "#000",
-      strokeThickness: 3,
-    }).setOrigin(0.5);
-
-    const hit = this.add.rectangle(30 + halfW / 2, y + 40, halfW, 88, 0x000, 0).setInteractive();
-    hit.on("pointerover", () => { btn.clear(); btn.fillStyle(0xff5544, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xffd23f, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); Audio.ui(); });
-    hit.on("pointerout", () => { btn.clear(); btn.fillStyle(0xc63a3a, 1); btn.fillRoundedRect(btnX, y + 18, 86, 50, 8); btn.lineStyle(2, 0xff8800, 1); btn.strokeRoundedRect(btnX, y + 18, 86, 50, 8); });
-    hit.on("pointerdown", () => {
-      Audio.click();
-      this.cameras.main.fadeOut(300, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("LevelScene", { levelId: "endless" });
-        this.scene.stop();
-      });
+    makeClickable(this, {
+      x: 30 + halfW / 2, y: y + 40, width: halfW, height: 88,
+      radius: 10,
+      fillColor: 0x000000, fillAlpha: 0.55,
+      strokeColor: 0xff4400, strokeWidth: 3,
+      hoverFill: 0x2a0a00, hoverStroke: 0xffd23f,
+      label: "🌋 LA COULÉE",
+      labelStyle: { fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
+      sub: subText,
+      subStyle: { fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold", color: "#ffeebb" },
+      onClick: () => {
+        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("LevelScene", { levelId: "endless" });
+          this.scene.stop();
+        });
+      },
     });
   }
 
