@@ -7,6 +7,7 @@ import { getTheme } from "../systems/Theme.js";
 import { unlockedCount, TROPHIES, trophyBonus } from "../systems/Trophies.js";
 import { hasPlayedToday, getDailyResult, getDailyStreak } from "../systems/Daily.js";
 import { shouldShowCutscene } from "./CutsceneScene.js";
+import { makeClickable } from "../ui/Clickable.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
   constructor() {
@@ -134,23 +135,20 @@ export class CampaignMenuScene extends Phaser.Scene {
   }
 
   drawStatsButton() {
-    const bx = 110;
-    const by = 110;
-    const box = this.add.container(bx, by);
-    const bg = this.add.rectangle(0, 0, 200, 38, 0x000, 0.5).setStrokeStyle(2, 0x88aaff);
-    const lbl = this.add.text(0, 0, "📊 Stats", { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" }).setOrigin(0.5);
-    box.add([bg, lbl]);
-    box.setSize(200, 38);
-    box.setInteractive(new Phaser.Geom.Rectangle(-100, -19, 200, 38), Phaser.Geom.Rectangle.Contains);
-    box.on("pointerover", () => { bg.setFillStyle(0x1a3a6a, 0.7); Audio.ui(); });
-    box.on("pointerout", () => { bg.setFillStyle(0x000, 0.5); });
-    box.on("pointerdown", () => {
-      Audio.click();
-      this.cameras.main.fadeOut(250, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("StatsScene");
-        this.scene.stop();
-      });
+    makeClickable(this, {
+      x: 110, y: 110, width: 200, height: 38,
+      fillColor: 0x000000, fillAlpha: 0.5,
+      strokeColor: 0x88aaff,
+      hoverFill: 0x1a3a6a,
+      label: "📊 Stats",
+      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("StatsScene");
+          this.scene.stop();
+        });
+      },
     });
   }
 
@@ -159,44 +157,34 @@ export class CampaignMenuScene extends Phaser.Scene {
     const played = hasPlayedToday();
     const result = getDailyResult();
     const streak = getDailyStreak();
-
     const x = width / 2;
     const y = 100;
-    const w = 320;
-    const h = 56;
 
-    const box = this.add.container(x, y);
-    const bg = this.add.rectangle(0, 0, w, h, played ? 0x1a3a1a : 0x3a1a3a, 0.9).setStrokeStyle(2, played ? 0x66ff88 : 0xff66cc);
     const lblText = played
       ? "🌟 Défi du Jour " + "★".repeat(result?.stars || 0) + (streak > 1 ? "  •  " + streak + "🔥" : "")
       : "🎯 Défi du Jour" + (streak > 0 ? "  •  " + streak + "🔥" : "");
-    const lbl = this.add.text(0, -8, lblText, {
-      fontFamily: "system-ui",
-      fontSize: "16px",
-      fontStyle: "bold",
-      color: played ? "#aaffaa" : "#ffd23f",
-    }).setOrigin(0.5);
-    const sub = this.add.text(0, 12, played ? "Terminé — reviens demain" : "1 essai par jour — niveau aléatoire", {
-      fontFamily: "system-ui",
-      fontSize: "11px",
-      color: played ? "#88dd88" : "#ffaaee",
-    }).setOrigin(0.5);
-    box.add([bg, lbl, sub]);
-    box.setSize(w, h);
-    box.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
-    box.on("pointerover", () => { bg.setFillStyle(played ? 0x2a5a2a : 0x5a2a5a, 0.95); Audio.ui(); });
-    box.on("pointerout", () => { bg.setFillStyle(played ? 0x1a3a1a : 0x3a1a3a, 0.9); });
-    box.on("pointerdown", () => {
-      if (played) {
-        this.tweens.add({ targets: box, x: { from: x - 6, to: x + 6 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => { box.x = x; } });
-        return;
-      }
-      Audio.click();
-      this.cameras.main.fadeOut(250, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("LevelScene", { levelId: "daily" });
-        this.scene.stop();
-      });
+
+    const box = makeClickable(this, {
+      x, y, width: 320, height: 56,
+      fillColor: played ? 0x1a3a1a : 0x3a1a3a,
+      fillAlpha: 0.9,
+      strokeColor: played ? 0x66ff88 : 0xff66cc,
+      hoverFill: played ? 0x2a5a2a : 0x5a2a5a,
+      label: lblText,
+      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: played ? "#aaffaa" : "#ffd23f" },
+      sub: played ? "Terminé — reviens demain" : "1 essai par jour — niveau aléatoire",
+      subStyle: { fontFamily: "system-ui", fontSize: "11px", color: played ? "#88dd88" : "#ffaaee" },
+      onClick: () => {
+        if (played) {
+          this.tweens.add({ targets: box, x: { from: x - 6, to: x + 6 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => { box.x = x; } });
+          return;
+        }
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("LevelScene", { levelId: "daily" });
+          this.scene.stop();
+        });
+      },
     });
   }
 
@@ -261,34 +249,22 @@ export class CampaignMenuScene extends Phaser.Scene {
     const count = unlockedCount();
     const bonus = trophyBonus();
     const total = TROPHIES.length;
-    const x = 110;
-    const y = 50;
-
-    const box = this.add.container(x, y);
-    const bg = this.add.rectangle(0, 0, 200, 50, 0x000, 0.5).setStrokeStyle(2, 0xffaa00);
-    const lbl = this.add.text(0, -8, "🏆 " + count + " / " + total, {
-      fontFamily: "system-ui",
-      fontSize: "18px",
-      fontStyle: "bold",
-      color: "#ffd23f",
-    }).setOrigin(0.5);
-    const sub = this.add.text(0, 12, bonus > 0 ? "+" + bonus + "¢ start" : "Galerie", {
-      fontFamily: "system-ui",
-      fontSize: "11px",
-      color: "#90ff90",
-    }).setOrigin(0.5);
-    box.add([bg, lbl, sub]);
-    box.setSize(200, 50);
-    box.setInteractive(new Phaser.Geom.Rectangle(-100, -25, 200, 50), Phaser.Geom.Rectangle.Contains);
-    box.on("pointerover", () => { bg.setFillStyle(0x331a00, 0.7); Audio.ui(); });
-    box.on("pointerout", () => { bg.setFillStyle(0x000, 0.5); });
-    box.on("pointerdown", () => {
-      Audio.click();
-      this.cameras.main.fadeOut(250, 0, 0, 0);
-      this.cameras.main.once("camerafadeoutcomplete", () => {
-        this.scene.start("TrophyScene");
-        this.scene.stop();
-      });
+    makeClickable(this, {
+      x: 110, y: 50, width: 200, height: 50,
+      fillColor: 0x000000, fillAlpha: 0.5,
+      strokeColor: 0xffaa00,
+      hoverFill: 0x331a00,
+      label: "🏆 " + count + " / " + total,
+      labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#ffd23f" },
+      sub: bonus > 0 ? "+" + bonus + "¢ start" : "Galerie",
+      subStyle: { fontFamily: "system-ui", fontSize: "11px", color: "#90ff90" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("TrophyScene");
+          this.scene.stop();
+        });
+      },
     });
   }
 
