@@ -793,6 +793,12 @@ export class LevelScene extends Phaser.Scene {
   _setupPauseMenu() {
     this.paused = false;
     this.input.keyboard.on("keydown-P", () => this._togglePause());
+    this._blurHandler = () => {
+      if (!this.gameOver && !this.paused && document.hidden) this._openPauseMenu();
+    };
+    document.addEventListener("visibilitychange", this._blurHandler);
+    this.events.once("shutdown", () => document.removeEventListener("visibilitychange", this._blurHandler));
+    this.events.once("destroy", () => document.removeEventListener("visibilitychange", this._blurHandler));
     this.input.keyboard.on("keydown-ESC", () => {
       if (this.placementDef) return;
       this._togglePause();
