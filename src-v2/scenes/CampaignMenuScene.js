@@ -4,6 +4,7 @@ import { loadSave, getStars, isCompleted, totalStars, getEndlessTop } from "../s
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { getTheme } from "../systems/Theme.js";
+import { unlockedCount, TROPHIES, trophyBonus } from "../systems/Trophies.js";
 
 export class CampaignMenuScene extends Phaser.Scene {
   constructor() {
@@ -63,12 +64,49 @@ export class CampaignMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     starsBox.add([starsBg, starsLabel]);
 
+    this.drawTrophyButton();
+
     let y = 150;
     for (const world of WORLDS) {
       this.drawWorldRow(world, y);
       y += 95;
     }
     this.drawEndlessButton(y + 8);
+  }
+
+  drawTrophyButton() {
+    const count = unlockedCount();
+    const bonus = trophyBonus();
+    const total = TROPHIES.length;
+    const x = 110;
+    const y = 50;
+
+    const box = this.add.container(x, y);
+    const bg = this.add.rectangle(0, 0, 200, 50, 0x000, 0.5).setStrokeStyle(2, 0xffaa00);
+    const lbl = this.add.text(0, -8, "🏆 " + count + " / " + total, {
+      fontFamily: "system-ui",
+      fontSize: "18px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+    }).setOrigin(0.5);
+    const sub = this.add.text(0, 12, bonus > 0 ? "+" + bonus + "¢ start" : "Galerie", {
+      fontFamily: "system-ui",
+      fontSize: "11px",
+      color: "#90ff90",
+    }).setOrigin(0.5);
+    box.add([bg, lbl, sub]);
+    box.setSize(200, 50);
+    box.setInteractive(new Phaser.Geom.Rectangle(-100, -25, 200, 50), Phaser.Geom.Rectangle.Contains);
+    box.on("pointerover", () => { bg.setFillStyle(0x331a00, 0.7); Audio.ui(); });
+    box.on("pointerout", () => { bg.setFillStyle(0x000, 0.5); });
+    box.on("pointerdown", () => {
+      Audio.click();
+      this.cameras.main.fadeOut(250, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("TrophyScene");
+        this.scene.stop();
+      });
+    });
   }
 
   drawEndlessButton(y) {

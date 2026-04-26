@@ -3,6 +3,7 @@ import { BootScene } from "./scenes/BootScene.js";
 import { CampaignMenuScene } from "./scenes/CampaignMenuScene.js";
 import { LevelScene } from "./scenes/LevelScene.js";
 import { LevelResultScene } from "./scenes/LevelResultScene.js";
+import { TrophyScene } from "./scenes/TrophyScene.js";
 import { TILE_DEFS } from "./ui/Toolbar.js";
 import { MusicManager } from "./systems/MusicManager.js";
 
@@ -21,7 +22,7 @@ const config = {
     default: "arcade",
     arcade: { gravity: { x: 0, y: 0 }, debug: false },
   },
-  scene: [BootScene, CampaignMenuScene, LevelScene, LevelResultScene],
+  scene: [BootScene, CampaignMenuScene, LevelScene, LevelResultScene, TrophyScene],
 };
 
 const game = new Phaser.Game(config);

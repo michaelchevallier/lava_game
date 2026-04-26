@@ -21,6 +21,7 @@ import { Flash } from "../systems/Flash.js";
 import { Tutorial } from "../ui/Tutorial.js";
 import { getTheme } from "../systems/Theme.js";
 import { LavaMeter } from "../systems/LavaMeter.js";
+import { bumpKills, bumpTickets, trophyBonus } from "../systems/Trophies.js";
 import {
   GRID,
   cellToPixel,
@@ -80,7 +81,7 @@ export class LevelScene extends Phaser.Scene {
     this.applyWeather();
     this.escaped = 0;
     this.killed = 0;
-    this.coins = this.level.startCoins ?? 100;
+    this.coins = (this.level.startCoins ?? 100) + trophyBonus();
     this.visitors = [];
     this.projectiles = [];
     this.towers = [];
@@ -147,6 +148,8 @@ export class LevelScene extends Phaser.Scene {
       this.killText.setText("Tués : " + this.killed);
       this.lavaMeter.addKill();
       Audio.kill();
+      const newly = bumpKills(1);
+      if (newly && newly.length) this._popTrophies(newly);
     });
 
     this.events.on("sun-collected", (amount) => {
@@ -190,6 +193,8 @@ export class LevelScene extends Phaser.Scene {
       this.ticketsText?.setText("🎫 " + this.tickets);
       Flash.hud(this.ticketsText, 0xffaaee, 280);
       Audio.gold?.() || Audio.coin();
+      const newly = bumpTickets(1);
+      if (newly && newly.length) this._popTrophies(newly);
     });
 
     this.events.on("update", (time, delta) => {
@@ -748,6 +753,31 @@ export class LevelScene extends Phaser.Scene {
           endlessWave: this.waveManager?.endlessWave ?? 0,
         });
         this.scene.stop();
+      });
+    });
+  }
+
+  _popTrophies(newly) {
+    if (!newly || !newly.length) return;
+    const baseY = 80;
+    newly.forEach((t, i) => {
+      this.time.delayedCall(i * 250, () => {
+        const x = this.scale.width - 20;
+        const y = baseY + i * 76;
+        const card = this.add.container(x + 320, y).setDepth(120);
+        const bg = this.add.rectangle(0, 0, 300, 64, 0x2a1a3a, 0.95).setStrokeStyle(2, 0xffd23f).setOrigin(1, 0.5);
+        const emoji = this.add.text(-280, 0, t.emoji, { fontFamily: "system-ui", fontSize: "32px" }).setOrigin(0.5);
+        const title = this.add.text(-260, -10, "🏆 " + t.name, { fontFamily: "system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" });
+        const sub = this.add.text(-260, 8, "+5¢ start permanent", { fontFamily: "system-ui", fontSize: "11px", color: "#90ff90" });
+        card.add([bg, emoji, title, sub]);
+        Audio.win?.();
+        this.tweens.add({ targets: card, x: x, duration: 400, ease: "Back.out" });
+        this.time.delayedCall(2800, () => {
+          this.tweens.add({
+            targets: card, x: x + 320, alpha: 0, duration: 350, ease: "Cubic.in",
+            onComplete: () => card.destroy(),
+          });
+        });
       });
     });
   }
