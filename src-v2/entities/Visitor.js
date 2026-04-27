@@ -3,6 +3,34 @@ import { JuiceFX } from "../systems/JuiceFX.js";
 import { Flash } from "../systems/Flash.js";
 import { Particles } from "../systems/Particles.js";
 
+const SPRITE_MAP = {
+  basic: "visitor_zombie",
+  tank: "visitor_zombie",
+  boss: "visitor_zombie",
+  magicboss: "visitor_zombie",
+  boudeur: "visitor_zombie",
+  lavewalker: "visitor_zombie",
+  lavaqueen: "visitor_female",
+  funambule: "visitor_female",
+  enfant: "visitor_female",
+  clown: "visitor_adventurer",
+  magicien: "visitor_adventurer",
+  trompette: "visitor_adventurer",
+  vip: "visitor_player",
+  stiltman: "visitor_player",
+  skeleton: "visitor_player",
+  flying: "visitor_adventurer",
+  ovniboss: "visitor_adventurer",
+  kraken: "visitor_zombie",
+  dragon: "visitor_zombie",
+  netboss: "visitor_adventurer",
+  carnivalboss: "visitor_adventurer",
+};
+
+function _visitorSpriteKey(type) {
+  return SPRITE_MAP[type] || "visitor_zombie";
+}
+
 const TYPE_DEFS = {
   basic:      { hp: 1,  speed: 45,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
   tank:       { hp: 2,  speed: 35,  shirtColor: 0x4a4a4a, shirtStroke: 0x222222, skin: 0x88aa78, immune: [], canFly: false, hat: "bucket" },
@@ -48,76 +76,77 @@ export class Visitor extends Phaser.GameObjects.Container {
     const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss" || this.type === "ovniboss" || this.type === "kraken" || this.type === "dragon" || this.type === "netboss";
     const isLavewalker = this.type === "lavewalker";
 
-    this.shadow = scene.add.ellipse(0, 22, 38, 9, 0x000, 0.4);
+    this.shadow = scene.add.ellipse(0, 28, 38, 9, 0x000, 0.4);
     this.add(this.shadow);
 
-    // Stiltman gets extra leg stilts below
-    if (this.type === "stiltman") {
-      const stiltL = scene.add.rectangle(-7, 42, 6, 30, 0x2a2a4a).setStrokeStyle(1, 0x111);
-      const stiltR = scene.add.rectangle(7, 42, 6, 30, 0x2a2a4a).setStrokeStyle(1, 0x111);
-      this.add([stiltL, stiltR]);
+    const spriteKey = _visitorSpriteKey(this.type);
+    const useSprite = scene.textures.exists(spriteKey);
+    this.legL = null;
+    this.legR = null;
+    this.armL = null;
+    this.armR = null;
+    this.handL = null;
+    this.handR = null;
+    this.eyes = null;
+
+    if (useSprite) {
+      this._bodySprite = scene.add.sprite(0, 0, spriteKey, 0);
+      this._bodySprite.setFlipX(true);
+      this._bodySprite.setOrigin(0.5, 0.85);
+      this._bodySprite.setTint(def.shirtColor);
+      this._bodySprite.setScale(0.72);
+      this.add(this._bodySprite);
+      if (!scene.anims.exists(`${spriteKey}_walk`)) {
+        scene.anims.create({
+          key: `${spriteKey}_walk`,
+          frames: scene.anims.generateFrameNumbers(spriteKey, { start: 9, end: 17 }),
+          frameRate: 10,
+          repeat: -1,
+        });
+      }
+      this._bodySprite.play(`${spriteKey}_walk`);
+      this.wings = null;
+    } else {
+      if (this.type === "stiltman") {
+        const stiltL = scene.add.rectangle(-7, 42, 6, 30, 0x2a2a4a).setStrokeStyle(1, 0x111);
+        const stiltR = scene.add.rectangle(7, 42, 6, 30, 0x2a2a4a).setStrokeStyle(1, 0x111);
+        this.add([stiltL, stiltR]);
+      }
+      this.legL = scene.add.rectangle(-7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
+      this.legR = scene.add.rectangle(7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
+      this.add([this.legL, this.legR]);
+      const torsoBack = scene.add.rectangle(0, 4, 32, 38, isSkel ? 0xddd8c8 : 0x4a3030).setStrokeStyle(2, def.shirtStroke);
+      const shirt = scene.add.rectangle(0, 6, 28, 26, def.shirtColor).setStrokeStyle(1, def.shirtStroke);
+      this.add([torsoBack, shirt]);
+      if (!isSkel && !isLavewalker) {
+        this.add([scene.add.rectangle(-8, 8, 6, 2, def.shirtStroke), scene.add.rectangle(6, 14, 5, 2, def.shirtStroke), scene.add.circle(4, 4, 2.5, 0x6a0010, 0.85)]);
+      }
+      this.armL = scene.add.rectangle(-16, -8, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke).setOrigin(0.5, 0);
+      this.armR = scene.add.rectangle(16, -8, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke).setOrigin(0.5, 0);
+      this.add([this.armL, this.armR]);
+      this.handL = scene.add.circle(-16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
+      this.handR = scene.add.circle(16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
+      this.add([this.handL, this.handR]);
+      const head = scene.add.circle(0, -22, 13, def.skin).setStrokeStyle(2, isSkel ? 0x999 : 0x4a4020);
+      const earL = scene.add.ellipse(-12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
+      const earR = scene.add.ellipse(12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
+      if (!isSkel && !isLavewalker) {
+        this.add([scene.add.rectangle(-7, -28, 6, 1.5, 0x6a0010), scene.add.rectangle(5, -16, 4, 1.5, 0x6a0010)]);
+      }
+      const eyeColor = isLavewalker ? 0x00ee44 : (isSkel ? 0xff2222 : 0xffd23f);
+      const eyeBgL = scene.add.circle(-5, -24, 4, 0xfff8d0);
+      const eyeBgR = scene.add.circle(5, -24, 4, 0xfff8d0);
+      const eyeL = scene.add.circle(-5, -24, 2.4, eyeColor);
+      const eyeR = scene.add.circle(5, -24, 2.4, eyeColor);
+      const pupilL = scene.add.circle(-5, -24, 1.2, 0x000);
+      const pupilR = scene.add.circle(5, -24, 1.2, 0x000);
+      const mouth = scene.add.rectangle(0, -14, 10, 2, 0x000);
+      this.add([head, earL, earR, eyeBgL, eyeBgR, eyeL, eyeR, pupilL, pupilR, mouth]);
+      if (!isSkel) this.add(scene.add.rectangle(0, -14, 10, 1, 0xfff8d0));
+      this.eyes = [eyeL, eyeR, pupilL, pupilR];
     }
 
-    this.legL = scene.add.rectangle(-7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
-    this.legR = scene.add.rectangle(7, 22, 9, 16, def.shirtStroke).setStrokeStyle(1, 0x000);
-    this.add([this.legL, this.legR]);
-
-    const torsoBack = scene.add.rectangle(0, 4, 32, 38, isSkel ? 0xddd8c8 : 0x4a3030).setStrokeStyle(2, def.shirtStroke);
-    const shirt = scene.add.rectangle(0, 6, 28, 26, def.shirtColor).setStrokeStyle(1, def.shirtStroke);
-    this.add([torsoBack, shirt]);
-
-    if (!isSkel && !isLavewalker) {
-      const tear1 = scene.add.rectangle(-8, 8, 6, 2, def.shirtStroke);
-      const tear2 = scene.add.rectangle(6, 14, 5, 2, def.shirtStroke);
-      const stain = scene.add.circle(4, 4, 2.5, 0x6a0010, 0.85);
-      this.add([tear1, tear2, stain]);
-    }
-
-    this.armL = scene.add.rectangle(-16, 0, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke);
-    this.armR = scene.add.rectangle(16, 0, 7, 24, def.skin).setStrokeStyle(1, def.shirtStroke);
-    this.armL.setOrigin(0.5, 0);
-    this.armR.setOrigin(0.5, 0);
-    this.armL.y = -8;
-    this.armR.y = -8;
-    this.add([this.armL, this.armR]);
-
-    const handL = scene.add.circle(-16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
-    const handR = scene.add.circle(16, 16, 4, def.skin).setStrokeStyle(1, def.shirtStroke);
-    this.add([handL, handR]);
-    this.handL = handL;
-    this.handR = handR;
-
-    const head = scene.add.circle(0, -22, 13, def.skin).setStrokeStyle(2, isSkel ? 0x999 : 0x4a4020);
-    const earL = scene.add.ellipse(-12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
-    const earR = scene.add.ellipse(12, -22, 4, 7, def.skin).setStrokeStyle(1, 0x4a4020);
-
-    if (!isSkel && !isLavewalker) {
-      const scarL = scene.add.rectangle(-7, -28, 6, 1.5, 0x6a0010);
-      const scarR = scene.add.rectangle(5, -16, 4, 1.5, 0x6a0010);
-      this.add([scarL, scarR]);
-    }
-
-    const eyeBgL = scene.add.circle(-5, -24, 4, 0xfff8d0);
-    const eyeBgR = scene.add.circle(5, -24, 4, 0xfff8d0);
-
-    const eyeColor = isLavewalker ? 0x00ee44 : (isSkel ? 0xff2222 : 0xffd23f);
-    const eyeL = scene.add.circle(-5, -24, 2.4, eyeColor);
-    const eyeR = scene.add.circle(5, -24, 2.4, eyeColor);
-    const pupilL = scene.add.circle(-5, -24, 1.2, 0x000);
-    const pupilR = scene.add.circle(5, -24, 1.2, 0x000);
-
-    const mouth = scene.add.rectangle(0, -14, 10, 2, 0x000);
-    let teeth = null;
-    if (!isSkel) {
-      teeth = scene.add.rectangle(0, -14, 10, 1, 0xfff8d0);
-    }
-
-    this.add([head, earL, earR, eyeBgL, eyeBgR, eyeL, eyeR, pupilL, pupilR, mouth]);
-    if (teeth) this.add(teeth);
-
-    this.eyes = [eyeL, eyeR, pupilL, pupilR];
-
-    // Hat visuals
+    // Hat visuals (always drawn over sprite)
     if (def.hat === "tophat") {
       const brim = scene.add.rectangle(0, -33, 26, 3, 0x111);
       const hat = scene.add.rectangle(0, -44, 18, 16, 0x222);
@@ -146,28 +175,23 @@ export class Visitor extends Phaser.GameObjects.Container {
       const gem = scene.add.circle(0, -38, 2.5, 0xff2200).setStrokeStyle(1, 0xffaaaa);
       this.add([crownBase, spike1, spike2, spike3, gem]);
     } else if (def.hat === "wig") {
-      // Clown wig: red hirsute hair puffs
       const wigBase = scene.add.ellipse(0, -35, 32, 12, 0xff2200);
       const wigL = scene.add.circle(-12, -42, 8, 0xff3300);
       const wigC = scene.add.circle(0, -45, 9, 0xff2200);
       const wigR = scene.add.circle(12, -42, 8, 0xff3300);
-      // Red nose
       const nose = scene.add.circle(0, -19, 4, 0xff0000).setStrokeStyle(1, 0xaa0000);
       this.add([wigBase, wigL, wigC, wigR, nose]);
     } else if (def.hat === "umbrella") {
-      // Funambule mini umbrella balanced on head
       const stick = scene.add.rectangle(0, -42, 2, 14, 0x888);
       const canopy = scene.add.arc(0, -50, 12, 180, 360, false, 0xffd23f, 1).setStrokeStyle(1, 0xaa8800);
       const tip = scene.add.circle(0, -36, 2, 0x888);
       this.add([stick, canopy, tip]);
     } else if (def.hat === "trumpet") {
-      // Clairon extending forward (left, direction of movement)
       const tubeBody = scene.add.rectangle(-20, -10, 18, 5, 0xddaa00).setStrokeStyle(1, 0x886600);
       const bell = scene.add.triangle(-30, -10, 0, 0, -10, -7, -10, 7, 0xffd23f).setStrokeStyle(1, 0xaa8800);
       const mouthpiece = scene.add.circle(-11, -10, 3, 0xbbaa00);
       this.add([tubeBody, bell, mouthpiece]);
     } else if (def.hat === "balloon") {
-      // Balloon tied to wrist
       const string = scene.add.rectangle(-16, -10, 1, 20, 0x888);
       const balloon = scene.add.circle(-16, -28, 8, 0xff4488).setStrokeStyle(1, 0xcc0066);
       const balloonShine = scene.add.circle(-18, -31, 2, 0xffffff, 0.5);
@@ -189,10 +213,10 @@ export class Visitor extends Phaser.GameObjects.Container {
         tent.setRotation(a);
         this.add(tent);
       }
-      const head = scene.add.circle(0, -30, 12, 0x6a2a8a).setStrokeStyle(2, 0x220a3a);
+      const tentHead = scene.add.circle(0, -30, 12, 0x6a2a8a).setStrokeStyle(2, 0x220a3a);
       const eye1 = scene.add.circle(-4, -32, 2.5, 0xffd23f);
       const eye2 = scene.add.circle(4, -32, 2.5, 0xffd23f);
-      this.add([head, eye1, eye2]);
+      this.add([tentHead, eye1, eye2]);
     } else if (def.hat === "visor") {
       const helm = scene.add.rectangle(0, -38, 26, 12, 0x222244).setStrokeStyle(2, 0xff00aa);
       const visor = scene.add.rectangle(0, -36, 22, 4, 0x00ffff, 0.85);

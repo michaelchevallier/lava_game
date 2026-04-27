@@ -7,6 +7,19 @@ export class BootScene extends Phaser.Scene {
     super("BootScene");
   }
 
+  preload() {
+    this.load.spritesheet("visitor_zombie", "sprites/zombie_sheet.png", { frameWidth: 80, frameHeight: 110 });
+    this.load.spritesheet("visitor_adventurer", "sprites/adventurer_sheet.png", { frameWidth: 80, frameHeight: 110 });
+    this.load.spritesheet("visitor_female", "sprites/female_sheet.png", { frameWidth: 80, frameHeight: 110 });
+    this.load.spritesheet("visitor_player", "sprites/player_sheet.png", { frameWidth: 80, frameHeight: 110 });
+    this.load.image("kenney_tile_tower_green", "assets/kenney/tile249.png");
+    this.load.image("kenney_tile_tower_red", "assets/kenney/tile250.png");
+    this.load.image("kenney_tile_base", "assets/kenney/tile226.png");
+    this.load.image("kenney_tile_base2", "assets/kenney/tile227.png");
+    this.load.image("kenney_tile_coin", "assets/kenney/tile272.png");
+    this.load.image("kenney_tile_bullet", "assets/kenney/tile266.png");
+  }
+
   create() {
     const { width, height } = this.scale;
 
