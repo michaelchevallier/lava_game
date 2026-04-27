@@ -101,3 +101,19 @@ export function setEquippedSkin(tileId, skinId) {
   else delete save.equipped[tileId];
   saveSave(save);
 }
+
+export function getFairgroundBest(gameType) {
+  return loadSave().fairgroundBest?.[gameType] || 0;
+}
+
+export function recordFairgroundScore(gameType, score) {
+  const save = loadSave();
+  if (!save.fairgroundBest) save.fairgroundBest = {};
+  const prev = save.fairgroundBest[gameType] || 0;
+  const isNewBest = score > prev;
+  if (isNewBest) {
+    save.fairgroundBest[gameType] = score;
+    saveSave(save);
+  }
+  return isNewBest;
+}
