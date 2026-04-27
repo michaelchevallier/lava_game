@@ -256,7 +256,7 @@ export class LevelScene extends Phaser.Scene {
       );
     }
 
-    this.input.on("pointermove", (p) => this.updateGhost(p));
+    this.input.on("pointermove", (p) => { this.updateGhost(p); this._updateTileHoverInfo(p); });
     this.input.on("pointerdown", (p) => this.tryPlace(p));
 
     for (let r = 0; r < GRID.rows; r++) {
@@ -602,6 +602,40 @@ export class LevelScene extends Phaser.Scene {
       stroke: "#000",
       strokeThickness: 3,
     }).setOrigin(0.5);
+  }
+
+  _updateTileHoverInfo(pointer) {
+    if (this.placementDef) { this._hideTileHoverInfo(); return; }
+    const cell = pixelToCell(pointer.x, pointer.y);
+    if (!cell) { this._hideTileHoverInfo(); return; }
+    const tile = this.gridState[cell.row]?.[cell.col];
+    if (!tile || tile._dying) { this._hideTileHoverInfo(); return; }
+    if (this._hoveredTile === tile) {
+      this._hoverInfo?.setPosition(tile.x, tile.y - 60);
+      return;
+    }
+    this._hideTileHoverInfo();
+    this._hoveredTile = tile;
+    const NAMES = { LavaTower: "Lava Tower", CoinGenerator: "Coin Gen", WaterBlock: "Water Block", Fan: "Ventilateur", MagnetBomb: "Magnet Bomb", Catapult: "Catapulte", FrostTramp: "Frost Tramp", Portal: "Portail", Tamer: "Dompteur", CottonCandy: "Barbe-à-Papa", Mine: "Mine", NeonLamp: "Néon" };
+    const name = NAMES[tile.constructor.name] || tile.constructor.name;
+    const hp = tile.hp ?? tile._hp;
+    const lines = [name];
+    if (typeof hp === "number") lines.push("HP : " + Math.ceil(hp));
+    lines.push("Pelle : " + Math.floor(({ LavaTower: 50, CoinGenerator: 25, WaterBlock: 25, Fan: 62, MagnetBomb: 137, Catapult: 87, FrostTramp: 112, Portal: 150, Tamer: 200, CottonCandy: 37, Mine: 50, NeonLamp: 100 }[tile.constructor.name] || 0)) + "¢");
+    const tip = this.add.container(tile.x, tile.y - 60).setDepth(120);
+    const txt = this.add.text(0, 0, lines.join("\n"), { fontFamily: "system-ui", fontSize: "11px", color: "#ffeebb", align: "center", stroke: "#000", strokeThickness: 3 }).setOrigin(0.5);
+    const w = txt.width + 14;
+    const h = txt.height + 8;
+    const bg = this.add.rectangle(0, 0, w, h, 0x000, 0.8).setStrokeStyle(1, 0xffd23f);
+    tip.add([bg, txt]);
+    tip.setAlpha(0);
+    this.tweens.add({ targets: tip, alpha: 1, duration: 120 });
+    this._hoverInfo = tip;
+  }
+
+  _hideTileHoverInfo() {
+    if (this._hoverInfo) { this._hoverInfo.destroy(); this._hoverInfo = null; }
+    this._hoveredTile = null;
   }
 
   setPlacement(def) {
