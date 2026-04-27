@@ -89,6 +89,7 @@ export class CampaignMenuScene extends Phaser.Scene {
 
     this.drawTrophyButton();
     this.drawStatsButton();
+    this.drawFairgroundButton();
 
     let y = 142;
     for (const world of WORLDS) {
@@ -134,16 +135,34 @@ export class CampaignMenuScene extends Phaser.Scene {
 
   drawStatsButton() {
     makeClickable(this, {
-      x: 110, y: 110, width: 200, height: 38,
+      x: 110, y: 110, width: 95, height: 38,
       fillColor: 0x000000, fillAlpha: 0.5,
       strokeColor: 0x88aaff,
       hoverFill: 0x1a3a6a,
       label: "📊 Stats",
-      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#88ccff" },
       onClick: () => {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
           this.scene.start("StatsScene");
+          this.scene.stop();
+        });
+      },
+    });
+  }
+
+  drawFairgroundButton() {
+    makeClickable(this, {
+      x: 215, y: 110, width: 95, height: 38,
+      fillColor: 0x000000, fillAlpha: 0.5,
+      strokeColor: 0xff66cc,
+      hoverFill: 0x3a1a3a,
+      label: "🎪 Foire",
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#ff99dd" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("FairgroundHubScene");
           this.scene.stop();
         });
       },
