@@ -45,6 +45,8 @@ export class Bulle extends Phaser.GameObjects.Container {
 
   tick(time) {
     if (!this.scene || this._dying) return;
+    if (time - this._lastScanAt < 50) return;
+    this._lastScanAt = time;
     if (time - this.lastFireAt < this.cooldownMs) {
       const ratio = (time - this.lastFireAt) / this.cooldownMs;
       this.shell.setFillStyle(0x66ffdd, 0.4 + ratio * 0.6);
