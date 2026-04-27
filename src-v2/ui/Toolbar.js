@@ -184,12 +184,17 @@ export class Toolbar extends Phaser.GameObjects.Container {
     return c;
   }
 
+  _now() {
+    return this.scene._gameTime ?? this.scene.time.now;
+  }
+
   triggerCooldown(id) {
     const btn = this.buttons.find((b) => b._defId === id);
     if (!btn || !btn._def.cooldownMs) return;
     const mul = this._cooldownMul ?? 1;
-    btn._cooldownStartedAt = this.scene.time.now;
-    btn._cooldownUntil = this.scene.time.now + btn._def.cooldownMs * mul;
+    const now = this._now();
+    btn._cooldownStartedAt = now;
+    btn._cooldownUntil = now + btn._def.cooldownMs * mul;
     btn._cooldownOverlay?.setVisible(true);
     btn._cooldownBar?.setVisible(true);
   }
@@ -197,13 +202,13 @@ export class Toolbar extends Phaser.GameObjects.Container {
   isOnCooldown(id) {
     const btn = this.buttons.find((b) => b._defId === id);
     if (!btn) return false;
-    return this.scene.time.now < btn._cooldownUntil;
+    return this._now() < btn._cooldownUntil;
   }
 
   refreshAfford() {
     if (!this.scene || !this.active) return;
     const coins = this.getCoins();
-    const now = this.scene.time.now;
+    const now = this._now();
     for (const b of this.buttons) {
       if (!b || !b.scene || !b._back || !b._back.scene || !b._costLabel || !b._costLabel.scene) continue;
 

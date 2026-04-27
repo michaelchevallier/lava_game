@@ -109,6 +109,13 @@ window.__pd_reset = () => {
   return "🗑 Save reset — reload en cours";
 };
 
+window.__pd_speed = (factor) => {
+  const s = window.__pd_scene();
+  if (!s) return "no LevelScene active";
+  s._gameSpeed = Math.max(0.1, Math.min(50, factor));
+  return "gameSpeed = " + s._gameSpeed;
+};
+
 window.__pd_goto = (levelId) => {
   for (const s of game.scene.scenes) {
     if (s.scene.isActive() && s.scene.key !== "BootScene") {

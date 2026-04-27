@@ -41,8 +41,8 @@ export class TreasureChest extends Phaser.GameObjects.Container {
         this.fade();
       }
     };
-    scene.events.on("update", this._tick);
-    this.once("destroy", () => scene.events.off("update", this._tick));
+    scene.events.on("game-tick", this._tick);
+    this.once("destroy", () => scene.events.off("game-tick", this._tick));
   }
 
   open() {

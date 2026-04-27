@@ -224,18 +224,26 @@ export class LevelScene extends Phaser.Scene {
       if (newly && newly.length) this._popTrophies(newly);
     });
 
+    this._gameTime = 0;
+    this._gameSpeed = 1;
+
     this.events.on("update", (time, delta) => {
+      const scaled = delta * this._gameSpeed;
+      this._gameTime += scaled;
+      const gt = this._gameTime;
+      this.events.emit("game-tick", gt, scaled);
+
       this.visitors = this.visitors.filter((v) => v.active);
       this.projectiles = this.projectiles.filter((p) => p.active);
       this.towers = this.towers.filter((t) => t.active);
       this.suns = this.suns.filter((s) => s.active);
       this.mowers = this.mowers.filter((m) => m.active);
       this.checkProjectileHits();
-      this.updateBlockers(time, delta);
+      this.updateBlockers(gt, scaled);
       this.checkMowerTriggers();
       if (this.waveManager && !this.gameOver) {
-        this.waveManager.tick(time);
-        this.refreshWaveStatus(time);
+        this.waveManager.tick(gt);
+        this.refreshWaveStatus(gt);
         this.checkEndCondition();
       }
     });
@@ -873,6 +881,7 @@ export class LevelScene extends Phaser.Scene {
     }
     if (!isEmpty(this.gridState, cell.col, cell.row)) return;
     if (!this.conveyorMode && this.coins < this.placementDef.cost) return;
+    if (!this.conveyorMode && this.toolbar?.isOnCooldown?.(this.placementDef.id)) return;
     const { x, y } = cellToPixel(cell.col, cell.row);
     let entity = null;
     if (this.placementDef.id === "lava") {

@@ -51,7 +51,7 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
     this.setDepth(48);
 
     this._tickHandler = (time, delta) => this.tick(time, delta);
-    scene.events.on("update", this._tickHandler);
+    scene.events.on("game-tick", this._tickHandler);
 
     scene.events.once("shutdown", () => this._cleanup());
     scene.events.once("destroy", () => this._cleanup());
@@ -59,7 +59,7 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
 
   _cleanup() {
     if (this._tickHandler) {
-      this.scene?.events?.off("update", this._tickHandler);
+      this.scene?.events?.off("game-tick", this._tickHandler);
       this._tickHandler = null;
     }
   }

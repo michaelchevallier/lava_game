@@ -35,7 +35,7 @@ export class WaveManager {
   }
 
   start() {
-    this.startedAt = this.scene.time.now;
+    this.startedAt = this.scene._gameTime ?? this.scene.time.now;
   }
 
   tick(time) {

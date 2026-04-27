@@ -34,8 +34,8 @@ export class Mine extends Phaser.GameObjects.Container {
     scene.add.existing(this);
 
     this._tick = (time, delta) => this.tick(time, delta);
-    scene.events.on("update", this._tick);
-    this.once("destroy", () => scene.events.off("update", this._tick));
+    scene.events.on("game-tick", this._tick);
+    this.once("destroy", () => scene.events.off("game-tick", this._tick));
   }
 
   tick(time) {
