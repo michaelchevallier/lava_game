@@ -47,6 +47,30 @@ export class FairgroundScene extends Phaser.Scene {
     else if (this.gameType === "wheel") this._createWheel();
     else if (this.gameType === "pancake") this._createPancake();
     else if (this.gameType === "bumper") this._createBumper();
+    else this._createComingSoon();
+  }
+
+  _createComingSoon() {
+    const { width, height } = this.scale;
+    this.add.text(width / 2, height / 2 - 60, "🚧", {
+      fontFamily: "system-ui", fontSize: "120px",
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 + 50, "Bientôt disponible !", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "48px",
+      color: "#ffd23f", stroke: "#000", strokeThickness: 6,
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 + 110, "Ce mini-jeu arrive très vite — reviens demain", {
+      fontFamily: "Fredoka, system-ui", fontSize: "16px",
+      color: "#ffeebb",
+    }).setOrigin(0.5);
+    this.time.delayedCall(2200, () => {
+      if (this.gameOver) return;
+      this.cameras.main.fadeOut(250, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("FairgroundHubScene");
+        this.scene.stop();
+      });
+    });
   }
 
   _setTimer(ms) {

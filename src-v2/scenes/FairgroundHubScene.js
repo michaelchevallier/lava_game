@@ -4,11 +4,16 @@ import { MusicManager } from "../systems/MusicManager.js";
 import { makeClickable } from "../ui/Clickable.js";
 
 const GAMES = [
-  { id: "chamboule", emoji: "🎯", name: "Chamboule-Tout", desc: "Renverse 9 boîtes en 20s", color: 0xffd23f, stroke: 0xffaa00 },
-  { id: "pigeon",    emoji: "🕊", name: "Tir au Pigeon",  desc: "Touche les pigeons en 30s", color: 0x88ccff, stroke: 0x4488dd },
-  { id: "wheel",     emoji: "🎡", name: "Roue Fortune",    desc: "Spin pour gagner gros",    color: 0xff66cc, stroke: 0xaa3399 },
-  { id: "pancake",   emoji: "🥞", name: "Crêpes",          desc: "Flip parfait au bon moment", color: 0xff8844, stroke: 0xc63a3a },
-  { id: "bumper",    emoji: "🚗", name: "Bumper Cars",     desc: "Esquive 30s",              color: 0x66ff88, stroke: 0x4ed8a3 },
+  { id: "chamboule",   emoji: "🎯", name: "Chamboule-Tout", desc: "Renverse 9 boîtes (tiers x2/x5/x10)", color: 0xffd23f, stroke: 0xffaa00 },
+  { id: "pigeon",      emoji: "🕊", name: "Tir au Pigeon",  desc: "Touche les pigeons en 30s",        color: 0x88ccff, stroke: 0x4488dd },
+  { id: "wheel",       emoji: "🎡", name: "Roue Fortune",    desc: "Spin pour gagner gros",            color: 0xff66cc, stroke: 0xaa3399 },
+  { id: "pancake",     emoji: "🥞", name: "Crêpes",          desc: "Timing + 4 difficultés + combo",   color: 0xff8844, stroke: 0xc63a3a },
+  { id: "bumper",      emoji: "🚗", name: "Bumper Cars",     desc: "3 vies, esquive le plus longtemps", color: 0x66ff88, stroke: 0x4ed8a3 },
+  { id: "math",        emoji: "🧮", name: "Calcul Rapide",   desc: "Maths en 30s, 4 niveaux + combo",  color: 0x66ddff, stroke: 0x3a8acc },
+  { id: "trafficlight", emoji: "🚦", name: "Feu Tricolore",  desc: "Cours quand vert, stop quand rouge", color: 0xff4444, stroke: 0xaa2222 },
+  { id: "archery",     emoji: "🏹", name: "Tir à l'Arc",     desc: "6 flèches sur cibles or/argent/pomme", color: 0xc88a44, stroke: 0x6a4a04 },
+  { id: "candysort",   emoji: "🍬", name: "Tri Bonbons",     desc: "Drag les bonbons dans le bon bocal", color: 0xff66ff, stroke: 0xaa44cc },
+  { id: "lavajump",    emoji: "🌋", name: "Saut de Lave",    desc: "Saute sur les plateformes, évite la lave", color: 0xff4400, stroke: 0xaa2200 },
 ];
 
 export class FairgroundHubScene extends Phaser.Scene {
@@ -42,16 +47,23 @@ export class FairgroundHubScene extends Phaser.Scene {
       color: "#ffeebb",
     }).setOrigin(0.5);
 
-    const cardW = 220;
-    const cardH = 280;
-    const gap = 16;
-    const totalW = GAMES.length * (cardW + gap) - gap;
-    let x = (width - totalW) / 2 + cardW / 2;
+    const cols = 5;
+    const cardW = 200;
+    const cardH = 200;
+    const gapX = 14;
+    const gapY = 18;
+    const gridW = cols * cardW + (cols - 1) * gapX;
+    const startX = (width - gridW) / 2 + cardW / 2;
+    const gridTop = 170;
 
-    GAMES.forEach((g) => {
+    GAMES.forEach((g, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = startX + col * (cardW + gapX);
+      const y = gridTop + row * (cardH + gapY) + cardH / 2;
       makeClickable(this, {
-        x, y: height / 2 + 30, width: cardW, height: cardH,
-        radius: 14,
+        x, y, width: cardW, height: cardH,
+        radius: 12,
         fillColor: 0x000000, fillAlpha: 0.5,
         strokeColor: g.stroke, strokeWidth: 3,
         hoverFill: 0x2a1a3a, hoverStroke: 0xffd23f,
@@ -63,13 +75,12 @@ export class FairgroundHubScene extends Phaser.Scene {
           });
         },
         decorate: (c, s) => {
-          c.add(s.add.text(0, -90, g.emoji, { fontFamily: "system-ui", fontSize: "70px" }).setOrigin(0.5));
-          c.add(s.add.text(0, 10, g.name, { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "26px", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
-          c.add(s.add.text(0, 50, g.desc, { fontFamily: "Fredoka, system-ui", fontSize: "13px", color: "#ffeebb", align: "center", wordWrap: { width: cardW - 30 } }).setOrigin(0.5));
-          c.add(s.add.text(0, 105, "▶ JOUER", { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#fff", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
+          c.add(s.add.text(0, -65, g.emoji, { fontFamily: "system-ui", fontSize: "48px" }).setOrigin(0.5));
+          c.add(s.add.text(0, -10, g.name, { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
+          c.add(s.add.text(0, 24, g.desc, { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#ffeebb", align: "center", wordWrap: { width: cardW - 22 } }).setOrigin(0.5));
+          c.add(s.add.text(0, 70, "▶ JOUER", { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "18px", color: "#fff", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
         },
       });
-      x += cardW + gap;
     });
 
     makeClickable(this, {
