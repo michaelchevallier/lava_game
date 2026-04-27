@@ -1,4 +1,6 @@
 import * as Phaser from "phaser";
+import { getEquippedSkin } from "../systems/SaveSystem.js";
+import { SKINS } from "../scenes/SkinsScene.js";
 
 export const TILE_DEFS = [
   { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 5000 },
@@ -125,7 +127,16 @@ export class Toolbar extends Phaser.GameObjects.Container {
     const cooldownOverlay = this.scene.add.rectangle(0, 0, w, h, 0x000, 0.65).setVisible(false);
     const cooldownBar = this.scene.add.rectangle(-w / 2, h / 2 - 4, w, 4, 0x66ddff).setOrigin(0, 0.5).setVisible(false);
 
+    const skinId = getEquippedSkin(def.id);
+    const skin = skinId ? SKINS.find((s) => s.id === skinId) : null;
+    let skinDot = null;
+    if (skin) {
+      skinDot = this.scene.add.circle(-w / 2 + 10, -h / 2 + 10, 5, skin.color).setStrokeStyle(1, skin.accent);
+      this.scene.tweens.add({ targets: skinDot, scale: { from: 1, to: 1.2 }, duration: 800, yoyo: true, repeat: -1, ease: "Sine.inOut" });
+    }
+
     c.add([back, icon, label, costLabel, shortcutBg, shortcutText, cooldownOverlay, cooldownBar]);
+    if (skinDot) c.add(skinDot);
     c.setSize(w, h);
     c.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
     c._defId = def.id;
@@ -146,10 +157,12 @@ export class Toolbar extends Phaser.GameObjects.Container {
     c.on("pointerout", () => {
       if (this.selectedId !== def.id) back.setStrokeStyle(2, c._affordable ? 0x4a4a6a : 0x6a2222);
     });
-    c.on("pointerdown", () => {
+    c.on("pointerdown", (pointer) => {
       if (!c._affordable) return;
       if (this.isOnCooldown(def.id)) return;
       this.select(def.id);
+      this._dragStartedFromToolbar = true;
+      this._dragPointerId = pointer.id;
     });
 
     return c;

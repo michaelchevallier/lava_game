@@ -31,7 +31,7 @@
     {
       "delayMs": 60000,
       "visitors": [
-        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "dragon", "lane": 2, "delayMs": 0 },
         { "type": "boudeur", "lane": 0, "delayMs": 2000 },
         { "type": "boudeur", "lane": 1, "delayMs": 2500 },
         { "type": "boudeur", "lane": 3, "delayMs": 3000 },

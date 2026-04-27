@@ -21,6 +21,10 @@ const TYPE_DEFS = {
   magicboss:  { hp: 25, speed: 26,  shirtColor: 0x4a1a8a, shirtStroke: 0x220050, skin: 0xa0c090, immune: [], canFly: false, hat: "tophat", scale: 1.8 },
   lavaqueen:  { hp: 35, speed: 22,  shirtColor: 0xc63a10, shirtStroke: 0x4a0010, skin: 0xffaa66, immune: ["lava"], canFly: false, hat: "crown", scale: 1.9 },
   carnivalboss: { hp: 50, speed: 24, shirtColor: 0xff66cc, shirtStroke: 0x880044, skin: 0xa0c090, immune: [], canFly: false, hat: "wig", scale: 2 },
+  ovniboss:   { hp: 30, speed: 28, shirtColor: 0x66ddff, shirtStroke: 0x224477, skin: 0xc8e8ff, immune: [], canFly: true,  hat: "antenna", scale: 1.8 },
+  kraken:     { hp: 40, speed: 22, shirtColor: 0x4a1a6a, shirtStroke: 0x220a3a, skin: 0x66ffdd, immune: ["frost"], canFly: false, hat: "tentacles", scale: 1.9 },
+  dragon:     { hp: 50, speed: 26, shirtColor: 0xc63a10, shirtStroke: 0x4a0a04, skin: 0xff8800, immune: ["lava"], canFly: false, hat: "horn", scale: 2 },
+  netboss:    { hp: 60, speed: 24, shirtColor: 0xff00aa, shirtStroke: 0x4a0066, skin: 0xc8c8c8, immune: [], canFly: false, hat: "visor", scale: 2 },
 };
 
 export class Visitor extends Phaser.GameObjects.Container {
@@ -41,7 +45,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     this._dying = false;
     this.blocked = false;
     const isSkel = this.type === "skeleton";
-    const isBoss = this.type === "boss";
+    const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss" || this.type === "ovniboss" || this.type === "kraken" || this.type === "dragon" || this.type === "netboss";
     const isLavewalker = this.type === "lavewalker";
 
     this.shadow = scene.add.ellipse(0, 22, 38, 9, 0x000, 0.4);
@@ -168,6 +172,33 @@ export class Visitor extends Phaser.GameObjects.Container {
       const balloon = scene.add.circle(-16, -28, 8, 0xff4488).setStrokeStyle(1, 0xcc0066);
       const balloonShine = scene.add.circle(-18, -31, 2, 0xffffff, 0.5);
       this.add([string, balloon, balloonShine]);
+    } else if (def.hat === "antenna") {
+      const dome = scene.add.ellipse(0, -38, 28, 14, 0x66ddff, 0.7).setStrokeStyle(2, 0xaaffff);
+      const stem1 = scene.add.rectangle(-6, -46, 1.5, 8, 0xaaffff);
+      const stem2 = scene.add.rectangle(6, -46, 1.5, 8, 0xaaffff);
+      const tip1 = scene.add.circle(-6, -52, 2, 0xff2222);
+      const tip2 = scene.add.circle(6, -52, 2, 0xffd23f);
+      scene.tweens.add({ targets: [tip1, tip2], alpha: { from: 0.5, to: 1 }, duration: 400, yoyo: true, repeat: -1 });
+      this.add([dome, stem1, stem2, tip1, tip2]);
+    } else if (def.hat === "tentacles") {
+      for (let i = 0; i < 5; i++) {
+        const a = (i - 2) * 0.4;
+        const tx = Math.sin(a) * 14;
+        const ty = -32 - Math.cos(a) * 12;
+        const tent = scene.add.ellipse(tx, ty, 4, 18, 0x4a1a6a).setStrokeStyle(1, 0x220a3a);
+        tent.setRotation(a);
+        this.add(tent);
+      }
+      const head = scene.add.circle(0, -30, 12, 0x6a2a8a).setStrokeStyle(2, 0x220a3a);
+      const eye1 = scene.add.circle(-4, -32, 2.5, 0xffd23f);
+      const eye2 = scene.add.circle(4, -32, 2.5, 0xffd23f);
+      this.add([head, eye1, eye2]);
+    } else if (def.hat === "visor") {
+      const helm = scene.add.rectangle(0, -38, 26, 12, 0x222244).setStrokeStyle(2, 0xff00aa);
+      const visor = scene.add.rectangle(0, -36, 22, 4, 0x00ffff, 0.85);
+      scene.tweens.add({ targets: visor, alpha: { from: 0.5, to: 1 }, duration: 350, yoyo: true, repeat: -1 });
+      const ant = scene.add.rectangle(10, -46, 1.5, 8, 0xff00aa);
+      this.add([helm, visor, ant]);
     }
 
     if (isBoss) {
@@ -487,7 +518,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     const sx = this.x, sy = this.y;
     const def = TYPE_DEFS[this.type] || TYPE_DEFS.basic;
     const baseColor = def.shirtColor || 0xffeecc;
-    const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss";
+    const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss" || this.type === "ovniboss" || this.type === "kraken" || this.type === "dragon" || this.type === "netboss";
     const burst = isBoss ? 18 : 10;
     const colors = [baseColor, def.skin || 0xffeecc, 0xffd23f, 0xffffff];
     Particles.burst(this.scene, sx, sy, burst, (i, a) => {

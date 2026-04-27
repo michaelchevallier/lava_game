@@ -272,7 +272,16 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.input.on("pointermove", (p) => { this.updateGhost(p); this._updateTileHoverInfo(p); });
-    this.input.on("pointerdown", (p) => this.tryPlace(p));
+    this.input.on("pointerdown", (p) => {
+      if (p.y > this.scale.height - 110) return;
+      this.tryPlace(p);
+    });
+    this.input.on("pointerup", (p) => {
+      if (this.toolbar?._dragStartedFromToolbar && this.placementDef && p.y < this.scale.height - 110) {
+        this.tryPlace(p);
+      }
+      if (this.toolbar) this.toolbar._dragStartedFromToolbar = false;
+    });
 
     for (let r = 0; r < GRID.rows; r++) {
       const mx = leftEdgeX() - 60;
