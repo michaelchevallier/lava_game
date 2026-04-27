@@ -270,6 +270,7 @@ export class LevelScene extends Phaser.Scene {
     this.waveManager.start();
 
     this._setupPauseMenu();
+    this._showLevelIntro();
 
     this.skySunsTimer = this.time.addEvent({
       delay: 11000 + Math.random() * 4000,
@@ -944,6 +945,30 @@ export class LevelScene extends Phaser.Scene {
         });
         this.scene.stop();
       });
+    });
+  }
+
+  _showLevelIntro() {
+    if (this.level.id === "1.1") return;
+    const { width, height } = this.scale;
+    const card = this.add.container(width / 2, height / 2 - 80).setDepth(150);
+    const stripe = this.add.rectangle(0, 0, width, 110, 0x000, 0.7);
+    stripe.scaleX = 0;
+    const title = this.add.text(0, -16, "NIVEAU " + this.level.id, {
+      fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 3,
+    }).setOrigin(0.5);
+    const name = this.add.text(0, 16, this.level.name, {
+      fontFamily: "system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 5,
+    }).setOrigin(0.5);
+    const sub = this.add.text(0, 48, (this.level.waves?.length || 0) + " vagues  •  Sortie max " + (this.level.loseEscaped ?? "?"), {
+      fontFamily: "system-ui", fontSize: "13px", color: "#ffeebb",
+    }).setOrigin(0.5);
+    card.add([stripe, title, name, sub]);
+    card.setAlpha(0);
+    this.tweens.add({ targets: card, alpha: 1, duration: 250 });
+    this.tweens.add({ targets: stripe, scaleX: 1, duration: 350, ease: "Cubic.out" });
+    this.time.delayedCall(2000, () => {
+      this.tweens.add({ targets: card, alpha: 0, duration: 400, onComplete: () => card.destroy() });
     });
   }
 
