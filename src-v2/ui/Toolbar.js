@@ -3,21 +3,36 @@ import { getEquippedSkin } from "../systems/SaveSystem.js";
 import { SKINS } from "../scenes/SkinsScene.js";
 
 export const TILE_DEFS = [
-  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 5000 },
-  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 5000 },
-  { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 8000 },
-  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066, cooldownMs: 6000 },
-  { id: "fan", label: "Fan", cost: 125, color: 0xddeeff, accent: 0x666, cooldownMs: 9000 },
-  { id: "catapult", label: "Catapult", cost: 175, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 10000 },
-  { id: "frost", label: "Frost Tramp", cost: 225, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 14000 },
-  { id: "magnet", label: "Magnet Bomb", cost: 275, color: 0x66001a, accent: 0xff2222, cooldownMs: 30000 },
-  { id: "portal", label: "Portal", cost: 300, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 22000 },
-  { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000 },
-  { id: "mine", label: "Mine", cost: 100, color: 0x4a2a4a, accent: 0xff8800, cooldownMs: 12000 },
-  { id: "neon", label: "Néon", cost: 200, color: 0xff66ff, accent: 0xffaaff, cooldownMs: 14000 },
-  { id: "laser", label: "Laser", cost: 250, color: 0x66ddff, accent: 0xffffff, cooldownMs: 16000 },
-  { id: "bulle", label: "Bulle", cost: 200, color: 0x66ffdd, accent: 0xaaffee, cooldownMs: 14000 },
-  { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
+  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 5000,
+    desc: "Génère 30¢ toutes les 6s", stats: ["+30¢ / 6s", "HP 3"] },
+  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 5000,
+    desc: "Bloque les visiteurs (mur tank)", stats: ["HP 8", "Bloque la lane"] },
+  { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 8000,
+    desc: "Ralentit les visiteurs dans la zone (3×3)", stats: ["Slow 50%", "Zone 3×3", "HP 3"] },
+  { id: "lava", label: "Lava Tower", cost: 100, color: 0xff4400, accent: 0xffe066, cooldownMs: 6000,
+    desc: "Tire un projectile de lave dans la lane", stats: ["1 dmg / 1.1s", "DPS ~0.9", "HP 3"] },
+  { id: "fan", label: "Fan", cost: 125, color: 0xddeeff, accent: 0x666, cooldownMs: 9000,
+    desc: "Pousse les visiteurs en arrière", stats: ["Push -80px", "Zone 3×3", "HP 3"] },
+  { id: "catapult", label: "Catapult", cost: 175, color: 0x6b3a0a, accent: 0x9bd84a, cooldownMs: 10000,
+    desc: "Lance un boulet ballistique au-dessus des murs", stats: ["2 dmg / 2.2s", "DPS ~0.9", "Ignore Water", "HP 3"] },
+  { id: "frost", label: "Frost Tramp", cost: 225, color: 0x88c8e8, accent: 0x4a8ab8, cooldownMs: 14000,
+    desc: "Trampoline glacé : slow + dégâts", stats: ["1 dmg + slow 60%", "Zone 3×3", "HP 4"] },
+  { id: "magnet", label: "Magnet Bomb", cost: 275, color: 0x66001a, accent: 0xff2222, cooldownMs: 30000,
+    desc: "Explose après 1.5s : kill all dans 3×3", stats: ["99 dmg AOE", "Zone 3×3", "Single use"] },
+  { id: "portal", label: "Portal", cost: 300, color: 0x9a4ad8, accent: 0xff66ff, cooldownMs: 22000,
+    desc: "Téléporte le visiteur 5 cases derrière", stats: ["3 utilisations", "HP 2"] },
+  { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000,
+    desc: "Retourne les visiteurs (vers la sortie ENTRÉE)", stats: ["Charm 6s", "HP 3"] },
+  { id: "mine", label: "Mine", cost: 100, color: 0x4a2a4a, accent: 0xff8800, cooldownMs: 12000,
+    desc: "Explose au passage du visiteur", stats: ["3 dmg AOE", "Zone 1×3", "Single use"] },
+  { id: "neon", label: "Néon", cost: 200, color: 0xff66ff, accent: 0xffaaff, cooldownMs: 14000,
+    desc: "Étourdit les visiteurs en zone 3×3", stats: ["Stun 2s / 5s", "Zone 3×3", "HP 3"] },
+  { id: "laser", label: "Laser", cost: 250, color: 0x66ddff, accent: 0xffffff, cooldownMs: 16000,
+    desc: "Faisceau continu sur le 1er ennemi de la lane", stats: ["0.6 dmg / 0.25s", "DPS ~2.4", "HP 3"] },
+  { id: "bulle", label: "Bulle", cost: 200, color: 0x66ffdd, accent: 0xaaffee, cooldownMs: 14000,
+    desc: "Capture le visiteur dans une bulle (freeze 5s)", stats: ["Freeze 5s / 6s", "HP 3"] },
+  { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0,
+    desc: "Retire une tour (rembourse 50%)" },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
@@ -153,9 +168,11 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
     c.on("pointerover", () => {
       if (this.selectedId !== def.id && c._affordable) back.setStrokeStyle(2, 0xffd23f);
+      this._showTileTooltip(def, c);
     });
     c.on("pointerout", () => {
       if (this.selectedId !== def.id) back.setStrokeStyle(2, c._affordable ? 0x4a4a6a : 0x6a2222);
+      this._hideTileTooltip();
     });
     c.on("pointerdown", (pointer) => {
       if (!c._affordable) return;
@@ -248,6 +265,45 @@ export class Toolbar extends Phaser.GameObjects.Container {
 
   makeIcon(id, x, y) {
     return makeTileIcon(this.scene, id, x, y);
+  }
+
+  _showTileTooltip(def, btnContainer) {
+    this._hideTileTooltip();
+    if (!def?.desc && !def?.stats?.length) return;
+    const scene = this.scene;
+    const lines = [def.desc].filter(Boolean);
+    if (def.stats) for (const s of def.stats) lines.push("• " + s);
+    if (def.cost) lines.push("Coût : " + def.cost + "¢   •   Cooldown : " + Math.round((def.cooldownMs || 0) / 100) / 10 + "s");
+    const text = lines.join("\n");
+
+    const worldX = this.x + btnContainer.x;
+    const worldY = this.y + btnContainer.y;
+
+    const tip = scene.add.container(worldX, worldY - 70).setDepth(220);
+    const txt = scene.add.text(0, 0, text, {
+      fontFamily: "Fredoka, system-ui",
+      fontSize: "12px",
+      color: "#ffeebb",
+      align: "left",
+      lineSpacing: 3,
+    }).setOrigin(0.5, 1);
+    const w = txt.width + 18;
+    const h = txt.height + 14;
+    const bg = scene.add.rectangle(0, -h / 2, w, h, 0x000, 0.92).setStrokeStyle(2, def.accent || 0xffd23f).setOrigin(0.5, 1);
+    const arrow = scene.add.triangle(0, 4, -8, 0, 8, 0, 0, 8, 0x000, 0.92).setOrigin(0.5, 0);
+    tip.add([bg, arrow, txt]);
+    txt.setPosition(0, -h / 2 - 7);
+    txt.setOrigin(0.5);
+    tip.setAlpha(0);
+    scene.tweens.add({ targets: tip, alpha: 1, duration: 120 });
+    this._tileTooltip = tip;
+  }
+
+  _hideTileTooltip() {
+    if (this._tileTooltip) {
+      this._tileTooltip.destroy();
+      this._tileTooltip = null;
+    }
   }
 }
 

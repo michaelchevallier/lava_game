@@ -158,20 +158,27 @@ export class LevelResultScene extends Phaser.Scene {
     const btnY = 600;
     const btnGap = 220;
 
+    const goToLevel = (id) => {
+      this.scene.stop("LevelScene");
+      this.scene.start("LevelScene", { levelId: id });
+      this.scene.stop();
+    };
     if (win) {
       const next = getNextLevelId(levelId);
       if (next) {
-        buttons.push({ label: "[ N ] Niveau suivant", color: 0x4ed8a3, key: "N", action: () => { this.scene.start("LevelScene", { levelId: next }); this.scene.stop(); } });
+        buttons.push({ label: "[ N ] Niveau suivant", color: 0x4ed8a3, key: "N", action: () => goToLevel(next) });
       }
     }
-    buttons.push({ label: "[ R ] Rejouer", color: 0xffd23f, key: "R", action: () => { this.scene.start("LevelScene", { levelId }); this.scene.stop(); } });
-    buttons.push({ label: "[ M ] Menu", color: 0xddeeff, key: "M", action: () => { this.scene.start("CampaignMenuScene"); this.scene.stop(); } });
+    buttons.push({ label: "[ R ] Rejouer", color: 0x4a4a6a, key: "R", action: () => goToLevel(levelId) });
+    buttons.push({ label: "[ M ] Menu", color: 0x4a4a6a, key: "M", action: () => { this.scene.stop("LevelScene"); this.scene.start("CampaignMenuScene"); this.scene.stop(); } });
 
-    const totalW = buttons.length * (200 + 20) - 20;
-    let bx = width / 2 - totalW / 2 + 100;
+    const btnW = 220;
+    const btnGapPx = 20;
+    const totalW = buttons.length * btnW + (buttons.length - 1) * btnGapPx;
+    let bx = width / 2 - totalW / 2 + btnW / 2;
     buttons.forEach((b) => {
       makeClickable(this, {
-        x: bx, y: btnY, width: 200, height: 60,
+        x: bx, y: btnY, width: btnW, height: 64,
         radius: 8,
         fillColor: 0x222840, strokeColor: b.color, strokeWidth: 3,
         hoverFill: 0x33405a, hoverStroke: 0xffd23f,
@@ -180,7 +187,7 @@ export class LevelResultScene extends Phaser.Scene {
         onClick: b.action,
       });
       this.input.keyboard.once("keydown-" + b.key, () => { Audio.click(); b.action(); });
-      bx += 220;
+      bx += btnW + btnGapPx;
     });
   }
 
