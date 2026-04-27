@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import { getCutscene } from "../data/cutscenes.js";
 import { loadSave, saveSave } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
+import { makeClickable } from "../ui/Clickable.js";
 
 export class CutsceneScene extends Phaser.Scene {
   constructor() {
@@ -72,9 +73,62 @@ export class CutsceneScene extends Phaser.Scene {
     }).setOrigin(1, 1).setAlpha(0.8);
     this.tweens.add({ targets: skipHint, alpha: { from: 0.4, to: 0.95 }, duration: 900, yoyo: true, repeat: -1 });
 
-    this.input.keyboard.once("keydown-SPACE", () => this._advance());
-    this.input.keyboard.once("keydown-ESC", () => this._advance());
-    this.input.once("pointerdown", () => this._advance());
+    if (cs.choices && cs.choices.length) {
+      this._showChoicesAfterTyping = true;
+    } else {
+      this.input.keyboard.once("keydown-SPACE", () => this._advance());
+      this.input.keyboard.once("keydown-ESC", () => this._advance());
+      this.input.once("pointerdown", () => this._advance());
+    }
+  }
+
+  _renderChoices() {
+    const { width, height } = this.scale;
+    const cs = this.cutscene;
+    if (!cs?.choices) return;
+    const cw = 380;
+    const ch = 88;
+    const gap = 24;
+    const totalW = cs.choices.length * (cw + gap) - gap;
+    let x = (width - totalW) / 2 + cw / 2;
+    const y = height - 110;
+
+    this.add.text(width / 2, y - 70, "→ Choisis ta voie ←", {
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "28px",
+      color: "#ffd23f",
+      stroke: "#000",
+      strokeThickness: 6,
+    }).setOrigin(0.5);
+
+    for (const choice of cs.choices) {
+      const c = choice;
+      makeClickable(this, {
+        x, y, width: cw, height: ch, radius: 12,
+        fillColor: 0x000, fillAlpha: 0.7,
+        strokeColor: 0xffd23f, strokeWidth: 3,
+        hoverFill: 0x3a2a00, hoverStroke: 0xff66cc,
+        label: c.label,
+        labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
+        sub: c.desc,
+        subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ffeebb" },
+        onClick: () => this._pickChoice(c.id),
+      });
+      x += cw + gap;
+    }
+  }
+
+  _pickChoice(choiceId) {
+    if (this._advancing) return;
+    this._advancing = true;
+    const save = loadSave();
+    if (!save.narrativeChoices) save.narrativeChoices = {};
+    save.narrativeChoices[this.worldId] = choiceId;
+    if (!save.cutscenesSeen) save.cutscenesSeen = {};
+    save.cutscenesSeen[this.worldId] = true;
+    saveSave(save);
+    Audio.collect?.();
+    this._goNext();
   }
 
   _typeText(full) {
@@ -84,7 +138,11 @@ export class CutsceneScene extends Phaser.Scene {
       delay: 24,
       loop: true,
       callback: () => {
-        if (i >= full.length) { this._typeTimer.remove(); return; }
+        if (i >= full.length) {
+          this._typeTimer.remove();
+          if (this._showChoicesAfterTyping) this._renderChoices();
+          return;
+        }
         this.bodyText.setText(full.slice(0, ++i));
         if (i % 4 === 0) Audio.click?.();
       },

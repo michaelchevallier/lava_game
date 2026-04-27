@@ -64,3 +64,40 @@ export function saveEndlessRun(score, wave) {
 export function getEndlessTop() {
   return loadSave().endless?.runs ?? [];
 }
+
+export function getTickets() {
+  return loadSave().totalTickets || 0;
+}
+
+export function spendTickets(n) {
+  const save = loadSave();
+  if ((save.totalTickets || 0) < n) return false;
+  save.totalTickets -= n;
+  saveSave(save);
+  return true;
+}
+
+export function ownsSkin(skinId) {
+  const save = loadSave();
+  return !!save.skins?.[skinId];
+}
+
+export function unlockSkin(skinId) {
+  const save = loadSave();
+  if (!save.skins) save.skins = {};
+  save.skins[skinId] = Date.now();
+  saveSave(save);
+}
+
+export function getEquippedSkin(tileId) {
+  const save = loadSave();
+  return save.equipped?.[tileId] || null;
+}
+
+export function setEquippedSkin(tileId, skinId) {
+  const save = loadSave();
+  if (!save.equipped) save.equipped = {};
+  if (skinId) save.equipped[tileId] = skinId;
+  else delete save.equipped[tileId];
+  saveSave(save);
+}

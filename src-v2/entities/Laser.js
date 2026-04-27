@@ -21,10 +21,18 @@ export class Laser extends Phaser.GameObjects.Container {
     this.beamGlow = scene.add.rectangle(20, -8, 0, 12, 0x66ddff, 0.25).setOrigin(0, 0.5);
     this.add([shadow, this.beamGlow, this.beam, base, tower, top, lens, lensInner]);
     this.lens = lens;
+    this.lensInner = lensInner;
     this.setSize(44, 70);
     this.setDepth(8);
 
     scene.add.existing(this);
+
+    scene.tweens.add({
+      targets: lensInner,
+      scale: { from: 0.8, to: 1.4 },
+      alpha: { from: 0.6, to: 1 },
+      duration: 700, yoyo: true, repeat: -1, ease: "Sine.inOut",
+    });
 
     this._tick = (time, delta) => this.tick(time, delta);
     scene.events.on("update", this._tick);

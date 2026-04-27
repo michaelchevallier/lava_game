@@ -17,6 +17,8 @@ import { NeonLamp } from "../entities/NeonLamp.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Laser } from "../entities/Laser.js";
 import { Bulle } from "../entities/Bulle.js";
+import { getEquippedSkin, loadSave as loadSaveSafe } from "../systems/SaveSystem.js";
+import { SKINS } from "./SkinsScene.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
 import { Player2Cursor } from "../ui/Player2Cursor.js";
@@ -97,7 +99,8 @@ export class LevelScene extends Phaser.Scene {
     this.applyWeather();
     this.escaped = 0;
     this.killed = 0;
-    this.coins = (this.level.startCoins ?? 100) + trophyBonus();
+    this.coins = (this.level.startCoins ?? 100) + trophyBonus() + this._narrativeStartBonus();
+    this._narrativeBonusPerKill = this._narrativeKillBonus();
     this.visitors = [];
     this.projectiles = [];
     this.towers = [];
@@ -164,6 +167,10 @@ export class LevelScene extends Phaser.Scene {
       this.killText.setText("Tués : " + this.killed);
       this.lavaMeter.addKill();
       Audio.kill();
+      if (this._narrativeBonusPerKill) {
+        this.coins += this._narrativeBonusPerKill;
+        this.refreshCoinsText();
+      }
       const newly = bumpKills(1);
       if (newly && newly.length) this._popTrophies(newly);
     });
@@ -259,6 +266,10 @@ export class LevelScene extends Phaser.Scene {
         () => this.coins,
         this.level.allowedTiles,
       );
+      const save = loadSaveSafe();
+      if (save?.narrativeChoices?.[10] === "machine" && (this.level.world || 0) >= 10) {
+        this.toolbar._cooldownMul = 0.75;
+      }
     }
 
     this.input.on("pointermove", (p) => { this.updateGhost(p); this._updateTileHoverInfo(p); });
@@ -451,6 +462,65 @@ export class LevelScene extends Phaser.Scene {
         this.tweens.add({ targets: beam, alpha: { from: 0.05, to: 0.4 }, duration: 1200 + Math.random() * 800, yoyo: true, repeat: -1 });
       }
     }
+    if (world === 7) {
+      for (let i = 0; i < 80; i++) {
+        const sx = Math.random() * w;
+        const sy = Math.random() * (GRID.originY - 10);
+        const star = this.add.circle(sx, sy, Math.random() * 1.2 + 0.3, 0xffffff, 0.9);
+        this.tweens.add({ targets: star, alpha: { from: 0.1, to: 1 }, duration: 600 + Math.random() * 1400, yoyo: true, repeat: -1 });
+      }
+      const planet = this.add.circle(w - 90, 70, 30, 0x66ddff, 0.85).setStrokeStyle(2, 0xaaffff);
+      const ring = this.add.ellipse(w - 90, 70, 80, 16, 0x66ddff, 0.4).setStrokeStyle(1, 0xaaffff, 0.6);
+      this.tweens.add({ targets: planet, scale: 1.04, duration: 2000, yoyo: true, repeat: -1 });
+      const sat = this.add.circle(w - 90, 70, 4, 0xffd23f);
+      this.tweens.add({ targets: sat, angle: 360, duration: 8000, repeat: -1 });
+    }
+    if (world === 8) {
+      for (let i = 0; i < 6; i++) {
+        const fy = 30 + (i * 20) % 80;
+        const fish = this.add.triangle((i * 200 + 60) % w, fy, 0, 4, 12, 0, 0, -4, [0xffaa44, 0xff66cc, 0x66ffdd][i % 3], 0.85);
+        this.tweens.add({ targets: fish, x: fish.x + 1280, duration: 70000 + i * 10000, repeat: -1 });
+      }
+      for (let i = 0; i < 8; i++) {
+        const corX = Math.random() * w;
+        const cor = this.add.ellipse(corX, GRID.originY - 5, 20 + Math.random() * 20, 6, 0xff8888, 0.6);
+      }
+    }
+    if (world === 9) {
+      const sun = this.add.circle(w - 90, 60, 24, 0xffe89c).setStrokeStyle(2, 0xc8a060);
+      this.tweens.add({ targets: sun, scale: 1.05, duration: 1800, yoyo: true, repeat: -1 });
+      for (let i = 0; i < 3; i++) {
+        const cx = (i * 380 + 80) % w;
+        const cy = 30 + (i * 11) % 50;
+        const cloud = this.add.ellipse(cx, cy, 70, 18, 0xffffff, 0.7);
+        this.tweens.add({ targets: cloud, x: cloud.x + 1280, duration: 95000 + i * 12000, repeat: -1 });
+      }
+      for (let i = 0; i < 4; i++) {
+        const tx = i * (w / 4) + 60;
+        const flag = this.add.triangle(tx, 30, 0, 0, 14, 4, 0, 8, 0xc63a3a, 0.85);
+        this.add.rectangle(tx - 1, 38, 1.5, 16, 0x444);
+      }
+    }
+    if (world === 10) {
+      for (let i = 0; i < 50; i++) {
+        const sx = Math.random() * w;
+        const sy = Math.random() * (GRID.originY - 10);
+        const star = this.add.circle(sx, sy, 0.5 + Math.random() * 1.2, [0xff00aa, 0x00ffff, 0xffd23f][i % 3], 0.7);
+        this.tweens.add({ targets: star, alpha: { from: 0.1, to: 0.9 }, duration: 500 + Math.random() * 1500, yoyo: true, repeat: -1 });
+      }
+      for (let i = 0; i < 5; i++) {
+        const bx = (i * 280 + 60) % w;
+        const bh = 40 + Math.random() * 60;
+        const building = this.add.rectangle(bx, GRID.originY - bh / 2, 80, bh, 0x1a0a3a).setStrokeStyle(1, 0xff00aa);
+        for (let j = 0; j < 4; j++) {
+          this.add.rectangle(bx - 25 + (j % 2) * 20, GRID.originY - bh + 8 + Math.floor(j / 2) * 16, 6, 6, [0x00ffff, 0xff00aa][j % 2], 0.85);
+        }
+      }
+      for (let i = 0; i < 3; i++) {
+        const beam = this.add.rectangle(Math.random() * w, GRID.originY / 2, 3, GRID.originY, [0xff00aa, 0x00ffff][i % 2], 0.3);
+        this.tweens.add({ targets: beam, alpha: { from: 0.1, to: 0.5 }, duration: 800 + Math.random() * 600, yoyo: true, repeat: -1 });
+      }
+    }
   }
 
   applyWeather() {
@@ -511,6 +581,68 @@ export class LevelScene extends Phaser.Scene {
           yoyo: true, repeat: -1, ease: "Sine.inOut",
         });
       }
+    } else if (w === "stars") {
+      this.time.addEvent({
+        delay: 350, loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          const sx = Math.random() * this.scale.width;
+          const sy = Math.random() * (GRID.originY - 20);
+          const sh = this.add.rectangle(sx, sy, 18, 1.5, 0xffffff, 1).setDepth(45);
+          sh.angle = -25;
+          this.tweens.add({
+            targets: sh, x: sx + 200, y: sy + 100, alpha: 0,
+            duration: 700, ease: "Cubic.in",
+            onComplete: () => sh.destroy(),
+          });
+        },
+      });
+    } else if (w === "bubbles") {
+      this.time.addEvent({
+        delay: 300, loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          const bx = Math.random() * this.scale.width;
+          const by = this.scale.height + 10;
+          const r = 2 + Math.random() * 5;
+          const bub = this.add.circle(bx, by, r, 0xaaffee, 0.55).setStrokeStyle(1, 0x66ddff, 0.85).setDepth(45);
+          this.tweens.add({
+            targets: bub, y: -10, x: bx + (Math.random() - 0.5) * 60,
+            alpha: { from: 0.55, to: 0 },
+            duration: 4500 + Math.random() * 2500, ease: "Sine.out",
+            onComplete: () => bub.destroy(),
+          });
+        },
+      });
+    } else if (w === "leaves") {
+      this.time.addEvent({
+        delay: 600, loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          const lx = Math.random() * this.scale.width;
+          const c = [0xc8a060, 0xc63a3a, 0xff8800][Math.floor(Math.random() * 3)];
+          const leaf = this.add.ellipse(lx, -10, 6, 3, c, 0.85).setDepth(45);
+          this.tweens.add({
+            targets: leaf, y: this.scale.height + 20,
+            x: lx + (Math.random() - 0.5) * 200,
+            angle: 360,
+            duration: 6000 + Math.random() * 3000, ease: "Sine.in",
+            onComplete: () => leaf.destroy(),
+          });
+        },
+      });
+    } else if (w === "neon") {
+      this.time.addEvent({
+        delay: 1500, loop: true,
+        callback: () => {
+          if (!this.scene.isActive() || this.gameOver) return;
+          const flash = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, [0xff00aa, 0x00ffff][Math.floor(Math.random() * 2)], 0.12).setDepth(60);
+          this.tweens.add({
+            targets: flash, alpha: 0, duration: 220,
+            onComplete: () => flash.destroy(),
+          });
+        },
+      });
     } else if (w === "magic") {
       this.time.addEvent({
         delay: 200, loop: true,
@@ -764,6 +896,11 @@ export class LevelScene extends Phaser.Scene {
       entity = new Bulle(this, x, y);
     }
     if (!entity) return;
+    const skinId = getEquippedSkin(this.placementDef.id);
+    if (skinId) {
+      const skin = SKINS.find((s) => s.id === skinId);
+      if (skin) this._applySkin(entity, skin);
+    }
     this.towers.push(entity);
     setCell(this.gridState, cell.col, cell.row, entity);
     if (this.conveyorMode) {
@@ -805,6 +942,41 @@ export class LevelScene extends Phaser.Scene {
     this.toolbar.triggerCooldown(this.placementDef.id);
     this.toolbar.clearSelection();
     this.setPlacement(null);
+  }
+
+  _narrativeStartBonus() {
+    const save = (typeof window !== "undefined" ? loadSaveSafe() : {});
+    const choices = save?.narrativeChoices || {};
+    const w = this.level.world || 0;
+    let bonus = 0;
+    if (w === 4 && choices[4] === "save_kids") bonus += 75;
+    if (w >= 7 && choices[7] === "annihilation") bonus += 50;
+    if (this.level.id === "10.6" && choices[10] === "human") bonus += 100;
+    return bonus;
+  }
+
+  _narrativeKillBonus() {
+    const save = loadSaveSafe();
+    const choices = save?.narrativeChoices || {};
+    const w = this.level.world || 0;
+    if (w >= 7 && choices[7] === "diplomacy") return 1;
+    return 0;
+  }
+
+  _applySkin(entity, skin) {
+    if (!entity || !entity.list) return;
+    let largest = null;
+    let largestArea = 0;
+    for (const child of entity.list) {
+      if (typeof child.setFillStyle !== "function") continue;
+      const w = child.width || child.displayWidth || 0;
+      const h = child.height || child.displayHeight || 0;
+      const area = w * h;
+      if (area > largestArea) { largestArea = area; largest = child; }
+    }
+    if (largest && typeof largest.setFillStyle === "function") {
+      largest.setFillStyle(skin.color, largest.fillAlpha ?? 1);
+    }
   }
 
   refreshCoinsText() {

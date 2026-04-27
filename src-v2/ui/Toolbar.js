@@ -158,8 +158,9 @@ export class Toolbar extends Phaser.GameObjects.Container {
   triggerCooldown(id) {
     const btn = this.buttons.find((b) => b._defId === id);
     if (!btn || !btn._def.cooldownMs) return;
+    const mul = this._cooldownMul ?? 1;
     btn._cooldownStartedAt = this.scene.time.now;
-    btn._cooldownUntil = this.scene.time.now + btn._def.cooldownMs;
+    btn._cooldownUntil = this.scene.time.now + btn._def.cooldownMs * mul;
     btn._cooldownOverlay?.setVisible(true);
     btn._cooldownBar?.setVisible(true);
   }

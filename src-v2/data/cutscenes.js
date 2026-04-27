@@ -66,6 +66,10 @@ export const CUTSCENES = {
       "🎪 → 👑 → 🚪",
       "  💀 💀 💀 💀",
     ],
+    choices: [
+      { id: "save_kids", label: "🛡 Sauver les enfants", desc: "+75¢ au démarrage des niveaux W4" },
+      { id: "fire_all",  label: "🔥 Tirer dans le tas",   desc: "+1 ticket par boss W4" },
+    ],
   },
   7: {
     title: "L'Espace",
@@ -82,6 +86,10 @@ export const CUTSCENES = {
       "    ✦ ✦ ✦",
       "🚀 → 👽 → 🛰",
       "    💫 💫",
+    ],
+    choices: [
+      { id: "diplomacy",    label: "🕊 Voie pacifique",    desc: "+1 pièce par kill (cumulatif)" },
+      { id: "annihilation", label: "💥 Voie destructrice", desc: "+50¢ démarrage tous niveaux W7+" },
     ],
   },
   8: {
@@ -133,6 +141,10 @@ export const CUTSCENES = {
       "    💜 💙 💜",
       "🏙 → 🦾 → 🚪",
       "  ⚡ ⚡ ⚡",
+    ],
+    choices: [
+      { id: "human",   label: "🧠 Préserver l'humanité", desc: "+100¢ démarrage 10.6" },
+      { id: "machine", label: "🦾 Devenir machine",      desc: "Cooldowns -25%" },
     ],
   },
   6: {

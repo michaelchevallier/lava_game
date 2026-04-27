@@ -87,6 +87,21 @@ export class FairgroundHubScene extends Phaser.Scene {
       },
     });
 
+    makeClickable(this, {
+      x: width - 110, y: height - 50, width: 200, height: 50,
+      fillColor: 0x3a1a3a, strokeColor: 0xff66cc, strokeWidth: 3,
+      hoverFill: 0x5a2a5a, hoverStroke: 0xffd23f,
+      label: "🎨 Boutique Skins",
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("SkinsScene");
+          this.scene.stop();
+        });
+      },
+    });
+
     this.input.keyboard.once("keydown-ESC", () => {
       this.scene.start("CampaignMenuScene");
       this.scene.stop();

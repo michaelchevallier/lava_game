@@ -26,6 +26,17 @@ export class Bulle extends Phaser.GameObjects.Container {
 
     scene.add.existing(this);
 
+    scene.tweens.add({
+      targets: shell,
+      scale: { from: 1, to: 1.06 },
+      duration: 1100, yoyo: true, repeat: -1, ease: "Sine.inOut",
+    });
+    scene.tweens.add({
+      targets: inner,
+      alpha: { from: 0.4, to: 0.85 },
+      duration: 1300, yoyo: true, repeat: -1, ease: "Sine.inOut",
+    });
+
     this._tick = (time, delta) => this.tick(time, delta);
     scene.events.on("update", this._tick);
     this.once("destroy", () => scene.events.off("update", this._tick));
