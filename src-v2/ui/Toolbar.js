@@ -91,19 +91,19 @@ export class Toolbar extends Phaser.GameObjects.Container {
     const back = this.scene.add.rectangle(0, 0, w, h, 0x222840).setStrokeStyle(2, 0x4a4a6a);
     const icon = this.makeIcon(def.id, 0, -14);
     const label = this.scene.add.text(0, 18, def.label, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "12px",
       color: "#dde",
     }).setOrigin(0.5);
     const costLabel = this.scene.add.text(0, 34, def.cost + " ¢", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       fontStyle: "bold",
       color: "#ffd23f",
     }).setOrigin(0.5);
     const shortcutBg = this.scene.add.rectangle(w / 2 - 12, -h / 2 + 12, 18, 18, 0x000, 0.55).setStrokeStyle(1, 0xffd23f);
     const shortcutText = this.scene.add.text(w / 2 - 12, -h / 2 + 12, String(shortcut), {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       fontStyle: "bold",
       color: "#ffd23f",

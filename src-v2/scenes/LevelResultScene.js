@@ -53,8 +53,8 @@ export class LevelResultScene extends Phaser.Scene {
 
     const titleText = endless ? "FIN DU RUN" : (win ? "VICTOIRE !" : "DÉFAITE");
     const title = this.add.text(width / 2, 120, titleText, {
-      fontFamily: "system-ui",
-      fontSize: "84px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "92px",
       fontStyle: "bold",
       color: win ? "#90ff90" : "#ff8080",
       stroke: "#000",
@@ -69,14 +69,14 @@ export class LevelResultScene extends Phaser.Scene {
     });
 
     this.add.text(width / 2, 200, "Niveau " + levelId + " — " + (levelName || ""), {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "22px",
       color: "#ddd",
     }).setOrigin(0.5);
 
     if (endless) {
       this.add.text(width / 2, 280, "Vague atteinte : " + (endlessWave || 0), {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "30px",
         fontStyle: "bold",
         color: "#ffd23f",
@@ -84,14 +84,14 @@ export class LevelResultScene extends Phaser.Scene {
         strokeThickness: 5,
       }).setOrigin(0.5);
       this.add.text(width / 2, 320, "Score (kills) : " + (killed || 0), {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "26px",
         color: "#ffeebb",
       }).setOrigin(0.5);
 
       const top = getEndlessTop();
       this.add.text(width / 2, 370, "🏆 Top 5 local", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "20px",
         fontStyle: "bold",
         color: "#fff",
@@ -102,7 +102,7 @@ export class LevelResultScene extends Phaser.Scene {
         this.add.text(width / 2, 400 + i * 24,
           (medals[i] || (i + 1) + ".") + " " + r.score + " kills • Vague " + r.wave,
           {
-            fontFamily: "system-ui",
+            fontFamily: "Fredoka, system-ui",
             fontSize: "16px",
             color: isCurrent ? "#ffd23f" : "#ddd",
             fontStyle: isCurrent ? "bold" : "normal",
@@ -115,7 +115,7 @@ export class LevelResultScene extends Phaser.Scene {
       for (let i = 0; i < 3; i++) {
         const filled = i < stars;
         const star = this.add.text(starsX + (i - 1) * gap, starsY, filled ? "★" : "☆", {
-          fontFamily: "system-ui",
+          fontFamily: "Fredoka, system-ui",
           fontSize: "100px",
           color: filled ? "#ffd23f" : "#666",
           stroke: "#000",
@@ -131,7 +131,7 @@ export class LevelResultScene extends Phaser.Scene {
       }
     } else {
       this.add.text(width / 2, 320, "Trop de visiteurs ont atteint la sortie…", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "22px",
         color: "#ffa0a0",
       }).setOrigin(0.5);
@@ -143,7 +143,7 @@ export class LevelResultScene extends Phaser.Scene {
       "Pièces restantes : " + (coins || 0),
     ];
     this.add.text(width / 2, 470, stats.join("   •   "), {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "20px",
       color: "#fff",
     }).setOrigin(0.5);
@@ -170,7 +170,7 @@ export class LevelResultScene extends Phaser.Scene {
         fillColor: 0x222840, strokeColor: b.color, strokeWidth: 3,
         hoverFill: 0x33405a, hoverStroke: 0xffd23f,
         label: b.label,
-        labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 3 },
+        labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 3 },
         onClick: b.action,
       });
       this.input.keyboard.once("keydown-" + b.key, () => { Audio.click(); b.action(); });

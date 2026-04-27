@@ -31,15 +31,15 @@ export class BootScene extends Phaser.Scene {
     }
 
     const titleShadow = this.add.text(width / 2 + 4, 200 + 4, "MILAN PARK DEFENSE", {
-      fontFamily: "system-ui",
-      fontSize: "92px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "100px",
       fontStyle: "bold",
       color: "#000",
     }).setOrigin(0.5).setAlpha(0.5);
 
     const title = this.add.text(width / 2, 200, "MILAN PARK DEFENSE", {
-      fontFamily: "system-ui",
-      fontSize: "92px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "100px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
@@ -48,7 +48,7 @@ export class BootScene extends Phaser.Scene {
     this.tweens.add({ targets: title, scale: 1, duration: 600, ease: "Back.out" });
 
     this.add.text(width / 2, 290, "Tower Defense • Foire en Lave", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "26px",
       color: "#ffeebb",
       stroke: "#000",
@@ -71,7 +71,7 @@ export class BootScene extends Phaser.Scene {
       strokeColor: 0x2a8a5a, strokeWidth: 4,
       hoverFill: 0x66e8b0, hoverStroke: 0xffd23f,
       label: "▶ JOUER",
-      labelStyle: { fontFamily: "system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 4 },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 4 },
       onClick: () => {
         this.cameras.main.fadeOut(400, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -83,7 +83,7 @@ export class BootScene extends Phaser.Scene {
     this.tweens.add({ targets: playBtn, scale: { from: 1, to: 1.05 }, duration: 800, yoyo: true, repeat: -1, ease: "Sine.inOut" });
 
     this.add.text(width / 2, height - 30, "Phaser 4 • CC0 • v1.0 — Click ou ESPACE pour jouer", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       color: "#ccc",
     }).setOrigin(0.5);
@@ -110,7 +110,7 @@ export class BootScene extends Phaser.Scene {
     let vol = isNaN(saved) ? 0.5 : Math.max(0, Math.min(1, saved));
 
     this.add.text(sliderX - trackW / 2, sliderY - 18, "Volume", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "12px",
       color: "#aaa",
     });

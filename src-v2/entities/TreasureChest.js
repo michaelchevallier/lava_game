@@ -15,7 +15,7 @@ export class TreasureChest extends Phaser.GameObjects.Container {
     const band1 = scene.add.rectangle(0, 8, 46, 3, 0xffd23f);
     const band2 = scene.add.rectangle(0, -2, 46, 3, 0xffd23f);
     const lock = scene.add.rectangle(0, 4, 8, 10, 0xffd23f).setStrokeStyle(1, 0xc88a00);
-    const sparkle = scene.add.text(20, -22, "✨", { fontFamily: "system-ui", fontSize: "16px" }).setOrigin(0.5);
+    const sparkle = scene.add.text(20, -22, "✨", { fontFamily: "Fredoka, system-ui", fontSize: "16px" }).setOrigin(0.5);
 
     this.add([shadow, base, lid, band1, band2, lock, sparkle]);
     this.lid = lid;
@@ -66,7 +66,7 @@ export class TreasureChest extends Phaser.GameObjects.Container {
       });
     }
     const burst = this.scene.add.text(sx, sy - 30, "+" + this.amount + "¢", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "26px",
       fontStyle: "bold",
       color: "#ffd23f",

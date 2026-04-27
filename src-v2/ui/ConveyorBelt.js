@@ -40,7 +40,7 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
     const lblBg = scene.add.rectangle(beltX, beltY - SLOT_H / 2 - 18, 130, 22, 0x6b3a0a, 0.95).setStrokeStyle(1, 0xffd23f).setOrigin(0, 0.5);
     lblBg.setDepth(49);
     const lbl = scene.add.text(beltX + 8, beltY - SLOT_H / 2 - 18, "🎡 Tapis Carnaval", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       fontStyle: "bold",
       color: "#ffd23f",
@@ -93,7 +93,7 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
     const icon = makeTileIcon(this.scene, def.id, 0, -8);
     icon.setScale(0.85);
     const label = this.scene.add.text(0, 22, def.label, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "10px",
       color: "#dde",
     }).setOrigin(0.5);

@@ -59,15 +59,15 @@ export class CampaignMenuScene extends Phaser.Scene {
     });
 
     const titleShadow = this.add.text(width / 2 + 3, 50 + 3, "MILAN PARK DEFENSE", {
-      fontFamily: "system-ui",
-      fontSize: "56px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "62px",
       fontStyle: "bold",
       color: "#000",
     }).setOrigin(0.5).setAlpha(0.5);
 
     const title = this.add.text(width / 2, 50, "MILAN PARK DEFENSE", {
-      fontFamily: "system-ui",
-      fontSize: "56px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "62px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
@@ -80,7 +80,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     const starsBox = this.add.container(width - 110, 50);
     const starsBg = this.add.rectangle(0, 0, 200, 50, 0x000, 0.5).setStrokeStyle(2, 0xffd23f);
     const starsLabel = this.add.text(0, 0, "★ " + total + " / " + (totalLevels() * 3), {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "24px",
       fontStyle: "bold",
       color: "#ffd23f",
@@ -119,9 +119,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       hoverStroke: 0xffd23f,
       enabled: unlocked,
       label: (unlocked ? "⚔️ ARÈNE BOSS" : "🔒 ARÈNE BOSS") + (result ? "  ✅" : ""),
-      labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: unlocked ? "#ff8888" : "#666", stroke: "#000", strokeThickness: 4 },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: unlocked ? "#ff8888" : "#666", stroke: "#000", strokeThickness: 4 },
       sub: unlocked ? "3 boss en série — 0 erreur" : "Termine 5.6",
-      subStyle: { fontFamily: "system-ui", fontSize: "12px", color: unlocked ? "#ffeebb" : "#777" },
+      subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: unlocked ? "#ffeebb" : "#777" },
       onClick: () => {
         this.cameras.main.fadeOut(300, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -139,7 +139,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeColor: 0x88aaff,
       hoverFill: 0x1a3a6a,
       label: "📊 Stats",
-      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#88ccff" },
       onClick: () => {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -169,9 +169,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeColor: played ? 0x66ff88 : 0xff66cc,
       hoverFill: played ? 0x2a5a2a : 0x5a2a5a,
       label: lblText,
-      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: played ? "#aaffaa" : "#ffd23f" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: played ? "#aaffaa" : "#ffd23f" },
       sub: played ? "Terminé — reviens demain" : "1 essai par jour — niveau aléatoire",
-      subStyle: { fontFamily: "system-ui", fontSize: "11px", color: played ? "#88dd88" : "#ffaaee" },
+      subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: played ? "#88dd88" : "#ffaaee" },
       onClick: () => {
         if (played) {
           this.tweens.add({ targets: box, x: { from: x - 6, to: x + 6 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => { box.x = x; } });
@@ -199,9 +199,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeColor: 0xff66cc, strokeWidth: 3,
       hoverFill: 0x2a0a2a, hoverStroke: 0xffd23f,
       label: "🎡 CARNAVAL",
-      labelStyle: { fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
       sub: "Conveyor (" + completed + "/5)",
-      subStyle: { fontFamily: "system-ui", fontSize: "12px", color: "#ffeebb" },
+      subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ffeebb" },
       onClick: () => {
         const next = CARNIVAL_LEVELS.find((id) => !isCompleted(id)) || CARNIVAL_LEVELS[0];
         this.cameras.main.fadeOut(300, 0, 0, 0);
@@ -223,9 +223,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeColor: 0xffaa00,
       hoverFill: 0x331a00,
       label: "🏆 " + count + " / " + total,
-      labelStyle: { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#ffd23f" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#ffd23f" },
       sub: bonus > 0 ? "+" + bonus + "¢ start" : "Galerie",
-      subStyle: { fontFamily: "system-ui", fontSize: "11px", color: "#90ff90" },
+      subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#90ff90" },
       onClick: () => {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -253,9 +253,9 @@ export class CampaignMenuScene extends Phaser.Scene {
       strokeColor: 0xff4400, strokeWidth: 3,
       hoverFill: 0x2a0a00, hoverStroke: 0xffd23f,
       label: "🌋 LA COULÉE",
-      labelStyle: { fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 },
       sub: subText,
-      subStyle: { fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold", color: "#ffeebb" },
+      subStyle: { fontFamily: "Fredoka, system-ui", fontSize: "12px", fontStyle: "bold", color: "#ffeebb" },
       onClick: () => {
         this.cameras.main.fadeOut(300, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -282,7 +282,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     const text = lines.join("\n");
     const tip = this.add.container(x, y).setDepth(220);
     const txt = this.add.text(0, -8, text, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "11px",
       color: "#ffeebb",
       align: "center",
@@ -324,20 +324,20 @@ export class CampaignMenuScene extends Phaser.Scene {
     this.tweens.add({ targets: colorIndic, alpha: { from: 0.7, to: 1 }, duration: 1200, yoyo: true, repeat: -1 });
 
     this.add.text(labelX, y + cellH / 2 - 14, "Monde " + world.id, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       fontStyle: "bold",
       color: "#fff",
     });
     this.add.text(labelX, y + cellH / 2 + 8, theme.name, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "14px",
       color: "#ffeebb",
     });
 
     if (world.comingSoon) {
       this.add.text(width / 2, y + cellH / 2 + 3, "À venir", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "20px",
         fontStyle: "bold",
         color: "#888",
@@ -347,7 +347,7 @@ export class CampaignMenuScene extends Phaser.Scene {
 
     if (!isWorldUnlocked(world)) {
       this.add.text(width / 2, y + cellH / 2 + 3, "🔒 Termine " + world.requires + " pour débloquer", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "16px",
         color: "#aaa",
       }).setOrigin(0.5);
@@ -376,7 +376,7 @@ export class CampaignMenuScene extends Phaser.Scene {
 
       const titleColor = unlocked ? "#fff" : "#666";
       this.add.text(x + cellW / 2, cellY - 18, unlocked ? levelId : "🔒", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "16px",
         fontStyle: "bold",
         color: titleColor,
@@ -386,13 +386,13 @@ export class CampaignMenuScene extends Phaser.Scene {
 
       if (unlocked) {
         this.add.text(x + cellW / 2, cellY - 2, level.name, {
-          fontFamily: "system-ui",
+          fontFamily: "Fredoka, system-ui",
           fontSize: "10px",
           color: "#ddd",
         }).setOrigin(0.5);
         const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
         this.add.text(x + cellW / 2, cellY + 18, starText, {
-          fontFamily: "system-ui",
+          fontFamily: "Fredoka, system-ui",
           fontSize: "14px",
           color: stars > 0 ? "#ffd23f" : "#666",
           stroke: "#000",

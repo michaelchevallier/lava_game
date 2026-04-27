@@ -388,7 +388,7 @@ export class Visitor extends Phaser.GameObjects.Container {
         gen.destroy();
         // Visual pop
         const pop = this.scene.add.text(gen.x, gen.y - 20, "-50c", {
-          fontFamily: "system-ui", fontSize: "16px", color: "#ff4444",
+          fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ff4444",
         }).setOrigin(0.5).setDepth(30);
         this.scene.tweens.add({
           targets: pop, y: pop.y - 30, alpha: 0, duration: 800,
@@ -430,7 +430,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     if (this._dying) return;
     if (source && this.immune.includes(source)) {
       const ping = this.scene.add.text(this.x, this.y - 50, "résiste", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "14px",
         color: "#aaa",
       }).setOrigin(0.5).setDepth(30);
@@ -514,7 +514,7 @@ export class Visitor extends Phaser.GameObjects.Container {
       });
     }
     const popup = this.scene.add.text(sx, sy - 20, isBoss ? "BOSS DOWN!" : "+1", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: isBoss ? "22px" : "16px",
       fontStyle: "bold",
       color: isBoss ? "#ffd23f" : "#90ff90",

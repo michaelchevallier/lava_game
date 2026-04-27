@@ -47,7 +47,7 @@ export class LavaMeter {
     this._glowGfx = s.add.graphics().setDepth(depth - 1);
 
     this._labelTop = s.add.text(this.x + this.width / 2, this.y - 14, "LAVA", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "11px",
       fontStyle: "bold",
       color: "#ffd23f",
@@ -56,7 +56,7 @@ export class LavaMeter {
     }).setOrigin(0.5, 1).setDepth(depth + 3);
 
     this._labelPct = s.add.text(this.x + this.width / 2, this.y + this.height + 6, "0%", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "11px",
       fontStyle: "bold",
       color: "#ffffff",
@@ -65,7 +65,7 @@ export class LavaMeter {
     }).setOrigin(0.5, 0).setDepth(depth + 3);
 
     this._safeLabel = s.add.text(this.x + this.width / 2, this.y - 28, "+25%", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "10px",
       fontStyle: "bold",
       color: "#90ff90",

@@ -42,13 +42,13 @@ export function makeClickable(scene, opts) {
   }
 
   if (label) {
-    const defaultLabelStyle = { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 3 };
+    const defaultLabelStyle = { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 3 };
     const lblY = sub ? -10 : 0;
     const lblText = scene.add.text(0, lblY, label, labelStyle ?? defaultLabelStyle).setOrigin(0.5);
     container.add(lblText);
   }
   if (sub) {
-    const defaultSubStyle = { fontFamily: "system-ui", fontSize: "11px", color: "#ddd" };
+    const defaultSubStyle = { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#ddd" };
     const subText = scene.add.text(0, 12, sub, subStyle ?? defaultSubStyle).setOrigin(0.5);
     container.add(subText);
   }

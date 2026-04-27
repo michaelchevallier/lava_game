@@ -30,7 +30,7 @@ export class Tutorial {
 
     const bg = this.scene.add.rectangle(width / 2, y, 700, 80, 0x1a1f30, 0.92).setStrokeStyle(2, 0xffd23f);
     const txt = this.scene.add.text(width / 2, y - 12, step.text, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       fontStyle: "bold",
       color: "#fff",
@@ -38,7 +38,7 @@ export class Tutorial {
       wordWrap: { width: 660 },
     }).setOrigin(0.5);
     const hint = this.scene.add.text(width / 2, y + 22, step.hint || "Clique pour continuer", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       color: "#ffd23f",
     }).setOrigin(0.5);
@@ -50,7 +50,7 @@ export class Tutorial {
     let arrow = null;
     if (step.arrowAt) {
       arrow = this.scene.add.text(step.arrowAt.x, step.arrowAt.y, "▼", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "40px",
         color: "#ffd23f",
         stroke: "#000",

@@ -105,7 +105,7 @@ export class LevelScene extends Phaser.Scene {
     this.lavaMeter = new LavaMeter(this, { x: 30, y: 130, height: 450 });
 
     this.coinsText = this.add.text(20, 16, "¢ " + this.coins, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "28px",
       fontStyle: "bold",
       color: "#ffd23f",
@@ -113,14 +113,14 @@ export class LevelScene extends Phaser.Scene {
       strokeThickness: 5,
     });
     this.scoreText = this.add.text(20, 56, "Échappés : 0", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       color: "#ffaaaa",
       stroke: "#000",
       strokeThickness: 4,
     });
     this.killText = this.add.text(20, 82, "Tués : 0", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       color: "#90ff90",
       stroke: "#000",
@@ -128,7 +128,7 @@ export class LevelScene extends Phaser.Scene {
     });
     this.tickets = 0;
     this.ticketsText = this.add.text(20, 108, "🎫 0", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       fontStyle: "bold",
       color: "#ff66cc",
@@ -136,7 +136,7 @@ export class LevelScene extends Phaser.Scene {
       strokeThickness: 4,
     });
     this.levelTitleText = this.add.text(width / 2, 16, "Niveau " + this.level.id + " — " + this.level.name, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "20px",
       fontStyle: "bold",
       color: "#fff",
@@ -144,7 +144,7 @@ export class LevelScene extends Phaser.Scene {
       strokeThickness: 4,
     }).setOrigin(0.5, 0);
     this.waveStatusText = this.add.text(width / 2, 44, "Préparation…", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "14px",
       color: "#ffd23f",
     }).setOrigin(0.5, 0);
@@ -535,7 +535,7 @@ export class LevelScene extends Phaser.Scene {
     stripe.scaleX = 0;
     this.tweens.add({ targets: stripe, scaleX: 1, duration: 250, ease: "Cubic.out" });
     const t = this.add.text(w / 2, 200, text, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "56px",
       fontStyle: "bold",
       color,
@@ -567,7 +567,7 @@ export class LevelScene extends Phaser.Scene {
 
   showDamageNumber(x, y, dmg, color = "#ffeebb") {
     const d = this.add.text(x, y, "-" + dmg, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "16px",
       fontStyle: "bold",
       color,
@@ -590,14 +590,14 @@ export class LevelScene extends Phaser.Scene {
       this.add.rectangle(right + 40, y, 50, 80, 0x4a4a4a).setStrokeStyle(3, 0x222);
     }
     this.add.text(left - 40, GRID.originY - 20, "SORTIE", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "14px",
       color: "#fff",
       stroke: "#000",
       strokeThickness: 3,
     }).setOrigin(0.5);
     this.add.text(right + 40, GRID.originY - 20, "ENTRÉE", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "14px",
       color: "#fff",
       stroke: "#000",
@@ -624,7 +624,7 @@ export class LevelScene extends Phaser.Scene {
     if (typeof hp === "number") lines.push("HP : " + Math.ceil(hp));
     lines.push("Pelle : " + Math.floor(({ LavaTower: 50, CoinGenerator: 25, WaterBlock: 25, Fan: 62, MagnetBomb: 137, Catapult: 87, FrostTramp: 112, Portal: 150, Tamer: 200, CottonCandy: 37, Mine: 50, NeonLamp: 100 }[tile.constructor.name] || 0)) + "¢");
     const tip = this.add.container(tile.x, tile.y - 60).setDepth(120);
-    const txt = this.add.text(0, 0, lines.join("\n"), { fontFamily: "system-ui", fontSize: "11px", color: "#ffeebb", align: "center", stroke: "#000", strokeThickness: 3 }).setOrigin(0.5);
+    const txt = this.add.text(0, 0, lines.join("\n"), { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#ffeebb", align: "center", stroke: "#000", strokeThickness: 3 }).setOrigin(0.5);
     const w = txt.width + 14;
     const h = txt.height + 8;
     const bg = this.add.rectangle(0, 0, w, h, 0x000, 0.8).setStrokeStyle(1, 0xffd23f);
@@ -813,7 +813,7 @@ export class LevelScene extends Phaser.Scene {
     this.refreshCoinsText();
     if (refund > 0) {
       const ping = this.add.text(t.x, t.y - 30, "+" + refund + "¢", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "18px",
         fontStyle: "bold",
         color: "#ffd23f",
@@ -955,13 +955,13 @@ export class LevelScene extends Phaser.Scene {
     const stripe = this.add.rectangle(0, 0, width, 110, 0x000, 0.7);
     stripe.scaleX = 0;
     const title = this.add.text(0, -16, "NIVEAU " + this.level.id, {
-      fontFamily: "system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 3,
+      fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 3,
     }).setOrigin(0.5);
     const name = this.add.text(0, 16, this.level.name, {
-      fontFamily: "system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 5,
+      fontFamily: "Fredoka, system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 5,
     }).setOrigin(0.5);
     const sub = this.add.text(0, 48, (this.level.waves?.length || 0) + " vagues  •  Sortie max " + (this.level.loseEscaped ?? "?"), {
-      fontFamily: "system-ui", fontSize: "13px", color: "#ffeebb",
+      fontFamily: "Fredoka, system-ui", fontSize: "13px", color: "#ffeebb",
     }).setOrigin(0.5);
     card.add([stripe, title, name, sub]);
     card.setAlpha(0);
@@ -997,7 +997,7 @@ export class LevelScene extends Phaser.Scene {
     const { width } = this.scale;
     const btn = this.add.container(width - 40, 30).setDepth(60);
     const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0xffd23f);
-    const t = this.add.text(0, 0, "⏸ P", { fontFamily: "system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" }).setOrigin(0.5);
+    const t = this.add.text(0, 0, "⏸ P", { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" }).setOrigin(0.5);
     btn.add([r, t]);
     btn.setSize(50, 36);
     btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
@@ -1015,7 +1015,7 @@ export class LevelScene extends Phaser.Scene {
 
     const btn = this.add.container(width - 100, 30).setDepth(60);
     const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0x88ccff);
-    const t = this.add.text(0, 0, muted ? "🔇" : "🔊", { fontFamily: "system-ui", fontSize: "16px" }).setOrigin(0.5);
+    const t = this.add.text(0, 0, muted ? "🔇" : "🔊", { fontFamily: "Fredoka, system-ui", fontSize: "16px" }).setOrigin(0.5);
     btn.add([r, t]);
     btn.setSize(50, 36);
     btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
@@ -1052,7 +1052,7 @@ export class LevelScene extends Phaser.Scene {
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.65).setDepth(200).setInteractive();
     const card = this.add.container(width / 2, height / 2).setDepth(201);
     const bg = this.add.rectangle(0, 0, 360, 280, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
-    const title = this.add.text(0, -110, "⏸  EN PAUSE", { fontFamily: "system-ui", fontSize: "28px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5);
+    const title = this.add.text(0, -110, "⏸  EN PAUSE", { fontFamily: "Fredoka, system-ui", fontSize: "28px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5);
     card.add([bg, title]);
 
     const items = [
@@ -1079,7 +1079,7 @@ export class LevelScene extends Phaser.Scene {
       const y = -40 + i * 56;
       const btn = this.add.container(0, y);
       const r = this.add.rectangle(0, 0, 280, 44, 0x222840).setStrokeStyle(2, it.color);
-      const lbl = this.add.text(0, 0, it.label, { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff" }).setOrigin(0.5);
+      const lbl = this.add.text(0, 0, it.label, { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff" }).setOrigin(0.5);
       btn.add([r, lbl]);
       btn.setSize(280, 44);
       btn.setInteractive(new Phaser.Geom.Rectangle(-140, -22, 280, 44), Phaser.Geom.Rectangle.Contains);
@@ -1089,7 +1089,7 @@ export class LevelScene extends Phaser.Scene {
       card.add(btn);
     });
 
-    const hint = this.add.text(0, 110, "[P] pour reprendre", { fontFamily: "system-ui", fontSize: "12px", color: "#aaa" }).setOrigin(0.5);
+    const hint = this.add.text(0, 110, "[P] pour reprendre", { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#aaa" }).setOrigin(0.5);
     card.add(hint);
 
     this._pauseMenu = { overlay, card };
@@ -1115,9 +1115,9 @@ export class LevelScene extends Phaser.Scene {
         const y = baseY + i * 76;
         const card = this.add.container(x + 320, y).setDepth(120);
         const bg = this.add.rectangle(0, 0, 300, 64, 0x2a1a3a, 0.95).setStrokeStyle(2, 0xffd23f).setOrigin(1, 0.5);
-        const emoji = this.add.text(-280, 0, t.emoji, { fontFamily: "system-ui", fontSize: "32px" }).setOrigin(0.5);
-        const title = this.add.text(-260, -10, "🏆 " + t.name, { fontFamily: "system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" });
-        const sub = this.add.text(-260, 8, "+5¢ start permanent", { fontFamily: "system-ui", fontSize: "11px", color: "#90ff90" });
+        const emoji = this.add.text(-280, 0, t.emoji, { fontFamily: "Fredoka, system-ui", fontSize: "32px" }).setOrigin(0.5);
+        const title = this.add.text(-260, -10, "🏆 " + t.name, { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" });
+        const sub = this.add.text(-260, 8, "+5¢ start permanent", { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#90ff90" });
         card.add([bg, emoji, title, sub]);
         Audio.win?.();
         this.tweens.add({ targets: card, x: x, duration: 400, ease: "Back.out" });

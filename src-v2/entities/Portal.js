@@ -43,7 +43,7 @@ export class Portal extends Phaser.GameObjects.Container {
     });
 
     this.usesText = scene.add.text(0, -36, this.maxUses + "/" + this.maxUses, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "12px",
       fontStyle: "bold",
       color: "#fff",

@@ -20,8 +20,8 @@ export class StatsScene extends Phaser.Scene {
     bg.fillRect(0, 0, width, height);
 
     this.add.text(width / 2, 50, "📊 STATISTIQUES", {
-      fontFamily: "system-ui",
-      fontSize: "44px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "52px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
@@ -64,18 +64,18 @@ export class StatsScene extends Phaser.Scene {
       card.strokeRoundedRect(x, y, cellW, cellH, 10);
 
       this.add.text(x + 30, y + cellH / 2, s.icon, {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "44px",
       }).setOrigin(0.5);
 
       this.add.text(x + 80, y + 18, s.label, {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "14px",
         color: "#bbcce0",
       });
 
       this.add.text(x + 80, y + 42, String(s.value), {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "26px",
         fontStyle: "bold",
         color: s.color,
@@ -89,7 +89,7 @@ export class StatsScene extends Phaser.Scene {
       fillColor: 0x222840, strokeColor: 0xffd23f,
       hoverFill: 0x33405a,
       label: "← Retour",
-      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
       onClick: () => {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {

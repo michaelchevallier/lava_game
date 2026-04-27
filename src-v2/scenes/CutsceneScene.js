@@ -34,8 +34,8 @@ export class CutsceneScene extends Phaser.Scene {
     }
 
     this.add.text(width / 2, 80, cs.title, {
-      fontFamily: "system-ui",
-      fontSize: "52px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "60px",
       fontStyle: "bold",
       color: cs.color,
       stroke: "#000",
@@ -53,7 +53,7 @@ export class CutsceneScene extends Phaser.Scene {
 
     const fullText = cs.panels.join("\n\n");
     this.bodyText = this.add.text(width / 2, height - 220, "", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "22px",
       color: "#fff",
       stroke: "#000",
@@ -66,7 +66,7 @@ export class CutsceneScene extends Phaser.Scene {
     this._typeText(fullText);
 
     const skipHint = this.add.text(width - 30, height - 30, "[Espace / Clic] continuer", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "13px",
       color: "#ffeebb",
     }).setOrigin(1, 1).setAlpha(0.8);

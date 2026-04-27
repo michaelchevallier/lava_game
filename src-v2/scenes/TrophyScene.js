@@ -22,8 +22,8 @@ export class TrophyScene extends Phaser.Scene {
     }
 
     this.add.text(width / 2, 50, "🏆 GALERIE DES TROPHÉES", {
-      fontFamily: "system-ui",
-      fontSize: "44px",
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "52px",
       fontStyle: "bold",
       color: "#ffd23f",
       stroke: "#000",
@@ -33,7 +33,7 @@ export class TrophyScene extends Phaser.Scene {
     const total = unlockedCount();
     const bonus = trophyBonus();
     this.add.text(width / 2, 100, total + " / " + TROPHIES.length + " débloqués • bonus permanent +" + bonus + "¢ start", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       color: "#ffeebb",
     }).setOrigin(0.5);
@@ -58,7 +58,7 @@ export class TrophyScene extends Phaser.Scene {
       fillColor: 0x222840, strokeColor: 0xffd23f,
       hoverFill: 0x33405a,
       label: "← Retour",
-      labelStyle: { fontFamily: "system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
       onClick: () => {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
@@ -82,13 +82,13 @@ export class TrophyScene extends Phaser.Scene {
     card.strokeRoundedRect(x, y, w, h, 8);
 
     this.add.text(x + 20, y + 18, unlocked ? t.emoji : "🔒", {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "44px",
       color: "#fff",
     });
 
     this.add.text(x + 80, y + 14, t.name, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "16px",
       fontStyle: "bold",
       color: unlocked ? "#ffd23f" : "#888",
@@ -96,7 +96,7 @@ export class TrophyScene extends Phaser.Scene {
     });
 
     this.add.text(x + 80, y + 42, t.desc, {
-      fontFamily: "system-ui",
+      fontFamily: "Fredoka, system-ui",
       fontSize: "12px",
       color: unlocked ? "#ddd" : "#666",
       wordWrap: { width: w - 90 },
@@ -104,7 +104,7 @@ export class TrophyScene extends Phaser.Scene {
 
     if (unlocked) {
       this.add.text(x + 80, y + 80, "+5¢ start permanent", {
-        fontFamily: "system-ui",
+        fontFamily: "Fredoka, system-ui",
         fontSize: "11px",
         fontStyle: "bold",
         color: "#90ff90",
