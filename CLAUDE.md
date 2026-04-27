@@ -2,147 +2,156 @@
 
 ## Projet
 
-Jeu 2D Tower Defense « Park Defense — Foire en Lave » pour Milan. **Phaser 4 + Vite + JS vanilla**, 100% client-side, inspiré Plants vs Zombies.
-Live legacy KAPLAY (archivé) : https://michaelchevallier.github.io/lava_game/ (branche `main` jusqu'à Sprint 12)
-Live nouveau (à venir) : URL Pages après bascule prod
+Jeu 2D Tower Defense « Milan Park Defense — Foire en Lave » pour Milan. **Phaser 4 + Vite + JS vanilla**, 100% client-side, inspiré Plants vs Zombies. Bundle ~395 KB gz.
+
+Live actuel :
+- `/` = legacy KAPLAY archivé (branche `main`)
+- `/v2/` = Park Defense (branche `phaser-pivot`, encore active dev)
+
 Repo : https://github.com/michaelchevallier/lava_game
-Branche dev active : `phaser-pivot`
 
-## Pivot du 2026-04-26
+## État du jeu
 
-L'ancien jeu KAPLAY (sandbox tile-placement + 14 combos cachés + 5 weather + course visiteurs) a été remplacé par un vrai Tower Defense campagne-driven. Le pivot a été décidé après diagnostic (« le jeu manque plus d'objectifs que de mécaniques », sprites pas beaux, libs présentation OK à changer).
+Le pivot Phaser de 2026-04-26 est devenu un jeu complet. Roadmap initiale 100% bouclée + extras.
 
-- **Snapshot KAPLAY pré-pivot** : tag `v1.0-kaplay-final` (commit `9ea6db3`). Restaurer via `git checkout v1.0-kaplay-final`.
-- **Plan complet du pivot** : `/Users/mike/.claude/plans/travaille-sur-va-dans-radiant-spindle.md`
-- **Branche actuelle** : `phaser-pivot`. À mergrer dans `main` au Sprint 12.
+### Contenu
 
-## Le jeu
+- **42+ niveaux** : 36 campagne (6 mondes × 6) + 5 carnaval + arène boss + endless + daily
+- **6 mondes** : Plein Été, Crépuscule, Tempête, Volcan, Apocalypse, Foire Magique
+- **13 tiles** : coin, water, cottoncandy, lava, fan, catapult, frost, magnet, portal, tamer, mine, neon, shovel
+- **17+ types de visiteurs** dont 3 vrais boss multi-phases (magicboss summon, lavaqueen lava-trail, carnivalboss 3-phases)
+- **17 trophées** + galerie + bonus +5¢ start permanent par trophée
+- **Stats screen** complet (kills, étoiles, tickets, streak daily, record endless, etc.)
+- **Mode Carnaval** (5 niveaux conveyor belt sans économie)
+- **Mode Arène des Boss** (3 vagues, 3 boss back-to-back)
+- **Défi du Jour** (seed-by-date, streak, 1 essai/jour)
+- **Cutscenes ASCII** narratives avant chaque monde
+- **5 mini-jeux Foire** : chamboule-tout, tir au pigeon, roue de la fortune, course de crêpes, bumper cars
+- **Coop 2P split-clavier** : curseur P2 cyan aux flèches + Enter
+- **Treasure chests** : apparaissent aléatoirement pendant le gameplay (+75¢)
 
-5 lanes horizontales, visiteurs (= zombies PvZ) entrent par la droite et marchent vers la gauche pour atteindre la sortie. Le joueur place des **tiles défensives** (= plants) dans les cellules vides pour les transformer en squelettes / ralentir / repousser. Économie en pièces. Niveau gagné si tous les visiteurs sont éliminés ; perdu si trop atteignent la sortie.
+### UX / contrôles
 
-**30 niveaux campagne** prévus (5 mondes × 6 niveaux). Loop 3-5 min par niveau, 3 étoiles selon perf.
+- **Souris + clavier** : 1-9 / 0 / Q / W / E pour sélectionner les tiles
+- **Coop P2** : flèches pour curseur + Enter pour poser
+- **Pause** : P (et ESC si pas de tile sélectionnée)
+- **Restart rapide** : Shift+R
+- **Mute** : bouton 🔊 HUD top-right (persisté en save)
+- **Auto-pause** quand l'onglet perd le focus
 
-### Mapping tiles (8 prévus, 1 livré)
+### Visuel
 
-| Tile | Coût | Rôle | Status |
-|---|---|---|---|
-| **Lava Tower** (Peashooter) | 100 | tire 1 dmg / 1.5s | ✅ Sprint 1b |
-| **Coin Generator** (Sunflower) | 50 | génère 25 coins / 8s | Sprint 3 |
-| **Water Block** (Wall-nut) | 50 | tank 8 HP, bloque | Sprint 4 |
-| **Magnet Bomb** (Cherry-bomb) | 150 | AOE 3×3 explosion 1.5s | Sprint 4 |
-| **Fan** (Blover) | 100 | push-back lane | Sprint 4 |
-| **Frost Trampoline** (Snow Pea) | 175 | slow + dmg | Sprint 4 |
-| **Portal** (Squash) | 175 | téléporte 3 cases derrière | Sprint 4 |
-| **Catapult** (Cabbage-pult) | 125 | ballistique, ignore obstacles | Sprint 4 |
+- **Web fonts** : Bangers (titres) + Fredoka (corps) via Google Fonts
+- **Composant Clickable** unifié (ui/Clickable.js) pour tous les boutons
+- **Particle pool** avec cap 200 actifs (perf stable sur kill burst massif)
+- **Theme par monde** (sky/ground/lane gradients + weather + sky decor)
+- **Kill VFX premium** : burst coloré par type, ring or pour boss, popup +1/BOSS DOWN
+- **Range indicator** au survol pendant placement (lane / cercle / 3×3 selon tile)
+- **Tooltip** au survol des tours posées (nom + HP + remboursement pelle)
+- **Briefing niveau** au démarrage (sauf 1.1 qui a son tutoriel)
+- **Wave banner** avec stripe noire qui se déploie + 20 particules
 
-### Visiteurs (7 prévus, 1 livré)
-
-Basique 1HP, VIP Casque 3HP, Coin Thief, Skeleton (immune Lava), Volant, Pousseur, Boss Goret.
-
-## Architecture
+### Architecture
 
 ```
 src-v2/
-  main.js                  Phaser game config + scenes register
+  main.js                       Phaser game config + scenes register + debug helpers
   scenes/
-    BootScene.js           splash 2s puis scene.start("LevelScene")
-    LevelScene.js          gameplay : grille, lanes, spawn, placement
+    BootScene.js                Splash + play button
+    CampaignMenuScene.js        Menu campagne (worlds, modes, daily, foire)
+    LevelScene.js               Gameplay principal
+    LevelResultScene.js         Écran résultat + stars
+    TrophyScene.js              Galerie trophées
+    StatsScene.js               Stats globales
+    CutsceneScene.js            Intros narratives ASCII
+    FairgroundHubScene.js       Hub mini-jeux foire
+    FairgroundScene.js          5 mini-jeux (single file, switch sur gameType)
   systems/
-    Grid.js                grille 5×12 cellSize 90, cellToPixel/pixelToCell/state/isEmpty/setCell
+    Grid.js                     Grille 5×12, conversion px↔cell
+    WaveManager.js              Spawn waves + endless exponentiel
+    Audio.js                    Web Audio SFX procéduraux
+    MusicManager.js             3 tracks loopées (menu/calm/intense)
+    SaveSystem.js               localStorage parkdef:save
+    Theme.js                    6 thèmes mondes
+    LavaMeter.js                Barre lave gauche
+    Trophies.js                 17 trophées + checkTrophies
+    Daily.js                    Défi du Jour seed-by-date
+    Particles.js                Pool avec cap 200 (perf)
+    JuiceFX.js                  Hitstop + screen shake
+    Flash.js                    Color flash universel
   entities/
-    Visitor.js             Container HP/speed, marche →gauche, takeDamage, kill, events
-    LavaTower.js           Container, ciblage nearest in lane, fireRate, fire()
-    Projectile.js          Container boule lave, vélocité X+, hit() applique damage
+    Visitor.js                  17 types, behaviors, anims, kill VFX
+    LavaTower.js / LavaProjectile.js
+    CoinGenerator.js / Sun.js
+    WaterBlock.js / Fan.js / MagnetBomb.js / Catapult.js
+    FrostTramp.js / Portal.js / Tamer.js / CottonCandy.js
+    Mine.js / NeonLamp.js
+    LawnMower.js                Filet de sécurité PvZ
+    Projectile.js
+    TreasureChest.js
   ui/
-    Toolbar.js             bottom 100px, boutons tile, sélection visible (border or)
-public/
-  sw.js                    kill-switch SW (unregister + clear caches), legacy purge
-index.html                 désinstalle SW + caches AVANT charger /src-v2/main.js
+    Toolbar.js                  Bottom toolbar (13 tiles + makeIcon helper)
+    ConveyorBelt.js             Tapis carnaval
+    Clickable.js                Composant unifié makeClickable
+    Player2Cursor.js            Curseur P2 coop
+    Tutorial.js                 Tuto niveau 1.1
+  data/
+    levels/                     ~44 JSONs (world1-1 à world6-6, carnival1-5, bossarena, endless, index)
+    cutscenes.js                6 cutscenes (1 par monde)
 ```
-
-**Legacy KAPLAY** (`src/`, 65 fichiers, 17 800 lignes) reste dans le repo pour référence jusqu'au Sprint 12, mais n'est plus chargé. Sera supprimé à la bascule prod.
 
 ## Conventions
 
-- **Commits atomiques** : `feat(pivot):`, `feat(combo/...)`, `fix(pivot):`, `refactor:`, `chore:`. Préfixe `pivot` pour les commits de la migration tant qu'on est sur la branche `phaser-pivot`. Co-Authored-By Claude Opus 4.7 toujours en footer.
-- **Pas de commentaires** sauf si WHY non-obvious (workaround Phaser, invariant subtil).
-- **Pas de `console.log`** en prod. Debug exposé via `window.__game = scene` au besoin.
+- **Commits atomiques** : `feat(...)`, `fix(...)`, `refactor:`, `chore:`. Footer Co-Authored-By Claude Opus 4.7.
+- **Pas de commentaires** sauf si WHY non-obvious.
+- **Pas de console.log** en prod.
 - **Pas de TypeScript** — JS vanilla, ESM imports.
-- **Performance** : viser 60 FPS, ≤ 1 MB bundle gzippé (actuel ~360 KB Phaser + code), entités pooled si > 50 actives.
+- **Performance** : 60 FPS, ≤ 1 MB bundle gz, particle pool cap.
 
-## Pièges Phaser 4 (rencontrés, à éviter)
+## Pièges Phaser 4 (à se rappeler)
 
-- **Pas de `import Phaser from "phaser"`** — Phaser 4 exporte en named only. Toujours `import * as Phaser from "phaser"`.
-- **`Container` n'a PAS de `preUpdate` auto-call** — il faut écouter `scene.events.on("update", tick)` manuellement et le `off()` au destroy. (Sprite a preUpdate auto, lui.)
-- **`tick()` peut tourner après `destroy()`** — toujours guard `if (!this.scene || this._dying) return;` au début. (cf fix Sprint 2.)
-- **`area`/`setInteractive` sur Container** — Phaser ne calcule pas la hitbox tout seul, passer `new Phaser.Geom.Rectangle(...)` + `Phaser.Geom.Rectangle.Contains` explicitement.
-- **`drawText` style** — Phaser utilise `add.text(x, y, str, { fontFamily, fontSize, color, stroke, strokeThickness })`, pas la signature KAPLAY.
-- **Service Worker legacy** — l'ancien KAPLAY SW (`lava-park-v6`) cache agressivement. Le `public/sw.js` actuel est un kill-switch qui se désinstalle à l'activate. NE PAS le réactiver tant que l'audience legacy n'est pas complètement migrée.
-- **Bundle Phaser 4 = 1.6 MB minifié** (357 KB gz). Pas dramatique mais ne pas ajouter d'autres deps lourdes sans réfléchir.
-
-## Performance cibles
-
-- Bundle prod : < 1 MB gzippé (actuel ~360 KB)
-- 60 FPS sur laptop 2018 / Mac Retina
-- < 10 MB RAM client
-- Loading < 2s sur 4G
-- 0 requête runtime hors le bundle initial (sprites Kenney en atlas local)
+- `import * as Phaser from "phaser"` (named only, pas default).
+- `Container` n'a PAS de `preUpdate` auto — écouter `scene.events.on("update", tick)` + off au destroy.
+- `tick()` peut tourner après `destroy()` — guard `if (!this.scene || this._dying) return;`.
+- `setInteractive` sur Container : passer Rectangle hitArea + Contains explicitement.
+- Service Worker legacy : `public/sw.js` est un kill-switch qui se désinstalle, NE PAS le réactiver.
 
 ## Workflow session
 
 1. Lire ce fichier
-2. `git log --oneline | head -10` pour voir l'état (commits Sprint 0 → en cours)
+2. `git log --oneline | head -10` pour voir l'état
 3. `git branch --show-current` doit retourner `phaser-pivot`
-4. Sprint courant indiqué dans le plan markdown `/Users/mike/.claude/plans/travaille-sur-va-dans-radiant-spindle.md`
-5. **Déléguer aux agents** quand le scope dépasse 1h de boulot : `feature-dev` pour exécuter un sprint spécifié, `Explore` pour audit ciblé, `spec-writer` (opus) pour designs en amont
-6. Pattern : 1 sprint = 1 ou 2 commits cohérents qui buildent et tournent. Push après chaque sprint pour CI redeploy auto sur la branche.
+4. Pour une feature non-triviale : 1 sprint = 1-2 commits qui buildent et tournent. Push après.
+5. Test live via Chrome MCP : `https://michaelchevallier.github.io/lava_game/v2/`
 
 ## Tester en local
 
 ```bash
-npm run dev              # Vite dev server
-# ouvrir http://localhost:5173
-# DevTools : Application > Service Workers > Unregister si l'ancien SW colle
+npm run dev              # http://localhost:5173
+npm run build            # vérifier dist/
 ```
 
-```bash
-npm run build            # build production
-ls -la dist/             # vérifier taille bundle
-```
+Debug runtime via console DevTools :
+- `window.__pd_unlock_all()` débloque tout (36 niveaux + carnaval + arena + 17 trophées + cutscenes vues + 5000 kills)
+- `window.__pd_reset()` wipe la save
+- `window.__pd_scene()` retourne la LevelScene active
+- `window.__pd_place(toolId, col, row)` pose une tile
+- `window.__pd_stats()` dump l'état
+- `window.__pd_goto(levelId)` switch de niveau
 
-Debug runtime :
-```js
-// dans la console DevTools
-const scene = window.game?.scene?.scenes?.find(s => s.scene.key === "LevelScene");
-scene?.visitors    // liste visiteurs actifs
-scene?.towers      // liste tours posées
-scene?.gridState   // état grille [row][col]
-```
-*(Note: `window.game` n'est pas exposé par défaut, à ajouter dans main.js si besoin debug.)*
+## Backlog actuel
 
-## Backlog Park Defense (sprints incrémentaux)
+✅ Tout le roadmap initial M1.V*/M2.G*/M3.G* livré.
 
-- [x] Sprint -1 — tag `v1.0-kaplay-final`
-- [x] Sprint 0 — Phaser boot scene "PARK DEFENSE"
-- [x] Sprint 1a — Visitor entity + LevelScene 1 lane
-- [x] Sprint 1b — LavaTower + Projectile + collision kill
-- [x] Sprint 2 — Grille 5×12 + Toolbar + placement-mode
-- [ ] Sprint 3 — Économie pièces (Coin Generator + HUD coins + coût tiles)
-- [ ] Sprint 4 — 7 autres tile types (Water/Magnet/Fan/Frost/Portal/Catapult)
-- [ ] Sprint 5 — Wave system + JSON niveau + écran résultat stars
-- [ ] Sprint 6 — Campaign Menu grille 30 + save progress + 6 niveaux World 1
-- [ ] Sprint 7 — 5 visiteur types + 6 niveaux World 2
-- [ ] Sprint 8 — Boss Goret + 12 niveaux Worlds 3-4
-- [ ] Sprint 9 — 6 niveaux World 5 boss-rush final
-- [ ] Sprint 10 — Polish UI + tutoriel + audio + sprites Kenney intégrés
-- [ ] Sprint 11 — 2P coop split-screen (optionnel)
-- [ ] Sprint 12 — Bascule prod : `main` ← `phaser-pivot`, archive legacy
+🚧 En cours :
+- Worlds 7-10 (Espace, Sous-Marin, Médiéval, Cyberpunk)
+- Mode Histoire branchée (choix narratifs entre les mondes)
+- Skins/cosmétiques shop avec tickets
+- Mobile / touch responsive
+- Tower idle animations (proxy Kenney)
+- Bascule prod : merger `phaser-pivot` → `main`, archiver legacy
 
-## Références techniques
+## Références
 
-- Phaser 4 docs : https://phaser.io/docs (l'API 3 → 4 est rétro-compatible large majorité)
-- Kenney assets CC0 (à intégrer Sprint 10) :
-  - Tower Defense Kit https://kenney.nl/assets/tower-defense-kit (160 sprites)
-  - Tower Defense Top-Down https://kenney.nl/assets/tower-defense-top-down (300 sprites)
-  - UI Pack https://kenney.nl/assets/ui-pack
-- Tutorial PvZ-like Phaser 3 : https://phaser.io/news/2018/12/tower-defense-tutorial
+- Phaser 4 docs : https://phaser.io/docs
+- Snapshot KAPLAY pré-pivot : tag `v1.0-kaplay-final` (commit `9ea6db3`)
