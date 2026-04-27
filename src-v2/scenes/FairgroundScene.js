@@ -830,6 +830,214 @@ export class FairgroundScene extends Phaser.Scene {
     };
   }
 
+  // ========== Tir à l'Arc ==========
+  _createArchery() {
+    const { width, height } = this.scale;
+
+    const TOTAL_ARROWS = 6;
+    let arrowsFired = 0;
+    let allHit = true;
+    let endScheduled = false;
+
+    const arrowCountText = this.add.text(30, 80, "Fleches : 0 / " + TOTAL_ARROWS, {
+      fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f",
+      stroke: "#000", strokeThickness: 4,
+    }).setOrigin(0, 0.5);
+
+    const TIERS = [
+      { w: 60, pts: 30,  radius: 28, color: 0xc63a3a, label: null,   pulse: false, halo: false },
+      { w: 25, pts: 60,  radius: 22, color: 0xc0c8d8, label: "x2",  pulse: true,  halo: false },
+      { w: 12, pts: 120, radius: 16, color: 0xffd23f, label: "x4",  pulse: true,  halo: true  },
+      { w: 3,  pts: 250, radius: 10, color: 0xff2222, label: "x8",  pulse: true,  halo: true  },
+    ];
+
+    const pickTier = () => {
+      const r = Math.random() * 100;
+      let acc = 0;
+      for (const t of TIERS) { acc += t.w; if (r < acc) return t; }
+      return TIERS[0];
+    };
+
+    const targets = [];
+
+    const spawnTarget = (speed) => {
+      if (this.gameOver) return;
+      const tier = pickTier();
+      const yMin = 160, yMax = 520;
+      const y = yMin + Math.random() * (yMax - yMin);
+      const fromLeft = Math.random() > 0.5;
+      const startX = fromLeft ? -tier.radius - 10 : width + tier.radius + 10;
+      const endX = fromLeft ? width + tier.radius + 10 : -tier.radius - 10;
+
+      const cont = this.add.container(startX, y);
+      const outerRing = this.add.circle(0, 0, tier.radius + 6, 0xffd23f, 0.25);
+      const circle = this.add.circle(0, 0, tier.radius, tier.color).setStrokeStyle(2, 0x222);
+      const inner = this.add.circle(0, 0, Math.max(4, tier.radius * 0.35), 0xffffff, 0.35);
+      cont.add([circle, inner]);
+
+      if (tier.halo) {
+        cont.addAt(outerRing, 0);
+        this.tweens.add({ targets: outerRing, alpha: { from: 0.25, to: 0.05 }, scale: { from: 1, to: 1.5 }, duration: 600, yoyo: true, repeat: -1 });
+      }
+      if (tier.label) {
+        const lbl = this.add.text(0, 0, tier.label, {
+          fontFamily: "Bangers, Fredoka, system-ui", fontSize: "14px", color: "#fff", stroke: "#000", strokeThickness: 3,
+        }).setOrigin(0.5);
+        cont.add(lbl);
+        if (tier.pulse) {
+          this.tweens.add({ targets: lbl, scale: { from: 1, to: 1.3 }, duration: 300, yoyo: true, repeat: -1 });
+        }
+      }
+
+      const tween = this.tweens.add({
+        targets: cont, x: endX, duration: (Math.abs(endX - startX) / speed) * 1000,
+        onComplete: () => { if (cont.active) cont.destroy(); },
+      });
+      targets.push({ cont, tier, tween });
+    };
+
+    const arcX = 120, arcY = height - 100;
+    const arcG = this.add.graphics();
+    arcG.lineStyle(4, 0x8a6a3a, 1);
+    arcG.beginPath();
+    arcG.arc(arcX, arcY, 40, Phaser.Math.DegToRad(210), Phaser.Math.DegToRad(330), false);
+    arcG.strokePath();
+    const bowLabel = this.add.text(arcX, arcY - 52, "ARC", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "14px", color: "#c8a060", stroke: "#000", strokeThickness: 3,
+    }).setOrigin(0.5);
+
+    let dragStart = null;
+    let cordLine = this.add.graphics();
+    const ARROW_OBJECTS = [];
+
+    const arrowDone = (hit) => {
+      if (!hit) allHit = false;
+      arrowsFired++;
+      arrowCountText.setText("Fleches : " + arrowsFired + " / " + TOTAL_ARROWS);
+      if (arrowsFired >= TOTAL_ARROWS && !endScheduled) {
+        endScheduled = true;
+        if (allHit) {
+          this._addScore(100);
+          const bonus = this.add.text(width / 2, height / 2 - 60, "PARFAIT ! +100 bonus !", {
+            fontFamily: "Bangers, Fredoka, system-ui", fontSize: "36px", color: "#ffd23f", stroke: "#000", strokeThickness: 6,
+          }).setOrigin(0.5).setDepth(60);
+          this.tweens.add({ targets: bonus, y: bonus.y - 30, alpha: 0, duration: 1200, onComplete: () => bonus.destroy() });
+        }
+        this.time.delayedCall(1500, () => this._endGame());
+      }
+    };
+
+    const fireArrow = (dx, dy) => {
+      if (this.gameOver || arrowsFired >= TOTAL_ARROWS) return;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const capped = Math.min(dist, 150);
+      const norm = dist > 0 ? dist : 1;
+      const vx = (-dx / norm) * capped * 0.7;
+      const vy = (-dy / norm) * capped * 0.7;
+
+      const arrowG = this.add.graphics();
+      let ax = arcX, ay = arcY;
+      let avx = vx, avy = vy;
+      const GRAVITY = 0.0004;
+      let hit = false;
+      let active = true;
+
+      const ramp = Math.min(2, 1 + (arrowsFired / 2) * 0.5);
+
+      const arrowTick = (time, delta) => {
+        if (!active || this.gameOver) return;
+        avx += 0;
+        avy += GRAVITY * delta * delta;
+        ax += avx * delta * 0.001 * 60;
+        ay += avy * delta * 0.001 * 60;
+
+        arrowG.clear();
+        arrowG.lineStyle(2, 0x8a6a3a, 1);
+        arrowG.lineBetween(ax - avx * 8, ay - avy * 8, ax, ay);
+        arrowG.fillStyle(0x4a2a0a, 1);
+        arrowG.fillTriangle(ax, ay, ax - avx * 0.4 - avy * 0.15, ay - avy * 0.4 + avx * 0.15, ax - avx * 0.4 + avy * 0.15, ay - avy * 0.4 - avx * 0.15);
+
+        if (ax < -20 || ax > width + 20 || ay > height + 20) {
+          active = false;
+          arrowG.destroy();
+          this.events.off("update", arrowTick);
+          arrowDone(false);
+          return;
+        }
+
+        for (let i = targets.length - 1; i >= 0; i--) {
+          const t = targets[i];
+          if (!t.cont.active) { targets.splice(i, 1); continue; }
+          const tdx = ax - t.cont.x;
+          const tdy = ay - t.cont.y;
+          if (Math.sqrt(tdx * tdx + tdy * tdy) < t.tier.radius * ramp) {
+            hit = true;
+            active = false;
+            arrowG.destroy();
+            this.events.off("update", arrowTick);
+            Audio.explode?.();
+            this._addScore(t.tier.pts);
+            if (t.tier.pts >= 120) this.cameras.main.flash(150, 255, 215, 60);
+            const popup = this.add.text(t.cont.x, t.cont.y - 30, "+" + t.tier.pts, {
+              fontFamily: "Bangers, Fredoka, system-ui", fontSize: "28px", color: "#ffd23f", stroke: "#000", strokeThickness: 4,
+            }).setOrigin(0.5).setDepth(50);
+            this.tweens.add({ targets: popup, y: popup.y - 50, alpha: 0, duration: 700, onComplete: () => popup.destroy() });
+            const ring = this.add.circle(t.cont.x, t.cont.y, t.tier.radius, t.tier.tier ? 0xffd23f : 0xff6644, 0.6).setDepth(30);
+            this.tweens.add({ targets: ring, scaleX: 3, scaleY: 3, alpha: 0, duration: 500, onComplete: () => ring.destroy() });
+            t.tween?.stop();
+            t.cont.destroy();
+            targets.splice(i, 1);
+            arrowDone(true);
+            return;
+          }
+        }
+      };
+      this.events.on("update", arrowTick);
+      ARROW_OBJECTS.push(arrowTick);
+    };
+
+    this.input.on("pointerdown", (ptr) => {
+      if (this.gameOver || arrowsFired >= TOTAL_ARROWS) return;
+      dragStart = { x: ptr.x, y: ptr.y };
+    });
+    this.input.on("pointermove", (ptr) => {
+      if (!dragStart) return;
+      cordLine.clear();
+      const dx = Math.min(Math.max(ptr.x - dragStart.x, -150), 150);
+      const dy = Math.min(Math.max(ptr.y - dragStart.y, -150), 150);
+      cordLine.lineStyle(2, 0xffd23f, 0.8);
+      cordLine.lineBetween(arcX, arcY - 28, arcX + dx, arcY + dy);
+      cordLine.lineBetween(arcX, arcY + 28, arcX + dx, arcY + dy);
+    });
+    this.input.on("pointerup", (ptr) => {
+      if (!dragStart || this.gameOver) return;
+      const dx = ptr.x - dragStart.x;
+      const dy = ptr.y - dragStart.y;
+      dragStart = null;
+      cordLine.clear();
+      if (arrowsFired < TOTAL_ARROWS) {
+        Audio.click?.();
+        fireArrow(dx, dy);
+      }
+    });
+
+    const scheduleTargets = () => {
+      const spawnWave = (speed) => {
+        if (this.gameOver) return;
+        for (let i = 0; i < 2; i++) {
+          this.time.delayedCall(i * 600, () => spawnTarget(speed));
+        }
+      };
+      spawnWave(30);
+      this.time.delayedCall(2000, () => spawnWave(30));
+      this.time.delayedCall(4000, () => spawnWave(60));
+      this.time.delayedCall(6000, () => spawnWave(60));
+      this.time.delayedCall(8000, () => spawnWave(90));
+      this.time.delayedCall(10000, () => spawnWave(90));
+    };
+    scheduleTargets();
+  }
+
   // ========== Feu Tricolore ==========
   _createTrafficLight() {
     const { width, height } = this.scale;
