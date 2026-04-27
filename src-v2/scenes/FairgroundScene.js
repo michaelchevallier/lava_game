@@ -830,6 +830,170 @@ export class FairgroundScene extends Phaser.Scene {
     };
   }
 
+  // ========== Tri Bonbons ==========
+  _createCandySort() {
+    const { width, height } = this.scale;
+    this.add.text(width / 2, 80, "Glisse chaque bonbon dans le bocal de sa couleur !", {
+      fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
+    }).setOrigin(0.5);
+
+    this._setTimer(25000);
+
+    const COLORS = [
+      { key: "red",    fill: 0xff4444, stroke: 0x880000 },
+      { key: "blue",   fill: 0x4488ff, stroke: 0x002288 },
+      { key: "yellow", fill: 0xffd23f, stroke: 0xc88a00 },
+      { key: "green",  fill: 0x44cc44, stroke: 0x006600 },
+    ];
+
+    const jarW = 60, jarH = 90;
+    const jarY = height - 80;
+    const jarXs = [width / 2 - 210, width / 2 - 70, width / 2 + 70, width / 2 + 210];
+    const jars = [];
+    let fourthJarAdded = false;
+
+    const makeJar = (idx) => {
+      const col = COLORS[idx];
+      const x = jarXs[idx];
+      const g = this.add.graphics();
+      g.lineStyle(5, col.stroke, 1);
+      g.fillStyle(col.fill, 0.15);
+      g.strokeRect(x - jarW / 2, jarY - jarH / 2, jarW, jarH);
+      g.fillRect(x - jarW / 2, jarY - jarH / 2, jarW, jarH);
+      g.fillStyle(col.fill, 0.5);
+      g.fillRect(x - jarW / 2 + 4, jarY - jarH / 2 - 14, jarW - 8, 12);
+      g.lineStyle(3, col.stroke, 1);
+      g.strokeRect(x - jarW / 2 + 4, jarY - jarH / 2 - 14, jarW - 8, 12);
+      jars.push({ x, y: jarY, colorKey: col.key, g, idx, alive: true });
+      return g;
+    };
+
+    for (let i = 0; i < 3; i++) makeJar(i);
+
+    const candies = [];
+    let combo = 0;
+
+    const spawnCandy = () => {
+      if (this.gameOver) return;
+      const activeCount = candies.filter((c) => c.active).length;
+      const maxCount = this.timeLeftMs > 5000 ? (this.timeLeftMs > 15000 ? 4 : 5) : 6;
+      if (activeCount >= maxCount) return;
+
+      const poolSize = fourthJarAdded ? 4 : 3;
+      const colIdx = Math.floor(Math.random() * poolSize);
+      const col = COLORS[colIdx];
+      const x = 100 + Math.random() * (width - 200);
+      const size = 28;
+
+      const cont = this.add.container(x, 120);
+      const shapes = [0, 1, 2];
+      const shapeType = shapes[Math.floor(Math.random() * 3)];
+      let shape;
+      if (shapeType === 0) {
+        shape = this.add.circle(0, 0, size / 2, col.fill).setStrokeStyle(2, col.stroke);
+      } else if (shapeType === 1) {
+        shape = this.add.rectangle(0, 0, size, size, col.fill).setStrokeStyle(2, col.stroke);
+      } else {
+        shape = this.add.triangle(0, -size / 2, size / 2, size / 2, -size / 2, size / 2, col.fill).setStrokeStyle(2, col.stroke);
+      }
+      cont.add(shape);
+      cont.setDepth(10);
+
+      const hitRect = new Phaser.Geom.Rectangle(-size / 2, -size / 2, size, size);
+      cont.setInteractive(hitRect, Phaser.Geom.Rectangle.Contains);
+      this.input.setDraggable(cont);
+
+      let vy = 0;
+      const GRAV = this.timeLeftMs > 5000 ? 0.00003 : 0.000036;
+      let dragging = false;
+      let dragOffX = 0, dragOffY = 0;
+      let landed = false;
+
+      cont.on("dragstart", (ptr) => {
+        dragging = true;
+        dragOffX = cont.x - ptr.x;
+        dragOffY = cont.y - ptr.y;
+        cont.setDepth(20);
+      });
+      cont.on("drag", (ptr, dragX, dragY) => {
+        cont.setPosition(dragX, dragY);
+      });
+      cont.on("dragend", () => {
+        dragging = false;
+        cont.setDepth(10);
+        let matched = false;
+        for (const jar of jars) {
+          if (!jar.alive) continue;
+          if (Math.abs(cont.x - jar.x) < jarW / 2 + 10 && Math.abs(cont.y - jar.y) < jarH / 2 + 20) {
+            if (jar.colorKey === col.key) {
+              matched = true;
+              combo++;
+              const pts = 15 + (combo >= 3 ? Math.min(20, (combo - 2) * 5) : 0);
+              this._addScore(pts);
+              this.tweens.add({ targets: jar.g, alpha: { from: 0.6, to: 1 }, duration: 200, yoyo: true });
+              const popup = this.add.text(jar.x, jar.y - 60, "+" + pts + (combo >= 3 ? " COMBO!" : ""), {
+                fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#66ff88", stroke: "#000", strokeThickness: 4,
+              }).setOrigin(0.5).setDepth(50);
+              this.tweens.add({ targets: popup, y: popup.y - 30, alpha: 0, duration: 700, onComplete: () => popup.destroy() });
+              this.tweens.add({
+                targets: cont, x: jar.x, y: jar.y, scaleX: 0, scaleY: 0, duration: 250, ease: "Cubic.in",
+                onComplete: () => {
+                  cont.destroy();
+                  const ci = candies.indexOf(cont);
+                  if (ci !== -1) candies.splice(ci, 1);
+                },
+              });
+              landed = true;
+            } else {
+              combo = 0;
+              this.cameras.main.shake(80, 0.005);
+            }
+            break;
+          }
+        }
+        if (!matched) {
+          vy = 0;
+        }
+      });
+
+      const gravityTick = (time, delta) => {
+        if (this.gameOver || !cont.active || dragging || landed) return;
+        vy += GRAV * delta;
+        cont.y += vy * delta;
+        if (cont.y > height - 40) {
+          this.cameras.main.shake(60, 0.004);
+          combo = 0;
+          this.score = Math.max(0, this.score - 5);
+          this.scoreText.setText("Score : " + this.score);
+          cont.destroy();
+          this.events.off("update", gravityTick);
+          const ci = candies.indexOf(cont);
+          if (ci !== -1) candies.splice(ci, 1);
+        }
+      };
+      this.events.on("update", gravityTick);
+
+      candies.push(cont);
+    };
+
+    this._csSpawnTimer = this.time.addEvent({
+      delay: 1200,
+      loop: true,
+      callback: () => {
+        if (this.gameOver) return;
+        const elapsed = 25000 - this.timeLeftMs;
+        const delay = elapsed < 10000 ? 1500 : elapsed < 20000 ? 1000 : 700;
+        if (!fourthJarAdded && elapsed >= 10000) {
+          fourthJarAdded = true;
+          makeJar(3);
+          this.tweens.add({ targets: jars[3].g, x: { from: jarXs[3] + 100, to: jarXs[3] }, duration: 400, ease: "Back.out" });
+        }
+        spawnCandy();
+      },
+    });
+    for (let i = 0; i < 3; i++) this.time.delayedCall(i * 400, spawnCandy);
+  }
+
   // ========== Tir à l'Arc ==========
   _createArchery() {
     const { width, height } = this.scale;
