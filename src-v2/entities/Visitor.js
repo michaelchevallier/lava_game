@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { JuiceFX } from "../systems/JuiceFX.js";
 import { Flash } from "../systems/Flash.js";
+import { Particles } from "../systems/Particles.js";
 
 const TYPE_DEFS = {
   basic:      { hp: 1,  speed: 45,  shirtColor: 0x6a3a3a, shirtStroke: 0x2a0a0a, skin: 0x9acc8a, immune: [], canFly: false, hat: null },
@@ -488,23 +489,21 @@ export class Visitor extends Phaser.GameObjects.Container {
     const baseColor = def.shirtColor || 0xffeecc;
     const isBoss = this.type === "boss" || this.type === "magicboss" || this.type === "lavaqueen" || this.type === "carnivalboss";
     const burst = isBoss ? 18 : 10;
-    for (let i = 0; i < burst; i++) {
-      const a = (Math.PI * 2 * i) / burst + Math.random() * 0.3;
-      const colors = [baseColor, def.skin || 0xffeecc, 0xffd23f, 0xffffff];
+    const colors = [baseColor, def.skin || 0xffeecc, 0xffd23f, 0xffffff];
+    Particles.burst(this.scene, sx, sy, burst, (i, a) => {
       const c = colors[i % colors.length];
       const r = isBoss ? (4 + Math.random() * 4) : (3 + Math.random() * 2);
-      const part = this.scene.add.circle(sx, sy, r, c, 1).setDepth(20);
-      this.scene.tweens.add({
-        targets: part,
-        x: sx + Math.cos(a) * (50 + Math.random() * (isBoss ? 80 : 50)),
-        y: sy + Math.sin(a) * (50 + Math.random() * (isBoss ? 80 : 50)) - 30,
-        alpha: 0,
-        scale: 0.2,
-        duration: 600 + Math.random() * 200,
-        ease: "Cubic.out",
-        onComplete: () => part.destroy(),
+      Particles.spawnCircle(this.scene, sx, sy, {
+        radius: r, color: c,
+        tween: {
+          x: sx + Math.cos(a) * (50 + Math.random() * (isBoss ? 80 : 50)),
+          y: sy + Math.sin(a) * (50 + Math.random() * (isBoss ? 80 : 50)) - 30,
+          alpha: 0, scale: 0.2,
+          duration: 600 + Math.random() * 200,
+          ease: "Cubic.out",
+        },
       });
-    }
+    });
     if (isBoss) {
       const ring = this.scene.add.circle(sx, sy, 10, 0, 0).setStrokeStyle(4, 0xffd23f).setDepth(20);
       this.scene.tweens.add({
