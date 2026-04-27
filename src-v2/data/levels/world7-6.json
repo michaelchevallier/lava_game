@@ -3,52 +3,264 @@
   "name": "OVNI Boss",
   "world": 7,
   "startCoins": 400,
-  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "frost", "portal", "laser"],
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "magnet",
+    "frost",
+    "portal",
+    "laser"
+  ],
   "loseEscaped": 2,
   "waves": [
     {
       "delayMs": 10000,
       "visitors": [
-        { "type": "flying", "lane": 1, "delayMs": 0 },
-        { "type": "flying", "lane": 3, "delayMs": 1000 },
-        { "type": "tank", "lane": 2, "delayMs": 3000 },
-        { "type": "thief", "lane": 0, "delayMs": 5000 },
-        { "type": "thief", "lane": 4, "delayMs": 6000 }
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 1000
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 3000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 5000
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 6000
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 9750
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 13500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 16500
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 19500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 19500
+        }
       ]
     },
     {
       "delayMs": 32000,
       "visitors": [
-        { "type": "tank", "lane": 0, "delayMs": 0 },
-        { "type": "tank", "lane": 4, "delayMs": 800 },
-        { "type": "flying", "lane": 1, "delayMs": 2000 },
-        { "type": "flying", "lane": 2, "delayMs": 2800 },
-        { "type": "flying", "lane": 3, "delayMs": 3600 },
-        { "type": "vip", "lane": 0, "delayMs": 5500 },
-        { "type": "vip", "lane": 4, "delayMs": 6500 }
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 800
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 2000
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 2800
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 3600
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 5500
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 6500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 9500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 12500
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 12500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 15500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 18500
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 18500
+        }
       ]
     },
     {
       "delayMs": 56000,
       "visitors": [
-        { "type": "ovniboss", "lane": 2, "delayMs": 0 },
-        { "type": "flying", "lane": 0, "delayMs": 1500 },
-        { "type": "flying", "lane": 1, "delayMs": 2000 },
-        { "type": "flying", "lane": 3, "delayMs": 2500 },
-        { "type": "flying", "lane": 4, "delayMs": 3000 },
-        { "type": "tank", "lane": 1, "delayMs": 4500 },
-        { "type": "tank", "lane": 3, "delayMs": 5000 },
-        { "type": "tank", "lane": 0, "delayMs": 6500 },
-        { "type": "tank", "lane": 4, "delayMs": 7000 },
-        { "type": "flying", "lane": 2, "delayMs": 8500 },
-        { "type": "flying", "lane": 1, "delayMs": 9000 },
-        { "type": "flying", "lane": 3, "delayMs": 9500 }
+        {
+          "type": "ovniboss",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 2000
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 2500
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 3000
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 4500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 5000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 6500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 7000
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 8500
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 9000
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 9500
+        },
+        {
+          "type": "ovniboss",
+          "lane": 1,
+          "delayMs": 12125
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 14375
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 14750
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 17000
+        },
+        {
+          "type": "ovniboss",
+          "lane": 1,
+          "delayMs": 19400
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 21200
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 21800
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 23000
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 23600
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 1 },
-    "2": { "escapedMax": 0 },
-    "3": { "escapedMax": 0, "killAll": true }
+    "1": {
+      "escapedMax": 1
+    },
+    "2": {
+      "escapedMax": 2
+    },
+    "3": {
+      "escapedMax": 0,
+      "killAll": true
+    }
   }
 }

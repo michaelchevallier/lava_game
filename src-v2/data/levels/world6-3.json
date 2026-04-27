@@ -47,6 +47,31 @@
           "type": "magicien",
           "lane": 2,
           "delayMs": 7000
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 10750
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 14500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 20500
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 20500
         }
       ]
     },
@@ -92,6 +117,41 @@
           "type": "trompette",
           "lane": 3,
           "delayMs": 11500
+        },
+        {
+          "type": "trompette",
+          "lane": 1,
+          "delayMs": 14500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "trompette",
+          "lane": 1,
+          "delayMs": 20125
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 22375
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 22750
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 25000
         }
       ]
     },
@@ -152,6 +212,51 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 14900
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 17525
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 19775
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 20150
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 22400
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 24800
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 26600
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 27200
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 28400
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 29000
         }
       ]
     }
@@ -161,7 +266,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

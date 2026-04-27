@@ -40,6 +40,31 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 3400
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 7150
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 10900
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 13900
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 16900
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 16900
         }
       ]
     },
@@ -85,6 +110,41 @@
           "type": "boss",
           "lane": 3,
           "delayMs": 4900
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 7900
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 10900
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 10900
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 13525
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 15775
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 16150
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 18400
         }
       ]
     },
@@ -160,6 +220,61 @@
           "type": "boss",
           "lane": 0,
           "delayMs": 11200
+        },
+        {
+          "type": "carnivalboss",
+          "lane": 1,
+          "delayMs": 13600
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 15400
+        },
+        {
+          "type": "boss",
+          "lane": 2,
+          "delayMs": 16000
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 17200
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 17800
+        },
+        {
+          "type": "carnivalboss",
+          "lane": 1,
+          "delayMs": 20050
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 21550
+        },
+        {
+          "type": "boss",
+          "lane": 2,
+          "delayMs": 22300
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 23050
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 23800
+        },
+        {
+          "type": "skeleton",
+          "lane": 1,
+          "delayMs": 25300
         }
       ]
     }
@@ -169,7 +284,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0,

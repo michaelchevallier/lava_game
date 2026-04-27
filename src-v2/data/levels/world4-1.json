@@ -45,6 +45,31 @@
           "type": "skeleton",
           "lane": 3,
           "delayMs": 4400
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 8150
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 11900
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 14900
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 17900
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 17900
         }
       ]
     },
@@ -90,6 +115,41 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 6200
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 9200
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 12200
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 12200
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 14825
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 17075
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 17450
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 19700
         }
       ]
     },
@@ -160,16 +220,66 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 11400
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 14025
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 16275
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 16650
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 18900
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 21150
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 22650
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 23400
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 24150
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 24900
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 26400
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 3
+      "escapedMax": 2
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -40,6 +40,31 @@
           "type": "tank",
           "lane": 2,
           "delayMs": 3900
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 7650
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 11400
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 14400
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 17400
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 17400
         }
       ]
     },
@@ -85,6 +110,41 @@
           "type": "tank",
           "lane": 1,
           "delayMs": 6900
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 9900
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 12900
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 12900
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 15525
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 17775
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 18150
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 20400
         }
       ]
     },
@@ -125,13 +185,43 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 4500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 7500
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 10500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 10500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 13500
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 16500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 16500
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 2
+      "escapedMax": 3
     },
     "2": {
       "escapedMax": 1

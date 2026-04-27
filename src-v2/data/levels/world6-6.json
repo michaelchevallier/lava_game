@@ -51,6 +51,31 @@
           "type": "vip",
           "lane": 2,
           "delayMs": 5500
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 9250
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 13000
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 16000
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 19000
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 19000
         }
       ]
     },
@@ -91,6 +116,36 @@
           "type": "trompette",
           "lane": 1,
           "delayMs": 13000
+        },
+        {
+          "type": "magicboss",
+          "lane": 1,
+          "delayMs": 16000
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 19000
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 19000
+        },
+        {
+          "type": "magicboss",
+          "lane": 1,
+          "delayMs": 22000
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 25000
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 25000
         }
       ]
     },
@@ -156,6 +211,51 @@
           "type": "boudeur",
           "lane": 3,
           "delayMs": 17400
+        },
+        {
+          "type": "magicboss",
+          "lane": 0,
+          "delayMs": 20025
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 22275
+        },
+        {
+          "type": "magicboss",
+          "lane": 3,
+          "delayMs": 22650
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 24900
+        },
+        {
+          "type": "magicboss",
+          "lane": 0,
+          "delayMs": 27300
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 29100
+        },
+        {
+          "type": "magicboss",
+          "lane": 3,
+          "delayMs": 29700
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 30900
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 31500
         }
       ]
     }
@@ -165,7 +265,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0,

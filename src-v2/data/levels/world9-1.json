@@ -33,6 +33,36 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 7500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 10500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 13500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 13500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 16500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 19500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 19500
         }
       ]
     },
@@ -63,6 +93,31 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 6500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 10250
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 14000
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 17000
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 20000
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 20000
         }
       ]
     },
@@ -98,6 +153,31 @@
           "type": "vip",
           "lane": 2,
           "delayMs": 8000
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 11750
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 15500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 18500
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 21500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 21500
         }
       ]
     }

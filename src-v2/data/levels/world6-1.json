@@ -40,6 +40,31 @@
           "type": "basic",
           "lane": 4,
           "delayMs": 8200
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 11950
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 15700
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 18700
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 21700
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 21700
         }
       ]
     },
@@ -85,6 +110,41 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 11500
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 14500
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 20125
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 22375
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 22750
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 25000
         }
       ]
     },
@@ -150,6 +210,51 @@
           "type": "boudeur",
           "lane": 3,
           "delayMs": 14900
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 17525
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 19775
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 20150
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 22400
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 24800
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 26600
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 27200
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 28400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 29000
         }
       ]
     }
@@ -159,7 +264,7 @@
       "escapedMax": 2
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -36,6 +36,36 @@
           "type": "tank",
           "lane": 0,
           "delayMs": 6500
+        },
+        {
+          "type": "thief",
+          "lane": 1,
+          "delayMs": 9500
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 12500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 12500
+        },
+        {
+          "type": "thief",
+          "lane": 1,
+          "delayMs": 15500
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 18500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 18500
         }
       ]
     },
@@ -66,6 +96,31 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 6500
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 10250
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 14000
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 17000
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 20000
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 20000
         }
       ]
     },
@@ -106,6 +161,36 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 7800
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 10800
+        },
+        {
+          "type": "thief",
+          "lane": 3,
+          "delayMs": 13800
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 13800
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 16800
+        },
+        {
+          "type": "thief",
+          "lane": 3,
+          "delayMs": 19800
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 19800
         }
       ]
     }
@@ -115,7 +200,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

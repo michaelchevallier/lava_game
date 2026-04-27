@@ -42,6 +42,31 @@
           "type": "trompette",
           "lane": 4,
           "delayMs": 6500
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 10250
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 14000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 17000
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 20000
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 20000
         }
       ]
     },
@@ -82,6 +107,36 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 7800
+        },
+        {
+          "type": "trompette",
+          "lane": 0,
+          "delayMs": 10800
+        },
+        {
+          "type": "trompette",
+          "lane": 3,
+          "delayMs": 13800
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 13800
+        },
+        {
+          "type": "trompette",
+          "lane": 0,
+          "delayMs": 16800
+        },
+        {
+          "type": "trompette",
+          "lane": 3,
+          "delayMs": 19800
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 19800
         }
       ]
     },
@@ -127,6 +182,41 @@
           "type": "skeleton",
           "lane": 2,
           "delayMs": 8500
+        },
+        {
+          "type": "trompette",
+          "lane": 4,
+          "delayMs": 11500
+        },
+        {
+          "type": "trompette",
+          "lane": 1,
+          "delayMs": 14500
+        },
+        {
+          "type": "trompette",
+          "lane": 4,
+          "delayMs": 14500
+        },
+        {
+          "type": "trompette",
+          "lane": 4,
+          "delayMs": 17125
+        },
+        {
+          "type": "trompette",
+          "lane": 4,
+          "delayMs": 19375
+        },
+        {
+          "type": "trompette",
+          "lane": 1,
+          "delayMs": 19750
+        },
+        {
+          "type": "trompette",
+          "lane": 3,
+          "delayMs": 22000
         }
       ]
     }
@@ -136,7 +226,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0,

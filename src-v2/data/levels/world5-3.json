@@ -46,6 +46,31 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 3400
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 7150
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 10900
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 13900
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 16900
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 16900
         }
       ]
     },
@@ -91,6 +116,41 @@
           "type": "tank",
           "lane": 3,
           "delayMs": 6000
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 9000
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 12000
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 12000
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 14625
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 16875
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 17250
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 19500
         }
       ]
     },
@@ -166,16 +226,71 @@
           "type": "boss",
           "lane": 1,
           "delayMs": 11700
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 14100
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 15900
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 16500
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 17700
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 18300
+        },
+        {
+          "type": "boss",
+          "lane": 0,
+          "delayMs": 20550
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 22050
+        },
+        {
+          "type": "boss",
+          "lane": 3,
+          "delayMs": 22800
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 23550
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 24300
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 25800
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 3
+      "escapedMax": 2
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -38,6 +38,31 @@
           "type": "basic",
           "lane": 4,
           "delayMs": 6400
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 10150
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 13900
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 16900
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 19900
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 19900
         }
       ]
     },
@@ -83,6 +108,41 @@
           "type": "basic",
           "lane": 2,
           "delayMs": 9100
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 12100
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 15100
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 15100
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 17725
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 19975
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 20350
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 22600
         }
       ]
     },
@@ -123,6 +183,36 @@
           "type": "tank",
           "lane": 0,
           "delayMs": 8700
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 11700
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 14700
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 14700
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 17700
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 20700
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 20700
         }
       ]
     }
@@ -132,7 +222,7 @@
       "escapedMax": 3
     },
     "2": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

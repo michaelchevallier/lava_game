@@ -37,6 +37,31 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 7400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 11150
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 14900
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 17900
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 20900
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 20900
         }
       ]
     },
@@ -77,6 +102,36 @@
           "type": "basic",
           "lane": 4,
           "delayMs": 7600
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 10600
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 13600
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 13600
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 16600
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 19600
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 19600
         }
       ]
     },
@@ -117,6 +172,36 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 8400
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 11400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 14400
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 14400
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 17400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 20400
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 20400
         }
       ]
     }
@@ -126,7 +211,7 @@
       "escapedMax": 3
     },
     "2": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

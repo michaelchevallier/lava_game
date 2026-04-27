@@ -3,52 +3,265 @@
   "name": "Le Dragon",
   "world": 9,
   "startCoins": 400,
-  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "catapult", "frost", "portal", "tamer"],
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "magnet",
+    "catapult",
+    "frost",
+    "portal",
+    "tamer"
+  ],
   "loseEscaped": 2,
   "waves": [
     {
       "delayMs": 10000,
       "visitors": [
-        { "type": "tank", "lane": 1, "delayMs": 0 },
-        { "type": "tank", "lane": 3, "delayMs": 1000 },
-        { "type": "boudeur", "lane": 2, "delayMs": 3000 },
-        { "type": "stiltman", "lane": 0, "delayMs": 5000 },
-        { "type": "stiltman", "lane": 4, "delayMs": 6000 }
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 1000
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 3000
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 5000
+        },
+        {
+          "type": "stiltman",
+          "lane": 4,
+          "delayMs": 6000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 9750
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 13500
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 16500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 19500
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 19500
+        }
       ]
     },
     {
       "delayMs": 32000,
       "visitors": [
-        { "type": "boudeur", "lane": 0, "delayMs": 0 },
-        { "type": "boudeur", "lane": 4, "delayMs": 800 },
-        { "type": "tank", "lane": 1, "delayMs": 2000 },
-        { "type": "tank", "lane": 2, "delayMs": 2800 },
-        { "type": "tank", "lane": 3, "delayMs": 3600 },
-        { "type": "vip", "lane": 0, "delayMs": 5500 },
-        { "type": "vip", "lane": 4, "delayMs": 6500 }
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 800
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 2000
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 2800
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 3600
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 5500
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 6500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 9500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 12500
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 12500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 15500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 18500
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 18500
+        }
       ]
     },
     {
       "delayMs": 56000,
       "visitors": [
-        { "type": "dragon", "lane": 2, "delayMs": 0 },
-        { "type": "boudeur", "lane": 0, "delayMs": 1500 },
-        { "type": "boudeur", "lane": 1, "delayMs": 2000 },
-        { "type": "boudeur", "lane": 3, "delayMs": 2500 },
-        { "type": "boudeur", "lane": 4, "delayMs": 3000 },
-        { "type": "stiltman", "lane": 1, "delayMs": 4500 },
-        { "type": "stiltman", "lane": 3, "delayMs": 5000 },
-        { "type": "tank", "lane": 0, "delayMs": 6500 },
-        { "type": "tank", "lane": 4, "delayMs": 7000 },
-        { "type": "boudeur", "lane": 2, "delayMs": 8500 },
-        { "type": "stiltman", "lane": 0, "delayMs": 9000 },
-        { "type": "stiltman", "lane": 4, "delayMs": 9500 }
+        {
+          "type": "dragon",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "boudeur",
+          "lane": 1,
+          "delayMs": 2000
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 2500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 3000
+        },
+        {
+          "type": "stiltman",
+          "lane": 1,
+          "delayMs": 4500
+        },
+        {
+          "type": "stiltman",
+          "lane": 3,
+          "delayMs": 5000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 6500
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 7000
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 8500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 9000
+        },
+        {
+          "type": "stiltman",
+          "lane": 4,
+          "delayMs": 9500
+        },
+        {
+          "type": "dragon",
+          "lane": 1,
+          "delayMs": 12125
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 14375
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 14750
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 17000
+        },
+        {
+          "type": "dragon",
+          "lane": 1,
+          "delayMs": 19400
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 21200
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 21800
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 23000
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 23600
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 1 },
-    "2": { "escapedMax": 0 },
-    "3": { "escapedMax": 0, "killAll": true }
+    "1": {
+      "escapedMax": 1
+    },
+    "2": {
+      "escapedMax": 2
+    },
+    "3": {
+      "escapedMax": 0,
+      "killAll": true
+    }
   }
 }

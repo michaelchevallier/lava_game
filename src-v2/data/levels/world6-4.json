@@ -43,6 +43,31 @@
           "type": "vip",
           "lane": 4,
           "delayMs": 5500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 9250
+        },
+        {
+          "type": "stiltman",
+          "lane": 3,
+          "delayMs": 13000
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 16000
+        },
+        {
+          "type": "stiltman",
+          "lane": 3,
+          "delayMs": 19000
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 19000
         }
       ]
     },
@@ -83,6 +108,36 @@
           "type": "trompette",
           "lane": 1,
           "delayMs": 11500
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 14500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 17500
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 20500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 23500
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 23500
         }
       ]
     },
@@ -148,6 +203,51 @@
           "type": "magicien",
           "lane": 3,
           "delayMs": 14900
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 17525
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 19775
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 20150
+        },
+        {
+          "type": "clown",
+          "lane": 3,
+          "delayMs": 22400
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 24800
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 26600
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 27200
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 28400
+        },
+        {
+          "type": "clown",
+          "lane": 3,
+          "delayMs": 29000
         }
       ]
     }
@@ -157,7 +257,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -39,6 +39,31 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 4900
+        },
+        {
+          "type": "skeleton",
+          "lane": 1,
+          "delayMs": 8650
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 12400
+        },
+        {
+          "type": "skeleton",
+          "lane": 1,
+          "delayMs": 15400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 18400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 18400
         }
       ]
     },
@@ -84,6 +109,41 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 7100
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 10100
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 13100
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 13100
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 15725
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 17975
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 18350
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 20600
         }
       ]
     },
@@ -134,6 +194,41 @@
           "type": "skeleton",
           "lane": 0,
           "delayMs": 9200
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 12200
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 15200
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 15200
+        },
+        {
+          "type": "skeleton",
+          "lane": 4,
+          "delayMs": 17825
+        },
+        {
+          "type": "skeleton",
+          "lane": 0,
+          "delayMs": 20075
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 20450
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 22700
         }
       ]
     }
@@ -143,7 +238,7 @@
       "escapedMax": 3
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

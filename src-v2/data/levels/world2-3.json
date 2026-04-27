@@ -40,6 +40,31 @@
           "type": "flying",
           "lane": 3,
           "delayMs": 4900
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 8650
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 12400
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 15400
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 18400
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 18400
         }
       ]
     },
@@ -85,6 +110,41 @@
           "type": "flying",
           "lane": 4,
           "delayMs": 7100
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 10100
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 13100
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 13100
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 15725
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 17975
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 18350
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 20600
         }
       ]
     },
@@ -135,6 +195,41 @@
           "type": "flying",
           "lane": 0,
           "delayMs": 8700
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 11700
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 14700
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 14700
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 17325
+        },
+        {
+          "type": "flying",
+          "lane": 3,
+          "delayMs": 19575
+        },
+        {
+          "type": "flying",
+          "lane": 1,
+          "delayMs": 19950
+        },
+        {
+          "type": "flying",
+          "lane": 2,
+          "delayMs": 22200
         }
       ]
     }
@@ -144,7 +239,7 @@
       "escapedMax": 3
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -32,6 +32,36 @@
           "type": "basic",
           "lane": 1,
           "delayMs": 6900
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 9900
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 12900
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 12900
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 15900
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 18900
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 18900
         }
       ]
     },
@@ -62,6 +92,31 @@
           "type": "basic",
           "lane": 4,
           "delayMs": 5900
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 9650
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 13400
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 16400
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 19400
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 19400
         }
       ]
     },
@@ -102,6 +157,36 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 9400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 12400
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 15400
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 15400
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 18400
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 21400
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 21400
         }
       ]
     }
@@ -111,7 +196,7 @@
       "escapedMax": 4
     },
     "2": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

@@ -40,6 +40,31 @@
           "type": "skeleton",
           "lane": 2,
           "delayMs": 3500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 7250
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 11000
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 14000
+        },
+        {
+          "type": "skeleton",
+          "lane": 2,
+          "delayMs": 17000
+        },
+        {
+          "type": "flying",
+          "lane": 4,
+          "delayMs": 17000
         }
       ]
     },
@@ -85,6 +110,41 @@
           "type": "vip",
           "lane": 4,
           "delayMs": 6400
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 9400
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 12400
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 12400
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 15025
+        },
+        {
+          "type": "skeleton",
+          "lane": 3,
+          "delayMs": 17275
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 17650
+        },
+        {
+          "type": "flying",
+          "lane": 0,
+          "delayMs": 19900
         }
       ]
     },
@@ -135,6 +195,41 @@
           "type": "flying",
           "lane": 2,
           "delayMs": 6500
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 9500
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 12500
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 12500
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 15125
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 17375
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 17750
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 20000
         }
       ]
     }
@@ -144,7 +239,7 @@
       "escapedMax": 2
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

@@ -41,6 +41,31 @@
           "type": "basic",
           "lane": 4,
           "delayMs": 6500
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 10250
+        },
+        {
+          "type": "thief",
+          "lane": 3,
+          "delayMs": 14000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 17000
+        },
+        {
+          "type": "thief",
+          "lane": 3,
+          "delayMs": 20000
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 20000
         }
       ]
     },
@@ -81,6 +106,36 @@
           "type": "magicien",
           "lane": 1,
           "delayMs": 11000
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 14000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 17000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 17000
+        },
+        {
+          "type": "clown",
+          "lane": 1,
+          "delayMs": 20000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 23000
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 23000
         }
       ]
     },
@@ -141,6 +196,51 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 15900
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 18525
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 20775
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 21150
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 23400
+        },
+        {
+          "type": "boss",
+          "lane": 1,
+          "delayMs": 25800
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 27600
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 28200
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 29400
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 30000
         }
       ]
     }
@@ -150,7 +250,7 @@
       "escapedMax": 2
     },
     "2": {
-      "escapedMax": 1
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

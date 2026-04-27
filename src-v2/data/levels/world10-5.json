@@ -43,6 +43,31 @@
           "type": "thief",
           "lane": 4,
           "delayMs": 6000
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 9750
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 13500
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 16500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 19500
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 19500
         }
       ]
     },
@@ -83,6 +108,36 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 7800
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 10800
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 13800
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 13800
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 16800
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 19800
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 19800
         }
       ]
     },
@@ -128,6 +183,41 @@
           "type": "tank",
           "lane": 2,
           "delayMs": 8500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 11500
+        },
+        {
+          "type": "boudeur",
+          "lane": 1,
+          "delayMs": 14500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 14500
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 17125
+        },
+        {
+          "type": "boudeur",
+          "lane": 4,
+          "delayMs": 19375
+        },
+        {
+          "type": "boudeur",
+          "lane": 1,
+          "delayMs": 19750
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 22000
         }
       ]
     }
@@ -137,7 +227,7 @@
       "escapedMax": 1
     },
     "2": {
-      "escapedMax": 0
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0,
