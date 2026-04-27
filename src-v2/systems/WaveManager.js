@@ -1,32 +1,37 @@
 const ENDLESS_TYPES = ["basic", "tank", "vip", "skeleton", "flying", "clown", "magicien", "trompette", "lavewalker", "stiltman"];
 
+const FIRST_WAVE_MAX_MS = 15000;
+const MIN_INTER_WAVE_MS = 6000;
+const MAX_WAIT_AFTER_PREV_MS = 25000;
+const ALIVE_CLEAR_THRESHOLD = 2;
+
 export class WaveManager {
   constructor(scene, levelData) {
     this.scene = scene;
     this.level = levelData;
     this.startedAt = 0;
-    this.spawned = new Set();
-    this.allSpawned = false;
-    this.flatVisitors = [];
     this.infinite = !!levelData.infinite;
     this.endlessWave = 0;
     this._endlessNextAt = 0;
-    this._buildSchedule();
-  }
 
-  _buildSchedule() {
-    let id = 0;
-    for (const wave of this.level.waves) {
-      for (const v of wave.visitors) {
-        this.flatVisitors.push({
-          id: id++,
-          type: v.type,
-          lane: v.lane,
-          atMs: wave.delayMs + (v.delayMs || 0),
-        });
-      }
-    }
-    this.flatVisitors.sort((a, b) => a.atMs - b.atMs);
+    this.waves = (levelData.waves || []).map((w, idx) => ({
+      idx,
+      delayMs: w.delayMs ?? 0,
+      visitors: (w.visitors || []).map((v, vidx) => ({
+        id: idx * 10000 + vidx,
+        type: v.type,
+        lane: v.lane,
+        delayMs: v.delayMs || 0,
+      })),
+    }));
+    this.currentWaveIdx = 0;
+    this.waveStartedAt = -1;
+    this.waveSpawnedIds = new Set();
+    this.prevWaveEndAt = 0;
+    this.allSpawned = this.waves.length === 0;
+
+    this._totalVisitors = this.waves.reduce((acc, w) => acc + w.visitors.length, 0);
+    this._spawnedCount = 0;
   }
 
   start() {
@@ -36,24 +41,52 @@ export class WaveManager {
   tick(time) {
     if (this.infinite) {
       const elapsed = time - this.startedAt;
-      if (elapsed >= this._endlessNextAt) {
-        this._spawnEndlessWave(time);
-      }
+      if (elapsed >= this._endlessNextAt) this._spawnEndlessWave(time);
       return;
     }
     if (this.allSpawned) return;
+
     const elapsed = time - this.startedAt;
-    let pending = 0;
-    for (const v of this.flatVisitors) {
-      if (this.spawned.has(v.id)) continue;
-      if (elapsed >= v.atMs) {
-        this.spawned.add(v.id);
-        this.scene.spawnVisitor(v.lane, v.type);
+    const wave = this.waves[this.currentWaveIdx];
+    if (!wave) { this.allSpawned = true; return; }
+
+    if (this.waveStartedAt < 0) {
+      let gateOK = false;
+      if (this.currentWaveIdx === 0) {
+        const target = Math.min(wave.delayMs, FIRST_WAVE_MAX_MS);
+        gateOK = elapsed >= target;
       } else {
-        pending++;
+        const aliveCount = (this.scene.visitors || []).filter((v) => v.active && !v._dying).length;
+        const minGapPassed = elapsed >= this.prevWaveEndAt + MIN_INTER_WAVE_MS;
+        const cleared = aliveCount <= ALIVE_CLEAR_THRESHOLD;
+        const maxWaitHit = elapsed >= this.prevWaveEndAt + MAX_WAIT_AFTER_PREV_MS;
+        gateOK = (cleared && minGapPassed) || maxWaitHit;
+      }
+      if (!gateOK) return;
+      this.waveStartedAt = elapsed;
+      if (this.scene.events) this.scene.events.emit("wave-started", this.currentWaveIdx);
+    }
+
+    const waveElapsed = elapsed - this.waveStartedAt;
+    let pendingInWave = 0;
+    for (const v of wave.visitors) {
+      if (this.waveSpawnedIds.has(v.id)) continue;
+      if (waveElapsed >= v.delayMs) {
+        this.waveSpawnedIds.add(v.id);
+        this.scene.spawnVisitor(v.lane, v.type);
+        this._spawnedCount++;
+      } else {
+        pendingInWave++;
       }
     }
-    if (pending === 0) this.allSpawned = true;
+
+    if (pendingInWave === 0) {
+      this.prevWaveEndAt = elapsed;
+      this.currentWaveIdx++;
+      this.waveStartedAt = -1;
+      this.waveSpawnedIds = new Set();
+      if (this.currentWaveIdx >= this.waves.length) this.allSpawned = true;
+    }
   }
 
   _spawnEndlessWave(time) {
@@ -94,24 +127,39 @@ export class WaveManager {
   }
 
   totalVisitors() {
-    return this.infinite ? Infinity : this.flatVisitors.length;
+    return this.infinite ? Infinity : this._totalVisitors;
   }
 
   spawnedCount() {
-    return this.spawned.size;
+    return this._spawnedCount;
   }
 
   nextWaveAtMs(time) {
     if (this.infinite) {
       return Math.max(0, this._endlessNextAt - (time - this.startedAt));
     }
+    if (this.allSpawned) return null;
+    const wave = this.waves[this.currentWaveIdx];
+    if (!wave) return null;
     const elapsed = time - this.startedAt;
-    for (const v of this.flatVisitors) {
-      if (!this.spawned.has(v.id)) {
-        return Math.max(0, v.atMs - elapsed);
+
+    if (this.waveStartedAt < 0) {
+      if (this.currentWaveIdx === 0) {
+        const target = Math.min(wave.delayMs, FIRST_WAVE_MAX_MS);
+        return Math.max(0, target - elapsed);
       }
+      const minStart = this.prevWaveEndAt + MIN_INTER_WAVE_MS;
+      return Math.max(0, minStart - elapsed);
     }
-    return null;
+
+    const waveElapsed = elapsed - this.waveStartedAt;
+    let nextIn = Infinity;
+    for (const v of wave.visitors) {
+      if (this.waveSpawnedIds.has(v.id)) continue;
+      const t = v.delayMs - waveElapsed;
+      if (t < nextIn) nextIn = t;
+    }
+    return nextIn === Infinity ? null : Math.max(0, nextIn);
   }
 }
 

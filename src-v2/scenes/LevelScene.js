@@ -355,15 +355,11 @@ export class LevelScene extends Phaser.Scene {
       },
     });
 
-    this.level.waves.forEach((wave, i) => {
-      const at = Math.max(0, wave.delayMs - 1200);
-      this.time.delayedCall(at, () => {
-        if (!this.gameOver && this.scene.isActive()) {
-          const colorHex = "#" + this.theme.accent.toString(16).padStart(6, "0");
-          this.showWaveBanner("VAGUE " + (i + 1), colorHex);
-          Audio.crack ? Audio.crack() : Audio.click?.();
-        }
-      });
+    this.events.on("wave-started", (waveIdx) => {
+      if (this.gameOver || !this.scene.isActive()) return;
+      const colorHex = "#" + this.theme.accent.toString(16).padStart(6, "0");
+      this.showWaveBanner("VAGUE " + (waveIdx + 1), colorHex);
+      Audio.crack ? Audio.crack() : Audio.click?.();
     });
 
     if (this.level.id === "1.1") {
