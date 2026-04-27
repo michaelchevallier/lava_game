@@ -8,6 +8,7 @@ export class Laser extends Phaser.GameObjects.Container {
     this.tickRateMs = opts.tickRateMs ?? 250;
     this.damage = opts.damage ?? 0.6;
     this.lastTickAt = 0;
+    this._lastScanAt = 0;
     this.hp = opts.hp ?? 3;
 
     const shadow = scene.add.ellipse(0, 26, 50, 8, 0x000, 0.4);
@@ -46,6 +47,8 @@ export class Laser extends Phaser.GameObjects.Container {
       this.beamGlow.width = 0;
       return;
     }
+    if (time - this._lastScanAt < 33) return;
+    this._lastScanAt = time;
     const visitors = this.scene.visitors || [];
     let target = null;
     let bestDist = Infinity;
@@ -64,9 +67,9 @@ export class Laser extends Phaser.GameObjects.Container {
     const len = bestDist - 4;
     this.beam.width = Math.max(0, len);
     this.beamGlow.width = Math.max(0, len);
-    this.lens.setFillStyle(0xffffff);
     if (time - this.lastTickAt >= this.tickRateMs) {
       this.lastTickAt = time;
+      this.lens.setFillStyle(0xffffff);
       target.takeDamage(this.damage, "laser");
       Audio.shoot?.();
     }

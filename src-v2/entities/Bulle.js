@@ -8,6 +8,7 @@ export class Bulle extends Phaser.GameObjects.Container {
     this.captureMs = opts.captureMs ?? 5000;
     this.cooldownMs = opts.cooldownMs ?? 6000;
     this.lastFireAt = -Infinity;
+    this._lastScanAt = 0;
     this.hp = opts.hp ?? 3;
     this._dying = false;
 

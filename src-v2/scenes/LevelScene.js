@@ -17,7 +17,6 @@ import { NeonLamp } from "../entities/NeonLamp.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Laser } from "../entities/Laser.js";
 import { Bulle } from "../entities/Bulle.js";
-import { getEquippedSkin, loadSave as loadSaveSafe } from "../systems/SaveSystem.js";
 import { SKINS } from "./SkinsScene.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
@@ -25,7 +24,7 @@ import { Player2Cursor } from "../ui/Player2Cursor.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { getDailyLevel, recordDaily } from "../systems/Daily.js";
-import { loadSave, saveSave } from "../systems/SaveSystem.js";
+import { loadSave, saveSave, getEquippedSkin } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { Flash } from "../systems/Flash.js";
@@ -266,7 +265,7 @@ export class LevelScene extends Phaser.Scene {
         () => this.coins,
         this.level.allowedTiles,
       );
-      const save = loadSaveSafe();
+      const save = loadSave();
       if (save?.narrativeChoices?.[10] === "machine" && (this.level.world || 0) >= 10) {
         this.toolbar._cooldownMul = 0.75;
       }
@@ -502,7 +501,7 @@ export class LevelScene extends Phaser.Scene {
       }
     }
     if (world === 10) {
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 30; i++) {
         const sx = Math.random() * w;
         const sy = Math.random() * (GRID.originY - 10);
         const star = this.add.circle(sx, sy, 0.5 + Math.random() * 1.2, [0xff00aa, 0x00ffff, 0xffd23f][i % 3], 0.7);
@@ -527,10 +526,10 @@ export class LevelScene extends Phaser.Scene {
     const w = this.theme.weather;
     if (w === "rain") {
       this.time.addEvent({
-        delay: 80, loop: true,
+        delay: 160, loop: true,
         callback: () => {
           if (!this.scene.isActive()) return;
-          for (let i = 0; i < 3; i++) {
+          for (let i = 0; i < 2; i++) {
             const x = Math.random() * this.scale.width;
             const drop = this.add.rectangle(x, -10, 1.5, 12, 0xaaccff, 0.7).setDepth(45);
             this.tweens.add({
@@ -583,7 +582,7 @@ export class LevelScene extends Phaser.Scene {
       }
     } else if (w === "stars") {
       this.time.addEvent({
-        delay: 350, loop: true,
+        delay: 500, loop: true,
         callback: () => {
           if (!this.scene.isActive() || this.gameOver) return;
           const sx = Math.random() * this.scale.width;
@@ -599,7 +598,7 @@ export class LevelScene extends Phaser.Scene {
       });
     } else if (w === "bubbles") {
       this.time.addEvent({
-        delay: 300, loop: true,
+        delay: 500, loop: true,
         callback: () => {
           if (!this.scene.isActive() || this.gameOver) return;
           const bx = Math.random() * this.scale.width;
@@ -945,7 +944,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   _narrativeStartBonus() {
-    const save = (typeof window !== "undefined" ? loadSaveSafe() : {});
+    const save = (typeof window !== "undefined" ? loadSave() : {});
     const choices = save?.narrativeChoices || {};
     const w = this.level.world || 0;
     let bonus = 0;
@@ -956,7 +955,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   _narrativeKillBonus() {
-    const save = loadSaveSafe();
+    const save = loadSave();
     const choices = save?.narrativeChoices || {};
     const w = this.level.world || 0;
     if (w >= 7 && choices[7] === "diplomacy") return 1;
