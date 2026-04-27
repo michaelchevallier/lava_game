@@ -871,7 +871,9 @@ export class FairgroundScene extends Phaser.Scene {
     const coinPool = [];
 
     for (let i = 0; i < 8; i++) {
-      const px = 60 + Math.random() * (width - 120 - PLAT_W);
+      const px = i === 0
+        ? width / 2 - PLAT_W / 2
+        : 60 + Math.random() * (width - 120 - PLAT_W);
       const py = height - 100 - i * 130;
       const pg = this.add.graphics();
       pg.fillStyle(0x8a4a04, 1);
@@ -880,7 +882,7 @@ export class FairgroundScene extends Phaser.Scene {
       pg.strokeRect(0, 0, PLAT_W, PLAT_H);
       pg.x = px;
       pg.y = py;
-      platPool.push({ g: pg, x: px, y: py, hasCoin: Math.random() > 0.6 });
+      platPool.push({ g: pg, x: px, y: py, hasCoin: i > 0 && Math.random() > 0.6 });
     }
 
     platPool.forEach((p) => {
@@ -898,7 +900,7 @@ export class FairgroundScene extends Phaser.Scene {
       }
     });
 
-    const player = this.add.container(width / 2, height - 200).setDepth(10);
+    const player = this.add.container(width / 2, height - 100 - 26).setDepth(10);
     const pHead = this.add.circle(0, -20, 10, 0xffd2a8).setStrokeStyle(1, 0x8a6a4a);
     const pBody = this.add.rectangle(0, 0, 14, 20, 0xff4400).setStrokeStyle(1, 0x880000);
     const pLegL = this.add.rectangle(-4, 16, 5, 14, 0xcc3300);
@@ -906,7 +908,7 @@ export class FairgroundScene extends Phaser.Scene {
     player.add([pBody, pHead, pLegL, pLegR]);
 
     let pVx = 0, pVy = 0;
-    let grounded = false;
+    let grounded = true;
     let invulnUntil = 0;
     let legAnimT = 0;
 
