@@ -830,6 +830,228 @@ export class FairgroundScene extends Phaser.Scene {
     };
   }
 
+  // ========== Saut de Lave ==========
+  _createLavaJump() {
+    const { width, height } = this.scale;
+
+    let lives = 3;
+    let survivedMs = 0;
+    let maxHeightReached = 0;
+    let scrollOffset = 0;
+
+    const livesIcons = [];
+    const livesContainer = this.add.container(40, 30).setDepth(100);
+    livesContainer.add(this.add.text(0, 0, "Vies :", { fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 3 }).setOrigin(0, 0.5));
+    for (let i = 0; i < 3; i++) {
+      const heart = this.add.text(70 + i * 30, 0, "❤️", { fontFamily: "system-ui", fontSize: "24px" }).setOrigin(0, 0.5);
+      livesContainer.add(heart);
+      livesIcons.push(heart);
+    }
+    this.timerText.setText("0s");
+
+    const lavaG = this.add.graphics().setDepth(5);
+    let lavaY = height + 40;
+
+    const getScrollSpeed = () => {
+      const s = survivedMs / 1000;
+      if (s < 10) return 0.05;
+      if (s < 20) return 0.10;
+      return Math.min(0.18, 0.15 + (s - 20) * 0.001);
+    };
+
+    const getSpacing = () => {
+      const s = survivedMs / 1000;
+      if (s < 10) return { min: 80, max: 130 };
+      if (s < 20) return { min: 100, max: 150 };
+      return { min: 120, max: 180 };
+    };
+
+    const PLAT_W = 80, PLAT_H = 16;
+    const platPool = [];
+    const coinPool = [];
+
+    for (let i = 0; i < 8; i++) {
+      const px = 60 + Math.random() * (width - 120 - PLAT_W);
+      const py = height - 100 - i * 130;
+      const pg = this.add.graphics();
+      pg.fillStyle(0x8a4a04, 1);
+      pg.fillRect(0, 0, PLAT_W, PLAT_H);
+      pg.lineStyle(2, 0x4a2a04, 1);
+      pg.strokeRect(0, 0, PLAT_W, PLAT_H);
+      pg.x = px;
+      pg.y = py;
+      platPool.push({ g: pg, x: px, y: py, hasCoin: Math.random() > 0.6 });
+    }
+
+    platPool.forEach((p) => {
+      if (p.hasCoin) {
+        const cg = this.add.graphics();
+        cg.fillStyle(0xffd23f, 1);
+        cg.fillCircle(0, 0, 10);
+        cg.lineStyle(2, 0xc88a00, 1);
+        cg.strokeCircle(0, 0, 10);
+        cg.x = p.x + PLAT_W / 2;
+        cg.y = p.y - 20;
+        cg.setDepth(4);
+        coinPool.push({ g: cg, platRef: p, collected: false });
+        p.coinRef = coinPool[coinPool.length - 1];
+      }
+    });
+
+    const player = this.add.container(width / 2, height - 200).setDepth(10);
+    const pHead = this.add.circle(0, -20, 10, 0xffd2a8).setStrokeStyle(1, 0x8a6a4a);
+    const pBody = this.add.rectangle(0, 0, 14, 20, 0xff4400).setStrokeStyle(1, 0x880000);
+    const pLegL = this.add.rectangle(-4, 16, 5, 14, 0xcc3300);
+    const pLegR = this.add.rectangle(4, 16, 5, 14, 0xcc3300);
+    player.add([pBody, pHead, pLegL, pLegR]);
+
+    let pVx = 0, pVy = 0;
+    let grounded = false;
+    let invulnUntil = 0;
+    let legAnimT = 0;
+
+    const keys = { left: false, right: false, jump: false };
+    this._ljKeyDown = (e) => {
+      if (e.code === "ArrowLeft") keys.left = true;
+      if (e.code === "ArrowRight") keys.right = true;
+      if (e.code === "Space" || e.code === "ArrowUp") keys.jump = true;
+    };
+    this._ljKeyUp = (e) => {
+      if (e.code === "ArrowLeft") keys.left = false;
+      if (e.code === "ArrowRight") keys.right = false;
+      if (e.code === "Space" || e.code === "ArrowUp") keys.jump = false;
+    };
+    this.input.keyboard.on("keydown", this._ljKeyDown);
+    this.input.keyboard.on("keyup", this._ljKeyUp);
+
+    let jumpPressed = false;
+    let highestPlat = 0;
+
+    this._ljTick = (time, delta) => {
+      if (this.gameOver) return;
+
+      survivedMs += delta;
+      this.timerText.setText(Math.floor(survivedMs / 1000) + "s");
+
+      const scrollSpeed = getScrollSpeed();
+      const scroll = scrollSpeed * delta;
+      scrollOffset += scroll;
+      lavaY -= scroll;
+
+      platPool.forEach((p) => {
+        p.y += scroll;
+        p.g.y = p.y;
+        if (p.coinRef) {
+          p.coinRef.g.y = p.y - 20;
+        }
+        if (p.y > height + 40) {
+          const sp = getSpacing();
+          const topPlat = platPool.reduce((m, pp) => Math.min(m, pp.y), height);
+          const newY = topPlat - (sp.min + Math.random() * (sp.max - sp.min));
+          p.x = 60 + Math.random() * (width - 120 - PLAT_W);
+          p.y = newY;
+          p.g.x = p.x;
+          p.g.y = p.y;
+          p.hasCoin = Math.random() > 0.55;
+          if (p.coinRef) {
+            p.coinRef.collected = false;
+            p.coinRef.g.setVisible(p.hasCoin);
+            p.coinRef.g.x = p.x + PLAT_W / 2;
+            p.coinRef.g.y = p.y - 20;
+          }
+          const heightGained = Math.floor(scrollOffset / 10);
+          if (heightGained > maxHeightReached) {
+            const diff = heightGained - maxHeightReached;
+            maxHeightReached = heightGained;
+            this._addScore(Math.floor(diff / 2));
+          }
+        }
+      });
+
+      pVy += 0.0024 * delta;
+
+      if (keys.left) player.x = Math.max(20, player.x - 0.4 * delta);
+      if (keys.right) player.x = Math.min(width - 20, player.x + 0.4 * delta);
+
+      if (keys.jump && !jumpPressed && grounded) {
+        pVy = -0.85;
+        grounded = false;
+        jumpPressed = true;
+        Audio.click?.();
+      }
+      if (!keys.jump) jumpPressed = false;
+
+      player.y += pVy * delta * 0.6;
+
+      grounded = false;
+      for (const p of platPool) {
+        if (pVy >= 0 &&
+          player.y + 26 >= p.y &&
+          player.y + 26 <= p.y + PLAT_H + pVy * delta * 0.6 + 6 &&
+          player.x + 7 >= p.x &&
+          player.x - 7 <= p.x + PLAT_W) {
+          player.y = p.y - 26;
+          pVy = 0;
+          grounded = true;
+          legAnimT += delta;
+          pLegL.setPosition(-4, 16 + Math.sin(legAnimT * 0.015) * 4);
+          pLegR.setPosition(4, 16 + Math.cos(legAnimT * 0.015) * 4);
+          break;
+        }
+      }
+
+      coinPool.forEach((c) => {
+        if (c.collected || !c.g.visible) return;
+        const dx = player.x - c.g.x;
+        const dy = player.y - c.g.y;
+        if (Math.sqrt(dx * dx + dy * dy) < 22) {
+          c.collected = true;
+          c.g.setVisible(false);
+          this._addScore(25);
+          Audio.coin?.();
+          const popup = this.add.text(c.g.x, c.g.y - 20, "+25", {
+            fontFamily: "Bangers, Fredoka, system-ui", fontSize: "18px", color: "#ffd23f", stroke: "#000", strokeThickness: 3,
+          }).setOrigin(0.5).setDepth(50);
+          this.tweens.add({ targets: popup, y: popup.y - 30, alpha: 0, duration: 600, onComplete: () => popup.destroy() });
+        }
+      });
+
+      if (player.y > lavaY - 26 && time > invulnUntil) {
+        lives--;
+        invulnUntil = time + 1500;
+        pVy = -0.7;
+        this.cameras.main.shake(200, 0.012);
+        Audio.hit?.();
+        if (livesIcons[lives]) {
+          this.tweens.add({
+            targets: livesIcons[lives], scale: { from: 1.5, to: 0 }, alpha: 0, angle: 360, duration: 350,
+            onComplete: () => livesIcons[lives].destroy(),
+          });
+        }
+        if (lives <= 0) {
+          this._addScore(Math.floor(maxHeightReached / 10));
+          this.time.delayedCall(700, () => this._endGame());
+        }
+      }
+
+      const invuln = time < invulnUntil;
+      player.setAlpha(invuln ? (Math.floor(time / 100) % 2 ? 0.3 : 1) : 1);
+
+      lavaG.clear();
+      lavaG.fillStyle(0xff4400, 1);
+      lavaG.fillRect(0, lavaY, width, height - lavaY + 10);
+      lavaG.fillStyle(0xff6600, 0.5);
+      lavaG.fillRect(0, lavaY - 8, width, 10);
+      for (let fi = 0; fi < 6; fi++) {
+        const fx = (fi / 6) * width + (survivedMs * 0.05 + fi * 40) % (width / 6);
+        const fh = 12 + Math.sin(survivedMs * 0.004 + fi) * 6;
+        lavaG.fillStyle(0xff8800, 0.7);
+        lavaG.fillTriangle(fx, lavaY, fx + 14, lavaY, fx + 7, lavaY - fh);
+      }
+    };
+    this.events.on("update", this._ljTick);
+  }
+
   // ========== Tri Bonbons ==========
   _createCandySort() {
     const { width, height } = this.scale;
