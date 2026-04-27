@@ -17,6 +17,7 @@ import { NeonLamp } from "../entities/NeonLamp.js";
 import { Tamer } from "../entities/Tamer.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
+import { Player2Cursor } from "../ui/Player2Cursor.js";
 import { WaveManager, computeStars } from "../systems/WaveManager.js";
 import { getLevel, getFirstLevelId } from "../data/levels/index.js";
 import { getDailyLevel, recordDaily } from "../systems/Daily.js";
@@ -271,6 +272,9 @@ export class LevelScene extends Phaser.Scene {
 
     this._setupPauseMenu();
     this._showLevelIntro();
+    this.p2 = new Player2Cursor(this, {
+      onPlace: ({ x, y }) => this.tryPlace({ x, y }),
+    });
 
     this.skySunsTimer = this.time.addEvent({
       delay: 11000 + Math.random() * 4000,
