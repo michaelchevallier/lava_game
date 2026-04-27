@@ -25,6 +25,7 @@ import { loadSave, saveSave } from "../systems/SaveSystem.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { Flash } from "../systems/Flash.js";
+import { Particles } from "../systems/Particles.js";
 import { Tutorial } from "../ui/Tutorial.js";
 import { getTheme } from "../systems/Theme.js";
 import { LavaMeter } from "../systems/LavaMeter.js";
@@ -254,6 +255,7 @@ export class LevelScene extends Phaser.Scene {
         height - 100,
         (def) => this.setPlacement(def),
         () => this.coins,
+        this.level.allowedTiles,
       );
     }
 
@@ -775,19 +777,16 @@ export class LevelScene extends Phaser.Scene {
       duration: 280,
       ease: "Back.out",
     });
-    for (let i = 0; i < 10; i++) {
-      const a = (Math.PI * 2 * i) / 10;
-      const dust = this.add.circle(x, y + 20, 3 + Math.random() * 3, 0xc8b08a, 0.7).setDepth(7);
-      this.tweens.add({
-        targets: dust,
-        x: x + Math.cos(a) * (30 + Math.random() * 20),
-        y: y + 20 + Math.sin(a) * 10 - 10 - Math.random() * 10,
-        alpha: 0,
-        duration: 450,
-        ease: "Cubic.out",
-        onComplete: () => dust.destroy(),
+    Particles.burst(this, x, y + 20, 8, (i, a) => {
+      Particles.spawnCircle(this, x, y + 20, {
+        radius: 3 + Math.random() * 3, color: 0xc8b08a, alpha: 0.7, depth: 7,
+        tween: {
+          x: x + Math.cos(a) * (30 + Math.random() * 20),
+          y: y + 20 + Math.sin(a) * 10 - 10 - Math.random() * 10,
+          alpha: 0, duration: 450, ease: "Cubic.out",
+        },
       });
-    }
+    });
     const ring = this.add.circle(x, y, 50, 0, 0).setStrokeStyle(2, this.placementDef.accent || 0xffe066, 0.8).setDepth(9);
     this.tweens.add({
       targets: ring,
@@ -830,15 +829,12 @@ export class LevelScene extends Phaser.Scene {
       });
     }
     Audio.click?.();
-    for (let i = 0; i < 8; i++) {
-      const a = (Math.PI * 2 * i) / 8;
-      const dust = this.add.circle(t.x, t.y, 3, 0xc8b08a, 0.7).setDepth(20);
-      this.tweens.add({
-        targets: dust, x: t.x + Math.cos(a) * 30, y: t.y + Math.sin(a) * 30, alpha: 0,
-        duration: 350,
-        onComplete: () => dust.destroy(),
+    Particles.burst(this, t.x, t.y, 6, (i, a) => {
+      Particles.spawnCircle(this, t.x, t.y, {
+        radius: 3, color: 0xc8b08a, alpha: 0.7, depth: 20,
+        tween: { x: t.x + Math.cos(a) * 30, y: t.y + Math.sin(a) * 30, alpha: 0, duration: 350 },
       });
-    }
+    });
     this.tweens.add({
       targets: t, alpha: 0, scale: 0.4, duration: 250,
       onComplete: () => t.destroy(),

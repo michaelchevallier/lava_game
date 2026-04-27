@@ -507,8 +507,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     if (isBoss) {
       const ring = this.scene.add.circle(sx, sy, 10, 0, 0).setStrokeStyle(4, 0xffd23f).setDepth(20);
       this.scene.tweens.add({
-        targets: ring, radius: 100, alpha: 0, duration: 500,
-        onUpdate: (tw, t) => t.setRadius(t.radius),
+        targets: ring, scale: 10, alpha: 0, duration: 500,
         onComplete: () => ring.destroy(),
       });
     }

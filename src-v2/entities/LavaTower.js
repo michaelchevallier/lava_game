@@ -97,7 +97,11 @@ export class LavaTower extends Phaser.GameObjects.Container {
     });
     this.scene.projectiles.push(proj);
     Audio.fire();
-    JuiceFX.fire(this.scene);
+    const now = this.scene.time.now;
+    if (!this.scene._lastFireShakeAt || now - this.scene._lastFireShakeAt > 200) {
+      this.scene._lastFireShakeAt = now;
+      JuiceFX.fire(this.scene);
+    }
 
     const flash = this.scene.add.circle(this.x + 42, this.y - 8, 10, 0xffe066, 0.95);
     flash.setDepth(15);
