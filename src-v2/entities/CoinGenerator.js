@@ -8,6 +8,10 @@ export class CoinGenerator extends Phaser.GameObjects.Container {
     this.amount = opts.amount ?? 30;
     this.intervalMs = opts.intervalMs ?? 6000;
     this.lastTickAt = scene.time.now;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
+    this._dying = false;
 
     const shadow = scene.add.ellipse(0, 26, 50, 8, 0x000, 0.35);
     const base = scene.add.rectangle(0, 22, 56, 12, 0x4a2a04).setStrokeStyle(2, 0x2a1a04);
@@ -66,5 +70,21 @@ export class CoinGenerator extends Phaser.GameObjects.Container {
       lifetimeMs: 8000,
     });
     if (this.scene.suns) this.scene.suns.push(sun);
+  }
+
+  takeDamage(dmg) {
+    if (!this.scene || this._dying) return;
+    this.hp -= dmg;
+    if (this.hp <= 0) this.kill();
+  }
+
+  kill() {
+    if (this._dying) return;
+    this._dying = true;
+    this.scene.events.emit("tile-destroyed", this);
+    this.scene.tweens.add({
+      targets: this, alpha: 0, scaleY: 0.2, duration: 250,
+      onComplete: () => this.destroy(),
+    });
   }
 }

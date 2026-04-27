@@ -4,7 +4,7 @@ export class WaterBlock extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
     super(scene, x, y);
 
-    this.maxHp = opts.hp ?? 8;
+    this.maxHp = opts.hp ?? 30;
     this.hp = this.maxHp;
     this.isBlocking = true;
     this._dying = false;

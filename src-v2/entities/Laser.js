@@ -9,7 +9,10 @@ export class Laser extends Phaser.GameObjects.Container {
     this.damage = opts.damage ?? 0.6;
     this.lastTickAt = 0;
     this._lastScanAt = 0;
-    this.hp = opts.hp ?? 3;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
+    this._dying = false;
 
     const shadow = scene.add.ellipse(0, 26, 50, 8, 0x000, 0.4);
     const base = scene.add.rectangle(0, 22, 44, 12, 0x444466).setStrokeStyle(2, 0x222244);
@@ -41,7 +44,7 @@ export class Laser extends Phaser.GameObjects.Container {
   }
 
   tick(time) {
-    if (!this.scene) return;
+    if (!this.scene || this._dying) return;
     if (this._disabledUntil && time < this._disabledUntil) {
       this.beam.width = 0;
       this.beamGlow.width = 0;
@@ -76,14 +79,18 @@ export class Laser extends Phaser.GameObjects.Container {
   }
 
   takeDamage(dmg) {
-    if (!this.scene) return;
+    if (!this.scene || this._dying) return;
     this.hp -= dmg;
-    if (this.hp <= 0) {
-      this.scene.events.emit("tile-destroyed", this);
-      this.scene.tweens.add({
-        targets: this, alpha: 0, scale: 0.5, duration: 220,
-        onComplete: () => this.destroy(),
-      });
-    }
+    if (this.hp <= 0) this.kill();
+  }
+
+  kill() {
+    if (this._dying) return;
+    this._dying = true;
+    this.scene.events.emit("tile-destroyed", this);
+    this.scene.tweens.add({
+      targets: this, alpha: 0, scaleY: 0.2, duration: 250,
+      onComplete: () => this.destroy(),
+    });
   }
 }

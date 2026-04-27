@@ -9,6 +9,10 @@ export class Catapult extends Phaser.GameObjects.Container {
     this.range = opts.range ?? 1600;
     this.damage = opts.damage ?? 2;
     this.lastShotAt = 0;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
+    this._dying = false;
 
     const base = scene.add.rectangle(0, 22, 60, 14, 0x4a2a04).setStrokeStyle(2, 0x2a1a04);
     const arm = scene.add.rectangle(-2, 0, 8, 36, 0x6b3a0a).setStrokeStyle(2, 0x2a1a04);
@@ -29,7 +33,7 @@ export class Catapult extends Phaser.GameObjects.Container {
   }
 
   tick(time) {
-    if (!this.scene) return;
+    if (!this.scene || this._dying) return;
     if (this._disabledUntil && time < this._disabledUntil) return;
     const target = this.findTarget();
     if (!target) return;
@@ -116,6 +120,22 @@ export class Catapult extends Phaser.GameObjects.Container {
         if (Math.abs(v.y - endY) > 30) continue;
         v.takeDamage(dmg);
       }
+    });
+  }
+
+  takeDamage(dmg) {
+    if (!this.scene || this._dying) return;
+    this.hp -= dmg;
+    if (this.hp <= 0) this.kill();
+  }
+
+  kill() {
+    if (this._dying) return;
+    this._dying = true;
+    this.scene.events.emit("tile-destroyed", this);
+    this.scene.tweens.add({
+      targets: this, alpha: 0, scaleY: 0.2, duration: 250,
+      onComplete: () => this.destroy(),
     });
   }
 }

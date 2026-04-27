@@ -1062,7 +1062,7 @@ export class LevelScene extends Phaser.Scene {
       }
       if (blocker) {
         v.blocked = true;
-        if (typeof blocker.takeDamage === "function") blocker.takeDamage(0.6 * dtSec);
+        if (typeof blocker.takeDamage === "function") blocker.takeDamage(1.0 * dtSec);
       } else {
         v.blocked = false;
       }

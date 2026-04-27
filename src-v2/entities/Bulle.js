@@ -9,7 +9,9 @@ export class Bulle extends Phaser.GameObjects.Container {
     this.cooldownMs = opts.cooldownMs ?? 6000;
     this.lastFireAt = -Infinity;
     this._lastScanAt = 0;
-    this.hp = opts.hp ?? 3;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
     this._dying = false;
 
     const shadow = scene.add.ellipse(0, 26, 50, 8, 0x000, 0.4);

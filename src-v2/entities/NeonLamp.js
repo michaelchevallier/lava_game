@@ -10,6 +10,10 @@ export class NeonLamp extends Phaser.GameObjects.Container {
     this.slowFactor = opts.slowFactor ?? 0.6;
     this.lastTickAt = 0;
     this._t = 0;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
+    this._dying = false;
 
     const shadow = scene.add.ellipse(0, 28, 50, 8, 0x000, 0.35);
     const base = scene.add.rectangle(0, 22, 16, 12, 0x222);
@@ -36,7 +40,7 @@ export class NeonLamp extends Phaser.GameObjects.Container {
   }
 
   tick(time) {
-    if (!this.scene) return;
+    if (!this.scene || this._dying) return;
     this._t += 16;
     const flicker = Math.sin(this._t / 90) * 0.15 + 0.85;
     this.tube.setAlpha(flicker);
@@ -75,15 +79,18 @@ export class NeonLamp extends Phaser.GameObjects.Container {
   }
 
   takeDamage(dmg) {
-    if (!this.scene) return;
-    if (!this._hp) this._hp = 4;
-    this._hp -= dmg;
-    if (this._hp <= 0) {
-      this.scene.events.emit("tile-destroyed", this);
-      this.scene.tweens.add({
-        targets: this, alpha: 0, scale: 0.4, duration: 220,
-        onComplete: () => this.destroy(),
-      });
-    }
+    if (!this.scene || this._dying) return;
+    this.hp -= dmg;
+    if (this.hp <= 0) this.kill();
+  }
+
+  kill() {
+    if (this._dying) return;
+    this._dying = true;
+    this.scene.events.emit("tile-destroyed", this);
+    this.scene.tweens.add({
+      targets: this, alpha: 0, scaleY: 0.2, duration: 250,
+      onComplete: () => this.destroy(),
+    });
   }
 }

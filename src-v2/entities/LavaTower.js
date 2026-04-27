@@ -11,6 +11,10 @@ export class LavaTower extends Phaser.GameObjects.Container {
     this.range = opts.range ?? 1400;
     this.damage = opts.damage ?? 1;
     this.lastShotAt = 0;
+    this.maxHp = opts.hp ?? 5;
+    this.hp = this.maxHp;
+    this.isBlocking = true;
+    this._dying = false;
 
     const shadow = scene.add.ellipse(0, 26, 60, 10, 0x000, 0.35);
     const useTowerSprite = scene.textures.exists("kenney_tile_tower_red") && scene.textures.exists("kenney_tile_base");
@@ -58,7 +62,7 @@ export class LavaTower extends Phaser.GameObjects.Container {
   }
 
   tick(time) {
-    if (!this.scene) return;
+    if (!this.scene || this._dying) return;
     if (this._disabledUntil && time < this._disabledUntil) return;
     const target = this.findTarget();
     if (!target) return;
@@ -121,6 +125,22 @@ export class LavaTower extends Phaser.GameObjects.Container {
       scaleY: 0.95,
       duration: 80,
       yoyo: true,
+    });
+  }
+
+  takeDamage(dmg) {
+    if (!this.scene || this._dying) return;
+    this.hp -= dmg;
+    if (this.hp <= 0) this.kill();
+  }
+
+  kill() {
+    if (this._dying) return;
+    this._dying = true;
+    this.scene.events.emit("tile-destroyed", this);
+    this.scene.tweens.add({
+      targets: this, alpha: 0, scaleY: 0.2, duration: 250,
+      onComplete: () => this.destroy(),
     });
   }
 }
