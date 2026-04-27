@@ -5,8 +5,9 @@
 Jeu 2D Tower Defense « Milan Park Defense — Foire en Lave » pour Milan. **Phaser 4 + Vite + JS vanilla**, 100% client-side, inspiré Plants vs Zombies. Bundle ~395 KB gz.
 
 Live actuel :
-- `/` = legacy KAPLAY archivé (branche `main`)
-- `/v2/` = Park Defense (branche `phaser-pivot`, encore active dev)
+- `/` = Park Defense (branche `phaser-pivot`)
+- `/v2/` = Park Defense (alias historique)
+- `/v1/` = legacy KAPLAY archivé (branche `main`)
 
 Repo : https://github.com/michaelchevallier/lava_game
 
@@ -16,9 +17,11 @@ Le pivot Phaser de 2026-04-26 est devenu un jeu complet. Roadmap initiale 100% b
 
 ### Contenu
 
-- **42+ niveaux** : 36 campagne (6 mondes × 6) + 5 carnaval + arène boss + endless + daily
-- **6 mondes** : Plein Été, Crépuscule, Tempête, Volcan, Apocalypse, Foire Magique
-- **13 tiles** : coin, water, cottoncandy, lava, fan, catapult, frost, magnet, portal, tamer, mine, neon, shovel
+- **66+ niveaux** : 60 campagne (10 mondes × 6) + 5 carnaval + arène boss + endless + daily
+- **10 mondes** : Plein Été, Crépuscule, Tempête, Volcan, Apocalypse, Foire Magique, Espace, Sous-Marin, Médiéval, Cyberpunk
+- **15 tiles** : coin, water, cottoncandy, lava, fan, catapult, frost, magnet, portal, tamer, mine, neon, laser, bulle, shovel
+- **Skins shop** : 12 skins achetables avec tickets (5-10 🎫), équipables par tile via SkinsScene
+- **Narrative branchée** : choix dans cutscenes 4/7/10 sauvegardés (startCoins bonus, kill bonus, cooldown reduction)
 - **17+ types de visiteurs** dont 3 vrais boss multi-phases (magicboss summon, lavaqueen lava-trail, carnivalboss 3-phases)
 - **17 trophées** + galerie + bonus +5¢ start permanent par trophée
 - **Stats screen** complet (kills, étoiles, tickets, streak daily, record endless, etc.)

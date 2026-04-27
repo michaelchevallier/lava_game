@@ -463,7 +463,7 @@ export class LevelScene extends Phaser.Scene {
       }
     }
     if (world === 7) {
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 40; i++) {
         const sx = Math.random() * w;
         const sy = Math.random() * (GRID.originY - 10);
         const star = this.add.circle(sx, sy, Math.random() * 1.2 + 0.3, 0xffffff, 0.9);
