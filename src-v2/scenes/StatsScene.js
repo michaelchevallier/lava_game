@@ -84,6 +84,27 @@ export class StatsScene extends Phaser.Scene {
       });
     });
 
+    const choices = save.narrativeChoices || {};
+    if (Object.keys(choices).length) {
+      const labels = {
+        save_kids: "🛡 Sauveur (W4)",
+        fire_all:  "🔥 Pyromane (W4)",
+        diplomacy: "🕊 Pacifiste (W7)",
+        annihilation: "💥 Destructeur (W7)",
+        human:   "🧠 Humain (W10)",
+        machine: "🦾 Machine (W10)",
+      };
+      const pathY = startY + Math.ceil(stats.length / cols) * (cellH + gap) + 16;
+      this.add.text(width / 2, pathY, "Voies narratives empruntées", {
+        fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ff66cc",
+      }).setOrigin(0.5);
+      const items = Object.values(choices).map((id) => labels[id] || id).join("    •    ");
+      this.add.text(width / 2, pathY + 26, items, {
+        fontFamily: "Fredoka, system-ui", fontSize: "15px", color: "#ffeebb",
+        stroke: "#000", strokeThickness: 2,
+      }).setOrigin(0.5);
+    }
+
     makeClickable(this, {
       x: 80, y: height - 50, width: 130, height: 50,
       fillColor: 0x222840, strokeColor: 0xffd23f,

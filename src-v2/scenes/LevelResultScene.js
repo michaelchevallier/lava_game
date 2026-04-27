@@ -1,9 +1,10 @@
 import * as Phaser from "phaser";
-import { saveProgress, saveEndlessRun, getEndlessTop } from "../systems/SaveSystem.js";
+import { saveProgress, saveEndlessRun, getEndlessTop, loadSave } from "../systems/SaveSystem.js";
 import { getNextLevelId } from "../data/levels/index.js";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { makeClickable } from "../ui/Clickable.js";
+import { checkTrophies } from "../systems/Trophies.js";
 
 export class LevelResultScene extends Phaser.Scene {
   constructor() {
@@ -25,6 +26,11 @@ export class LevelResultScene extends Phaser.Scene {
     if (endless) {
       saveEndlessRun(killed || 0, endlessWave || 0);
     } else if (win) saveProgress(levelId, stars);
+
+    if (win) {
+      const newly = checkTrophies(null, loadSave());
+      if (newly && newly.length) this._popTrophies(newly);
+    }
 
     const bg = this.add.graphics();
     if (win) {
@@ -175,6 +181,31 @@ export class LevelResultScene extends Phaser.Scene {
       });
       this.input.keyboard.once("keydown-" + b.key, () => { Audio.click(); b.action(); });
       bx += 220;
+    });
+  }
+
+  _popTrophies(newly) {
+    if (!newly || !newly.length) return;
+    const baseY = 80;
+    newly.forEach((t, i) => {
+      this.time.delayedCall(600 + i * 350, () => {
+        const x = this.scale.width - 20;
+        const y = baseY + i * 76;
+        const card = this.add.container(x + 320, y).setDepth(120);
+        const bg = this.add.rectangle(0, 0, 300, 64, 0x2a1a3a, 0.95).setStrokeStyle(2, 0xffd23f).setOrigin(1, 0.5);
+        const emoji = this.add.text(-280, 0, t.emoji, { fontFamily: "Fredoka, system-ui", fontSize: "32px" }).setOrigin(0.5);
+        const title = this.add.text(-260, -10, "🏆 " + t.name, { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" });
+        const sub = this.add.text(-260, 8, "+5¢ start permanent", { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#90ff90" });
+        card.add([bg, emoji, title, sub]);
+        Audio.win?.();
+        this.tweens.add({ targets: card, x: x, duration: 400, ease: "Back.out" });
+        this.time.delayedCall(3500, () => {
+          this.tweens.add({
+            targets: card, x: x + 320, alpha: 0, duration: 350, ease: "Cubic.in",
+            onComplete: () => card.destroy(),
+          });
+        });
+      });
     });
   }
 }

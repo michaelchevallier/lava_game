@@ -1156,6 +1156,22 @@ export class LevelScene extends Phaser.Scene {
     });
   }
 
+  _isFirstAppearance(tileId) {
+    const FIRST_INTRO = {
+      laser: "7.1",
+      bulle: "8.1",
+      catapult: "3.1",
+      cottoncandy: "1.4",
+      tamer: "4.4",
+      mine: "5.1",
+      neon: "6.1",
+      portal: "4.1",
+      magnet: "2.1",
+      frost: "3.1",
+    };
+    return FIRST_INTRO[tileId] === this.level.id;
+  }
+
   _showLevelIntro() {
     if (this.level.id === "1.1") return;
     const { width, height } = this.scale;
@@ -1168,10 +1184,36 @@ export class LevelScene extends Phaser.Scene {
     const name = this.add.text(0, 16, this.level.name, {
       fontFamily: "Fredoka, system-ui", fontSize: "32px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 5,
     }).setOrigin(0.5);
-    const sub = this.add.text(0, 48, (this.level.waves?.length || 0) + " vagues  •  Sortie max " + (this.level.loseEscaped ?? "?"), {
+    const sub = this.add.text(0, 44, (this.level.waves?.length || 0) + " vagues  •  Sortie max " + (this.level.loseEscaped ?? "?"), {
       fontFamily: "Fredoka, system-ui", fontSize: "13px", color: "#ffeebb",
     }).setOrigin(0.5);
-    card.add([stripe, title, name, sub]);
+    const newTileHints = {
+      laser: "🔫 Laser : faisceau continu sur la lane (250¢)",
+      bulle: "🫧 Bulle : capture le visiteur 5s (200¢)",
+      tamer: "🎯 Dompteur : retourne le visiteur (400¢)",
+      cottoncandy: "🍬 Barbe-à-Papa : ralentit dans la zone (75¢)",
+      mine: "💣 Mine : explose au passage (100¢)",
+      neon: "💡 Néon : étourdit en zone (200¢)",
+      portal: "🌀 Portail : téléporte au début (300¢)",
+      catapult: "🪨 Catapulte : ballistique au-dessus (175¢)",
+      magnet: "🧲 Bombe Aimant : kill all 3×3 (275¢)",
+      frost: "❄ Frost Tramp : slow + dmg (225¢)",
+    };
+    const allowed = this.level.allowedTiles || [];
+    let tipText = null;
+    for (const id of allowed) {
+      if (newTileHints[id] && this._isFirstAppearance(id)) {
+        tipText = newTileHints[id];
+        break;
+      }
+    }
+    let tipLabel = null;
+    if (tipText) {
+      tipLabel = this.add.text(0, 70, "Nouveau : " + tipText, {
+        fontFamily: "Fredoka, system-ui", fontSize: "13px", fontStyle: "bold", color: "#88ddff", stroke: "#000", strokeThickness: 2,
+      }).setOrigin(0.5);
+    }
+    card.add(tipLabel ? [stripe, title, name, sub, tipLabel] : [stripe, title, name, sub]);
     card.setAlpha(0);
     this.tweens.add({ targets: card, alpha: 1, duration: 250 });
     this.tweens.add({ targets: stripe, scaleX: 1, duration: 350, ease: "Cubic.out" });
