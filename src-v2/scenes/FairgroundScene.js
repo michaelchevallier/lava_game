@@ -202,7 +202,20 @@ export class FairgroundScene extends Phaser.Scene {
 
     const isNewBest = this.score > 0 ? recordFairgroundScore(this.gameType, this.score) : false;
 
-    const reward = Math.floor(this.score / 5);
+    const REWARD_MUL = {
+      pigeon: 0.7,
+      chamboule: 0.8,
+      math: 1.4,
+      pancake: 1.3,
+      bumper: 1.2,
+      trafficlight: 1.4,
+      archery: 1.6,
+      candysort: 1.3,
+      lavajump: 2.0,
+      wheel: 2.5,
+    };
+    const mul = REWARD_MUL[this.gameType] ?? 1.0;
+    const reward = Math.floor((this.score * mul) / 5);
     if (reward > 0) {
       const newly = bumpTickets(reward);
       const save = loadSave();
