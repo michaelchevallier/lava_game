@@ -91,15 +91,65 @@ export class CampaignMenuScene extends Phaser.Scene {
     this.drawStatsButton();
     this.drawFairgroundButton();
 
+    this.scrollContainer = this.add.container(0, 0);
+    this.scrollContainer.setDepth(5);
+
     let y = 142;
     for (const world of WORLDS) {
       this.drawWorldRow(world, y);
       y += 80;
     }
-    this.drawEndlessButton(y + 8);
-    this.drawCarnivalButton(y + 8);
-    this.drawBossArenaButton(y + 8);
+    const bottomY = y + 8;
+    this.drawEndlessButton(bottomY);
+    this.drawCarnivalButton(bottomY);
+    this.drawBossArenaButton(bottomY);
     this.drawDailyButton();
+
+    const contentBottom = bottomY + 100;
+    const viewport = this.scale.height;
+    const overflow = Math.max(0, contentBottom - viewport + 20);
+    this._scrollMin = -overflow;
+    this._scrollY = 0;
+
+    if (overflow > 0) {
+      this.input.on("wheel", (_p, _go, _dx, dy) => {
+        this._scrollY = Phaser.Math.Clamp(this._scrollY - dy * 0.6, this._scrollMin, 0);
+        this.scrollContainer.y = this._scrollY;
+      });
+
+      let dragStartY = null;
+      let dragStartScroll = 0;
+      this.input.on("pointerdown", (p) => {
+        if (p.y > 142) {
+          dragStartY = p.y;
+          dragStartScroll = this._scrollY;
+        }
+      });
+      this.input.on("pointermove", (p) => {
+        if (dragStartY != null && p.isDown && Math.abs(p.y - dragStartY) > 8) {
+          this._scrollY = Phaser.Math.Clamp(dragStartScroll + (p.y - dragStartY), this._scrollMin, 0);
+          this.scrollContainer.y = this._scrollY;
+        }
+      });
+      this.input.on("pointerup", () => { dragStartY = null; });
+
+      const arrowY = 142 + 4;
+      const arrow = this.add.text(this.scale.width - 30, arrowY, "▼", {
+        fontFamily: "Fredoka, system-ui",
+        fontSize: "18px",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(60);
+      this.tweens.add({ targets: arrow, y: arrowY + 6, duration: 700, yoyo: true, repeat: -1, ease: "Sine.inOut" });
+    }
+  }
+
+  _addScroll(...objs) {
+    if (!this.scrollContainer) return;
+    for (const o of objs) {
+      if (o && o.scene) this.scrollContainer.add(o);
+    }
   }
 
   drawBossArenaButton(y) {
@@ -110,7 +160,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     const result = isCompleted("boss-arena");
     const cy = y + 40;
 
-    makeClickable(this, {
+    const btn = makeClickable(this, {
       x: x + third / 2, y: cy, width: third, height: 88,
       radius: 10,
       fillColor: 0x000000, fillAlpha: 0.55,
@@ -131,6 +181,7 @@ export class CampaignMenuScene extends Phaser.Scene {
         });
       },
     });
+    this._addScroll(btn);
   }
 
   drawStatsButton() {
@@ -211,7 +262,7 @@ export class CampaignMenuScene extends Phaser.Scene {
 
     const third = (width - 80) / 3;
     const cx = 30 + (third + 10) + third / 2;
-    makeClickable(this, {
+    const btn = makeClickable(this, {
       x: cx, y: y + 40, width: third, height: 88,
       radius: 10,
       fillColor: 0x000000, fillAlpha: 0.55,
@@ -230,6 +281,7 @@ export class CampaignMenuScene extends Phaser.Scene {
         });
       },
     });
+    this._addScroll(btn);
   }
 
   drawTrophyButton() {
@@ -265,7 +317,7 @@ export class CampaignMenuScene extends Phaser.Scene {
       ? "Endless  ★ " + best + " • V" + bestWave
       : "Mode Endless";
 
-    makeClickable(this, {
+    const btn = makeClickable(this, {
       x: 30 + halfW / 2, y: y + 40, width: halfW, height: 88,
       radius: 10,
       fillColor: 0x000000, fillAlpha: 0.55,
@@ -283,6 +335,7 @@ export class CampaignMenuScene extends Phaser.Scene {
         });
       },
     });
+    this._addScroll(btn);
   }
 
   _showLevelTip(level, x, y) {
@@ -338,38 +391,43 @@ export class CampaignMenuScene extends Phaser.Scene {
     rowBg.fillRoundedRect(20, y - 4, width - 40, cellH + 14, 8);
     rowBg.lineStyle(3, theme.accent, 0.9);
     rowBg.strokeRoundedRect(20, y - 4, width - 40, cellH + 14, 8);
+    this._addScroll(rowBg);
 
     const colorIndic = this.add.rectangle(38, y + cellH / 2 + 3, 6, cellH - 4, theme.accent);
     this.tweens.add({ targets: colorIndic, alpha: { from: 0.7, to: 1 }, duration: 1200, yoyo: true, repeat: -1 });
+    this._addScroll(colorIndic);
 
-    this.add.text(labelX, y + cellH / 2 - 14, "Monde " + world.id, {
+    const monLabel = this.add.text(labelX, y + cellH / 2 - 14, "Monde " + world.id, {
       fontFamily: "Fredoka, system-ui",
       fontSize: "18px",
       fontStyle: "bold",
       color: "#fff",
     });
-    this.add.text(labelX, y + cellH / 2 + 8, theme.name, {
+    const themeLabel = this.add.text(labelX, y + cellH / 2 + 8, theme.name, {
       fontFamily: "Fredoka, system-ui",
       fontSize: "14px",
       color: "#ffeebb",
     });
+    this._addScroll(monLabel, themeLabel);
 
     if (world.comingSoon) {
-      this.add.text(width / 2, y + cellH / 2 + 3, "À venir", {
+      const t = this.add.text(width / 2, y + cellH / 2 + 3, "À venir", {
         fontFamily: "Fredoka, system-ui",
         fontSize: "20px",
         fontStyle: "bold",
         color: "#888",
       }).setOrigin(0.5);
+      this._addScroll(t);
       return;
     }
 
     if (!isWorldUnlocked(world)) {
-      this.add.text(width / 2, y + cellH / 2 + 3, "🔒 Termine " + world.requires + " pour débloquer", {
+      const t = this.add.text(width / 2, y + cellH / 2 + 3, "🔒 Termine " + world.requires + " pour débloquer", {
         fontFamily: "Fredoka, system-ui",
         fontSize: "16px",
         color: "#aaa",
       }).setOrigin(0.5);
+      this._addScroll(t);
       return;
     }
 
@@ -389,12 +447,14 @@ export class CampaignMenuScene extends Phaser.Scene {
       cellBg.fillRoundedRect(x, cellY - cellH / 2, cellW, cellH, 6);
       cellBg.lineStyle(2, stroke);
       cellBg.strokeRoundedRect(x, cellY - cellH / 2, cellW, cellH, 6);
+      this._addScroll(cellBg);
 
       const hit = this.add.rectangle(x + cellW / 2, cellY, cellW, cellH, 0x000, 0);
       if (unlocked) hit.setInteractive();
+      this._addScroll(hit);
 
       const titleColor = unlocked ? "#fff" : "#666";
-      this.add.text(x + cellW / 2, cellY - 18, unlocked ? levelId : "🔒", {
+      const idText = this.add.text(x + cellW / 2, cellY - 18, unlocked ? levelId : "🔒", {
         fontFamily: "Fredoka, system-ui",
         fontSize: "16px",
         fontStyle: "bold",
@@ -402,25 +462,28 @@ export class CampaignMenuScene extends Phaser.Scene {
         stroke: "#000",
         strokeThickness: 3,
       }).setOrigin(0.5);
+      this._addScroll(idText);
 
       if (unlocked) {
-        this.add.text(x + cellW / 2, cellY - 2, level.name, {
+        const nameText = this.add.text(x + cellW / 2, cellY - 2, level.name, {
           fontFamily: "Fredoka, system-ui",
           fontSize: "10px",
           color: "#ddd",
         }).setOrigin(0.5);
         const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
-        this.add.text(x + cellW / 2, cellY + 18, starText, {
+        const starsT = this.add.text(x + cellW / 2, cellY + 18, starText, {
           fontFamily: "Fredoka, system-ui",
           fontSize: "14px",
           color: stars > 0 ? "#ffd23f" : "#666",
           stroke: "#000",
           strokeThickness: 2,
         }).setOrigin(0.5);
+        this._addScroll(nameText, starsT);
 
         const hoverBg = this.add.graphics();
         hoverBg.fillStyle(stroke, 0.2);
         hoverBg.fillRoundedRect(x, cellY - cellH / 2, cellW, cellH, 6).setVisible(false);
+        this._addScroll(hoverBg);
         hit.on("pointerover", () => { hoverBg.setVisible(true); Audio.ui(); this._showLevelTip(level, x + cellW / 2, cellY - cellH / 2 - 6); });
         hit.on("pointerout", () => { hoverBg.setVisible(false); this._hideLevelTip(); });
         hit.on("pointerdown", () => {

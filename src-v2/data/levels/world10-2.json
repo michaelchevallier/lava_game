@@ -1,0 +1,46 @@
+{
+  "id": "10.2",
+  "name": "Androïdes",
+  "world": 10,
+  "startCoins": 425,
+  "allowedTiles": ["coin", "lava", "water", "fan", "neon", "laser"],
+  "loseEscaped": 5,
+  "waves": [
+    {
+      "delayMs": 8000,
+      "visitors": [
+        { "type": "tank", "lane": 1, "delayMs": 0 },
+        { "type": "magicien", "lane": 2, "delayMs": 2500 },
+        { "type": "basic", "lane": 3, "delayMs": 4000 },
+        { "type": "vip", "lane": 0, "delayMs": 6500 }
+      ]
+    },
+    {
+      "delayMs": 30000,
+      "visitors": [
+        { "type": "tank", "lane": 0, "delayMs": 0 },
+        { "type": "tank", "lane": 4, "delayMs": 1500 },
+        { "type": "magicien", "lane": 2, "delayMs": 3000 },
+        { "type": "vip", "lane": 1, "delayMs": 5000 },
+        { "type": "basic", "lane": 3, "delayMs": 6500 }
+      ]
+    },
+    {
+      "delayMs": 56000,
+      "visitors": [
+        { "type": "magicien", "lane": 1, "delayMs": 0 },
+        { "type": "magicien", "lane": 3, "delayMs": 800 },
+        { "type": "tank", "lane": 0, "delayMs": 2500 },
+        { "type": "tank", "lane": 4, "delayMs": 3500 },
+        { "type": "vip", "lane": 2, "delayMs": 5000 },
+        { "type": "basic", "lane": 1, "delayMs": 7000 },
+        { "type": "basic", "lane": 3, "delayMs": 7800 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 4 },
+    "2": { "escapedMax": 2 },
+    "3": { "escapedMax": 0 }
+  }
+}

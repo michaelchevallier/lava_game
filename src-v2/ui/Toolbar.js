@@ -13,11 +13,13 @@ export const TILE_DEFS = [
   { id: "tamer", label: "Dompteur", cost: 400, color: 0xc63a3a, accent: 0xffd23f, cooldownMs: 35000 },
   { id: "mine", label: "Mine", cost: 100, color: 0x4a2a4a, accent: 0xff8800, cooldownMs: 12000 },
   { id: "neon", label: "Néon", cost: 200, color: 0xff66ff, accent: 0xffaaff, cooldownMs: 14000 },
+  { id: "laser", label: "Laser", cost: 250, color: 0x66ddff, accent: 0xffffff, cooldownMs: 16000 },
+  { id: "bulle", label: "Bulle", cost: 200, color: 0x66ffdd, accent: 0xaaffee, cooldownMs: 14000 },
   { id: "shovel", label: "Pelle", cost: 0, color: 0x6b3a0a, accent: 0xc8a060, removeMode: true, cooldownMs: 0 },
 ];
 
 export class Toolbar extends Phaser.GameObjects.Container {
-  constructor(scene, y, onSelect, getCoins) {
+  constructor(scene, y, onSelect, getCoins, allowedTiles = null) {
     super(scene, 0, y);
     this.scene = scene;
     this.onSelect = onSelect;
@@ -29,15 +31,26 @@ export class Toolbar extends Phaser.GameObjects.Container {
     const bg = scene.add.rectangle(w / 2, 0, w, h, 0x141826).setStrokeStyle(2, 0x2a3050).setOrigin(0.5, 0);
     this.add(bg);
 
+    let visibleDefs;
+    if (allowedTiles && allowedTiles.length) {
+      const allowedSet = new Set([...allowedTiles, "shovel"]);
+      visibleDefs = TILE_DEFS.filter((d) => allowedSet.has(d.id));
+    } else {
+      visibleDefs = TILE_DEFS.slice();
+    }
+    this._visibleDefs = visibleDefs;
+
     this.buttons = [];
-    const btnW = 86;
-    const btnH = 84;
+    const totalCount = visibleDefs.length;
     const gap = 4;
-    const totalW = TILE_DEFS.length * (btnW + gap) - gap;
+    let btnW = Math.floor((w - 60 - gap * (totalCount - 1)) / totalCount);
+    btnW = Math.max(70, Math.min(110, btnW));
+    const btnH = 84;
+    const totalW = totalCount * (btnW + gap) - gap;
     const startX = w / 2 - totalW / 2;
 
     const SHORTCUTS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Q", "W", "E", "R", "T"];
-    TILE_DEFS.forEach((def, i) => {
+    visibleDefs.forEach((def, i) => {
       const x = startX + i * (btnW + gap) + btnW / 2;
       const label = SHORTCUTS[i] || "";
       const btn = this.makeButton(def, x, h / 2, btnW, btnH, label);
@@ -309,6 +322,20 @@ export function makeTileIcon(s, id, x, y) {
         c.add(s.add.circle(Math.cos(a) * 11, -2 + Math.sin(a) * 4, 2, 0x222));
       }
       c.add(s.add.circle(0, -8, 2, 0xff4400));
+    } else if (id === "laser") {
+      c.add(s.add.rectangle(0, 10, 24, 5, 0x222244));
+      c.add(s.add.rectangle(0, -2, 14, 16, 0x6688aa).setStrokeStyle(1, 0x223355));
+      c.add(s.add.rectangle(0, -12, 16, 4, 0x222244));
+      c.add(s.add.circle(7, -4, 3, 0x66ddff).setStrokeStyle(1, 0xffffff));
+      c.add(s.add.rectangle(14, -4, 12, 2, 0x66ddff, 0.85).setOrigin(0, 0.5));
+      c.add(s.add.rectangle(14, -4, 12, 6, 0x66ddff, 0.25).setOrigin(0, 0.5));
+    } else if (id === "bulle") {
+      c.add(s.add.rectangle(0, 10, 22, 5, 0x224a6a));
+      c.add(s.add.circle(0, -2, 11, 0x66ffdd).setStrokeStyle(2, 0x1a8a8a));
+      c.add(s.add.circle(0, -2, 7, 0xaaffee, 0.6));
+      c.add(s.add.circle(-3, -3, 1, 0x000));
+      c.add(s.add.circle(3, -3, 1, 0x000));
+      c.add(s.add.rectangle(0, 2, 4, 1, 0x000));
     } else if (id === "shovel") {
       c.add(s.add.rectangle(0, 6, 4, 24, 0x6b3a0a).setStrokeStyle(1, 0x2a1a04));
       c.add(s.add.triangle(0, -6, 0, 0, -8, -10, 8, -10, 0x999).setStrokeStyle(1, 0x444));

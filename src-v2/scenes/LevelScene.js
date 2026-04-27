@@ -15,6 +15,8 @@ import { CottonCandy } from "../entities/CottonCandy.js";
 import { Mine } from "../entities/Mine.js";
 import { NeonLamp } from "../entities/NeonLamp.js";
 import { Tamer } from "../entities/Tamer.js";
+import { Laser } from "../entities/Laser.js";
+import { Bulle } from "../entities/Bulle.js";
 import { Toolbar } from "../ui/Toolbar.js";
 import { ConveyorBelt } from "../ui/ConveyorBelt.js";
 import { Player2Cursor } from "../ui/Player2Cursor.js";
@@ -756,6 +758,10 @@ export class LevelScene extends Phaser.Scene {
       entity = new Mine(this, x, y);
     } else if (this.placementDef.id === "neon") {
       entity = new NeonLamp(this, x, y);
+    } else if (this.placementDef.id === "laser") {
+      entity = new Laser(this, x, y);
+    } else if (this.placementDef.id === "bulle") {
+      entity = new Bulle(this, x, y);
     }
     if (!entity) return;
     this.towers.push(entity);
@@ -809,7 +815,7 @@ export class LevelScene extends Phaser.Scene {
     const t = this.gridState[cell.row][cell.col];
     if (!t || t._dying) return;
     let refund = 0;
-    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 125, MagnetBomb: 275, Catapult: 175, FrostTramp: 225, Portal: 300, Tamer: 400, CottonCandy: 75, Mine: 100, NeonLamp: 200 };
+    const tileMap = { LavaTower: 100, CoinGenerator: 50, WaterBlock: 50, Fan: 125, MagnetBomb: 275, Catapult: 175, FrostTramp: 225, Portal: 300, Tamer: 400, CottonCandy: 75, Mine: 100, NeonLamp: 200, Laser: 250, Bulle: 200 };
     refund = Math.floor((tileMap[t.constructor.name] || 0) / 2);
     this.gridState[cell.row][cell.col] = null;
     this.coins += refund;

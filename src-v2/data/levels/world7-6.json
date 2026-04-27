@@ -1,0 +1,49 @@
+{
+  "id": "7.6",
+  "name": "OVNI Boss",
+  "world": 7,
+  "startCoins": 500,
+  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "frost", "portal", "laser"],
+  "loseEscaped": 3,
+  "waves": [
+    {
+      "delayMs": 10000,
+      "visitors": [
+        { "type": "flying", "lane": 1, "delayMs": 0 },
+        { "type": "flying", "lane": 3, "delayMs": 1000 },
+        { "type": "tank", "lane": 2, "delayMs": 3000 },
+        { "type": "thief", "lane": 0, "delayMs": 5000 },
+        { "type": "thief", "lane": 4, "delayMs": 6000 }
+      ]
+    },
+    {
+      "delayMs": 32000,
+      "visitors": [
+        { "type": "tank", "lane": 0, "delayMs": 0 },
+        { "type": "tank", "lane": 4, "delayMs": 800 },
+        { "type": "flying", "lane": 1, "delayMs": 2000 },
+        { "type": "flying", "lane": 2, "delayMs": 2800 },
+        { "type": "flying", "lane": 3, "delayMs": 3600 },
+        { "type": "vip", "lane": 0, "delayMs": 5500 },
+        { "type": "vip", "lane": 4, "delayMs": 6500 }
+      ]
+    },
+    {
+      "delayMs": 60000,
+      "visitors": [
+        { "type": "boss", "lane": 2, "delayMs": 0 },
+        { "type": "flying", "lane": 0, "delayMs": 2000 },
+        { "type": "flying", "lane": 1, "delayMs": 2500 },
+        { "type": "flying", "lane": 3, "delayMs": 3000 },
+        { "type": "flying", "lane": 4, "delayMs": 3500 },
+        { "type": "tank", "lane": 1, "delayMs": 6000 },
+        { "type": "tank", "lane": 3, "delayMs": 7000 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 2 },
+    "2": { "escapedMax": 1 },
+    "3": { "escapedMax": 0 }
+  }
+}

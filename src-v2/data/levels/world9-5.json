@@ -1,0 +1,50 @@
+{
+  "id": "9.5",
+  "name": "Siège",
+  "world": 9,
+  "startCoins": 450,
+  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "catapult", "frost", "portal"],
+  "loseEscaped": 3,
+  "waves": [
+    {
+      "delayMs": 8000,
+      "visitors": [
+        { "type": "tank", "lane": 1, "delayMs": 0 },
+        { "type": "tank", "lane": 3, "delayMs": 1000 },
+        { "type": "boudeur", "lane": 2, "delayMs": 3000 },
+        { "type": "stiltman", "lane": 0, "delayMs": 5000 },
+        { "type": "stiltman", "lane": 4, "delayMs": 6000 }
+      ]
+    },
+    {
+      "delayMs": 32000,
+      "visitors": [
+        { "type": "boudeur", "lane": 0, "delayMs": 0 },
+        { "type": "boudeur", "lane": 4, "delayMs": 800 },
+        { "type": "tank", "lane": 1, "delayMs": 2500 },
+        { "type": "tank", "lane": 3, "delayMs": 3500 },
+        { "type": "stiltman", "lane": 2, "delayMs": 5000 },
+        { "type": "vip", "lane": 1, "delayMs": 7000 },
+        { "type": "vip", "lane": 3, "delayMs": 7800 }
+      ]
+    },
+    {
+      "delayMs": 60000,
+      "visitors": [
+        { "type": "boudeur", "lane": 0, "delayMs": 0 },
+        { "type": "boudeur", "lane": 1, "delayMs": 500 },
+        { "type": "boudeur", "lane": 3, "delayMs": 1000 },
+        { "type": "boudeur", "lane": 4, "delayMs": 1500 },
+        { "type": "tank", "lane": 2, "delayMs": 3500 },
+        { "type": "stiltman", "lane": 1, "delayMs": 5500 },
+        { "type": "stiltman", "lane": 3, "delayMs": 6300 },
+        { "type": "vip", "lane": 2, "delayMs": 8500 }
+      ]
+    }
+  ],
+  "stars": {
+    "1": { "escapedMax": 2 },
+    "2": { "escapedMax": 1 },
+    "3": { "escapedMax": 0 }
+  }
+}
