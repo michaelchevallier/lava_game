@@ -538,7 +538,7 @@ export class FairgroundScene extends Phaser.Scene {
       if (this.gameOver) return;
       const fromLeft = Math.random() > 0.5;
       const sx = fromLeft ? -50 : width + 50;
-      const sy = arenaY1 + 50 + Math.random() * (arenaY2 - arenaY1 - 100);
+      const sy = arenaY1 + 18 + Math.random() * (arenaY2 - arenaY1 - 36);
       const diff = difficultyAt(survivedMs / 1000);
       const dur = diff.carDur + Math.floor(Math.random() * 400 - 200);
       const c = this.add.container(sx, sy);
@@ -587,8 +587,8 @@ export class FairgroundScene extends Phaser.Scene {
       const sp = 0.34 * delta;
       if (keys.left) car.x = Math.max(50, car.x - sp);
       if (keys.right) car.x = Math.min(width - 50, car.x + sp);
-      if (keys.up) car.y = Math.max(arenaY1 + 30, car.y - sp);
-      if (keys.down) car.y = Math.min(arenaY2 - 30, car.y + sp);
+      if (keys.up) car.y = Math.max(arenaY1 + 18, car.y - sp);
+      if (keys.down) car.y = Math.min(arenaY2 - 18, car.y + sp);
 
       const invuln = time < invulnUntil;
       car.setAlpha(invuln ? (Math.floor(time / 80) % 2 ? 0.3 : 1) : 1);
