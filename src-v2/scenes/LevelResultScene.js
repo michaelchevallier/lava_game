@@ -159,8 +159,12 @@ export class LevelResultScene extends Phaser.Scene {
     const btnGap = 220;
 
     const goToLevel = (id) => {
-      this.scene.stop("LevelScene");
-      this.scene.start("LevelScene", { levelId: id });
+      const ls = this.scene.manager.getScene("LevelScene");
+      if (ls) {
+        ls.scene.restart({ levelId: id });
+      } else {
+        this.scene.start("LevelScene", { levelId: id });
+      }
       this.scene.stop();
     };
     if (win) {
