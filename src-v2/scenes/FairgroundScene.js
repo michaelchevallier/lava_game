@@ -14,6 +14,23 @@ export class FairgroundScene extends Phaser.Scene {
     this.score = 0;
     this.timeLeftMs = 0;
     this.gameOver = false;
+
+    if (this._tickHandler) { this.events.off("update", this._tickHandler); this._tickHandler = null; }
+    if (this._ljTick) { this.events.off("update", this._ljTick); this._ljTick = null; }
+    if (this._pancakeCursorTick) { this.events.off("update", this._pancakeCursorTick); this._pancakeCursorTick = null; }
+    if (this._tlTick) { this.events.off("update", this._tlTick); this._tlTick = null; }
+    if (this._csSpawnTimer) { this._csSpawnTimer.remove?.(); this._csSpawnTimer = null; }
+    if (this._spawnTimer) { this._spawnTimer.remove?.(); this._spawnTimer = null; }
+    if (this.input?.keyboard) {
+      const kb = this.input.keyboard;
+      ["_keyDown", "_keyUp", "_ljKeyDown", "_ljKeyUp", "_tlKeyDown", "_tlKeyUp"].forEach((k) => {
+        if (this[k]) {
+          kb.off("keydown", this[k]);
+          kb.off("keyup", this[k]);
+          this[k] = null;
+        }
+      });
+    }
   }
 
   create() {
@@ -239,10 +256,11 @@ export class FairgroundScene extends Phaser.Scene {
       labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#fff" },
       depth: 152,
       onClick: () => {
+        const mgr = this.scene.manager;
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
-          this.scene.start("FairgroundHubScene");
-          this.scene.stop();
+          this.sys.shutdown();
+          mgr.start("FairgroundHubScene");
         });
       },
     });
@@ -988,31 +1006,31 @@ export class FairgroundScene extends Phaser.Scene {
     this.timerText.setText("0s");
 
     const lavaG = this.add.graphics().setDepth(5);
-    let lavaY = height + 40;
+    let lavaY = height + 200;
 
     const getScrollSpeed = () => {
       const s = survivedMs / 1000;
-      if (s < 10) return 0.05;
-      if (s < 20) return 0.10;
-      return Math.min(0.18, 0.15 + (s - 20) * 0.001);
+      if (s < 15) return 0.03;
+      if (s < 30) return 0.07;
+      return Math.min(0.14, 0.10 + (s - 30) * 0.0008);
     };
 
     const getSpacing = () => {
       const s = survivedMs / 1000;
-      if (s < 10) return { min: 80, max: 130 };
-      if (s < 20) return { min: 100, max: 150 };
-      return { min: 120, max: 180 };
+      if (s < 15) return { min: 60, max: 100 };
+      if (s < 30) return { min: 80, max: 120 };
+      return { min: 100, max: 140 };
     };
 
-    const PLAT_W = 80, PLAT_H = 16;
+    const PLAT_W = 90, PLAT_H = 16;
     const platPool = [];
     const coinPool = [];
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       const px = i === 0
         ? width / 2 - PLAT_W / 2
         : 60 + Math.random() * (width - 120 - PLAT_W);
-      const py = height - 100 - i * 130;
+      const py = height - 100 - i * 95;
       const pg = this.add.graphics();
       pg.fillStyle(0x8a4a04, 1);
       pg.fillRect(0, 0, PLAT_W, PLAT_H);
@@ -1124,7 +1142,7 @@ export class FairgroundScene extends Phaser.Scene {
       if (keys.right) player.x = Math.min(width - 20, player.x + 0.4 * delta);
 
       if (keys.jump && !jumpPressed && grounded) {
-        pVy = -0.85;
+        pVy = -1.1;
         grounded = false;
         jumpPressed = true;
         Audio.click?.();
@@ -1168,8 +1186,7 @@ export class FairgroundScene extends Phaser.Scene {
 
       if (player.y > lavaY - 26 && time > invulnUntil) {
         lives--;
-        invulnUntil = time + 1500;
-        pVy = -0.7;
+        invulnUntil = time + 1800;
         this.cameras.main.shake(200, 0.012);
         Audio.hit?.();
         if (livesIcons[lives]) {
@@ -1181,6 +1198,18 @@ export class FairgroundScene extends Phaser.Scene {
         if (lives <= 0) {
           this._addScore(Math.floor(maxHeightReached / 10));
           this.time.delayedCall(700, () => this._endGame());
+        } else {
+          const safe = platPool
+            .filter((p) => p.y < lavaY - 80 && p.y > 80)
+            .sort((a, b) => Math.abs(a.x + PLAT_W / 2 - player.x) - Math.abs(b.x + PLAT_W / 2 - player.x))[0];
+          if (safe) {
+            player.x = safe.x + PLAT_W / 2;
+            player.y = safe.y - 26;
+            pVy = 0;
+            grounded = true;
+          } else {
+            pVy = -0.7;
+          }
         }
       }
 
