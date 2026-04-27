@@ -55,7 +55,6 @@ export function makeClickable(scene, opts) {
 
   if (decorate) decorate(container, scene);
 
-  container.setSize(width, height);
   if (enabled) {
     container.setInteractive(
       new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),

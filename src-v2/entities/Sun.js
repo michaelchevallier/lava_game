@@ -24,7 +24,6 @@ export class Sun extends Phaser.GameObjects.Container {
     this.add([halo, ray1, ray2, ray3, ray4, main, eye1, eye2, smile]);
     this.halo = halo;
     this.main = main;
-    this.setSize(40, 40);
     this.setDepth(30);
 
     scene.add.existing(this);

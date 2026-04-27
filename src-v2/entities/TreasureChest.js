@@ -20,7 +20,6 @@ export class TreasureChest extends Phaser.GameObjects.Container {
     this.add([shadow, base, lid, band1, band2, lock, sparkle]);
     this.lid = lid;
     this.sparkle = sparkle;
-    this.setSize(50, 50);
     this.setDepth(28);
 
     scene.add.existing(this);

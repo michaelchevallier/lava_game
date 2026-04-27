@@ -144,7 +144,6 @@ export class FairgroundScene extends Phaser.Scene {
       const eye2 = this.add.circle(10, -8, 3, 0x000);
       const mouth = this.add.arc(0, 8, 8, 0, 180, false, 0x000, 0).setStrokeStyle(2, 0x000);
       can.add([body, stripe, eye1, eye2, mouth]);
-      can.setSize(50, 70);
       can.setInteractive(new Phaser.Geom.Rectangle(-25, -35, 50, 70), Phaser.Geom.Rectangle.Contains);
       can.on("pointerdown", () => {
         if (!can.active) return;
@@ -185,7 +184,6 @@ export class FairgroundScene extends Phaser.Scene {
       p.add([wingL, wingR, body, head, eye, beak]);
       if (!fromLeft) p.setScale(-1, 1);
       this.tweens.add({ targets: [wingL, wingR], scaleY: { from: 1, to: 0.4 }, duration: 200, yoyo: true, repeat: -1 });
-      p.setSize(40, 24);
       p.setInteractive(new Phaser.Geom.Rectangle(-20, -12, 40, 24), Phaser.Geom.Rectangle.Contains);
       p.on("pointerdown", () => {
         if (!p.active) return;

@@ -98,7 +98,6 @@ export class ConveyorBelt extends Phaser.GameObjects.Container {
       color: "#dde",
     }).setOrigin(0.5);
     c.add([back, icon, label]);
-    c.setSize(SLOT_W - 4, SLOT_H - 4);
     c.setInteractive(new Phaser.Geom.Rectangle(-(SLOT_W - 4) / 2, -(SLOT_H - 4) / 2, SLOT_W - 4, SLOT_H - 4), Phaser.Geom.Rectangle.Contains);
     c.setDepth(50);
     c._def = def;

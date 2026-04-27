@@ -1249,7 +1249,6 @@ export class LevelScene extends Phaser.Scene {
     const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0xffd23f);
     const t = this.add.text(0, 0, "⏸ P", { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#ffd23f" }).setOrigin(0.5);
     btn.add([r, t]);
-    btn.setSize(50, 36);
     btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
     btn.on("pointerover", () => r.setFillStyle(0x33405a, 0.95));
     btn.on("pointerout", () => r.setFillStyle(0x222840, 0.85));
@@ -1267,7 +1266,6 @@ export class LevelScene extends Phaser.Scene {
     const r = this.add.rectangle(0, 0, 50, 36, 0x222840, 0.85).setStrokeStyle(2, 0x88ccff);
     const t = this.add.text(0, 0, muted ? "🔇" : "🔊", { fontFamily: "Fredoka, system-ui", fontSize: "16px" }).setOrigin(0.5);
     btn.add([r, t]);
-    btn.setSize(50, 36);
     btn.setInteractive(new Phaser.Geom.Rectangle(-25, -18, 50, 36), Phaser.Geom.Rectangle.Contains);
     btn.on("pointerover", () => r.setFillStyle(0x33405a, 0.95));
     btn.on("pointerout", () => r.setFillStyle(0x222840, 0.85));
@@ -1331,7 +1329,6 @@ export class LevelScene extends Phaser.Scene {
       const r = this.add.rectangle(0, 0, 280, 44, 0x222840).setStrokeStyle(2, it.color);
       const lbl = this.add.text(0, 0, it.label, { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff" }).setOrigin(0.5);
       btn.add([r, lbl]);
-      btn.setSize(280, 44);
       btn.setInteractive(new Phaser.Geom.Rectangle(-140, -22, 280, 44), Phaser.Geom.Rectangle.Contains);
       btn.on("pointerover", () => { r.setFillStyle(0x33405a); Audio.ui?.(); });
       btn.on("pointerout", () => { r.setFillStyle(0x222840); });
