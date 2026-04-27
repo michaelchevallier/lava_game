@@ -84,7 +84,7 @@ window.__pd_stats = () => {
 window.__pd_unlock_all = () => {
   const KEY = "parkdef:save";
   const allLevels = ["1.1","1.2","1.3","1.4","1.5","1.6","2.1","2.2","2.3","2.4","2.5","2.6","3.1","3.2","3.3","3.4","3.5","3.6","4.1","4.2","4.3","4.4","4.5","4.6","5.1","5.2","5.3","5.4","5.5","5.6","6.1","6.2","6.3","6.4","6.5","6.6","7.1","7.2","7.3","7.4","7.5","7.6","8.1","8.2","8.3","8.4","8.5","8.6","9.1","9.2","9.3","9.4","9.5","9.6","10.1","10.2","10.3","10.4","10.5","10.6","c.1","c.2","c.3","c.4","c.5","boss-arena"];
-  const allTrophies = ["first_kill","kills_50","kills_500","kills_2000","first_star","stars_15","stars_45","world1_done","boss_magic","boss_queen","boss_patron","endless_wave5","endless_wave10","tickets_10","no_escape","daily_first","daily_streak_3"];
+  const allTrophies = ["first_kill","kills_50","kills_500","kills_2000","first_star","stars_15","stars_45","world1_done","boss_magic","boss_queen","boss_patron","endless_wave5","endless_wave10","tickets_10","no_escape","daily_first","daily_streak_3","world_espace","world_subocean","world_medieval","world_cyberpunk","all_worlds","first_skin","narrative_choice"];
   const save = {
     version: 1,
     levels: {},

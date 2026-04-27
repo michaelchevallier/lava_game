@@ -18,6 +18,13 @@ export const TROPHIES = [
   { id: "no_escape", emoji: "🛡️", name: "Forteresse", desc: "Finir un niveau avec 0 échappé", check: (s, save) => Object.values(save.levels || {}).some((l) => l.stars === 3) },
   { id: "daily_first", emoji: "📅", name: "Régulier", desc: "Finir 1 Défi du Jour", check: (s, save) => Object.keys(save.daily || {}).length >= 1 },
   { id: "daily_streak_3", emoji: "🔥", name: "Sur la Lancée", desc: "Streak de 3 jours d'affilée", check: (s, save) => computeStreak(save) >= 3 },
+  { id: "world_espace", emoji: "🛸", name: "Voyageur Stellaire", desc: "Finir le monde Espace (W7)", check: (s, save) => ["7.1","7.2","7.3","7.4","7.5","7.6"].every((id) => save.levels?.[id]?.completed) },
+  { id: "world_subocean", emoji: "🐙", name: "Plongeur d'Abysse", desc: "Finir le monde Sous-Marin (W8)", check: (s, save) => ["8.1","8.2","8.3","8.4","8.5","8.6"].every((id) => save.levels?.[id]?.completed) },
+  { id: "world_medieval", emoji: "🏰", name: "Chevalier", desc: "Finir le monde Médiéval (W9)", check: (s, save) => ["9.1","9.2","9.3","9.4","9.5","9.6"].every((id) => save.levels?.[id]?.completed) },
+  { id: "world_cyberpunk", emoji: "🦾", name: "Cyber-Légende", desc: "Finir le monde Cyberpunk (W10)", check: (s, save) => ["10.1","10.2","10.3","10.4","10.5","10.6"].every((id) => save.levels?.[id]?.completed) },
+  { id: "all_worlds", emoji: "🏆", name: "Gardien Universel", desc: "Finir les 10 mondes", check: (s, save) => save.trophies?.world_espace && save.trophies?.world_subocean && save.trophies?.world_medieval && save.trophies?.world_cyberpunk && save.trophies?.world1_done && save.trophies?.boss_patron },
+  { id: "first_skin", emoji: "🎨", name: "Esthète", desc: "Acheter 1 skin", check: (s, save) => Object.keys(save.skins || {}).length >= 1 },
+  { id: "narrative_choice", emoji: "📖", name: "Décideur", desc: "Faire 1 choix narratif", check: (s, save) => Object.keys(save.narrativeChoices || {}).length >= 1 },
 ];
 
 function computeStreak(save) {
