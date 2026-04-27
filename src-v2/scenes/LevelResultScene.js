@@ -159,12 +159,12 @@ export class LevelResultScene extends Phaser.Scene {
     const btnGap = 220;
 
     const goToLevel = (id) => {
-      const ls = this.scene.manager.getScene("LevelScene");
-      if (ls) {
-        ls.scene.restart({ levelId: id });
-      } else {
-        this.scene.start("LevelScene", { levelId: id });
+      const mgr = this.scene.manager;
+      const ls = mgr.getScene("LevelScene");
+      if (ls && ls.sys && ls.sys.shutdown) {
+        ls.sys.shutdown();
       }
+      mgr.start("LevelScene", { levelId: id });
       this.scene.stop();
     };
     if (win) {
@@ -174,7 +174,12 @@ export class LevelResultScene extends Phaser.Scene {
       }
     }
     buttons.push({ label: "[ R ] Rejouer", color: 0x4a4a6a, key: "R", action: () => goToLevel(levelId) });
-    buttons.push({ label: "[ M ] Menu", color: 0x4a4a6a, key: "M", action: () => { this.scene.stop("LevelScene"); this.scene.start("CampaignMenuScene"); this.scene.stop(); } });
+    buttons.push({ label: "[ M ] Menu", color: 0x4a4a6a, key: "M", action: () => {
+      const ls = this.scene.manager.getScene("LevelScene");
+      if (ls && ls.sys && ls.sys.shutdown) ls.sys.shutdown();
+      this.scene.start("CampaignMenuScene");
+      this.scene.stop();
+    } });
 
     const btnW = 220;
     const btnGapPx = 20;
