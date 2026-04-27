@@ -115,11 +115,16 @@ export class WaveManager {
   }
 }
 
-export function computeStars(level, escapedCount) {
+export function computeStars(level, escapedCount, killedCount = 0, totalVisitors = 0) {
   const tiers = level.stars;
   if (!tiers) return 0;
-  if (escapedCount <= (tiers["3"]?.escapedMax ?? 0)) return 3;
-  if (escapedCount <= (tiers["2"]?.escapedMax ?? 999)) return 2;
-  if (escapedCount <= (tiers["1"]?.escapedMax ?? 999)) return 1;
+  const tierMatch = (tier) => {
+    if (!tier) return false;
+    if (tier.killAll && totalVisitors > 0 && killedCount < totalVisitors) return false;
+    return escapedCount <= (tier.escapedMax ?? 999);
+  };
+  if (tierMatch(tiers["3"])) return 3;
+  if (tierMatch(tiers["2"])) return 2;
+  if (tierMatch(tiers["1"])) return 1;
   return 0;
 }

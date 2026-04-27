@@ -155,11 +155,16 @@ export class LevelScene extends Phaser.Scene {
       color: "#ffd23f",
     }).setOrigin(0.5, 0);
 
-    this.events.on("visitor-escaped", () => {
+    this.events.on("visitor-escaped", (visitor) => {
       this.escaped++;
       this.scoreText.setText("Échappés : " + this.escaped);
       this.lavaMeter.addEscape();
       Audio.hit();
+      const BOSS_TYPES = new Set(["boss", "magicboss", "lavaqueen", "carnivalboss", "ovniboss", "kraken", "dragon", "netboss"]);
+      if (visitor && BOSS_TYPES.has(visitor.type) && !this.gameOver) {
+        this._showBossEscapedBanner();
+        this.endLevel(false);
+      }
     });
     this.events.on("visitor-killed", () => {
       this.killed++;
@@ -1105,11 +1110,28 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  _showBossEscapedBanner() {
+    const w = this.scale.width;
+    const stripe = this.add.rectangle(w / 2, this.scale.height / 2, w, 110, 0x4a0000, 0.85).setDepth(80).setStrokeStyle(3, 0xff2222);
+    const t = this.add.text(w / 2, this.scale.height / 2, "BOSS ESCAPED — DÉFAITE", {
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: "60px",
+      fontStyle: "bold",
+      color: "#ffd23f",
+      stroke: "#000",
+      strokeThickness: 8,
+    }).setOrigin(0.5).setDepth(81).setScale(0);
+    this.tweens.add({ targets: t, scale: 1, duration: 350, ease: "Back.out" });
+    this.tweens.add({ targets: [stripe, t], alpha: 0, delay: 1200, duration: 600,
+      onComplete: () => { stripe.destroy(); t.destroy(); }
+    });
+  }
+
   endLevel(win) {
     this.gameOver = true;
     if (this.tutorial) this.tutorial.cleanup();
     const isEndless = !!this.waveManager?.infinite;
-    const stars = win ? computeStars(this.level, this.escaped) : 0;
+    const stars = win ? computeStars(this.level, this.escaped, this.killed, this.waveManager?.totalVisitors() ?? 0) : 0;
     if (this.isDaily) {
       const newly = recordDaily(stars, this.killed, this.escaped);
       if (newly && newly.length) this._popTrophies(newly);
