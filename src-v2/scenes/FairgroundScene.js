@@ -1023,13 +1023,22 @@ export class FairgroundScene extends Phaser.Scene {
     };
 
     const PLAT_W = 90, PLAT_H = 16;
+    const MAX_HORIZONTAL_REACH = 220;
     const platPool = [];
     const coinPool = [];
+    let lastPlatformX = width / 2 - PLAT_W / 2;
+
+    const pickReachableX = () => {
+      const minX = Math.max(60, lastPlatformX - MAX_HORIZONTAL_REACH);
+      const maxX = Math.min(width - 60 - PLAT_W, lastPlatformX + MAX_HORIZONTAL_REACH);
+      const x = minX + Math.random() * Math.max(0, maxX - minX);
+      lastPlatformX = x;
+      return x;
+    };
 
     for (let i = 0; i < 10; i++) {
-      const px = i === 0
-        ? width / 2 - PLAT_W / 2
-        : 60 + Math.random() * (width - 120 - PLAT_W);
+      const px = i === 0 ? width / 2 - PLAT_W / 2 : pickReachableX();
+      if (i === 0) lastPlatformX = px;
       const py = height - 100 - i * 95;
       const pg = this.add.graphics();
       pg.fillStyle(0x8a4a04, 1);
@@ -1114,9 +1123,10 @@ export class FairgroundScene extends Phaser.Scene {
         }
         if (p.y > height + 40) {
           const sp = getSpacing();
-          const topPlat = platPool.reduce((m, pp) => Math.min(m, pp.y), height);
-          const newY = topPlat - (sp.min + Math.random() * (sp.max - sp.min));
-          p.x = 60 + Math.random() * (width - 120 - PLAT_W);
+          const topPlatRef = platPool.reduce((m, pp) => (pp.y < m.y ? pp : m), { y: height, x: width / 2 });
+          const newY = topPlatRef.y - (sp.min + Math.random() * (sp.max - sp.min));
+          lastPlatformX = topPlatRef.x;
+          p.x = pickReachableX();
           p.y = newY;
           p.g.x = p.x;
           p.g.y = p.y;
