@@ -2,44 +2,115 @@
   "id": "9.1",
   "name": "Le Pont-Levis",
   "world": 9,
-  "startCoins": 350,
-  "allowedTiles": ["coin", "lava", "water", "catapult"],
-  "loseEscaped": 5,
+  "startCoins": 300,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "catapult"
+  ],
+  "loseEscaped": 3,
   "waves": [
     {
       "delayMs": 8000,
       "visitors": [
-        { "type": "basic", "lane": 2, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 3000 },
-        { "type": "basic", "lane": 3, "delayMs": 4500 },
-        { "type": "vip", "lane": 0, "delayMs": 7500 }
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 3000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 4500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 7500
+        }
       ]
     },
     {
       "delayMs": 26000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 4, "delayMs": 1500 },
-        { "type": "vip", "lane": 2, "delayMs": 3000 },
-        { "type": "basic", "lane": 1, "delayMs": 5000 },
-        { "type": "basic", "lane": 3, "delayMs": 6500 }
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 1500
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 3000
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 5000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 6500
+        }
       ]
     },
     {
       "delayMs": 50000,
       "visitors": [
-        { "type": "vip", "lane": 1, "delayMs": 0 },
-        { "type": "vip", "lane": 3, "delayMs": 800 },
-        { "type": "basic", "lane": 0, "delayMs": 2500 },
-        { "type": "basic", "lane": 2, "delayMs": 4000 },
-        { "type": "basic", "lane": 4, "delayMs": 5500 },
-        { "type": "vip", "lane": 2, "delayMs": 8000 }
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 800
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 2500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 4000
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 5500
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 8000
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 4 },
-    "2": { "escapedMax": 2 },
-    "3": { "escapedMax": 0 }
+    "1": {
+      "escapedMax": 2
+    },
+    "2": {
+      "escapedMax": 1
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

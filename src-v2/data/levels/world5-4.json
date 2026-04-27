@@ -2,7 +2,7 @@
   "id": "5.4",
   "name": "Apocalypse 4",
   "world": 5,
-  "startCoins": 425,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",
@@ -11,7 +11,7 @@
     "catapult",
     "magnet"
   ],
-  "loseEscaped": 5,
+  "loseEscaped": 3,
   "waves": [
     {
       "delayMs": 5500,
@@ -235,16 +235,31 @@
           "type": "flying",
           "lane": 0,
           "delayMs": 16600
+        },
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 18100
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 18900
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 19700
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 5
+      "escapedMax": 3
     },
     "2": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

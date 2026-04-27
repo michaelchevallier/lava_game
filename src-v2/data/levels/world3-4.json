@@ -2,7 +2,7 @@
   "id": "3.4",
   "name": "Tempête 4",
   "world": 3,
-  "startCoins": 380,
+  "startCoins": 300,
   "allowedTiles": [
     "coin",
     "lava",
@@ -11,7 +11,7 @@
     "catapult",
     "magnet"
   ],
-  "loseEscaped": 6,
+  "loseEscaped": 4,
   "waves": [
     {
       "delayMs": 5000,
@@ -200,16 +200,26 @@
           "type": "flying",
           "lane": 0,
           "delayMs": 15600
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 17100
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 17900
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 5
+      "escapedMax": 3
     },
     "2": {
-      "escapedMax": 3
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

@@ -2,13 +2,13 @@
   "id": "1.2",
   "name": "Premiers blocages",
   "world": 1,
-  "startCoins": 300,
+  "startCoins": 250,
   "allowedTiles": [
     "coin",
     "lava",
     "water"
   ],
-  "loseEscaped": 7,
+  "loseEscaped": 4,
   "waves": [
     {
       "delayMs": 10000,
@@ -122,16 +122,21 @@
           "type": "tank",
           "lane": 3,
           "delayMs": 9100
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 10600
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 6
+      "escapedMax": 3
     },
     "2": {
-      "escapedMax": 4
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

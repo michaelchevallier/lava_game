@@ -2,50 +2,167 @@
   "id": "6.1",
   "name": "Néon Débute",
   "world": 6,
-  "startCoins": 425,
-  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "neon"],
-  "loseEscaped": 5,
+  "startCoins": 350,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "magnet",
+    "neon"
+  ],
+  "loseEscaped": 3,
   "waves": [
     {
       "delayMs": 8000,
       "visitors": [
-        { "type": "basic", "lane": 2, "delayMs": 0 },
-        { "type": "basic", "lane": 1, "delayMs": 3000 },
-        { "type": "basic", "lane": 3, "delayMs": 4500 },
-        { "type": "vip", "lane": 0, "delayMs": 7500 },
-        { "type": "basic", "lane": 4, "delayMs": 8200 }
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 3000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 4500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 7500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 8200
+        }
       ]
     },
     {
       "delayMs": 28000,
       "visitors": [
-        { "type": "magicien", "lane": 1, "delayMs": 0 },
-        { "type": "basic", "lane": 0, "delayMs": 1500 },
-        { "type": "basic", "lane": 4, "delayMs": 2500 },
-        { "type": "vip", "lane": 2, "delayMs": 4000 },
-        { "type": "basic", "lane": 3, "delayMs": 6000 },
-        { "type": "magicien", "lane": 2, "delayMs": 8500 },
-        { "type": "basic", "lane": 1, "delayMs": 10500 },
-        { "type": "basic", "lane": 3, "delayMs": 11500 }
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 2500
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 4000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 6000
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 8500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 10500
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 11500
+        }
       ]
     },
     {
       "delayMs": 52000,
       "visitors": [
-        { "type": "magicien", "lane": 0, "delayMs": 0 },
-        { "type": "magicien", "lane": 4, "delayMs": 800 },
-        { "type": "vip", "lane": 2, "delayMs": 2500 },
-        { "type": "basic", "lane": 1, "delayMs": 4000 },
-        { "type": "basic", "lane": 3, "delayMs": 5000 },
-        { "type": "vip", "lane": 1, "delayMs": 7500 },
-        { "type": "vip", "lane": 3, "delayMs": 8000 },
-        { "type": "magicien", "lane": 2, "delayMs": 11000 }
+        {
+          "type": "magicien",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "magicien",
+          "lane": 4,
+          "delayMs": 800
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 2500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 4000
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 5000
+        },
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 7500
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 8000
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 11000
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 12500
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 13300
+        },
+        {
+          "type": "tank",
+          "lane": 2,
+          "delayMs": 14100
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 14900
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 4 },
-    "2": { "escapedMax": 2 },
-    "3": { "escapedMax": 0 }
+    "1": {
+      "escapedMax": 2
+    },
+    "2": {
+      "escapedMax": 1
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

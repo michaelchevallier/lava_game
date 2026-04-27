@@ -2,46 +2,129 @@
   "id": "10.4",
   "name": "Mégacorp",
   "world": 10,
-  "startCoins": 475,
-  "allowedTiles": ["coin", "lava", "water", "fan", "magnet", "frost", "neon", "laser"],
-  "loseEscaped": 4,
+  "startCoins": 425,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "magnet",
+    "frost",
+    "neon",
+    "laser"
+  ],
+  "loseEscaped": 2,
   "waves": [
     {
       "delayMs": 8000,
       "visitors": [
-        { "type": "tank", "lane": 1, "delayMs": 0 },
-        { "type": "tank", "lane": 3, "delayMs": 1500 },
-        { "type": "magicien", "lane": 2, "delayMs": 3500 },
-        { "type": "thief", "lane": 0, "delayMs": 5500 }
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 1500
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 3500
+        },
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 5500
+        }
       ]
     },
     {
       "delayMs": 30000,
       "visitors": [
-        { "type": "thief", "lane": 0, "delayMs": 0 },
-        { "type": "thief", "lane": 4, "delayMs": 1000 },
-        { "type": "tank", "lane": 1, "delayMs": 2500 },
-        { "type": "tank", "lane": 3, "delayMs": 3500 },
-        { "type": "boudeur", "lane": 2, "delayMs": 5500 },
-        { "type": "vip", "lane": 0, "delayMs": 7500 }
+        {
+          "type": "thief",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "thief",
+          "lane": 4,
+          "delayMs": 1000
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 2500
+        },
+        {
+          "type": "tank",
+          "lane": 3,
+          "delayMs": 3500
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 5500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 7500
+        }
       ]
     },
     {
       "delayMs": 58000,
       "visitors": [
-        { "type": "boudeur", "lane": 1, "delayMs": 0 },
-        { "type": "boudeur", "lane": 3, "delayMs": 800 },
-        { "type": "tank", "lane": 0, "delayMs": 2000 },
-        { "type": "tank", "lane": 4, "delayMs": 2800 },
-        { "type": "magicien", "lane": 2, "delayMs": 4500 },
-        { "type": "thief", "lane": 1, "delayMs": 6500 },
-        { "type": "thief", "lane": 3, "delayMs": 7300 }
+        {
+          "type": "boudeur",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 800
+        },
+        {
+          "type": "tank",
+          "lane": 0,
+          "delayMs": 2000
+        },
+        {
+          "type": "tank",
+          "lane": 4,
+          "delayMs": 2800
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 4500
+        },
+        {
+          "type": "thief",
+          "lane": 1,
+          "delayMs": 6500
+        },
+        {
+          "type": "thief",
+          "lane": 3,
+          "delayMs": 7300
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 3 },
-    "2": { "escapedMax": 1 },
-    "3": { "escapedMax": 0 }
+    "1": {
+      "escapedMax": 1
+    },
+    "2": {
+      "escapedMax": 0
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

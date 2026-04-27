@@ -2,43 +2,110 @@
   "id": "8.1",
   "name": "Récif",
   "world": 8,
-  "startCoins": 350,
-  "allowedTiles": ["coin", "lava", "water", "bulle"],
-  "loseEscaped": 5,
+  "startCoins": 300,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "bulle"
+  ],
+  "loseEscaped": 3,
   "waves": [
     {
       "delayMs": 8000,
       "visitors": [
-        { "type": "basic", "lane": 1, "delayMs": 0 },
-        { "type": "basic", "lane": 3, "delayMs": 2000 },
-        { "type": "basic", "lane": 2, "delayMs": 4000 },
-        { "type": "basic", "lane": 0, "delayMs": 6500 }
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 2000
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 4000
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 6500
+        }
       ]
     },
     {
       "delayMs": 28000,
       "visitors": [
-        { "type": "basic", "lane": 0, "delayMs": 0 },
-        { "type": "basic", "lane": 4, "delayMs": 1500 },
-        { "type": "vip", "lane": 2, "delayMs": 3500 },
-        { "type": "basic", "lane": 1, "delayMs": 5500 },
-        { "type": "basic", "lane": 3, "delayMs": 6500 }
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 0
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 1500
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 3500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 5500
+        },
+        {
+          "type": "basic",
+          "lane": 3,
+          "delayMs": 6500
+        }
       ]
     },
     {
       "delayMs": 50000,
       "visitors": [
-        { "type": "vip", "lane": 1, "delayMs": 0 },
-        { "type": "vip", "lane": 3, "delayMs": 1000 },
-        { "type": "basic", "lane": 0, "delayMs": 2500 },
-        { "type": "basic", "lane": 2, "delayMs": 4000 },
-        { "type": "basic", "lane": 4, "delayMs": 5500 }
+        {
+          "type": "vip",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "vip",
+          "lane": 3,
+          "delayMs": 1000
+        },
+        {
+          "type": "basic",
+          "lane": 0,
+          "delayMs": 2500
+        },
+        {
+          "type": "basic",
+          "lane": 2,
+          "delayMs": 4000
+        },
+        {
+          "type": "basic",
+          "lane": 4,
+          "delayMs": 5500
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 4 },
-    "2": { "escapedMax": 2 },
-    "3": { "escapedMax": 0 }
+    "1": {
+      "escapedMax": 2
+    },
+    "2": {
+      "escapedMax": 1
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

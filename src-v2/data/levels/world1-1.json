@@ -2,13 +2,13 @@
   "id": "1.1",
   "name": "Premier jour",
   "world": 1,
-  "startCoins": 300,
+  "startCoins": 250,
   "allowedTiles": [
     "coin",
     "lava",
     "water"
   ],
-  "loseEscaped": 8,
+  "loseEscaped": 5,
   "waves": [
     {
       "delayMs": 12000,
@@ -107,16 +107,21 @@
           "type": "basic",
           "lane": 2,
           "delayMs": 10100
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 11600
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 7
+      "escapedMax": 4
     },
     "2": {
-      "escapedMax": 4
+      "escapedMax": 2
     },
     "3": {
       "escapedMax": 0

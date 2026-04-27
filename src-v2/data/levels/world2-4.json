@@ -2,7 +2,7 @@
   "id": "2.4",
   "name": "Marée mixte",
   "world": 2,
-  "startCoins": 320,
+  "startCoins": 250,
   "allowedTiles": [
     "coin",
     "lava",
@@ -11,7 +11,7 @@
     "catapult",
     "magnet"
   ],
-  "loseEscaped": 6,
+  "loseEscaped": 4,
   "waves": [
     {
       "delayMs": 6000,
@@ -170,16 +170,26 @@
           "type": "tank",
           "lane": 0,
           "delayMs": 14200
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 15700
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 16500
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 5
+      "escapedMax": 3
     },
     "2": {
-      "escapedMax": 3
+      "escapedMax": 1
     },
     "3": {
       "escapedMax": 0

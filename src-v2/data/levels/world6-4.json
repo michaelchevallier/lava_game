@@ -2,49 +2,165 @@
   "id": "6.4",
   "name": "Salle des Miroirs",
   "world": 6,
-  "startCoins": 450,
-  "allowedTiles": ["coin", "lava", "water", "fan", "frost", "magnet", "portal", "neon", "mine"],
-  "loseEscaped": 4,
+  "startCoins": 375,
+  "allowedTiles": [
+    "coin",
+    "lava",
+    "water",
+    "fan",
+    "frost",
+    "magnet",
+    "portal",
+    "neon",
+    "mine"
+  ],
+  "loseEscaped": 2,
   "waves": [
     {
       "delayMs": 6000,
       "visitors": [
-        { "type": "stiltman", "lane": 1, "delayMs": 0 },
-        { "type": "stiltman", "lane": 3, "delayMs": 1200 },
-        { "type": "magicien", "lane": 2, "delayMs": 3500 },
-        { "type": "vip", "lane": 0, "delayMs": 5000 },
-        { "type": "vip", "lane": 4, "delayMs": 5500 }
+        {
+          "type": "stiltman",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "stiltman",
+          "lane": 3,
+          "delayMs": 1200
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 3500
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 5000
+        },
+        {
+          "type": "vip",
+          "lane": 4,
+          "delayMs": 5500
+        }
       ]
     },
     {
       "delayMs": 27000,
       "visitors": [
-        { "type": "clown", "lane": 2, "delayMs": 0 },
-        { "type": "stiltman", "lane": 0, "delayMs": 1500 },
-        { "type": "stiltman", "lane": 4, "delayMs": 2000 },
-        { "type": "magicien", "lane": 1, "delayMs": 4500 },
-        { "type": "magicien", "lane": 3, "delayMs": 5500 },
-        { "type": "boudeur", "lane": 2, "delayMs": 8500 },
-        { "type": "trompette", "lane": 1, "delayMs": 11500 }
+        {
+          "type": "clown",
+          "lane": 2,
+          "delayMs": 0
+        },
+        {
+          "type": "stiltman",
+          "lane": 0,
+          "delayMs": 1500
+        },
+        {
+          "type": "stiltman",
+          "lane": 4,
+          "delayMs": 2000
+        },
+        {
+          "type": "magicien",
+          "lane": 1,
+          "delayMs": 4500
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 5500
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 8500
+        },
+        {
+          "type": "trompette",
+          "lane": 1,
+          "delayMs": 11500
+        }
       ]
     },
     {
       "delayMs": 53000,
       "visitors": [
-        { "type": "boudeur", "lane": 1, "delayMs": 0 },
-        { "type": "boudeur", "lane": 3, "delayMs": 800 },
-        { "type": "clown", "lane": 0, "delayMs": 2500 },
-        { "type": "clown", "lane": 4, "delayMs": 3000 },
-        { "type": "magicien", "lane": 2, "delayMs": 5500 },
-        { "type": "stiltman", "lane": 1, "delayMs": 7500 },
-        { "type": "stiltman", "lane": 3, "delayMs": 8500 },
-        { "type": "trompette", "lane": 2, "delayMs": 11000 }
+        {
+          "type": "boudeur",
+          "lane": 1,
+          "delayMs": 0
+        },
+        {
+          "type": "boudeur",
+          "lane": 3,
+          "delayMs": 800
+        },
+        {
+          "type": "clown",
+          "lane": 0,
+          "delayMs": 2500
+        },
+        {
+          "type": "clown",
+          "lane": 4,
+          "delayMs": 3000
+        },
+        {
+          "type": "magicien",
+          "lane": 2,
+          "delayMs": 5500
+        },
+        {
+          "type": "stiltman",
+          "lane": 1,
+          "delayMs": 7500
+        },
+        {
+          "type": "stiltman",
+          "lane": 3,
+          "delayMs": 8500
+        },
+        {
+          "type": "trompette",
+          "lane": 2,
+          "delayMs": 11000
+        },
+        {
+          "type": "boudeur",
+          "lane": 0,
+          "delayMs": 12500
+        },
+        {
+          "type": "basic",
+          "lane": 1,
+          "delayMs": 13300
+        },
+        {
+          "type": "vip",
+          "lane": 2,
+          "delayMs": 14100
+        },
+        {
+          "type": "magicien",
+          "lane": 3,
+          "delayMs": 14900
+        }
       ]
     }
   ],
   "stars": {
-    "1": { "escapedMax": 3 },
-    "2": { "escapedMax": 1 },
-    "3": { "escapedMax": 0 }
+    "1": {
+      "escapedMax": 1
+    },
+    "2": {
+      "escapedMax": 0
+    },
+    "3": {
+      "escapedMax": 0
+    }
   }
 }

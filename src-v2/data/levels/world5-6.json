@@ -2,7 +2,7 @@
   "id": "5.6",
   "name": "APOCALYPSE — boss rush",
   "world": 5,
-  "startCoins": 360,
+  "startCoins": 300,
   "allowedTiles": [
     "coin",
     "lava",
@@ -11,7 +11,7 @@
     "catapult",
     "magnet"
   ],
-  "loseEscaped": 3,
+  "loseEscaped": 2,
   "waves": [
     {
       "delayMs": 6000,
@@ -205,19 +205,35 @@
           "type": "skeleton",
           "lane": 4,
           "delayMs": 16100
+        },
+        {
+          "type": "vip",
+          "lane": 0,
+          "delayMs": 17600
+        },
+        {
+          "type": "tank",
+          "lane": 1,
+          "delayMs": 18400
+        },
+        {
+          "type": "boudeur",
+          "lane": 2,
+          "delayMs": 19200
         }
       ]
     }
   ],
   "stars": {
     "1": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "2": {
-      "escapedMax": 2
+      "escapedMax": 1
     },
     "3": {
-      "escapedMax": 0
+      "escapedMax": 0,
+      "killAll": true
     }
   }
 }
