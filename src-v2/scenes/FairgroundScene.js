@@ -47,6 +47,7 @@ export class FairgroundScene extends Phaser.Scene {
     else if (this.gameType === "wheel") this._createWheel();
     else if (this.gameType === "pancake") this._createPancake();
     else if (this.gameType === "bumper") this._createBumper();
+    else if (this.gameType === "math") this._createMath();
     else this._createComingSoon();
   }
 
@@ -642,5 +643,186 @@ export class FairgroundScene extends Phaser.Scene {
         }
       }
     });
+  }
+
+  // ========== Calcul Rapide ==========
+  _createMath() {
+    this._showMathDifficulty();
+  }
+
+  _showMathDifficulty() {
+    const { width, height } = this.scale;
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x1a0a4a, 0.92).setDepth(180);
+    const title = this.add.text(width / 2, height / 2 - 200, "Calcul Rapide", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "56px", color: "#66ddff", stroke: "#000", strokeThickness: 6,
+    }).setOrigin(0.5).setDepth(181);
+    const sub = this.add.text(width / 2, height / 2 - 130, "30 secondes — fais le maximum de bonnes réponses !", {
+      fontFamily: "Fredoka, system-ui", fontSize: "18px", color: "#ffeebb",
+    }).setOrigin(0.5).setDepth(181);
+
+    const DIFFS = [
+      { id: "petit",     label: "🐣 Petit",      sub: "Additions 1-9",                  ops: ["+"],           min: 1,  max: 9,  color: 0x66ff88, stroke: 0x2a8a4a },
+      { id: "moyen",     label: "🦔 Moyen",      sub: "+ et − jusqu'à 20",             ops: ["+", "-"],      min: 1,  max: 20, color: 0xffd23f, stroke: 0xc88a00 },
+      { id: "grand",     label: "🦊 Grand",      sub: "+, − et × jusqu'à 12",          ops: ["+", "-", "×"], min: 1,  max: 12, color: 0xff8844, stroke: 0xc63a3a },
+      { id: "champion",  label: "🦅 Champion",   sub: "Tout, jusqu'à 20 et × 1-12",    ops: ["+", "-", "×"], min: 1,  max: 20, color: 0xff66ff, stroke: 0x6a0080 },
+    ];
+
+    const cards = [];
+    DIFFS.forEach((d, i) => {
+      const x = width / 2 + (i - 1.5) * 230;
+      const y = height / 2 + 30;
+      const c = makeClickable(this, {
+        x, y, width: 200, height: 140,
+        radius: 12,
+        fillColor: 0x000, fillAlpha: 0.6, strokeColor: d.color, strokeWidth: 3,
+        hoverFill: 0x222, hoverStroke: 0xffd23f,
+        depth: 181,
+        label: d.label,
+        labelStyle: { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "26px", color: "#fff", stroke: "#000", strokeThickness: 4 },
+        decorate: (cont, sc) => {
+          cont.add(sc.add.text(0, 30, d.sub, { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ffeebb", align: "center", wordWrap: { width: 180 } }).setOrigin(0.5));
+        },
+        onClick: () => {
+          overlay.destroy();
+          title.destroy();
+          sub.destroy();
+          cards.forEach((cc) => cc.destroy());
+          this._startMathGame(d);
+        },
+      });
+      cards.push(c);
+    });
+  }
+
+  _startMathGame(diff) {
+    const { width, height } = this.scale;
+    this.add.text(width / 2, 80, "Trouve la bonne réponse — combo bonus !", {
+      fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
+    }).setOrigin(0.5);
+
+    this._setTimer(30000);
+
+    const diffBadge = this.add.text(40, 80, diff.label, {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "20px", color: "#fff", stroke: "#000", strokeThickness: 4,
+    }).setOrigin(0, 0.5);
+
+    const calcEmoji = this.add.text(width / 2, 180, "🧮", { fontFamily: "system-ui", fontSize: "60px" }).setOrigin(0.5);
+
+    const questionText = this.add.text(width / 2, 290, "", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "72px", color: "#ffd23f",
+      stroke: "#000", strokeThickness: 8,
+    }).setOrigin(0.5);
+
+    const streakText = this.add.text(width / 2, 360, "", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "24px", color: "#ff66cc",
+      stroke: "#000", strokeThickness: 4,
+    }).setOrigin(0.5);
+
+    let streak = 0;
+    let bestStreak = 0;
+    let busy = false;
+    const buttons = [];
+
+    const computeAnswer = (a, b, op) => {
+      if (op === "+") return a + b;
+      if (op === "-") return a - b;
+      return a * b;
+    };
+
+    const genQuestion = () => {
+      const op = diff.ops[Math.floor(Math.random() * diff.ops.length)];
+      let a, b, ans;
+      if (op === "×") {
+        const cap = diff.id === "champion" ? 12 : Math.min(12, diff.max);
+        a = 1 + Math.floor(Math.random() * cap);
+        b = 1 + Math.floor(Math.random() * cap);
+        ans = a * b;
+      } else if (op === "-") {
+        a = diff.min + Math.floor(Math.random() * (diff.max - diff.min + 1));
+        b = diff.min + Math.floor(Math.random() * (a - diff.min + 1));
+        ans = a - b;
+      } else {
+        const half = Math.max(1, Math.floor(diff.max / 2));
+        a = diff.min + Math.floor(Math.random() * half);
+        b = diff.min + Math.floor(Math.random() * (diff.max - a));
+        ans = a + b;
+      }
+      const decoys = new Set();
+      while (decoys.size < 2) {
+        const delta = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+        const d = ans + delta;
+        if (d !== ans && d >= 0) decoys.add(d);
+      }
+      const choices = [ans, ...decoys];
+      for (let i = choices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+      }
+      return { a, b, op, ans, choices };
+    };
+
+    const refreshButtons = (q) => {
+      buttons.forEach((b) => b.destroy());
+      buttons.length = 0;
+      const btnY = 540;
+      const btnW = 180;
+      const gap = 30;
+      const totalW = q.choices.length * btnW + (q.choices.length - 1) * gap;
+      const startX = width / 2 - totalW / 2 + btnW / 2;
+      q.choices.forEach((val, i) => {
+        const c = makeClickable(this, {
+          x: startX + i * (btnW + gap), y: btnY,
+          width: btnW, height: 80,
+          radius: 12,
+          fillColor: 0x222840, fillAlpha: 0.92,
+          strokeColor: 0x66ddff, strokeWidth: 3,
+          hoverFill: 0x33405a, hoverStroke: 0xffd23f,
+          label: String(val),
+          labelStyle: { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "44px", color: "#fff", stroke: "#000", strokeThickness: 5 },
+          onClick: () => {
+            if (busy || this.gameOver) return;
+            busy = true;
+            if (val === q.ans) {
+              streak++;
+              if (streak > bestStreak) bestStreak = streak;
+              const mult = streak >= 6 ? 3 : streak >= 5 ? 2.5 : streak >= 4 ? 2 : streak >= 3 ? 1.5 : streak >= 2 ? 1.2 : 1;
+              const pts = Math.round(25 * mult);
+              this._addScore(pts);
+              streakText.setText(streak >= 2 ? "Combo x" + streak + " (×" + mult + ")" : "");
+              const fb = this.add.text(width / 2, 440, "+" + pts + (streak >= 3 ? "  PARFAIT !" : "  Bravo !"), {
+                fontFamily: "Bangers, Fredoka, system-ui", fontSize: "36px", color: "#66ff88", stroke: "#000", strokeThickness: 5,
+              }).setOrigin(0.5);
+              this.tweens.add({ targets: fb, y: fb.y - 30, alpha: 0, duration: 700, onComplete: () => fb.destroy() });
+              if (streak >= 3) this.cameras.main.flash(120, 102, 255, 136);
+              this.tweens.add({ targets: c, scale: { from: 1.15, to: 1 }, duration: 200, ease: "Back.out" });
+              this.time.delayedCall(280, () => { busy = false; nextQuestion(); });
+            } else {
+              streak = 0;
+              streakText.setText("");
+              const fb = this.add.text(width / 2, 440, "RATÉ — bonne réponse : " + q.ans, {
+                fontFamily: "Bangers, Fredoka, system-ui", fontSize: "26px", color: "#ff6644", stroke: "#000", strokeThickness: 4,
+              }).setOrigin(0.5);
+              this.tweens.add({ targets: fb, y: fb.y - 30, alpha: 0, duration: 1100, onComplete: () => fb.destroy() });
+              this.cameras.main.shake(120, 0.006);
+              this.tweens.add({ targets: c, x: { from: c.x - 8, to: c.x + 8 }, duration: 60, yoyo: true, repeat: 2 });
+              this.time.delayedCall(450, () => { busy = false; nextQuestion(); });
+            }
+          },
+        });
+        buttons.push(c);
+      });
+    };
+
+    const nextQuestion = () => {
+      if (this.gameOver) return;
+      const q = genQuestion();
+      questionText.setText(q.a + " " + q.op + " " + q.b + " = ?");
+      refreshButtons(q);
+    };
+    nextQuestion();
+
+    this._mathCleanup = () => {
+      buttons.forEach((b) => b.destroy());
+    };
   }
 }
