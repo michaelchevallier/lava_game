@@ -126,29 +126,62 @@ export class FairgroundScene extends Phaser.Scene {
   // ========== Chamboule-Tout ==========
   _createChamboule() {
     const { width } = this.scale;
-    this.add.text(width / 2, 80, "Clique sur les boîtes pour les renverser !", {
+    this.add.text(width / 2, 80, "Clique sur les boîtes — argent x2, or x5, arc-en-ciel x10 !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
     }).setOrigin(0.5);
 
     this._setTimer(20000);
     this.cans = [];
+    const TIERS = [
+      { w: 70, pts: 10, body: 0xddccaa, stripe: 0xc63a3a, edge: 0x6a4a2a, label: null,    labelColor: null    },
+      { w: 20, pts: 25, body: 0xc0c8d8, stripe: 0x4a5a78, edge: 0x223040, label: "x2",    labelColor: "#fff" },
+      { w: 8,  pts: 50, body: 0xffd23f, stripe: 0xc88a00, edge: 0x6a4a04, label: "x5",    labelColor: "#fff" },
+      { w: 2,  pts:100, body: 0xff66ff, stripe: 0x66ddff, edge: 0x9a4ad8, label: "x10",   labelColor: "#fff" },
+    ];
+    const pickTier = () => {
+      const r = Math.random() * 100;
+      let acc = 0;
+      for (const t of TIERS) { acc += t.w; if (r < acc) return t; }
+      return TIERS[0];
+    };
+
     const spawnCan = () => {
       if (this.gameOver) return;
       if (this.cans.filter((c) => c.active).length >= 9) return;
       const x = 200 + Math.random() * 880;
       const y = 200 + Math.random() * 350;
+      const tier = pickTier();
       const can = this.add.container(x, y);
-      const body = this.add.rectangle(0, 0, 50, 70, 0xddccaa).setStrokeStyle(2, 0x6a4a2a);
-      const stripe = this.add.rectangle(0, 0, 50, 14, 0xc63a3a);
+      const body = this.add.rectangle(0, 0, 50, 70, tier.body).setStrokeStyle(2, tier.edge);
+      const stripe = this.add.rectangle(0, 0, 50, 14, tier.stripe);
       const eye1 = this.add.circle(-10, -8, 3, 0x000);
       const eye2 = this.add.circle(10, -8, 3, 0x000);
       const mouth = this.add.arc(0, 8, 8, 0, 180, false, 0x000, 0).setStrokeStyle(2, 0x000);
       can.add([body, stripe, eye1, eye2, mouth]);
+      if (tier.label) {
+        const lbl = this.add.text(0, 24, tier.label, {
+          fontFamily: "Bangers, Fredoka, system-ui", fontSize: "16px", color: tier.labelColor, stroke: "#000", strokeThickness: 4,
+        }).setOrigin(0.5);
+        can.add(lbl);
+        if (tier.pts >= 50) {
+          this.tweens.add({ targets: lbl, scale: { from: 1, to: 1.25 }, duration: 350, yoyo: true, repeat: -1, ease: "Sine.inOut" });
+          const halo = this.add.circle(0, 0, 38, tier.body, 0.25);
+          can.addAt(halo, 0);
+          this.tweens.add({ targets: halo, alpha: { from: 0.25, to: 0.05 }, scale: { from: 1, to: 1.4 }, duration: 700, yoyo: true, repeat: -1 });
+        }
+      }
       can.setInteractive(new Phaser.Geom.Rectangle(-25, -35, 50, 70), Phaser.Geom.Rectangle.Contains);
       can.on("pointerdown", () => {
         if (!can.active) return;
         Audio.kill?.();
-        this._addScore(10);
+        this._addScore(tier.pts);
+        if (tier.pts >= 50) this.cameras.main.flash(150, 255, 215, 60);
+        const popup = this.add.text(can.x, can.y - 40, "+" + tier.pts, {
+          fontFamily: "Bangers, Fredoka, system-ui", fontSize: tier.pts >= 50 ? "32px" : "22px",
+          color: tier.label ? (tier.pts >= 100 ? "#ff66ff" : tier.pts >= 50 ? "#ffd23f" : "#fff") : "#ffd23f",
+          stroke: "#000", strokeThickness: 4,
+        }).setOrigin(0.5).setDepth(50);
+        this.tweens.add({ targets: popup, y: popup.y - 50, alpha: 0, duration: 700, onComplete: () => popup.destroy() });
         this.tweens.add({
           targets: can, angle: 90, y: y + 30, alpha: 0, duration: 300, ease: "Cubic.in",
           onComplete: () => can.destroy(),
@@ -163,42 +196,73 @@ export class FairgroundScene extends Phaser.Scene {
   // ========== Tir au Pigeon ==========
   _createPigeon() {
     const { width, height } = this.scale;
-    this.add.text(width / 2, 80, "Clique sur les pigeons en vol !", {
+    this.add.text(width / 2, 80, "Clique sur les pigeons — argent x2, or x5, arc-en-ciel x10 (rapide !)", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
     }).setOrigin(0.5);
 
     this._setTimer(30000);
+    const TIERS = [
+      { w: 70, pts: 15,  body: 0x888888, wing: 0xaaaaaa, durMin: 3000, durJit: 2000, scale: 1,    label: null  },
+      { w: 20, pts: 30,  body: 0xc0c8d8, wing: 0xe0e8f0, durMin: 2400, durJit: 1200, scale: 1,    label: "x2"  },
+      { w: 8,  pts: 75,  body: 0xffd23f, wing: 0xffe066, durMin: 1700, durJit: 600,  scale: 0.85, label: "x5"  },
+      { w: 2,  pts: 150, body: 0xff66ff, wing: 0x66ddff, durMin: 1100, durJit: 400,  scale: 0.75, label: "x10" },
+    ];
+    const pickTier = () => {
+      const r = Math.random() * 100;
+      let acc = 0;
+      for (const t of TIERS) { acc += t.w; if (r < acc) return t; }
+      return TIERS[0];
+    };
+
     const spawnPigeon = () => {
       if (this.gameOver) return;
+      const tier = pickTier();
       const fromLeft = Math.random() > 0.5;
       const startX = fromLeft ? -40 : width + 40;
       const endX = fromLeft ? width + 40 : -40;
       const y = 150 + Math.random() * 400;
       const p = this.add.container(startX, y);
-      const body = this.add.ellipse(0, 0, 36, 22, 0x888);
-      const wingL = this.add.triangle(-8, 0, 0, 0, -16, -10, -16, 10, 0xaaaaaa);
-      const wingR = this.add.triangle(8, 0, 0, 0, 16, -10, 16, 10, 0xaaaaaa);
-      const head = this.add.circle(14, -2, 8, 0x888);
+      const body = this.add.ellipse(0, 0, 36, 22, tier.body);
+      const wingL = this.add.triangle(-8, 0, 0, 0, -16, -10, -16, 10, tier.wing);
+      const wingR = this.add.triangle(8, 0, 0, 0, 16, -10, 16, 10, tier.wing);
+      const head = this.add.circle(14, -2, 8, tier.body);
       const eye = this.add.circle(17, -3, 2, 0x000);
       const beak = this.add.triangle(20, 0, 0, 0, 8, -2, 8, 2, 0xffaa00);
       p.add([wingL, wingR, body, head, eye, beak]);
-      if (!fromLeft) p.setScale(-1, 1);
+      if (tier.label) {
+        const lbl = this.add.text(0, -22, tier.label, {
+          fontFamily: "Bangers, Fredoka, system-ui", fontSize: "14px", color: "#fff", stroke: "#000", strokeThickness: 3,
+        }).setOrigin(0.5);
+        p.add(lbl);
+        if (tier.pts >= 75) {
+          this.tweens.add({ targets: lbl, scale: { from: 1, to: 1.25 }, duration: 350, yoyo: true, repeat: -1 });
+        }
+      }
+      if (tier.scale !== 1) p.setScale(tier.scale * (fromLeft ? 1 : -1), tier.scale);
+      else if (!fromLeft) p.setScale(-1, 1);
       this.tweens.add({ targets: [wingL, wingR], scaleY: { from: 1, to: 0.4 }, duration: 200, yoyo: true, repeat: -1 });
       p.setInteractive(new Phaser.Geom.Rectangle(-20, -12, 40, 24), Phaser.Geom.Rectangle.Contains);
       p.on("pointerdown", () => {
         if (!p.active) return;
         Audio.explode?.();
-        this._addScore(15);
+        this._addScore(tier.pts);
+        if (tier.pts >= 75) this.cameras.main.flash(120, 255, 215, 60);
+        const popup = this.add.text(p.x, p.y - 30, "+" + tier.pts, {
+          fontFamily: "Bangers, Fredoka, system-ui", fontSize: tier.pts >= 75 ? "32px" : "22px",
+          color: tier.pts >= 150 ? "#ff66ff" : tier.pts >= 75 ? "#ffd23f" : tier.pts >= 30 ? "#fff" : "#ffeebb",
+          stroke: "#000", strokeThickness: 4,
+        }).setOrigin(0.5).setDepth(50);
+        this.tweens.add({ targets: popup, y: popup.y - 50, alpha: 0, duration: 700, onComplete: () => popup.destroy() });
         for (let i = 0; i < 8; i++) {
           const a = (Math.PI * 2 * i) / 8;
-          const f = this.add.rectangle(p.x, p.y, 3, 6, 0xddd, 0.9);
+          const f = this.add.rectangle(p.x, p.y, 3, 6, tier.wing, 0.9);
           this.tweens.add({ targets: f, x: p.x + Math.cos(a) * 40, y: p.y + Math.sin(a) * 40, alpha: 0, duration: 500, onComplete: () => f.destroy() });
         }
         p.destroy();
       });
       this.tweens.add({
         targets: p, x: endX,
-        duration: 3000 + Math.random() * 2000,
+        duration: tier.durMin + Math.random() * tier.durJit,
         onComplete: () => p.destroy(),
       });
     };
@@ -290,82 +354,168 @@ export class FairgroundScene extends Phaser.Scene {
   // ========== Course de Crêpes ==========
   _createPancake() {
     const { width, height } = this.scale;
-    this.add.text(width / 2, 80, "Espace quand le curseur est dans le vert !", {
+    this._showPancakeDifficulty();
+  }
+
+  _showPancakeDifficulty() {
+    const { width, height } = this.scale;
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x1a0a4a, 0.92).setDepth(180);
+    const title = this.add.text(width / 2, height / 2 - 200, "Course de Crêpes", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "56px", color: "#ffd23f", stroke: "#000", strokeThickness: 6,
+    }).setOrigin(0.5).setDepth(181);
+    const sub = this.add.text(width / 2, height / 2 - 130, "30 secondes — fais le maximum de flips !", {
+      fontFamily: "Fredoka, system-ui", fontSize: "18px", color: "#ffeebb",
+    }).setOrigin(0.5).setDepth(181);
+
+    const DIFFS = [
+      { id: "easy",   label: "🥞 Facile",   sub: "Curseur lent, zone large",       speed: 4,  greenW: 140, accel: 0.20, color: 0x66ff88, stroke: 0x2a8a4a },
+      { id: "normal", label: "🍳 Normal",   sub: "Vitesse moyenne",                speed: 6,  greenW: 90,  accel: 0.35, color: 0xffd23f, stroke: 0xc88a00 },
+      { id: "hard",   label: "🔥 Difficile", sub: "Rapide, zone serrée",           speed: 9,  greenW: 60,  accel: 0.55, color: 0xff6644, stroke: 0x880000 },
+      { id: "demon",  label: "👹 Démon",    sub: "Bonne chance",                  speed: 13, greenW: 38,  accel: 0.75, color: 0xff66ff, stroke: 0x6a0080 },
+    ];
+
+    const cards = [];
+    DIFFS.forEach((d, i) => {
+      const x = width / 2 + (i - 1.5) * 230;
+      const y = height / 2 + 30;
+      const c = makeClickable(this, {
+        x, y, width: 200, height: 140,
+        radius: 12,
+        fillColor: 0x000, fillAlpha: 0.6, strokeColor: d.color, strokeWidth: 3,
+        hoverFill: 0x222, hoverStroke: 0xffd23f,
+        depth: 181,
+        label: d.label,
+        labelStyle: { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "28px", color: "#fff", stroke: "#000", strokeThickness: 4 },
+        decorate: (cont, sc) => {
+          cont.add(sc.add.text(0, 30, d.sub, { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ffeebb", align: "center", wordWrap: { width: 180 } }).setOrigin(0.5));
+        },
+        onClick: () => {
+          overlay.destroy();
+          title.destroy();
+          sub.destroy();
+          cards.forEach((cc) => cc.destroy());
+          this._startPancakeGame(d);
+        },
+      });
+      cards.push(c);
+    });
+  }
+
+  _startPancakeGame(diff) {
+    const { width, height } = this.scale;
+    this.add.text(width / 2, 80, "Espace ou clic quand le curseur est dans le vert ! Combo = bonus !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
     }).setOrigin(0.5);
+
+    this._setTimer(30000);
 
     const trackY = height / 2 + 40;
     const trackW = 700;
     const trackX = (width - trackW) / 2;
     const track = this.add.rectangle(width / 2, trackY, trackW, 50, 0x222840).setStrokeStyle(2, 0x666);
-    const greenZone = this.add.rectangle(width / 2, trackY, 90, 46, 0x66ff88, 0.7);
-    const yellowL = this.add.rectangle(width / 2 - 75, trackY, 60, 46, 0xffd23f, 0.7);
-    const yellowR = this.add.rectangle(width / 2 + 75, trackY, 60, 46, 0xffd23f, 0.7);
+    const greenZone = this.add.rectangle(width / 2, trackY, diff.greenW, 46, 0x66ff88, 0.7);
+    const yellowSize = diff.greenW + 80;
+    const yellowL = this.add.rectangle(width / 2 - (diff.greenW / 2 + 30), trackY, 60, 46, 0xffd23f, 0.5);
+    const yellowR = this.add.rectangle(width / 2 + (diff.greenW / 2 + 30), trackY, 60, 46, 0xffd23f, 0.5);
 
     let cursorX = trackX;
     let dir = 1;
-    let speed = 6;
+    let speed = diff.speed;
     const cursor = this.add.rectangle(cursorX, trackY, 8, 60, 0xffffff).setStrokeStyle(2, 0x000);
 
     const pan = this.add.text(width / 2, trackY - 90, "🍳", { fontFamily: "system-ui", fontSize: "60px" }).setOrigin(0.5);
 
     let flips = 0;
-    const TOTAL_FLIPS = 8;
+    let combo = 0;
+    let bestCombo = 0;
     let busy = false;
 
-    const flipCount = this.add.text(width / 2, trackY + 80, "Flip 0 / " + TOTAL_FLIPS, {
+    const flipCount = this.add.text(width / 2, trackY + 80, "Flips : 0", {
       fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f",
     }).setOrigin(0.5);
+    const comboText = this.add.text(width / 2, trackY + 110, "", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#ff66cc", stroke: "#000", strokeThickness: 4,
+    }).setOrigin(0.5);
+    const diffBadge = this.add.text(40, 80, diff.label, {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "20px", color: "#fff", stroke: "#000", strokeThickness: 4,
+    }).setOrigin(0, 0.5);
 
     const tryFlip = () => {
       if (busy || this.gameOver) return;
       busy = true;
       const offset = Math.abs(cursorX - width / 2);
-      let pts = 0;
-      let txt = "";
-      let color = "#888";
-      if (offset < 45) { pts = 25; txt = "PARFAIT !"; color = "#66ff88"; }
-      else if (offset < 105) { pts = 10; txt = "BIEN"; color = "#ffd23f"; }
-      else { pts = 0; txt = "RATÉ"; color = "#ff6644"; }
+      let pts = 0, txt = "", color = "#888";
+      const halfGreen = diff.greenW / 2;
+      const halfYellow = halfGreen + 60;
+      if (offset < halfGreen) {
+        combo++;
+        if (combo > bestCombo) bestCombo = combo;
+        const mult = Math.min(1 + (combo - 1) * 0.25, 4);
+        pts = Math.round(25 * mult);
+        txt = combo >= 3 ? "PARFAIT x" + combo + " !" : "PARFAIT !";
+        color = "#66ff88";
+      } else if (offset < halfYellow) {
+        combo = 0;
+        pts = 10;
+        txt = "BIEN";
+        color = "#ffd23f";
+      } else {
+        combo = 0;
+        pts = 0;
+        txt = "RATÉ";
+        color = "#ff6644";
+      }
       const fb = this.add.text(width / 2, trackY - 160, txt + (pts > 0 ? "  +" + pts : ""), {
         fontFamily: "Bangers, Fredoka, system-ui", fontSize: "32px", color, stroke: "#000", strokeThickness: 4,
       }).setOrigin(0.5);
       this.tweens.add({ targets: fb, y: fb.y - 30, alpha: 0, duration: 800, onComplete: () => fb.destroy() });
       if (pts > 0) {
         this._addScore(pts);
-        this.tweens.add({ targets: pan, angle: 360, y: pan.y - 30, duration: 350, yoyo: true, ease: "Cubic.out", onComplete: () => { pan.angle = 0; busy = false; } });
+        this.tweens.add({ targets: pan, angle: 360, y: pan.y - 30, duration: 280, yoyo: true, ease: "Cubic.out", onComplete: () => { pan.angle = 0; busy = false; } });
       } else {
-        this.tweens.add({ targets: pan, x: { from: pan.x - 8, to: pan.x + 8 }, duration: 60, yoyo: true, repeat: 3, onComplete: () => { busy = false; } });
+        this.tweens.add({ targets: pan, x: { from: pan.x - 8, to: pan.x + 8 }, duration: 50, yoyo: true, repeat: 3, onComplete: () => { busy = false; } });
       }
       flips++;
-      flipCount.setText("Flip " + flips + " / " + TOTAL_FLIPS);
-      speed += 0.5;
-      if (flips >= TOTAL_FLIPS) this.time.delayedCall(900, () => this._endGame());
+      flipCount.setText("Flips : " + flips);
+      comboText.setText(combo >= 2 ? "Combo x" + combo : "");
+      speed = Math.min(speed + diff.accel, diff.speed * 2.5);
     };
     this.input.keyboard.on("keydown-SPACE", tryFlip);
     this.input.on("pointerdown", tryFlip);
 
-    this._tickHandler = () => {
+    this._pancakeCursorTick = () => {
       if (this.gameOver || busy) return;
       cursorX += dir * speed;
       if (cursorX > trackX + trackW) { cursorX = trackX + trackW; dir = -1; }
       else if (cursorX < trackX) { cursorX = trackX; dir = 1; }
       cursor.x = cursorX;
     };
-    this.events.on("update", this._tickHandler);
+    this.events.on("update", this._pancakeCursorTick);
   }
 
   // ========== Bumper Cars ==========
   _createBumper() {
     const { width, height } = this.scale;
-    this.add.text(width / 2, 80, "Esquive avec ← → ↑ ↓ pendant 30 secondes !", {
+    this.add.text(width / 2, 80, "Esquive avec ← → ↑ ↓ — survis le plus longtemps possible !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
     }).setOrigin(0.5);
 
-    this._setTimer(30000);
-
     const arenaY1 = 130, arenaY2 = height - 60;
     this.add.rectangle(width / 2, (arenaY1 + arenaY2) / 2, width - 60, arenaY2 - arenaY1, 0x000, 0.4).setStrokeStyle(3, 0xff66cc);
+
+    let lives = 3;
+    let invulnUntil = 0;
+    let survivedMs = 0;
+
+    const livesIcons = [];
+    const livesContainer = this.add.container(40, 30).setDepth(100);
+    livesContainer.add(this.add.text(0, 0, "Vies :", { fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#fff", stroke: "#000", strokeThickness: 3 }).setOrigin(0, 0.5));
+    for (let i = 0; i < 3; i++) {
+      const heart = this.add.text(70 + i * 30, 0, "❤️", { fontFamily: "system-ui", fontSize: "24px" }).setOrigin(0, 0.5);
+      livesContainer.add(heart);
+      livesIcons.push(heart);
+    }
+    this.timerText.setText("0.0s");
 
     const car = this.add.container(width / 2, height - 140);
     const body = this.add.rectangle(0, 0, 40, 28, 0x66ff88).setStrokeStyle(2, 0x2a8a4a);
@@ -375,18 +525,28 @@ export class FairgroundScene extends Phaser.Scene {
     car.add([body, w1, w2, head]);
 
     const obstacles = [];
+    const difficultyAt = (sec) => {
+      const t = Math.min(1, sec / 90);
+      return {
+        spawnDelay: Math.round(700 - 400 * t),
+        carDur: Math.round(2400 - 1700 * t),
+        burst: 1 + Math.floor(sec / 25),
+      };
+    };
+
     const spawnObstacle = () => {
       if (this.gameOver) return;
       const fromLeft = Math.random() > 0.5;
       const sx = fromLeft ? -50 : width + 50;
       const sy = arenaY1 + 50 + Math.random() * (arenaY2 - arenaY1 - 100);
-      const dur = 2400 - Math.min(1400, this.score * 80);
+      const diff = difficultyAt(survivedMs / 1000);
+      const dur = diff.carDur + Math.floor(Math.random() * 400 - 200);
       const c = this.add.container(sx, sy);
       const cb = this.add.rectangle(0, 0, 40, 28, 0xff4400).setStrokeStyle(2, 0x880000);
       c.add(cb);
       obstacles.push(c);
       this.tweens.add({
-        targets: c, x: fromLeft ? width + 50 : -50, duration: dur,
+        targets: c, x: fromLeft ? width + 50 : -50, duration: Math.max(700, dur),
         onComplete: () => {
           if (c.active) {
             this._addScore(2);
@@ -395,7 +555,14 @@ export class FairgroundScene extends Phaser.Scene {
         },
       });
     };
-    this._spawnTimer = this.time.addEvent({ delay: 700, loop: true, callback: spawnObstacle });
+
+    const scheduleNextSpawn = () => {
+      if (this.gameOver) return;
+      const diff = difficultyAt(survivedMs / 1000);
+      for (let i = 0; i < diff.burst; i++) this.time.delayedCall(i * 80, spawnObstacle);
+      this._spawnTimer = this.time.delayedCall(diff.spawnDelay, scheduleNextSpawn);
+    };
+    scheduleNextSpawn();
 
     const keys = { left: false, right: false, up: false, down: false };
     this._keyDown = (e) => {
@@ -415,20 +582,39 @@ export class FairgroundScene extends Phaser.Scene {
 
     this.events.on("update", (time, delta) => {
       if (this.gameOver) return;
-      const sp = 0.32 * delta;
+      survivedMs += delta;
+      this.timerText.setText((survivedMs / 1000).toFixed(1) + "s");
+      const sp = 0.34 * delta;
       if (keys.left) car.x = Math.max(50, car.x - sp);
       if (keys.right) car.x = Math.min(width - 50, car.x + sp);
       if (keys.up) car.y = Math.max(arenaY1 + 30, car.y - sp);
       if (keys.down) car.y = Math.min(arenaY2 - 30, car.y + sp);
+
+      const invuln = time < invulnUntil;
+      car.setAlpha(invuln ? (Math.floor(time / 80) % 2 ? 0.3 : 1) : 1);
+
+      if (invuln) return;
+
       for (const o of obstacles) {
         if (!o.active) continue;
-        if (Math.abs(o.x - car.x) < 40 && Math.abs(o.y - car.y) < 28) {
-          this.cameras.main.shake(150, 0.01);
+        if (Math.abs(o.x - car.x) < 38 && Math.abs(o.y - car.y) < 26) {
+          this.cameras.main.shake(180, 0.012);
           Audio.hit?.();
-          this.score = Math.max(0, this.score - 5);
-          this.scoreText.setText("Score : " + this.score);
+          lives--;
+          if (livesIcons[lives]) {
+            this.tweens.add({
+              targets: livesIcons[lives], scale: { from: 1.5, to: 0 }, alpha: 0, angle: 360, duration: 350,
+              onComplete: () => livesIcons[lives].destroy(),
+            });
+          }
           o.destroy();
           this.tweens.add({ targets: car, x: car.x + (Math.random() - 0.5) * 60, duration: 200, ease: "Back.out" });
+          invulnUntil = time + 1100;
+          if (lives <= 0) {
+            this._addScore(Math.floor(survivedMs / 100));
+            this.time.delayedCall(700, () => this._endGame());
+            break;
+          }
         }
       }
     });
