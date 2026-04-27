@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import { Audio } from "../systems/Audio.js";
 import { MusicManager } from "../systems/MusicManager.js";
 import { makeClickable } from "../ui/Clickable.js";
+import { getFairgroundBest } from "../systems/SaveSystem.js";
 
 const GAMES = [
   { id: "chamboule",   emoji: "🎯", name: "Chamboule-Tout", desc: "Renverse 9 boîtes (tiers x2/x5/x10)", color: 0xffd23f, stroke: 0xffaa00 },
@@ -78,7 +79,11 @@ export class FairgroundHubScene extends Phaser.Scene {
           c.add(s.add.text(0, -65, g.emoji, { fontFamily: "system-ui", fontSize: "48px" }).setOrigin(0.5));
           c.add(s.add.text(0, -10, g.name, { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
           c.add(s.add.text(0, 24, g.desc, { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#ffeebb", align: "center", wordWrap: { width: cardW - 22 } }).setOrigin(0.5));
-          c.add(s.add.text(0, 70, "▶ JOUER", { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "18px", color: "#fff", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
+          const best = getFairgroundBest(g.id);
+          if (best > 0) {
+            c.add(s.add.text(0, 52, "Record : " + best, { fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#ffd23f", fontStyle: "bold" }).setOrigin(0.5));
+          }
+          c.add(s.add.text(0, 75, "▶ JOUER", { fontFamily: "Bangers, Fredoka, system-ui", fontSize: "18px", color: "#fff", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5));
         },
       });
     });

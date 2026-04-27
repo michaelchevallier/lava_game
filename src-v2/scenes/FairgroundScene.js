@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 import { Audio } from "../systems/Audio.js";
 import { bumpTickets } from "../systems/Trophies.js";
-import { loadSave, saveSave } from "../systems/SaveSystem.js";
+import { loadSave, saveSave, getFairgroundBest, recordFairgroundScore } from "../systems/SaveSystem.js";
 import { makeClickable } from "../ui/Clickable.js";
 
 export class FairgroundScene extends Phaser.Scene {
@@ -19,6 +19,9 @@ export class FairgroundScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
     this.cameras.main.fadeIn(300, 0, 0, 0);
+
+    this._isMobile = (this.sys.game.device.input.touch === true && width < 1100) ||
+      ("ontouchstart" in window);
 
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x1a0a4a, 0x1a0a4a, 0x4a2a6a, 0x4a2a6a, 1);
@@ -53,6 +56,85 @@ export class FairgroundScene extends Phaser.Scene {
     else if (this.gameType === "candysort") this._createCandySort();
     else if (this.gameType === "lavajump") this._createLavaJump();
     else this._createComingSoon();
+  }
+
+  _showHowToPlay(text) {
+    return new Promise((resolve) => {
+      const { width, height } = this.scale;
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        this.tweens.add({
+          targets: [overlay, card],
+          alpha: 0,
+          duration: 300,
+          onComplete: () => { overlay.destroy(); card.destroy(); resolve(); },
+        });
+      };
+
+      const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6).setDepth(250).setInteractive();
+      overlay.on("pointerdown", finish);
+
+      const cardBg = this.add.graphics().setDepth(251);
+      const cardW = Math.min(width - 80, 600);
+      const cardH = 140;
+      const cardX = width / 2 - cardW / 2;
+      const cardY = height / 2 - cardH / 2;
+      cardBg.fillStyle(0x222840, 1);
+      cardBg.fillRoundedRect(cardX, cardY, cardW, cardH, 16);
+      cardBg.lineStyle(4, 0xffd23f, 1);
+      cardBg.strokeRoundedRect(cardX, cardY, cardW, cardH, 16);
+
+      const label = this.add.text(width / 2, height / 2 - 22, "Comment jouer", {
+        fontFamily: "Bangers, Fredoka, system-ui",
+        fontSize: "22px",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 4,
+      }).setOrigin(0.5).setDepth(251);
+
+      const instrText = this.add.text(width / 2, height / 2 + 18, text, {
+        fontFamily: "Fredoka, system-ui",
+        fontSize: "20px",
+        color: "#fff",
+        align: "center",
+        wordWrap: { width: cardW - 40 },
+      }).setOrigin(0.5).setDepth(251);
+
+      const tapHint = this.add.text(width / 2, height / 2 + cardH / 2 + 18, "Tape pour commencer", {
+        fontFamily: "Fredoka, system-ui",
+        fontSize: "13px",
+        color: "#ffeebb",
+        alpha: 0.7,
+      }).setOrigin(0.5).setDepth(251);
+
+      const card = this.add.container(0, 0, [cardBg, label, instrText, tapHint]).setDepth(250);
+      this.tweens.add({ targets: card, alpha: { from: 0, to: 1 }, duration: 250 });
+
+      this.time.delayedCall(1500, finish);
+    });
+  }
+
+  _addVirtualButton(x, y, label, color, onPress, onRelease, radius = 50) {
+    const { width, height } = this.scale;
+    const circle = this.add.circle(x, y, radius, color, 0.5)
+      .setStrokeStyle(3, 0xffffff, 0.6)
+      .setDepth(200)
+      .setInteractive();
+    const text = this.add.text(x, y, label, {
+      fontFamily: "Bangers, Fredoka, system-ui",
+      fontSize: radius >= 60 ? "28px" : "22px",
+      color: "#fff",
+      stroke: "#000",
+      strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(201);
+
+    circle.on("pointerdown", () => { circle.setAlpha(0.85); onPress(); });
+    circle.on("pointerup", () => { circle.setAlpha(0.5); onRelease(); });
+    circle.on("pointerout", () => { circle.setAlpha(0.5); onRelease(); });
+
+    return { circle, text };
   }
 
   _createComingSoon() {
@@ -101,6 +183,8 @@ export class FairgroundScene extends Phaser.Scene {
     this.gameOver = true;
     if (this._tickHandler) this.events.off("update", this._tickHandler);
 
+    const isNewBest = this.score > 0 ? recordFairgroundScore(this.gameType, this.score) : false;
+
     const reward = Math.floor(this.score / 5);
     if (reward > 0) {
       const newly = bumpTickets(reward);
@@ -112,31 +196,43 @@ export class FairgroundScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.85).setDepth(150);
     const card = this.add.container(width / 2, height / 2).setDepth(151);
-    const bg = this.add.rectangle(0, 0, 460, 320, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
-    const title = this.add.text(0, -110, "TERMINÉ !", {
+    const bg = this.add.rectangle(0, 0, 460, isNewBest ? 360 : 320, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
+    const title = this.add.text(0, -130, "TERMINÉ !", {
       fontFamily: "Bangers, Fredoka, system-ui",
       fontSize: "60px",
       color: "#ffd23f",
       stroke: "#000",
       strokeThickness: 6,
     }).setOrigin(0.5);
-    const scoreT = this.add.text(0, -30, "Score : " + this.score, {
+    const scoreT = this.add.text(0, -50, "Score : " + this.score, {
       fontFamily: "Fredoka, system-ui",
       fontSize: "26px",
       fontStyle: "bold",
       color: "#fff",
     }).setOrigin(0.5);
-    const rewardT = this.add.text(0, 10, reward > 0 ? "🎫 +" + reward + " tickets" : "Pas de récompense cette fois", {
+    const rewardT = this.add.text(0, -10, reward > 0 ? "🎫 +" + reward + " tickets" : "Pas de récompense cette fois", {
       fontFamily: "Fredoka, system-ui",
       fontSize: "20px",
       color: reward > 0 ? "#ff66cc" : "#aaa",
     }).setOrigin(0.5);
     card.add([bg, title, scoreT, rewardT]);
 
+    if (isNewBest) {
+      const recordT = this.add.text(0, 35, "NOUVEAU RECORD !", {
+        fontFamily: "Bangers, Fredoka, system-ui",
+        fontSize: "30px",
+        color: "#ffd23f",
+        stroke: "#000",
+        strokeThickness: 5,
+      }).setOrigin(0.5);
+      card.add(recordT);
+      this.tweens.add({ targets: recordT, scale: { from: 0.85, to: 1.1 }, duration: 500, yoyo: true, repeat: -1, ease: "Sine.inOut" });
+    }
+
     Audio.win?.();
 
     makeClickable(this, {
-      x: width / 2, y: height / 2 + 100, width: 220, height: 50,
+      x: width / 2, y: height / 2 + (isNewBest ? 130 : 100), width: 220, height: 50,
       radius: 8, fillColor: 0x4ed8a3, strokeColor: 0x2a8a5a, strokeWidth: 3,
       hoverFill: 0x66e8b0, hoverStroke: 0xffd23f,
       label: "← Retour à la foire",
@@ -154,6 +250,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Chamboule-Tout ==========
   _createChamboule() {
+    this._showHowToPlay("Renverse les boîtes (or x5, rainbow x10) !").then(() => {
+      this._startChamboule();
+    });
+  }
+
+  _startChamboule() {
     const { width } = this.scale;
     this.add.text(width / 2, 80, "Clique sur les boîtes — argent x2, or x5, arc-en-ciel x10 !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
@@ -224,6 +326,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Tir au Pigeon ==========
   _createPigeon() {
+    this._showHowToPlay("Touche les pigeons en vol — or x5 !").then(() => {
+      this._startPigeon();
+    });
+  }
+
+  _startPigeon() {
     const { width, height } = this.scale;
     this.add.text(width / 2, 80, "Clique sur les pigeons — argent x2, or x5, arc-en-ciel x10 (rapide !)", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
@@ -301,6 +409,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Roue de la Fortune ==========
   _createWheel() {
+    this._showHowToPlay("Clique pour faire tourner la roue !").then(() => {
+      this._startWheel();
+    });
+  }
+
+  _startWheel() {
     const { width, height } = this.scale;
     this.add.text(width / 2, 100, "Clique pour faire tourner la roue !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
@@ -316,7 +430,7 @@ export class FairgroundScene extends Phaser.Scene {
       { color: 0x66ff88, value: 100, label: "100" },
       { color: 0x9a4ad8, value: 30, label: "30" },
       { color: 0xff8844, value: 15, label: "15" },
-      { color: 0xffd23f, value: 200, label: "200★" },
+      { color: 0xffd23f, value: 200, label: "200" },
     ];
     const wheel = this.add.container(cx, cy);
     const g = this.add.graphics();
@@ -397,10 +511,10 @@ export class FairgroundScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(181);
 
     const DIFFS = [
-      { id: "easy",   label: "🥞 Facile",   sub: "Curseur lent, zone large",       speed: 4,  greenW: 140, accel: 0.20, color: 0x66ff88, stroke: 0x2a8a4a },
-      { id: "normal", label: "🍳 Normal",   sub: "Vitesse moyenne",                speed: 6,  greenW: 90,  accel: 0.35, color: 0xffd23f, stroke: 0xc88a00 },
-      { id: "hard",   label: "🔥 Difficile", sub: "Rapide, zone serrée",           speed: 9,  greenW: 60,  accel: 0.55, color: 0xff6644, stroke: 0x880000 },
-      { id: "demon",  label: "👹 Démon",    sub: "Bonne chance",                  speed: 13, greenW: 38,  accel: 0.75, color: 0xff66ff, stroke: 0x6a0080 },
+      { id: "easy",   label: "Facile",    sub: "Curseur lent, zone large",       speed: 4,  greenW: 140, accel: 0.20, color: 0x66ff88, stroke: 0x2a8a4a },
+      { id: "normal", label: "Normal",    sub: "Vitesse moyenne",                speed: 6,  greenW: 90,  accel: 0.35, color: 0xffd23f, stroke: 0xc88a00 },
+      { id: "hard",   label: "Difficile", sub: "Rapide, zone serrée",            speed: 9,  greenW: 60,  accel: 0.55, color: 0xff6644, stroke: 0x880000 },
+      { id: "demon",  label: "Démon",     sub: "Bonne chance",                  speed: 13, greenW: 38,  accel: 0.75, color: 0xff66ff, stroke: 0x6a0080 },
     ];
 
     const cards = [];
@@ -423,7 +537,9 @@ export class FairgroundScene extends Phaser.Scene {
           title.destroy();
           sub.destroy();
           cards.forEach((cc) => cc.destroy());
-          this._startPancakeGame(d);
+          this._showHowToPlay("ESPACE quand le curseur est dans le vert !").then(() => {
+            this._startPancakeGame(d);
+          });
         },
       });
       cards.push(c);
@@ -524,8 +640,14 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Bumper Cars ==========
   _createBumper() {
+    this._showHowToPlay("Esquive avec les flèches — 3 vies !").then(() => {
+      this._startBumper();
+    });
+  }
+
+  _startBumper() {
     const { width, height } = this.scale;
-    this.add.text(width / 2, 80, "Esquive avec ← → ↑ ↓ — survis le plus longtemps possible !", {
+    this.add.text(width / 2, 80, "Esquive avec les flèches — survis le plus longtemps possible !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
     }).setOrigin(0.5);
 
@@ -609,6 +731,14 @@ export class FairgroundScene extends Phaser.Scene {
     this.input.keyboard.on("keydown", this._keyDown);
     this.input.keyboard.on("keyup", this._keyUp);
 
+    if (this._isMobile) {
+      const dpadY = height - 90;
+      this._addVirtualButton(90, dpadY, "←", 0x4488ff, () => { keys.left = true; }, () => { keys.left = false; });
+      this._addVirtualButton(210, dpadY, "→", 0x4488ff, () => { keys.right = true; }, () => { keys.right = false; });
+      this._addVirtualButton(150, height - 150, "↑", 0x4488ff, () => { keys.up = true; }, () => { keys.up = false; });
+      this._addVirtualButton(150, height - 30, "↓", 0x4488ff, () => { keys.down = true; }, () => { keys.down = false; });
+    }
+
     this.events.on("update", (time, delta) => {
       if (this.gameOver) return;
       survivedMs += delta;
@@ -665,10 +795,10 @@ export class FairgroundScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(181);
 
     const DIFFS = [
-      { id: "petit",     label: "🐣 Petit",      sub: "Additions 1-9",                  ops: ["+"],           min: 1,  max: 9,  color: 0x66ff88, stroke: 0x2a8a4a },
-      { id: "moyen",     label: "🦔 Moyen",      sub: "+ et − jusqu'à 20",             ops: ["+", "-"],      min: 1,  max: 20, color: 0xffd23f, stroke: 0xc88a00 },
-      { id: "grand",     label: "🦊 Grand",      sub: "+, − et × jusqu'à 12",          ops: ["+", "-", "×"], min: 1,  max: 12, color: 0xff8844, stroke: 0xc63a3a },
-      { id: "champion",  label: "🦅 Champion",   sub: "Tout, jusqu'à 20 et × 1-12",    ops: ["+", "-", "×"], min: 1,  max: 20, color: 0xff66ff, stroke: 0x6a0080 },
+      { id: "petit",     label: "Petit",     sub: "Additions 1-9",                  ops: ["+"],           min: 1,  max: 9,  color: 0x66ff88, stroke: 0x2a8a4a },
+      { id: "moyen",     label: "Moyen",     sub: "+ et − jusqu'à 20",             ops: ["+", "-"],      min: 1,  max: 20, color: 0xffd23f, stroke: 0xc88a00 },
+      { id: "grand",     label: "Grand",     sub: "+, − et × jusqu'à 12",          ops: ["+", "-", "×"], min: 1,  max: 12, color: 0xff8844, stroke: 0xc63a3a },
+      { id: "champion",  label: "Champion",  sub: "Tout, jusqu'à 20 et × 1-12",    ops: ["+", "-", "×"], min: 1,  max: 20, color: 0xff66ff, stroke: 0x6a0080 },
     ];
 
     const cards = [];
@@ -691,7 +821,9 @@ export class FairgroundScene extends Phaser.Scene {
           title.destroy();
           sub.destroy();
           cards.forEach((cc) => cc.destroy());
-          this._startMathGame(d);
+          this._showHowToPlay("Clique la bonne réponse — combos !").then(() => {
+            this._startMathGame(d);
+          });
         },
       });
       cards.push(c);
@@ -832,6 +964,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Saut de Lave ==========
   _createLavaJump() {
+    this._showHowToPlay("ESPACE pour sauter, ←→ pour bouger !").then(() => {
+      this._startLavaJump();
+    });
+  }
+
+  _startLavaJump() {
     const { width, height } = this.scale;
 
     let lives = 3;
@@ -925,6 +1063,16 @@ export class FairgroundScene extends Phaser.Scene {
     };
     this.input.keyboard.on("keydown", this._ljKeyDown);
     this.input.keyboard.on("keyup", this._ljKeyUp);
+
+    if (this._isMobile) {
+      const dpadY = height - 90;
+      this._addVirtualButton(90, dpadY, "←", 0x4488ff,
+        () => { keys.left = true; }, () => { keys.left = false; });
+      this._addVirtualButton(210, dpadY, "→", 0x4488ff,
+        () => { keys.right = true; }, () => { keys.right = false; });
+      this._addVirtualButton(width - 110, dpadY, "SAUT", 0xffd23f,
+        () => { keys.jump = true; }, () => { keys.jump = false; }, 60);
+    }
 
     let jumpPressed = false;
     let highestPlat = 0;
@@ -1056,6 +1204,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Tri Bonbons ==========
   _createCandySort() {
+    this._showHowToPlay("Drag les bonbons dans le bon bocal !").then(() => {
+      this._startCandySort();
+    });
+  }
+
+  _startCandySort() {
     const { width, height } = this.scale;
     this.add.text(width / 2, 80, "Glisse chaque bonbon dans le bocal de sa couleur !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
@@ -1220,6 +1374,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Tir à l'Arc ==========
   _createArchery() {
+    this._showHowToPlay("Drag depuis l'arc, vise les cibles !").then(() => {
+      this._startArchery();
+    });
+  }
+
+  _startArchery() {
     const { width, height } = this.scale;
 
     const TOTAL_ARROWS = 6;
@@ -1428,6 +1588,12 @@ export class FairgroundScene extends Phaser.Scene {
 
   // ========== Feu Tricolore ==========
   _createTrafficLight() {
+    this._showHowToPlay("Maintiens GO quand vert, lâche au rouge !").then(() => {
+      this._startTrafficLight();
+    });
+  }
+
+  _startTrafficLight() {
     const { width, height } = this.scale;
     this.add.text(width / 2, 80, "Maintiens ESPACE ou ↑ pour courir — stoppe au ROUGE !", {
       fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
@@ -1489,6 +1655,11 @@ export class FairgroundScene extends Phaser.Scene {
     };
     this.input.keyboard.on("keydown", this._tlKeyDown);
     this.input.keyboard.on("keyup", this._tlKeyUp);
+
+    if (this._isMobile) {
+      this._addVirtualButton(width / 2, height - 80, "GO", 0x66ff88,
+        () => { running = true; }, () => { running = false; }, 60);
+    }
 
     this._tlTick = (time, delta) => {
       if (this.gameOver) return;
