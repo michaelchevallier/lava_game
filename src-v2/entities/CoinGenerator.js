@@ -42,6 +42,10 @@ export class CoinGenerator extends Phaser.GameObjects.Container {
     scene.tweens.add({ targets: heart, scale: { from: useKenneyCoin ? 0.55 : 1, to: useKenneyCoin ? 0.6 : 1.08 }, duration: 1200, yoyo: true, repeat: -1, ease: "Sine.inOut" });
     scene.tweens.add({ targets: this.glow, scale: { from: 1, to: 1.3 }, alpha: { from: 0.18, to: 0.05 }, duration: 1500, yoyo: true, repeat: -1, ease: "Sine.inOut" });
 
+    this.setSize(56, 70);
+    this.setDepth(8);
+    scene.add.existing(this);
+
     this._tick = (time, delta) => this.tick(time, delta);
     scene.events.on("update", this._tick);
     this.once("destroy", () => scene.events.off("update", this._tick));
