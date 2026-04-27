@@ -38,6 +38,8 @@ export class LawnMower extends Phaser.GameObjects.Container {
     JuiceFX.shake(this.scene, 8, 280);
   }
 
+  static BOSS_TYPES = new Set(["boss", "magicboss", "lavaqueen", "carnivalboss", "ovniboss", "kraken", "dragon", "netboss"]);
+
   tick(time, delta) {
     if (!this.scene || this._dead) return;
     if (!this.activated) return;
@@ -48,10 +50,20 @@ export class LawnMower extends Phaser.GameObjects.Container {
     if (this.blade) this.blade.angle = (this.blade.angle + dx * 8) % 360;
 
     const visitors = this.scene.visitors || [];
+    const BOSS_TYPES = LawnMower.BOSS_TYPES;
     for (const v of visitors) {
       if (!v.active || v._dying) continue;
       if (Math.abs(v.y - this.y) > 40) continue;
       if (Math.abs(v.x - this.x) > 36) continue;
+      if (BOSS_TYPES.has(v.type)) {
+        v.takeDamage(10, "mower");
+        this._dead = true;
+        this.scene.tweens.add({
+          targets: this, alpha: 0, scale: 0.4, angle: 90, duration: 250,
+          onComplete: () => this.destroy(),
+        });
+        return;
+      }
       v.takeDamage(99, "mower");
     }
 
