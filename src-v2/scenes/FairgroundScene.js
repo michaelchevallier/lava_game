@@ -48,6 +48,10 @@ export class FairgroundScene extends Phaser.Scene {
     else if (this.gameType === "pancake") this._createPancake();
     else if (this.gameType === "bumper") this._createBumper();
     else if (this.gameType === "math") this._createMath();
+    else if (this.gameType === "trafficlight") this._createTrafficLight();
+    else if (this.gameType === "archery") this._createArchery();
+    else if (this.gameType === "candysort") this._createCandySort();
+    else if (this.gameType === "lavajump") this._createLavaJump();
     else this._createComingSoon();
   }
 
@@ -824,5 +828,152 @@ export class FairgroundScene extends Phaser.Scene {
     this._mathCleanup = () => {
       buttons.forEach((b) => b.destroy());
     };
+  }
+
+  // ========== Feu Tricolore ==========
+  _createTrafficLight() {
+    const { width, height } = this.scale;
+    this.add.text(width / 2, 80, "Maintiens ESPACE ou ↑ pour courir — stoppe au ROUGE !", {
+      fontFamily: "Fredoka, system-ui", fontSize: "16px", color: "#ffeebb",
+    }).setOrigin(0.5);
+
+    this._setTimer(30000);
+
+    const trackY = height / 2 + 30;
+    const trackLeft = 60;
+    const trackRight = width - 160;
+    const trackLen = trackRight - trackLeft;
+
+    this.add.rectangle(width / 2 + (trackLeft - width / 2 + trackLen / 2), trackY + 30, trackLen, 12, 0x444444);
+
+    const finishZone = this.add.rectangle(trackRight + 8, trackY + 20, 24, 60, 0x66ff88, 0.35)
+      .setStrokeStyle(2, 0x66ff88);
+    this.add.text(trackRight + 8, trackY - 20, "FIN", {
+      fontFamily: "Bangers, Fredoka, system-ui", fontSize: "14px", color: "#66ff88",
+    }).setOrigin(0.5);
+
+    let runnerX = trackLeft;
+    const runnerContainer = this.add.container(runnerX, trackY + 10);
+    const head = this.add.circle(0, -22, 10, 0xffd2a8).setStrokeStyle(1, 0x8a6a4a);
+    const body = this.add.rectangle(0, 0, 14, 24, 0x4488ff).setStrokeStyle(1, 0x224488);
+    const legL = this.add.rectangle(-4, 18, 5, 16, 0x2244aa);
+    const legR = this.add.rectangle(4, 18, 5, 16, 0x2244aa);
+    runnerContainer.add([body, head, legL, legR]);
+
+    const tlX = width - 100;
+    const tlY = height / 2 - 10;
+    const tlBg = this.add.rectangle(tlX, tlY, 44, 120, 0x111111).setStrokeStyle(3, 0x333333).setOrigin(0.5);
+    const lightR = this.add.circle(tlX, tlY - 36, 16, 0x440000);
+    const lightY = this.add.circle(tlX, tlY, 16, 0x444400);
+    const lightG = this.add.circle(tlX, tlY + 36, 16, 0x004400);
+
+    const setLight = (color) => {
+      lightR.setFillStyle(color === "red" ? 0xff2222 : 0x440000);
+      lightY.setFillStyle(color === "yellow" ? 0xffdd00 : 0x444400);
+      lightG.setFillStyle(color === "green" ? 0x44ff44 : 0x004400);
+    };
+
+    let tlPhase = "green";
+    let phaseTimer = 0;
+    let tour = 1;
+    let greenDur = 1500;
+    let runnerSpeed = 0.3;
+    let running = false;
+    let redViolation = false;
+    let redSurvived = false;
+    let legAnim = 0;
+
+    setLight("green");
+
+    this._tlKeyDown = (e) => {
+      if (e.code === "Space" || e.code === "ArrowUp") running = true;
+    };
+    this._tlKeyUp = (e) => {
+      if (e.code === "Space" || e.code === "ArrowUp") running = false;
+    };
+    this.input.keyboard.on("keydown", this._tlKeyDown);
+    this.input.keyboard.on("keyup", this._tlKeyUp);
+
+    this._tlTick = (time, delta) => {
+      if (this.gameOver) return;
+
+      phaseTimer += delta;
+
+      if (tlPhase === "green") {
+        if (running) {
+          runnerX = Math.min(trackRight, runnerX + runnerSpeed * delta);
+          legAnim += delta;
+          legL.setPosition(-4, 18 + Math.sin(legAnim * 0.02) * 6);
+          legR.setPosition(4, 18 + Math.cos(legAnim * 0.02) * 6);
+        }
+        if (phaseTimer >= greenDur) {
+          tlPhase = "yellow";
+          phaseTimer = 0;
+          setLight("yellow");
+        }
+        if (runnerX >= trackRight) {
+          this._addScore(200);
+          this.cameras.main.flash(200, 255, 215, 60);
+          const popup = this.add.text(runnerContainer.x, trackY - 50, "+200 BONUS !", {
+            fontFamily: "Bangers, Fredoka, system-ui", fontSize: "28px", color: "#ffd23f",
+            stroke: "#000", strokeThickness: 5,
+          }).setOrigin(0.5).setDepth(50);
+          this.tweens.add({ targets: popup, y: popup.y - 40, alpha: 0, duration: 800, onComplete: () => popup.destroy() });
+          runnerX = trackLeft;
+          tour++;
+          greenDur = Math.max(600, 1500 - (tour - 1) * 150);
+          runnerSpeed = Math.min(0.5, 0.3 + (tour - 1) * 0.02);
+        }
+      } else if (tlPhase === "yellow") {
+        if (running) {
+          runnerX = Math.min(trackRight, runnerX + runnerSpeed * delta);
+          legAnim += delta;
+          legL.setPosition(-4, 18 + Math.sin(legAnim * 0.02) * 6);
+          legR.setPosition(4, 18 + Math.cos(legAnim * 0.02) * 6);
+        }
+        if (phaseTimer >= 400) {
+          tlPhase = "red";
+          phaseTimer = 0;
+          redViolation = false;
+          redSurvived = false;
+          setLight("red");
+        }
+      } else if (tlPhase === "red") {
+        if (running) {
+          redViolation = true;
+          this.cameras.main.shake(180, 0.01);
+          Audio.hit?.();
+          runnerX = trackLeft;
+          legL.setPosition(-4, 18);
+          legR.setPosition(4, 18);
+          tlPhase = "green";
+          phaseTimer = 0;
+          setLight("green");
+          redViolation = false;
+        } else {
+          if (phaseTimer >= 1200 && !redSurvived) {
+            redSurvived = true;
+            const pts = 20 * tour;
+            this._addScore(pts);
+            const popup = this.add.text(runnerContainer.x, trackY - 50, "+" + pts + " Arrêt parfait !", {
+              fontFamily: "Bangers, Fredoka, system-ui", fontSize: "22px", color: "#66ff88",
+              stroke: "#000", strokeThickness: 4,
+            }).setOrigin(0.5).setDepth(50);
+            this.tweens.add({ targets: popup, y: popup.y - 40, alpha: 0, duration: 800, onComplete: () => popup.destroy() });
+          }
+          if (phaseTimer >= 1600) {
+            tlPhase = "green";
+            phaseTimer = 0;
+            tour++;
+            greenDur = Math.max(600, 1500 - (tour - 1) * 150);
+            runnerSpeed = Math.min(0.5, 0.3 + (tour - 1) * 0.02);
+            setLight("green");
+          }
+        }
+      }
+
+      runnerContainer.x = runnerX;
+    };
+    this.events.on("update", this._tlTick);
   }
 }
