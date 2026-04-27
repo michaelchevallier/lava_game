@@ -135,36 +135,6 @@
           "type": "flying",
           "lane": 0,
           "delayMs": 8700
-        },
-        {
-          "type": "flying",
-          "lane": 1,
-          "delayMs": 9400
-        },
-        {
-          "type": "flying",
-          "lane": 2,
-          "delayMs": 10100
-        },
-        {
-          "type": "flying",
-          "lane": 3,
-          "delayMs": 10800
-        },
-        {
-          "type": "flying",
-          "lane": 4,
-          "delayMs": 11500
-        },
-        {
-          "type": "basic",
-          "lane": 0,
-          "delayMs": 13000
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 13800
         }
       ]
     }

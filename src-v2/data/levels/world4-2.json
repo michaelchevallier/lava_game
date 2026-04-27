@@ -46,11 +46,6 @@
           "type": "skeleton",
           "lane": 3,
           "delayMs": 4400
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 5100
         }
       ]
     },
@@ -96,26 +91,6 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 6200
-        },
-        {
-          "type": "vip",
-          "lane": 4,
-          "delayMs": 6900
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 7600
-        },
-        {
-          "type": "flying",
-          "lane": 1,
-          "delayMs": 8300
-        },
-        {
-          "type": "flying",
-          "lane": 3,
-          "delayMs": 9000
         }
       ]
     },
@@ -186,46 +161,6 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 11400
-        },
-        {
-          "type": "vip",
-          "lane": 4,
-          "delayMs": 12100
-        },
-        {
-          "type": "skeleton",
-          "lane": 1,
-          "delayMs": 12800
-        },
-        {
-          "type": "skeleton",
-          "lane": 3,
-          "delayMs": 13500
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 14200
-        },
-        {
-          "type": "flying",
-          "lane": 2,
-          "delayMs": 14900
-        },
-        {
-          "type": "lavewalker",
-          "lane": 0,
-          "delayMs": 16400
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 17200
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 18000
         }
       ]
     }

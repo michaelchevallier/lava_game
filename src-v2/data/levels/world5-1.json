@@ -45,16 +45,6 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 3400
-        },
-        {
-          "type": "vip",
-          "lane": 4,
-          "delayMs": 4100
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 4800
         }
       ]
     },
@@ -100,31 +90,6 @@
           "type": "tank",
           "lane": 3,
           "delayMs": 6000
-        },
-        {
-          "type": "boss",
-          "lane": 2,
-          "delayMs": 7200
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 7900
-        },
-        {
-          "type": "vip",
-          "lane": 3,
-          "delayMs": 8600
-        },
-        {
-          "type": "skeleton",
-          "lane": 0,
-          "delayMs": 9300
-        },
-        {
-          "type": "skeleton",
-          "lane": 4,
-          "delayMs": 10000
         }
       ]
     },
@@ -200,56 +165,6 @@
           "type": "boss",
           "lane": 1,
           "delayMs": 11700
-        },
-        {
-          "type": "boss",
-          "lane": 3,
-          "delayMs": 12400
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 13100
-        },
-        {
-          "type": "vip",
-          "lane": 2,
-          "delayMs": 13800
-        },
-        {
-          "type": "vip",
-          "lane": 4,
-          "delayMs": 14500
-        },
-        {
-          "type": "skeleton",
-          "lane": 1,
-          "delayMs": 15200
-        },
-        {
-          "type": "skeleton",
-          "lane": 3,
-          "delayMs": 15900
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 16600
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 18100
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 18900
-        },
-        {
-          "type": "boudeur",
-          "lane": 2,
-          "delayMs": 19700
         }
       ]
     }

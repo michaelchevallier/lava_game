@@ -119,51 +119,6 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 6000
-        },
-        {
-          "type": "basic",
-          "lane": 4,
-          "delayMs": 7000
-        },
-        {
-          "type": "tank",
-          "lane": 2,
-          "delayMs": 9000
-        },
-        {
-          "type": "tank",
-          "lane": 0,
-          "delayMs": 10200
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 10900
-        },
-        {
-          "type": "tank",
-          "lane": 2,
-          "delayMs": 11600
-        },
-        {
-          "type": "tank",
-          "lane": 3,
-          "delayMs": 12300
-        },
-        {
-          "type": "tank",
-          "lane": 4,
-          "delayMs": 13000
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 13700
-        },
-        {
-          "type": "basic",
-          "lane": 0,
-          "delayMs": 15200
         }
       ]
     }

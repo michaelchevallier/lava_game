@@ -85,16 +85,6 @@
           "type": "vip",
           "lane": 4,
           "delayMs": 6400
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 7100
-        },
-        {
-          "type": "flying",
-          "lane": 1,
-          "delayMs": 7800
         }
       ]
     },
@@ -155,61 +145,6 @@
           "type": "tank",
           "lane": 2,
           "delayMs": 8500
-        },
-        {
-          "type": "tank",
-          "lane": 0,
-          "delayMs": 9500
-        },
-        {
-          "type": "skeleton",
-          "lane": 0,
-          "delayMs": 10700
-        },
-        {
-          "type": "skeleton",
-          "lane": 1,
-          "delayMs": 11400
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 12100
-        },
-        {
-          "type": "skeleton",
-          "lane": 3,
-          "delayMs": 12800
-        },
-        {
-          "type": "skeleton",
-          "lane": 4,
-          "delayMs": 13500
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 14200
-        },
-        {
-          "type": "vip",
-          "lane": 3,
-          "delayMs": 14900
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 15600
-        },
-        {
-          "type": "boudeur",
-          "lane": 0,
-          "delayMs": 17100
-        },
-        {
-          "type": "stiltman",
-          "lane": 1,
-          "delayMs": 17900
         }
       ]
     }

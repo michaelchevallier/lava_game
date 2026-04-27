@@ -102,16 +102,6 @@
           "type": "basic",
           "lane": 3,
           "delayMs": 9400
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 10100
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 11600
         }
       ]
     }

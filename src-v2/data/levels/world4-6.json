@@ -155,46 +155,6 @@
           "type": "boss",
           "lane": 4,
           "delayMs": 12400
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 13100
-        },
-        {
-          "type": "vip",
-          "lane": 3,
-          "delayMs": 13800
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 14500
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 15200
-        },
-        {
-          "type": "flying",
-          "lane": 2,
-          "delayMs": 15900
-        },
-        {
-          "type": "lavewalker",
-          "lane": 0,
-          "delayMs": 17400
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 18200
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 19000
         }
       ]
     }

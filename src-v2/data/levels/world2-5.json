@@ -85,16 +85,6 @@
           "type": "vip",
           "lane": 3,
           "delayMs": 6400
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 7100
-        },
-        {
-          "type": "flying",
-          "lane": 4,
-          "delayMs": 7800
         }
       ]
     },
@@ -145,61 +135,6 @@
           "type": "flying",
           "lane": 2,
           "delayMs": 7000
-        },
-        {
-          "type": "flying",
-          "lane": 4,
-          "delayMs": 7500
-        },
-        {
-          "type": "tank",
-          "lane": 2,
-          "delayMs": 9500
-        },
-        {
-          "type": "skeleton",
-          "lane": 0,
-          "delayMs": 10700
-        },
-        {
-          "type": "skeleton",
-          "lane": 1,
-          "delayMs": 11400
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 12100
-        },
-        {
-          "type": "skeleton",
-          "lane": 3,
-          "delayMs": 12800
-        },
-        {
-          "type": "skeleton",
-          "lane": 4,
-          "delayMs": 13500
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 14200
-        },
-        {
-          "type": "vip",
-          "lane": 3,
-          "delayMs": 14900
-        },
-        {
-          "type": "magicien",
-          "lane": 0,
-          "delayMs": 16400
-        },
-        {
-          "type": "basic",
-          "lane": 1,
-          "delayMs": 17200
         }
       ]
     }

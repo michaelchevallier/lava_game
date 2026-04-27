@@ -45,16 +45,6 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 3200
-        },
-        {
-          "type": "basic",
-          "lane": 1,
-          "delayMs": 3900
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 4600
         }
       ]
     },
@@ -140,56 +130,6 @@
           "type": "tank",
           "lane": 4,
           "delayMs": 5500
-        },
-        {
-          "type": "basic",
-          "lane": 2,
-          "delayMs": 7000
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 8500
-        },
-        {
-          "type": "tank",
-          "lane": 3,
-          "delayMs": 9000
-        },
-        {
-          "type": "tank",
-          "lane": 0,
-          "delayMs": 10200
-        },
-        {
-          "type": "tank",
-          "lane": 4,
-          "delayMs": 10900
-        },
-        {
-          "type": "tank",
-          "lane": 2,
-          "delayMs": 11600
-        },
-        {
-          "type": "basic",
-          "lane": 1,
-          "delayMs": 12300
-        },
-        {
-          "type": "basic",
-          "lane": 3,
-          "delayMs": 13000
-        },
-        {
-          "type": "tank",
-          "lane": 0,
-          "delayMs": 13700
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 15200
         }
       ]
     }

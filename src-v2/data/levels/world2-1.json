@@ -134,36 +134,6 @@
           "type": "vip",
           "lane": 0,
           "delayMs": 9700
-        },
-        {
-          "type": "vip",
-          "lane": 2,
-          "delayMs": 10400
-        },
-        {
-          "type": "vip",
-          "lane": 4,
-          "delayMs": 11100
-        },
-        {
-          "type": "basic",
-          "lane": 1,
-          "delayMs": 11800
-        },
-        {
-          "type": "basic",
-          "lane": 3,
-          "delayMs": 12500
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 14000
-        },
-        {
-          "type": "magicien",
-          "lane": 1,
-          "delayMs": 14800
         }
       ]
     }

@@ -117,16 +117,6 @@
           "type": "basic",
           "lane": 0,
           "delayMs": 8400
-        },
-        {
-          "type": "tank",
-          "lane": 3,
-          "delayMs": 9100
-        },
-        {
-          "type": "basic",
-          "lane": 0,
-          "delayMs": 10600
         }
       ]
     }

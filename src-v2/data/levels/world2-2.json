@@ -134,36 +134,6 @@
           "type": "skeleton",
           "lane": 0,
           "delayMs": 9200
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 9900
-        },
-        {
-          "type": "skeleton",
-          "lane": 4,
-          "delayMs": 10600
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 11300
-        },
-        {
-          "type": "tank",
-          "lane": 3,
-          "delayMs": 12000
-        },
-        {
-          "type": "magicien",
-          "lane": 0,
-          "delayMs": 13500
-        },
-        {
-          "type": "basic",
-          "lane": 1,
-          "delayMs": 14300
         }
       ]
     }

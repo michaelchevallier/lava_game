@@ -85,16 +85,6 @@
           "type": "boss",
           "lane": 3,
           "delayMs": 4900
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 5600
-        },
-        {
-          "type": "flying",
-          "lane": 0,
-          "delayMs": 6300
         }
       ]
     },
@@ -170,56 +160,6 @@
           "type": "boss",
           "lane": 0,
           "delayMs": 11200
-        },
-        {
-          "type": "boss",
-          "lane": 2,
-          "delayMs": 11900
-        },
-        {
-          "type": "boss",
-          "lane": 4,
-          "delayMs": 12600
-        },
-        {
-          "type": "vip",
-          "lane": 1,
-          "delayMs": 13300
-        },
-        {
-          "type": "vip",
-          "lane": 3,
-          "delayMs": 14000
-        },
-        {
-          "type": "skeleton",
-          "lane": 0,
-          "delayMs": 14700
-        },
-        {
-          "type": "skeleton",
-          "lane": 2,
-          "delayMs": 15400
-        },
-        {
-          "type": "skeleton",
-          "lane": 4,
-          "delayMs": 16100
-        },
-        {
-          "type": "vip",
-          "lane": 0,
-          "delayMs": 17600
-        },
-        {
-          "type": "tank",
-          "lane": 1,
-          "delayMs": 18400
-        },
-        {
-          "type": "boudeur",
-          "lane": 2,
-          "delayMs": 19200
         }
       ]
     }
