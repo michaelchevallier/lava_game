@@ -173,6 +173,12 @@ const summary = await page.evaluate(() => {
   };
 });
 
+log("phase 2.5: clear save before world1-8 boss + meta-shop test");
+await page.evaluate(() => {
+  window.__cd.save.reset();
+  window.__cd.save.load();
+});
+
 log("phase 2: boss spawn smoke test (world1-8)");
 const bossPhase = await page.evaluate(async () => {
   const cd = window.__cd;
@@ -196,9 +202,37 @@ const bossPhase = await page.evaluate(async () => {
   };
 });
 
+log("phase 3: meta-shop (gems → upgrade → applied)");
+const shopPhase = await page.evaluate(async () => {
+  const cd = window.__cd;
+  cd.save.addGems(50);
+  const gemsBefore = cd.save.getGems();
+  cd.shop.open();
+  await new Promise((r) => setTimeout(r, 100));
+  const shopOpen = cd.shop.isOpen();
+  cd.shop.buy("castle_hp");
+  await new Promise((r) => setTimeout(r, 100));
+  const lvlAfter = cd.save.getUpgradeLevel("castle_hp");
+  const gemsAfter = cd.save.getGems();
+  cd.shop.close();
+  cd.loadLevel("world1-1");
+  await new Promise((r) => setTimeout(r, 200));
+  const castleHPMax = cd.runner.castleHPMax;
+  const baseCastleHP = 120;
+  const expected = Math.round(baseCastleHP * 1.1);
+  return {
+    gemsBefore,
+    gemsAfter,
+    upgradeLvl: lvlAfter,
+    shopOpened: shopOpen,
+    castleHPMax,
+    expectedCastleHP: expected,
+  };
+});
+
 writeFileSync(
   path.join(RESULTS_DIR, "crowdef-summary.json"),
-  JSON.stringify({ result, summary, bossPhase, consoleErrors, pageErrors }, null, 2),
+  JSON.stringify({ result, summary, bossPhase, shopPhase, consoleErrors, pageErrors }, null, 2),
 );
 
 await browser.close();
@@ -225,6 +259,10 @@ allOk &= pass(`tower upgrades >= 1`, (summary.counts["crowdef:tower-upgraded"] |
 allOk &= pass(`fps avg >= 15 (headless w/ rigged crowd)`, summary.fpsAvg >= 15, `(got ${(summary.fpsAvg || 0).toFixed(1)})`);
 allOk &= pass(`boss-spawned event fired (world1-8)`, bossPhase.spawned >= 1, `(got ${bossPhase.spawned}, name="${bossPhase.bossName}")`);
 allOk &= pass(`boss-charge event fired within 9s`, bossPhase.charged >= 1, `(got ${bossPhase.charged})`);
+allOk &= pass(`shop opened via __cd.shop.open()`, shopPhase.shopOpened, `(got ${shopPhase.shopOpened})`);
+allOk &= pass(`castle_hp upgrade purchased (lvl 1)`, shopPhase.upgradeLvl === 1, `(got lvl=${shopPhase.upgradeLvl})`);
+allOk &= pass(`5 gems spent on upgrade`, shopPhase.gemsBefore - shopPhase.gemsAfter === 5, `(spent ${shopPhase.gemsBefore - shopPhase.gemsAfter})`);
+allOk &= pass(`castle HP +10% applied in run`, shopPhase.castleHPMax === shopPhase.expectedCastleHP, `(got ${shopPhase.castleHPMax}, expected ${shopPhase.expectedCastleHP})`);
 
 console.log("\n=== SUMMARY ===");
 console.log(JSON.stringify({ result, summary }, null, 2));
