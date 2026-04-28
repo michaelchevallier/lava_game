@@ -108,6 +108,19 @@
       .overlay .panel .actions .primary { background: #c63a10; border-color: #ff7a55; }
       .overlay .panel .actions .primary:hover { background: #d8501e; }
 
+      #fps-meter {
+        position: fixed; left: 10px; top: 10px; z-index: 30;
+        background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 8px;
+        padding: 4px 10px; font-size: 13px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        pointer-events: auto; cursor: pointer; user-select: none;
+        opacity: 0.85; transition: opacity 0.15s ease, border-color 0.2s ease;
+      }
+      #fps-meter:hover { opacity: 1; }
+      #fps-meter.good { color: #5fe079; border-color: #2f8a3a; }
+      #fps-meter.warn { color: #f0c83d; border-color: #c8a43d; }
+      #fps-meter.bad { color: #ff7a55; border-color: #c63a10; }
+      #fps-meter.hidden { display: none; }
+
       .damage-popup {
         position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
         background: rgba(198, 58, 16, 0.92); color: #fff;
@@ -126,6 +139,7 @@
   </head>
   <body>
     <canvas id="app"></canvas>
+    <div id="fps-meter" class="good" title="Clic pour cacher / F pour toggle">60 FPS</div>
     <div id="ui">
       <div class="row top-bar">
         <div class="left">

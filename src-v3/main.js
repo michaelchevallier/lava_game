@@ -282,9 +282,37 @@ document.addEventListener("visibilitychange", () => {
   else runner.resume();
 });
 
+const fpsMeter = document.getElementById("fps-meter");
+let fpsFrames = 0;
+let fpsLastUpdate = performance.now();
+let fpsHidden = false;
+function updateFpsMeter(now) {
+  fpsFrames++;
+  if (now - fpsLastUpdate >= 500) {
+    const fps = (fpsFrames * 1000) / (now - fpsLastUpdate);
+    fpsMeter.textContent = `${Math.round(fps)} FPS`;
+    fpsMeter.classList.toggle("good", fps >= 50);
+    fpsMeter.classList.toggle("warn", fps >= 30 && fps < 50);
+    fpsMeter.classList.toggle("bad", fps < 30);
+    fpsFrames = 0;
+    fpsLastUpdate = now;
+  }
+}
+fpsMeter.addEventListener("click", () => {
+  fpsHidden = !fpsHidden;
+  fpsMeter.classList.toggle("hidden", fpsHidden);
+});
+window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyF" && !e.repeat) {
+    fpsHidden = !fpsHidden;
+    fpsMeter.classList.toggle("hidden", fpsHidden);
+  }
+});
+
 const clock = new THREE.Clock();
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05);
+  updateFpsMeter(performance.now());
 
   let mx, mz;
   if (window.__cdInput && window.__cdInput.override) {
