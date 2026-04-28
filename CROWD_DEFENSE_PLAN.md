@@ -6,27 +6,34 @@ Le draft CDC initial est un brief client. Ce document est le plan d'exécution. 
 
 État de départ : MVP Three.js commit `13d89ac`, 6 fichiers, ~850 LOC dans `src-v3/`, déployé en `/v3/` via `deploy.yml` qui build `dist-kingshot/`. Le `main.js` actuel (425 LOC) hardcode path/vagues/slots/lights inline — pas de game state, pas de château HP, pas d'audio, pas de test harness, pas de notion de niveau.
 
-## Décisions tranchées en interview
+## Décisions tranchées en interview locale (2026-04-28)
 
 | # | Sujet | Décision |
 |---|---|---|
 | 1 | Nom du jeu | « Milan Crowd Defense » placeholder ; rename en J7 |
 | 2 | Ton | Cartoon-épique fun (couleurs saturées, kills explosifs colorés, musique légère) |
 | 3 | Scope | 4 mondes × 8 niveaux = 32 niveaux + endless |
-| 4 | Plateforme | iPad et desktop à parité |
-| 5 | Mort hero | Immortel — c'est le château qui a une barre de vie (PvZ-style) |
-| 6 | Perks in-run | Full roguelite : 3 perks au choix à chaque level-up du hero pendant la partie |
-| 7 | Upgrade tours | 3 paliers : build → upgrade1 (×2 coût, +50% dmg, +20% range) → upgrade2 (×4 coût, +100% dmg, effet spécial) |
-| 8 | Endless | Oui, débloqué après avoir fini le monde 1 |
+| 4 | Plateforme | iPad et desktop à **parité** |
+| 5 | Mort hero | Immortel — c'est le **château qui a une barre de vie** (PvZ-style) |
+| 6 | Perks in-run | **Light** — 3-5 perks max par run, level-up tous ~30 kills, 1 choix sur 3 cartes |
+| 7 | Upgrade tours | **3 paliers** via re-entrée dans cercle (build → ×2 coût, +50% dmg, +20% range → ×4 coût, +100% dmg, effet spécial) |
+| 8 | Endless | **Vague infinie unique + best-wave persistant**, débloqué après monde 1 |
 | 9 | Coop | Différé en post-v1 (si Milan demande) |
-| 10 | Assets | Quaternius CC0 rigged animés (walk, attack, death) |
-| 11 | Audio | SFX Kenney CC0 + musiques Suno (Mike génère les 4 tracks, je les intègre) |
-| 12 | Méta | Ambitieuse : 10+ upgrades, 5+ skins, 4 tours déblocables individuellement |
-| 13 | Bundle | Pas de cap (Mike n'en a rien à faire) |
-| 14 | Tests auto | Playwright headless adapté de `scripts/auto-test-levels.mjs` (/v2/) |
-| 15 | Cadence push | Groupée par feature complète (3-5 commits / push) |
-| 16 | Reporting | Changelog markdown détaillé à la fin de chaque cycle |
-| 17 | Cette session | Écriture de `CROWD_DEFENSE_PLAN.md` + livraison J1 complet |
+| 10 | Assets | **Quaternius CC0 rigged dès J1** (SkinnedMesh + AnimationMixer). Mike DL depuis Patreon tier gratuit. Tour reste placeholder box-stack tonné en J1, vraie tour Quaternius/Kenney en J2. |
+| 11 | Audio | **SFX procéduraux Web Audio dès J1** (port `src-v2/Audio.js`). Musique Suno en J5 (Mike génère 4 tracks). Évaluation Kenney CC0 vs Web Audio en J5. |
+| 12 | Méta | **Ambitieuse** : 10+ upgrades permanents, 5+ skins, 4 tours déblocables individuellement, achievements |
+| 13 | Bundle | **Pas de cap** |
+| 14 | Tests auto | Playwright headless `scripts/auto-test-crowdef.mjs` (pattern adapté de `auto-test-levels.mjs` /v2/) |
+| 15 | Cadence push | Push **direct sur `phaser-pivot`** (pas de PR). **Demande validation Mike avant chaque push.** |
+| 16 | Reporting | Changelog markdown détaillé `docs/changelog/J{N}-slug.md` à la fin de chaque jalon |
+| 17 | Boss / Volants / Cinématiques | 4 boss uniques mécaniques propres (Brigand charge, Sorcier invoque/téléporte, Reine Scorpion AoE/phases, Dragon 3 phases sol/vol/enragé). Volants → auto-aim 3D, hero les vise. Cinématiques d'intro = écran texte stylé + 1 illustration Three.js fixe (pas ASCII). |
+
+**Autonomie Mike-validée** :
+- Équilibre château HP (default 100 HP / 5 dmg) — ajustable par niveau dans JSON, rebalance après playtest.
+- Choix SFX procéduraux (timbre, durée, pitch).
+- Choix techniques implémentation (toon material, outline scale, perlin shake, etc.).
+
+**À demander avant** : tout choix de game-feel non-trivial (perk effects, courbes XP, ratio coût upgrade, durée respawn boss, mécaniques précises des boss).
 
 ## Architecture cible (après J1)
 
@@ -61,14 +68,14 @@ Le draft CDC initial est un brief client. Ce document est le plan d'exécution. 
 ## Roadmap des 7 jalons
 
 ### J1 — Look pub mobile + foundation (1 session)
-Refactor archi (LevelRunner, level data, dispose-clean), château HP + game-over/victoire, toon shading + outlines + camera shake + particules, audio procédural Web Audio + 9 SFX + mute, SaveSystem, Playwright harness, 1 niveau jouable. **Détails plus bas.**
+Refactor archi (LevelRunner, level data, dispose-clean), château HP + game-over/victoire, **Quaternius rigged hero/enemy** + toon shader (skinning) + outlines + AnimationMixer, camera shake + pool particules, audio procédural Web Audio + 9 SFX + mute, SaveSystem, Playwright harness, 1 niveau jouable. **Détails plus bas.**
 
 ### J2 — Combat vivant (1-2 sessions)
-- 7 types d'ennemis : basic, runner, brute (12 HP), shielded, flyer, gros mid-boss (30 HP), boss placeholder.
-- 4 types de tours : Archer, Mage (AoE 1.5), Tank (cadence rapide), Baliste (sniper perçant 2).
-- Système de perks roguelite : XP par kill, level-up = pause + UI 3 cartes, ~12 perks.
+- **6 types d'ennemis non-volants** : basic, runner (rapide/fragile), brute (12 HP, lent), shielded (à attaquer dans le dos), gros mid-boss (30 HP), boss placeholder. **Flyer = J6.C uniquement** (Volcan).
+- 4 types de tours : Archer, Mage (AoE 1.5), Tank (cadence rapide), Baliste (sniper perçant 2). Vraie tour Quaternius/Kenney remplace le placeholder J1.
+- **Roguelite light** : XP par kill, level-up tous ~30 kills, pause + UI 3 cartes, **3-5 perks max par run** (~10 perks dans le pool).
 - Upgrades tours 3 paliers (re-entrée dans cercle, coûts ×2 et ×4).
-- Bascule assets : Quaternius rigged animés avec `THREE.AnimationMixer`.
+- Affinage assets Quaternius (animations attack/death sur tous les ennemis).
 
 ### J3 — Monde 1 complet (1-2 sessions)
 - 8 niveaux Plaine du Royaume (`world1-1.js` à `world1-8.js`).
@@ -115,29 +122,34 @@ Refactor archi (LevelRunner, level data, dispose-clean), château HP + game-over
 7. Test harness Playwright `scripts/auto-test-crowdef.mjs`.
 8. 1 niveau jouable (`data/levels/world1-1.js`) — gameplay équivalent au MVP + château HP + tutorial overlay.
 
-**Pas dans J1 :** multi-types ennemis/tours, perks, upgrades tours, Quaternius assets, mondes 2-4, bosses, boutique, skins, étoiles, endless. Le code J1 expose les points d'extension.
+**Pas dans J1 :** multi-types ennemis/tours, perks, upgrades tours, mondes 2-4, bosses, boutique, skins, étoiles, endless. Le code J1 expose les points d'extension.
 
 ### Fichiers nouveaux
 
-- `CROWD_DEFENSE_PLAN.md` (racine)
+- `CROWD_DEFENSE_PLAN.md` (racine, déjà commité `1a9b308` — réécrit avec décisions consolidées)
 - `src-v3/data/levels/world1-1.js` — exporte `{ id, name, theme, pathPoints, slots, waves, castleHP, briefing, tutorial }`.
 - `src-v3/systems/LevelRunner.js` — classe owning state, entities, listeners. `tick(dt)`, `dispose()`, `pause()`, `resume()`, `restart()`, `setSpeed(n)`. Émet CustomEvents.
+- `src-v3/systems/AssetLoader.js` — preload async des GLBs Quaternius via `GLTFLoader`, retourne `{ knight, skeleton, ... }`. Émet `crowdef:assets-ready`.
+- `src-v3/systems/AnimationController.js` — wraps `THREE.AnimationMixer`, gère états `idle`/`walk`/`attack`/`death` avec crossfade 0.2s.
+- `src-v3/systems/ToonMaterial.js` — factory `makeToonMaterial({ color, skinning })` retournant `MeshToonMaterial` (skinning OK natif) avec gradient texture 3-step cachée.
+- `src-v3/systems/Outline.js` — `addOutline(skinnedMesh, scale=1.04)` clone geometry + skeleton, material noir `BackSide`. Adapté SkinnedMesh.
 - `src-v3/systems/Audio.js` — port verbatim de `src-v2/systems/Audio.js` + 9 SFX procéduraux (`sfxHeroShoot`, `sfxTowerShoot`, `sfxEnemyHit`, `sfxEnemyDie`, `sfxTowerBuilt`, `sfxWaveStart`, `sfxCastleHit`, `sfxLevelWon`, `sfxLevelLost`).
 - `src-v3/systems/SaveSystem.js` — load/save sur `localStorage["crowdef:save"]`, schéma `{ version, muted, bestWave, lastLevel }`, tolérant aux JSON parse failures.
 - `src-v3/systems/Particles.js` — pool de 100 sprites (texture canvas radial gradient cachée), `emit(pos, color, count)`, recyclage du plus vieux.
 - `src-v3/systems/JuiceFX.js` — `cameraShake(intensity, durationMs)` qui ajoute un offset décroissant au `CAM_TARGET`.
-- `src-v3/systems/ToonMaterial.js` — factory `makeToonMaterial({ color })` retournant `MeshToonMaterial` avec gradient texture 3-step cachée.
-- `src-v3/systems/Outline.js` — `addOutline(mesh, scale=1.04)` qui clone la geometry, applique material noir `BackSide`.
 - `src-v3/entities/Slot.js` — extrait de `main.js::updateBuilds`. Encapsule ring/fill/glow/label, `tick(dt, hero, runner)`, `dispose()`.
+- `src-v3/assets/quaternius/Knight.glb` — Quaternius CC0 (Mike DL Patreon).
+- `src-v3/assets/quaternius/Skeleton_Minion.glb` — Quaternius CC0 (Mike DL Patreon).
 - `scripts/auto-test-crowdef.mjs` — Playwright harness, port 4174, asserte zéro console error, FPS ≥ 50, `enemy-killed` ≥ 5, `tower-built` ≥ 1, `level-won` dans 60s réels (240s game à 4× speed).
+- `docs/changelog/J1-foundation.md` — récap fin de jalon.
 
 ### Fichiers modifiés
 
 - `src-v3/main.js` — rewrite (~150 LOC vs 425). Boote renderer/scene/camera/lights, charge `world1-1`, instancie `LevelRunner`, rAF loop avec `runner.tick(dt)` + `Particles.tick(dt)` + `JuiceFX.tick(dt)`, applique caméra follow sur `runner.hero`, expose `window.__cd = { runner, scene, camera, audio, save, setSpeed, version }`.
 - `src-v3/systems/Path.js` — `buildPath(points)` accepte les points en argument (default = current 8 pour back-compat).
-- `src-v3/entities/Hero.js` — swap `MeshLambertMaterial` → `makeToonMaterial`, `addOutline()` sur les meshes du body, `audio.sfxHeroShoot()` dans `_fire`, particle puff sur hit.
-- `src-v3/entities/Enemy.js` — toon swap + outline. `takeDamage` → spark + `audio.sfxEnemyHit`. Death → `Particles.emit(pos, 0xc63a10, 8)` + `audio.sfxEnemyDie` + camera shake léger. Champ `damage` (default 5). `reachedEnd` → callback `runner.onCastleHit(damage)`.
-- `src-v3/entities/Tower.js` — toon swap + outline. Build complete → `audio.sfxTowerBuilt` + 12-particle yellow burst.
+- `src-v3/entities/Hero.js` — rewrite : box-stack remplacé par GLB Knight + `AnimationController` (idle/walk/attack). Toon material + outline sur SkinnedMesh. `audio.sfxHeroShoot()` dans `_fire`. Pas de death (immortel).
+- `src-v3/entities/Enemy.js` — rewrite : box-stack remplacé par GLB Skeleton + AnimationController. `takeDamage` → spark + `audio.sfxEnemyHit`. Death → anim death 0.5s + `Particles.emit(pos, 0xc63a10, 8)` + `audio.sfxEnemyDie` + shake léger. Champ `damage` (default 5). `reachedEnd` → callback `runner.onCastleHit(damage)`.
+- `src-v3/entities/Tower.js` — placeholder J1 : box-stack tonné stylé (toon + outline sur le head pivotant). Pas de Quaternius en J1, vraie tour en J2. Build complete → `audio.sfxTowerBuilt` + 12-particle yellow burst.
 - `src-v3/index.html` — ajoute : barre HP château (DOM, top-center), badge wave-countdown, bouton mute (top-right, persisté), overlay `#gameover`, overlay `#victory`, overlay `#tutorial`.
 - `vite.kingshot.config.js` — `preview: { port: 4174, strictPort: true }` pour Playwright.
 - `package.json` — script `"test:crowdef": "node scripts/auto-test-crowdef.mjs"`.
@@ -153,16 +165,18 @@ Refactor archi (LevelRunner, level data, dispose-clean), château HP + game-over
 
 ### Plan de commits J1
 
-1. `docs(v3): plan complet CROWD_DEFENSE_PLAN.md`
+1. `docs(v3): plan complet CROWD_DEFENSE_PLAN.md` ✅ déjà commité (`1a9b308`)
+1.5. `docs(v3): consolide les 17 décisions validées en interview locale`
 2. `refactor(v3): extract LevelRunner + level data structure (world1-1)` — gameplay identique au MVP
 3. `feat(v3): château HP + overlays game-over/victoire`
-4. `feat(v3): toon shader + inverted-hull outlines + camera shake`
-5. `feat(v3): pool de particules + VFX kill/build/shoot`
+4. `feat(v3): Quaternius rigged hero/enemy + toon material + outlines + AnimationMixer`
+5. `feat(v3): pool de particules + camera shake + VFX kill/build/shoot/castle-hit`
 6. `feat(v3): audio procédural Web Audio + 9 SFX + bouton mute persisté`
 7. `feat(v3): SaveSystem (crowdef:save) + bestWave + lastLevel`
 8. `test(v3): harness Playwright auto-test-crowdef.mjs`
+9. `docs(v3): changelog J1-foundation + check jalon`
 
-Push groupé après chaque feature complète (3-5 commits / push).
+Push **direct sur `phaser-pivot`** après validation Mike. Pas de PR.
 
 ### Défauts game-feel J1 (à ajuster après playtest)
 
