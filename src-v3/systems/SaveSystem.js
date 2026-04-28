@@ -1,5 +1,5 @@
 const KEY = "crowdef:save";
-const VERSION = 2;
+const VERSION = 3;
 
 function defaultSave() {
   return {
@@ -10,6 +10,10 @@ function defaultSave() {
     levels: {},
     gems: 0,
     upgrades: {},
+    skinsOwned: ["hero_default", "castle_default", "vfx_default"],
+    skinsEquipped: { hero: "hero_default", castle: "castle_default", vfx: "vfx_default" },
+    achievements: [],
+    totalKills: 0,
     lastPlayedAt: 0,
   };
 }
@@ -25,12 +29,17 @@ function ensureCached() {
       return cached;
     }
     const parsed = JSON.parse(raw);
+    const def = defaultSave();
     cached = {
-      ...defaultSave(),
+      ...def,
       ...parsed,
       levels: { ...(parsed.levels || {}) },
       upgrades: { ...(parsed.upgrades || {}) },
       gems: parsed.gems || 0,
+      skinsOwned: Array.isArray(parsed.skinsOwned) ? [...new Set([...def.skinsOwned, ...parsed.skinsOwned])] : def.skinsOwned,
+      skinsEquipped: { ...def.skinsEquipped, ...(parsed.skinsEquipped || {}) },
+      achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
+      totalKills: parsed.totalKills || 0,
     };
     if (cached.version !== VERSION) cached.version = VERSION;
     return cached;
@@ -141,6 +150,42 @@ export const SaveSystem = {
     const s = ensureCached();
     delete s.upgrades[id];
     persist();
+  },
+
+  isSkinOwned(skinId) { return ensureCached().skinsOwned.includes(skinId); },
+  ownSkin(skinId) {
+    const s = ensureCached();
+    if (!s.skinsOwned.includes(skinId)) {
+      s.skinsOwned.push(skinId);
+      persist();
+      return true;
+    }
+    return false;
+  },
+  getEquippedSkin(category) { return ensureCached().skinsEquipped[category] || null; },
+  equipSkin(category, skinId) {
+    const s = ensureCached();
+    s.skinsEquipped[category] = skinId;
+    persist();
+  },
+  getOwnedSkins() { return [...ensureCached().skinsOwned]; },
+
+  hasAchievement(id) { return ensureCached().achievements.includes(id); },
+  unlockAchievement(id) {
+    const s = ensureCached();
+    if (!s.achievements.includes(id)) {
+      s.achievements.push(id);
+      persist();
+      return true;
+    }
+    return false;
+  },
+  getTotalKills() { return ensureCached().totalKills || 0; },
+  addKills(n) {
+    const s = ensureCached();
+    s.totalKills = (s.totalKills || 0) + n;
+    persist();
+    return s.totalKills;
   },
 
   reset() {
