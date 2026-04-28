@@ -371,6 +371,14 @@ function showResult(won, detail) {
   ui.resultNextBtn.disabled = !won;
   ui.resultNextBtn.style.display = won ? "" : "none";
 
+  const shopBtn = document.getElementById("result-shop-btn");
+  if (shopBtn) {
+    const hasBoss = (runner.level.waves?.list || []).some((w) =>
+      Object.keys(w.types || {}).some((t) => t.includes("boss") || t === "midboss"),
+    );
+    shopBtn.style.display = won && hasBoss ? "" : "none";
+  }
+
   ui.result.classList.add("show");
 
   SaveSystem.recordWaveReached(detail.wave);
@@ -462,6 +470,10 @@ ui.result.querySelector('button[data-action="next"]').addEventListener("click", 
 });
 ui.result.querySelector('button[data-action="map"]').addEventListener("click", () => {
   showWorldMap();
+});
+ui.result.querySelector('button[data-action="shop"]').addEventListener("click", () => {
+  ui.result.classList.remove("show");
+  showShop();
 });
 
 function showWorldMap() {
@@ -766,7 +778,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4a-c3",
+  version: "j4a-c4",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
