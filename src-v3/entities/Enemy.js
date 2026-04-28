@@ -2,6 +2,8 @@ import * as THREE from "three";
 
 const SPEED = 1.2; // units/sec along path
 const HP_MAX = 3;
+const DAMAGE = 5;
+const REWARD = 2;
 
 export class Enemy {
   constructor(scene, curve) {
@@ -11,6 +13,9 @@ export class Enemy {
     this.hp = HP_MAX;
     this.dead = false;
     this.reachedEnd = false;
+    this.damage = DAMAGE;
+    this.reward = REWARD;
+    this.type = "basic";
 
     // Cute "red dude" stack: body + head, simple boxes
     this.group = new THREE.Group();

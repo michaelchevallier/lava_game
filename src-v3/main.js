@@ -170,15 +170,61 @@ touchZone.addEventListener("touchcancel", joyEnd);
 const ui = {
   coins: document.getElementById("coins"),
   wave: document.getElementById("wave"),
+  castleHpCur: document.getElementById("castle-hp-cur"),
+  castleHpMax: document.getElementById("castle-hp-max"),
+  castleHpFill: document.getElementById("castle-hp-fill"),
+  castleHpBox: document.getElementById("castle-hp"),
+  gameover: document.getElementById("gameover"),
+  victory: document.getElementById("victory"),
+  gameoverWave: document.getElementById("gameover-wave"),
+  victoryCastle: document.getElementById("victory-castle"),
+  victoryWave: document.getElementById("victory-wave"),
 };
+
 function refreshHUD() {
   ui.coins.textContent = Math.floor(runner.coins);
   ui.wave.textContent = "Vague " + runner.wave;
+  ui.castleHpMax.textContent = runner.castleHPMax;
+  ui.castleHpCur.textContent = Math.max(0, Math.ceil(runner.castleHP));
+  const ratio = runner.castleHPMax > 0 ? Math.max(0, runner.castleHP / runner.castleHPMax) : 0;
+  ui.castleHpFill.style.width = (ratio * 100).toFixed(1) + "%";
+  ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
+  ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
 }
 refreshHUD();
 document.addEventListener("crowdef:wave-start", refreshHUD);
 document.addEventListener("crowdef:enemy-killed", refreshHUD);
 document.addEventListener("crowdef:tower-built", refreshHUD);
+document.addEventListener("crowdef:castle-hit", () => {
+  refreshHUD();
+  ui.castleHpBox.classList.remove("flash");
+  void ui.castleHpBox.offsetWidth;
+  ui.castleHpBox.classList.add("flash");
+});
+
+document.addEventListener("crowdef:level-lost", (e) => {
+  ui.gameoverWave.textContent = e.detail.wave;
+  ui.gameover.classList.add("show");
+});
+
+document.addEventListener("crowdef:level-won", (e) => {
+  ui.victoryCastle.textContent = `${Math.ceil(e.detail.castleHP)}/${e.detail.castleHPMax}`;
+  ui.victoryWave.textContent = e.detail.wave;
+  ui.victory.classList.add("show");
+});
+
+document.addEventListener("crowdef:level-restart", () => {
+  ui.gameover.classList.remove("show");
+  ui.victory.classList.remove("show");
+  refreshHUD();
+});
+
+ui.gameover.querySelector('button[data-action="restart"]').addEventListener("click", () => {
+  runner.restart();
+});
+ui.victory.querySelector('button[data-action="restart"]').addEventListener("click", () => {
+  runner.restart();
+});
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) runner.pause();
