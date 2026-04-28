@@ -4,6 +4,7 @@ import { LevelRunner } from "./systems/LevelRunner.js";
 import { Particles } from "./systems/Particles.js";
 import { JuiceFX } from "./systems/JuiceFX.js";
 import { Audio } from "./systems/Audio.js";
+import { MusicManager } from "./systems/MusicManager.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
@@ -350,6 +351,25 @@ document.addEventListener("crowdef:boss-spawned", (e) => {
   ui.bossBannerName.textContent = e.detail.name || "BOSS";
   ui.bossBannerFill.style.width = "100%";
   ui.bossBanner.classList.add("show");
+  MusicManager.play("boss");
+});
+document.addEventListener("crowdef:wave-start", (e) => {
+  if (MusicManager.getCurrentTrack() === "boss") return;
+  if (e.detail.wave >= 4) MusicManager.play("intense");
+  else MusicManager.play("calm");
+});
+document.addEventListener("crowdef:wave-cleared", () => {
+  if (MusicManager.getCurrentTrack() === "boss") return;
+  MusicManager.play("calm");
+});
+document.addEventListener("crowdef:level-won", () => {
+  MusicManager.play("menu");
+});
+document.addEventListener("crowdef:level-lost", () => {
+  MusicManager.play("menu");
+});
+document.addEventListener("crowdef:level-loaded", () => {
+  MusicManager.play("calm");
 });
 document.addEventListener("crowdef:boss-charge", () => {
   ui.bossBanner.classList.add("charging");
@@ -802,12 +822,16 @@ function refreshMuteUI() {
 muteBtn.addEventListener("click", () => {
   Audio.toggleMuted();
   SaveSystem.setMuted(Audio.isMuted());
+  MusicManager.setMuted(Audio.isMuted());
   refreshMuteUI();
 });
 refreshMuteUI();
 
 function startAudioOnGesture() {
   Audio.start();
+  MusicManager.start();
+  MusicManager.setMuted(Audio.isMuted());
+  MusicManager.play("calm");
   window.removeEventListener("pointerdown", startAudioOnGesture);
   window.removeEventListener("keydown", startAudioOnGesture);
   window.removeEventListener("touchstart", startAudioOnGesture);
@@ -898,7 +922,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4b-c4",
+  version: "j5-c2",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
