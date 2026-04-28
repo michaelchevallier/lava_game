@@ -4,7 +4,7 @@ import { SKINS } from "../scenes/SkinsScene.js";
 
 export const TILE_DEFS = [
   { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 1500,
-    desc: "Génère 30¢ toutes les 6s", stats: ["+30¢ / 6s", "HP 5"] },
+    desc: "Génère 25¢ toutes les 9s", stats: ["+25¢ / 9s", "HP 5"] },
   { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 1500,
     desc: "Mur tank — encaisse les morsures", stats: ["HP 30", "Bloque la lane"] },
   { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 4000,

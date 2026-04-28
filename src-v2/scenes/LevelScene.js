@@ -110,7 +110,7 @@ export class LevelScene extends Phaser.Scene {
     this.gameOver = false;
     this._coinMultiplier = 1;
 
-    this.lavaMeter = new LavaMeter(this, { x: 30, y: 130, height: 450 });
+    this.lavaMeter = new LavaMeter(this, { x: this.scale.width - 50, y: 130, height: 450 });
 
     this.coinsText = this.add.text(20, 16, "¢ " + this.coins, {
       fontFamily: "Fredoka, system-ui",
@@ -1307,12 +1307,20 @@ export class LevelScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000, 0.65).setDepth(200).setInteractive();
     const card = this.add.container(width / 2, height / 2).setDepth(201);
-    const bg = this.add.rectangle(0, 0, 360, 280, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
-    const title = this.add.text(0, -110, "⏸  EN PAUSE", { fontFamily: "Fredoka, system-ui", fontSize: "28px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5);
+    const bg = this.add.rectangle(0, 0, 360, 336, 0x1a1a2a, 0.95).setStrokeStyle(3, 0xffd23f);
+    const title = this.add.text(0, -138, "⏸  EN PAUSE", { fontFamily: "Fredoka, system-ui", fontSize: "28px", fontStyle: "bold", color: "#ffd23f", stroke: "#000", strokeThickness: 4 }).setOrigin(0.5);
     card.add([bg, title]);
 
     const items = [
       { label: "▶ Reprendre", color: 0x4ed8a3, action: () => this._closePauseMenu() },
+      { label: "📖 Encyclopédie", color: 0x90ff90, action: () => {
+          this._closePauseMenu();
+          this.cameras.main.fadeOut(250, 0, 0, 0);
+          this.cameras.main.once("camerafadeoutcomplete", () => {
+            this.scene.start("EncyclopediaScene", { returnTo: "LevelScene", returnData: { levelId: this.level.id } });
+            this.scene.stop();
+          });
+        } },
       { label: "↻ Recommencer", color: 0x88c8e8, action: () => {
           this._closePauseMenu();
           this.cameras.main.fadeOut(250, 0, 0, 0);
@@ -1332,7 +1340,7 @@ export class LevelScene extends Phaser.Scene {
     ];
 
     items.forEach((it, i) => {
-      const y = -40 + i * 56;
+      const y = -68 + i * 56;
       const btn = this.add.container(0, y);
       const r = this.add.rectangle(0, 0, 280, 44, 0x222840).setStrokeStyle(2, it.color);
       const lbl = this.add.text(0, 0, it.label, { fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff" }).setOrigin(0.5);
@@ -1344,7 +1352,7 @@ export class LevelScene extends Phaser.Scene {
       card.add(btn);
     });
 
-    const hint = this.add.text(0, 110, "[P] pour reprendre", { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#aaa" }).setOrigin(0.5);
+    const hint = this.add.text(0, 138, "[P] pour reprendre", { fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#aaa" }).setOrigin(0.5);
     card.add(hint);
 
     this._pauseMenu = { overlay, card };

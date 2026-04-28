@@ -26,7 +26,12 @@ const ENEMY_INFO = [
 export class EncyclopediaScene extends Phaser.Scene {
   constructor() {
     super("EncyclopediaScene");
+  }
+
+  init(data) {
     this.tab = "tiles";
+    this.returnTo = (data && data.returnTo) || "CampaignMenuScene";
+    this.returnData = (data && data.returnData) || null;
   }
 
   create() {
@@ -44,7 +49,10 @@ export class EncyclopediaScene extends Phaser.Scene {
       color: "#ffd23f",
       stroke: "#000",
       strokeThickness: 5,
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(100);
+
+    this.scrollContainer = this.add.container(0, 0);
+    this.scrollContainer.setDepth(5);
 
     this._drawTabs();
     this._drawContent();
@@ -56,7 +64,7 @@ export class EncyclopediaScene extends Phaser.Scene {
       label: "← Retour",
       labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "16px", fontStyle: "bold", color: "#ffd23f" },
       onClick: () => this._exit(),
-    });
+    }).setDepth(100);
 
     this.input.keyboard.once("keydown-ESC", () => this._exit());
   }
@@ -64,7 +72,7 @@ export class EncyclopediaScene extends Phaser.Scene {
   _exit() {
     this.cameras.main.fadeOut(250, 0, 0, 0);
     this.cameras.main.once("camerafadeoutcomplete", () => {
-      this.scene.start("CampaignMenuScene");
+      this.scene.start(this.returnTo, this.returnData || {});
       this.scene.stop();
     });
   }
@@ -72,7 +80,7 @@ export class EncyclopediaScene extends Phaser.Scene {
   _drawTabs() {
     const { width } = this.scale;
     if (this._tabContainer) this._tabContainer.destroy();
-    this._tabContainer = this.add.container(0, 0);
+    this._tabContainer = this.add.container(0, 0).setDepth(100);
 
     const tabs = [
       { id: "tiles", label: "🗼 Tours (" + TILE_DEFS.filter((t) => !t.removeMode).length + ")" },
@@ -94,6 +102,8 @@ export class EncyclopediaScene extends Phaser.Scene {
           if (this.tab === t.id) return;
           Audio.click?.();
           this.tab = t.id;
+          this._scrollY = 0;
+          if (this.scrollContainer) this.scrollContainer.y = 0;
           this._drawTabs();
           this._drawContent();
         },
@@ -103,14 +113,70 @@ export class EncyclopediaScene extends Phaser.Scene {
   }
 
   _drawContent() {
-    if (this._content) this._content.destroy();
-    this._content = this.add.container(0, 0);
-    if (this.tab === "tiles") this._drawTiles();
-    else this._drawEnemies();
+    if (this.scrollContainer) this.scrollContainer.removeAll(true);
+    let bottom = 130;
+    if (this.tab === "tiles") bottom = this._drawTiles();
+    else bottom = this._drawEnemies();
+    this._setupScroll(bottom);
+  }
+
+  _setupScroll(contentBottom) {
+    const viewportTop = 130;
+    const viewportBottom = this.scale.height - 70;
+    const viewport = viewportBottom - viewportTop;
+    const overflow = Math.max(0, contentBottom - viewport - viewportTop);
+    this._scrollMin = -overflow;
+    this._scrollY = 0;
+
+    if (this._wheelHandler) this.input.off("wheel", this._wheelHandler);
+    if (this._downHandler) this.input.off("pointerdown", this._downHandler);
+    if (this._moveHandler) this.input.off("pointermove", this._moveHandler);
+    if (this._upHandler) this.input.off("pointerup", this._upHandler);
+
+    if (overflow > 0) {
+      this._wheelHandler = (_p, _go, _dx, dy) => {
+        this._scrollY = Phaser.Math.Clamp(this._scrollY - dy * 0.6, this._scrollMin, 0);
+        this.scrollContainer.y = this._scrollY;
+      };
+      this.input.on("wheel", this._wheelHandler);
+
+      let dragStartY = null;
+      let dragStartScroll = 0;
+      this._downHandler = (p) => {
+        if (p.y > 130 && p.y < this.scale.height - 60) {
+          dragStartY = p.y;
+          dragStartScroll = this._scrollY;
+        }
+      };
+      this._moveHandler = (p) => {
+        if (dragStartY != null && p.isDown && Math.abs(p.y - dragStartY) > 8) {
+          this._scrollY = Phaser.Math.Clamp(dragStartScroll + (p.y - dragStartY), this._scrollMin, 0);
+          this.scrollContainer.y = this._scrollY;
+        }
+      };
+      this._upHandler = () => { dragStartY = null; };
+      this.input.on("pointerdown", this._downHandler);
+      this.input.on("pointermove", this._moveHandler);
+      this.input.on("pointerup", this._upHandler);
+
+      if (!this._scrollHint) {
+        this._scrollHint = this.add.text(this.scale.width - 30, 138, "▼", {
+          fontFamily: "Fredoka, system-ui",
+          fontSize: "18px",
+          color: "#ffd23f",
+          stroke: "#000",
+          strokeThickness: 3,
+        }).setOrigin(0.5).setDepth(101);
+        this.tweens.add({ targets: this._scrollHint, y: 144, duration: 700, yoyo: true, repeat: -1, ease: "Sine.inOut" });
+      }
+    } else if (this._scrollHint) {
+      this._scrollHint.destroy();
+      this._scrollHint = null;
+    }
   }
 
   _drawTiles() {
-    const { width, height } = this.scale;
+    const { width } = this.scale;
     const tiles = TILE_DEFS.filter((t) => !t.removeMode);
     const cols = 3;
     const cellW = 380;
@@ -126,6 +192,9 @@ export class EncyclopediaScene extends Phaser.Scene {
       const y = startY + row * (cellH + gap);
       this._drawTileCard(def, x, y, cellW, cellH);
     });
+
+    const rows = Math.ceil(tiles.length / cols);
+    return startY + rows * (cellH + gap);
   }
 
   _drawTileCard(def, x, y, w, h) {
@@ -134,32 +203,32 @@ export class EncyclopediaScene extends Phaser.Scene {
     card.fillRoundedRect(x, y, w, h, 10);
     card.lineStyle(2, def.accent || 0x4a6a9a);
     card.strokeRoundedRect(x, y, w, h, 10);
-    this._content.add(card);
+    this.scrollContainer.add(card);
 
     const iconBg = this.add.graphics();
     iconBg.fillStyle(0x000, 0.5);
     iconBg.fillRoundedRect(x + 12, y + 12, 60, 60, 6);
-    this._content.add(iconBg);
+    this.scrollContainer.add(iconBg);
     const icon = makeTileIcon(this, def.id, x + 42, y + 42);
     icon.setScale(1.3);
-    this._content.add(icon);
+    this.scrollContainer.add(icon);
 
     const name = this.add.text(x + 84, y + 14, def.label, {
       fontFamily: "Fredoka, system-ui", fontSize: "20px", fontStyle: "bold", color: "#ffd23f",
       stroke: "#000", strokeThickness: 3,
     });
-    this._content.add(name);
+    this.scrollContainer.add(name);
 
     const meta = this.add.text(x + 84, y + 40, "💰 " + def.cost + "¢   ⏱ " + (def.cooldownMs / 1000).toFixed(1) + "s", {
       fontFamily: "Fredoka, system-ui", fontSize: "13px", color: "#aaccff",
     });
-    this._content.add(meta);
+    this.scrollContainer.add(meta);
 
     const desc = this.add.text(x + 84, y + 62, def.desc || "", {
       fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ddeefa",
       wordWrap: { width: w - 96 },
     });
-    this._content.add(desc);
+    this.scrollContainer.add(desc);
 
     if (def.stats) {
       const stats = def.stats.join(" · ");
@@ -167,7 +236,7 @@ export class EncyclopediaScene extends Phaser.Scene {
         fontFamily: "Fredoka, system-ui", fontSize: "11px", color: "#90ff90",
         wordWrap: { width: w - 24 },
       });
-      this._content.add(statsTxt);
+      this.scrollContainer.add(statsTxt);
     }
   }
 
@@ -187,6 +256,9 @@ export class EncyclopediaScene extends Phaser.Scene {
       const y = startY + row * (cellH + gap);
       this._drawEnemyCard(e, x, y, cellW, cellH);
     });
+
+    const rows = Math.ceil(ENEMY_INFO.length / cols);
+    return startY + rows * (cellH + gap);
   }
 
   _drawEnemyCard(e, x, y, w, h) {
@@ -195,28 +267,28 @@ export class EncyclopediaScene extends Phaser.Scene {
     card.fillRoundedRect(x, y, w, h, 10);
     card.lineStyle(2, 0xff66cc);
     card.strokeRoundedRect(x, y, w, h, 10);
-    this._content.add(card);
+    this.scrollContainer.add(card);
 
     const emoji = this.add.text(x + 40, y + h / 2, e.emoji, {
       fontFamily: "Fredoka, system-ui", fontSize: "44px",
     }).setOrigin(0.5);
-    this._content.add(emoji);
+    this.scrollContainer.add(emoji);
 
     const name = this.add.text(x + 80, y + 12, e.name, {
       fontFamily: "Fredoka, system-ui", fontSize: "18px", fontStyle: "bold", color: "#ff99dd",
       stroke: "#000", strokeThickness: 3,
     });
-    this._content.add(name);
+    this.scrollContainer.add(name);
 
     const stats = this.add.text(x + 80, y + 38, "❤ HP " + e.hp + "   🏃 vitesse " + e.speed, {
       fontFamily: "Fredoka, system-ui", fontSize: "13px", color: "#aaccff",
     });
-    this._content.add(stats);
+    this.scrollContainer.add(stats);
 
     const desc = this.add.text(x + 80, y + 60, e.desc, {
       fontFamily: "Fredoka, system-ui", fontSize: "12px", color: "#ddeefa",
       wordWrap: { width: w - 92 },
     });
-    this._content.add(desc);
+    this.scrollContainer.add(desc);
   }
 }
