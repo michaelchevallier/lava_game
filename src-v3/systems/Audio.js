@@ -100,4 +100,11 @@ export const Audio = {
   sfxCastleHit()   { noise(0.20, 0.30, 300); tone(70, 0.30, "sawtooth", 0.22); },
   sfxLevelWon()    { seq([{ f: 659, d: 0.18 }, { f: 784, d: 0.18, delay: 130 }, { f: 988, d: 0.18, delay: 280 }, { f: 1318, d: 0.30, delay: 430 }]); },
   sfxLevelLost()   { tone(220, 0.40, "sawtooth", 0.20); setTimeout(() => tone(160, 0.50, "sawtooth", 0.20), 200); setTimeout(() => tone(110, 0.60, "sawtooth", 0.18), 480); },
+
+  sfxGemGain()     { seq([{ f: 1100, d: 0.06, type: "sine", g: 0.18 }, { f: 1480, d: 0.08, type: "sine", g: 0.18, delay: 50 }, { f: 1760, d: 0.14, type: "sine", g: 0.20, delay: 130 }]); },
+  sfxAchievement() { seq([{ f: 523, d: 0.10, type: "triangle", g: 0.22 }, { f: 659, d: 0.10, type: "triangle", g: 0.22, delay: 90 }, { f: 784, d: 0.10, type: "triangle", g: 0.22, delay: 180 }, { f: 1046, d: 0.30, type: "triangle", g: 0.26, delay: 280 }]); },
+  sfxPerkPick()    { seq([{ f: 783, d: 0.08, type: "triangle", g: 0.18 }, { f: 1175, d: 0.18, type: "triangle", g: 0.20, delay: 70 }]); },
+  sfxSkinEquip()   { tone(880, 0.10, "sine", 0.16); setTimeout(() => tone(1175, 0.14, "sine", 0.16), 80); },
+  sfxBossCharge()  { sweepTone(60, 220, 0.30, "sawtooth", 0.22); },
+  sfxLevelUp()     { seq([{ f: 659, d: 0.10, type: "triangle", g: 0.18 }, { f: 880, d: 0.10, type: "triangle", g: 0.20, delay: 80 }, { f: 1175, d: 0.10, type: "triangle", g: 0.22, delay: 160 }, { f: 1568, d: 0.18, type: "triangle", g: 0.24, delay: 240 }]); },
 };

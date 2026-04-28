@@ -316,6 +316,7 @@ document.addEventListener("crowdef:gems-gained", (e) => {
   void ui.gems.offsetWidth;
   ui.gems.classList.add("flash");
   spawnGemsPopup(e.detail.amount);
+  Audio.sfxGemGain();
 });
 function spawnToast(title, body) {
   const t = document.createElement("div");
@@ -335,7 +336,13 @@ document.addEventListener("crowdef:achievement-unlocked", (e) => {
     kills_100: "🏆 100 ennemis tués — skin Foudre céleste débloqué",
   };
   spawnToast("Succès débloqué !", labels[id] || id);
+  Audio.sfxAchievement();
 });
+document.addEventListener("crowdef:skin-dropped", () => Audio.sfxAchievement());
+document.addEventListener("crowdef:skin-equipped", () => Audio.sfxSkinEquip());
+document.addEventListener("crowdef:perk-picked", () => Audio.sfxPerkPick());
+document.addEventListener("crowdef:hero-levelup", () => Audio.sfxLevelUp());
+document.addEventListener("crowdef:boss-charge", () => Audio.sfxBossCharge());
 
 function spawnGemsPopup(amount) {
   const popup = document.createElement("div");
@@ -922,7 +929,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j5-c2",
+  version: "j5-c3",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
