@@ -92,8 +92,10 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("ticket-collected");
     this.events.removeAllListeners("wave-started");
     this.events.removeAllListeners("endless-wave");
-    this.events.removeAllListeners("update");
-    this.events.removeAllListeners("game-tick");
+    if (this._tickHandler) {
+      this.events.off("update", this._tickHandler);
+      this._tickHandler = null;
+    }
     if (this.lavaMeter) { this.lavaMeter.destroy(); this.lavaMeter = null; }
 
     this.gridState = createGridState();
@@ -231,7 +233,7 @@ export class LevelScene extends Phaser.Scene {
     this._gameTime = 0;
     this._gameSpeed = 1;
 
-    this.events.on("update", (time, delta) => {
+    this._tickHandler = (time, delta) => {
       if (this.paused) return;
       const scaled = delta * this._gameSpeed;
       this._gameTime += scaled;
@@ -251,7 +253,8 @@ export class LevelScene extends Phaser.Scene {
         this.refreshWaveStatus(gt);
         this.checkEndCondition();
       }
-    });
+    };
+    this.events.on("update", this._tickHandler);
 
     this.events.on("tile-destroyed", (tile) => {
       if (tile && tile.active) Flash.entity(tile, 0xff4444, 200);
