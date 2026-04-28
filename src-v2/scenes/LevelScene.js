@@ -230,6 +230,7 @@ export class LevelScene extends Phaser.Scene {
     this._gameSpeed = 1;
 
     this.events.on("update", (time, delta) => {
+      if (this.paused) return;
       const scaled = delta * this._gameSpeed;
       this._gameTime += scaled;
       const gt = this._gameTime;
