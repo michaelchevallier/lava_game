@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { Particles } from "../systems/Particles.js";
+import { Audio } from "../systems/Audio.js";
 
 const FIRE_RATE_MS = 350;
 const RANGE = 12;
@@ -164,6 +165,7 @@ export class Hero {
       2,
       { speed: 1.2, life: 0.18, scale: 0.18, yLift: 0.2 },
     );
+    Audio.sfxHeroShoot();
   }
 
   destroy() {

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { Particles } from "../systems/Particles.js";
+import { Audio } from "../systems/Audio.js";
 
 const SPEED = 1.2; // units/sec along path
 const HP_MAX = 3;
@@ -75,6 +76,7 @@ export class Enemy {
       3,
       { speed: 2, life: 0.3, scale: 0.25 },
     );
+    Audio.sfxEnemyHit();
     if (this.hp <= 0) this.dead = true;
   }
 

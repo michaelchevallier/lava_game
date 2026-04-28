@@ -3,6 +3,7 @@ import { makePathLine } from "./systems/Path.js";
 import { LevelRunner } from "./systems/LevelRunner.js";
 import { Particles } from "./systems/Particles.js";
 import { JuiceFX } from "./systems/JuiceFX.js";
+import { Audio } from "./systems/Audio.js";
 import world1_1 from "./data/levels/world1-1.js";
 
 const canvas = document.getElementById("app");
@@ -240,6 +241,29 @@ ui.gameover.querySelector('button[data-action="restart"]').addEventListener("cli
 ui.victory.querySelector('button[data-action="restart"]').addEventListener("click", () => {
   runner.restart();
 });
+
+const muteBtn = document.getElementById("mute-btn");
+function refreshMuteUI() {
+  const m = Audio.isMuted();
+  muteBtn.textContent = m ? "🔇" : "🔊";
+  muteBtn.classList.toggle("muted", m);
+  muteBtn.setAttribute("aria-pressed", m ? "true" : "false");
+}
+muteBtn.addEventListener("click", () => {
+  Audio.toggleMuted();
+  refreshMuteUI();
+});
+refreshMuteUI();
+
+function startAudioOnGesture() {
+  Audio.start();
+  window.removeEventListener("pointerdown", startAudioOnGesture);
+  window.removeEventListener("keydown", startAudioOnGesture);
+  window.removeEventListener("touchstart", startAudioOnGesture);
+}
+window.addEventListener("pointerdown", startAudioOnGesture, { once: false });
+window.addEventListener("keydown", startAudioOnGesture, { once: false });
+window.addEventListener("touchstart", startAudioOnGesture, { once: false });
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) runner.pause();

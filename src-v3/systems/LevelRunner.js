@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { buildPath } from "./Path.js";
 import { Particles } from "./Particles.js";
 import { JuiceFX } from "./JuiceFX.js";
+import { Audio } from "./Audio.js";
 import { Hero } from "../entities/Hero.js";
 import { Enemy } from "../entities/Enemy.js";
 import { Slot } from "../entities/Slot.js";
@@ -93,6 +94,7 @@ export class LevelRunner {
         this._enemiesSpawned = 0;
         this._spawnTimer = 0;
         this._waveActive = true;
+        Audio.sfxWaveStart();
         emit("crowdef:wave-start", { wave: this.wave });
       }
     }
@@ -115,6 +117,7 @@ export class LevelRunner {
           { speed: 3, life: 0.55, scale: 0.45, yLift: 1.2 },
         );
         JuiceFX.shake(0.05, 80);
+        Audio.sfxEnemyDie();
         emit("crowdef:enemy-killed", { type: e.type || "basic", reward: e.reward || 2 });
         e.destroy();
         this.enemies.splice(i, 1);
@@ -135,6 +138,7 @@ export class LevelRunner {
           { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
         );
         JuiceFX.shake(0.15, 200);
+        Audio.sfxTowerBuilt();
         emit("crowdef:tower-built", { cost: slot.cost, position: { x: slotPos.x, z: slotPos.z } });
       }
     }
@@ -145,10 +149,12 @@ export class LevelRunner {
   onCastleHit(dmg) {
     this.castleHP = Math.max(0, this.castleHP - dmg);
     JuiceFX.shake(0.4, 350);
+    Audio.sfxCastleHit();
     emit("crowdef:castle-hit", { dmg, castleHP: this.castleHP });
     if (this.castleHP <= 0 && this.state === "play") {
       this.state = "lost";
       JuiceFX.shake(0.7, 700);
+      Audio.sfxLevelLost();
       emit("crowdef:level-lost", { wave: this.wave });
     }
   }
@@ -156,6 +162,7 @@ export class LevelRunner {
   _winLevel() {
     if (this.state !== "play") return;
     this.state = "won";
+    Audio.sfxLevelWon();
     emit("crowdef:level-won", { wave: this.wave, castleHP: this.castleHP, castleHPMax: this.castleHPMax });
   }
 

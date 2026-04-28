@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Audio } from "../systems/Audio.js";
 
 const FIRE_RATE_MS = 700;
 const RANGE = 8;
@@ -113,6 +114,7 @@ export class Tower {
       dir: new THREE.Vector3(tx / len, 0, tz / len),
       life: 1.2,
     });
+    Audio.sfxTowerShoot();
   }
 
   destroy() {
