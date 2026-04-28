@@ -8,7 +8,7 @@ import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
 import world1_1 from "./data/levels/world1-1.js";
-import { getLevel, getNextLevelId } from "./data/levels/index.js";
+import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
 SaveSystem.load();
 Audio.setMuted(SaveSystem.isMuted());
@@ -234,6 +234,10 @@ const ui = {
   perkOverlay: document.getElementById("perk-overlay"),
   perkCards: document.getElementById("perk-cards"),
   perkLevel: document.getElementById("perk-level"),
+  worldmap: document.getElementById("worldmap"),
+  worldmapGrid: document.getElementById("worldmap-grid"),
+  worldmapStars: document.getElementById("worldmap-stars"),
+  mapBtn: document.getElementById("map-btn"),
 };
 
 function refreshHUD() {
@@ -387,7 +391,60 @@ ui.result.querySelector('button[data-action="next"]').addEventListener("click", 
   else runner.restart();
 });
 ui.result.querySelector('button[data-action="map"]').addEventListener("click", () => {
-  document.dispatchEvent(new CustomEvent("crowdef:show-map"));
+  showWorldMap();
+});
+
+function showWorldMap() {
+  const grid = ui.worldmapGrid;
+  grid.innerHTML = "";
+  for (const id of LEVEL_ORDER) {
+    const lvl = getLevel(id);
+    if (!lvl) continue;
+    const tile = document.createElement("div");
+    tile.className = "level-tile";
+    const unlocked = SaveSystem.isLevelUnlocked(id, LEVEL_ORDER);
+    const completed = SaveSystem.isLevelComplete(id);
+    const stars = SaveSystem.getStars(id);
+    if (!unlocked) tile.classList.add("locked");
+    if (completed) tile.classList.add("completed");
+    const num = id.split("-")[1] || "?";
+    tile.innerHTML = `
+      <div class="level-num">${num}</div>
+      <div class="level-name">${lvl.name || id}</div>
+      <div class="level-stars">
+        <span class="${stars >= 1 ? "filled" : "empty"}">★</span>
+        <span class="${stars >= 2 ? "filled" : "empty"}">★</span>
+        <span class="${stars >= 3 ? "filled" : "empty"}">★</span>
+      </div>
+    `;
+    if (unlocked) {
+      tile.addEventListener("click", () => {
+        ui.worldmap.classList.remove("show");
+        ui.result.classList.remove("show");
+        runner.loadLevel(lvl);
+      });
+    }
+    grid.appendChild(tile);
+  }
+  ui.worldmapStars.textContent = SaveSystem.totalStars();
+  ui.worldmap.classList.add("show");
+  runner.pause();
+}
+
+function closeWorldMap() {
+  ui.worldmap.classList.remove("show");
+  if (!ui.result.classList.contains("show") && !ui.briefing.classList.contains("show") && !ui.perkOverlay.classList.contains("show")) {
+    runner.resume();
+  }
+}
+
+ui.mapBtn.addEventListener("click", showWorldMap);
+ui.worldmap.querySelector('button[data-action="close"]').addEventListener("click", closeWorldMap);
+window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyM" && !e.repeat) {
+    if (ui.worldmap.classList.contains("show")) closeWorldMap();
+    else showWorldMap();
+  }
 });
 
 let _briefingTimer = null;

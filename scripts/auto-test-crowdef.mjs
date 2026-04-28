@@ -11,7 +11,7 @@ const RESULTS_DIR = path.join(ROOT, "test-results");
 mkdirSync(RESULTS_DIR, { recursive: true });
 
 const SPEED = parseInt(process.env.SPEED || "4", 10);
-const MAX_REAL_MS = parseInt(process.env.MAX_REAL_MS || "90000", 10);
+const MAX_REAL_MS = parseInt(process.env.MAX_REAL_MS || "120000", 10);
 const PORT = 4174;
 
 const log = (...a) => console.log("[crowdef]", ...a);

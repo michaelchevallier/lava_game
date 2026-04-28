@@ -123,6 +123,39 @@
         transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       .star.earned { opacity: 1; transform: scale(1.1); color: #ffd23f; text-shadow: 0 0 12px rgba(255,210,63,0.6); }
+
+      #worldmap .panel { min-width: 460px; max-width: 90vw; }
+      #worldmap h2 { color: #aae5b3; }
+      #worldmap .subtitle { font-size: 14px; opacity: 0.85; margin-bottom: 14px; }
+      #worldmap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+      .level-tile {
+        background: linear-gradient(180deg, #2c3e54, #1d2a36);
+        border: 3px solid #4a5d75; border-radius: 12px;
+        padding: 12px 8px; cursor: pointer;
+        transition: transform 0.1s ease, border-color 0.15s ease;
+        text-align: center;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+        min-height: 90px;
+      }
+      .level-tile:hover { transform: translateY(-3px); border-color: #ffd23f; }
+      .level-tile:active { transform: translateY(0); }
+      .level-tile.locked { opacity: 0.45; cursor: not-allowed; border-color: #2a3340; }
+      .level-tile.locked .level-num::before { content: "🔒 "; }
+      .level-tile.locked:hover { transform: none; border-color: #2a3340; }
+      .level-tile.completed { border-color: #5fe079; }
+      .level-tile .level-num { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+      .level-tile .level-name { font-size: 11px; opacity: 0.8; min-height: 24px; }
+      .level-tile .level-stars { font-size: 18px; margin-top: 6px; letter-spacing: 2px; }
+      .level-tile .level-stars .filled { color: #ffd23f; }
+      .level-tile .level-stars .empty { color: #4a5d75; }
+
+      #map-btn {
+        background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
+        padding: 4px 10px; font-size: 22px; cursor: pointer; pointer-events: auto;
+        transition: background 0.12s ease, transform 0.08s ease;
+      }
+      #map-btn:hover { background: rgba(40,52,68,0.9); }
+      #map-btn:active { transform: translateY(1px); }
       .overlay .panel .stats { margin: 14px 0; font-size: 16px; opacity: 0.9; }
       .overlay .panel .actions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
       .overlay .panel .actions button {
@@ -210,6 +243,7 @@
           <div class="bar"><div class="fill" id="castle-hp-fill"></div></div>
         </div>
         <div class="right">
+          <button id="map-btn" type="button" aria-label="Carte des mondes" title="Carte (M)">🗺️</button>
           <button id="mute-btn" type="button" aria-label="Mute" title="Couper le son">🔊</button>
           <div id="coins">100</div>
         </div>
@@ -246,6 +280,17 @@
           <button data-action="map" id="result-map-btn">Carte</button>
           <button class="primary" data-action="restart">Rejouer</button>
           <button class="primary" data-action="next" id="result-next-btn">Niveau suivant</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="worldmap" class="overlay">
+      <div class="panel">
+        <h2>🌳 Plaine du Royaume</h2>
+        <div class="subtitle">Total : <span id="worldmap-stars">0</span> ★ · Monde 1/4</div>
+        <div id="worldmap-grid"></div>
+        <div class="actions">
+          <button data-action="close">Fermer</button>
         </div>
       </div>
     </div>
