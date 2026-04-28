@@ -17,16 +17,21 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x6fc16d);
 scene.fog = new THREE.Fog(0x7fd07c, 30, 80);
 
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
-camera.position.set(0, 28, 22);
-camera.lookAt(0, 0, 0);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+const CAM_TARGET = new THREE.Vector3(-2, 0, -1);
+const CAM_OFFSET = new THREE.Vector3(0, 30, 22);
 
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
-  renderer.setSize(w, h, false);
+  renderer.setSize(w, h, true);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
+function refitCamera() {
+  camera.position.copy(CAM_TARGET).add(CAM_OFFSET);
+  camera.lookAt(CAM_TARGET);
+}
+refitCamera();
 resize();
 window.addEventListener("resize", resize);
 
@@ -112,8 +117,68 @@ const endPoint = path.getPointAt(1);
 castle.position.set(endPoint.x, 0, endPoint.z);
 scene.add(castle);
 
-// ─── Hero (auto-aim defender at center)
-const hero = new Hero(scene, new THREE.Vector3(endPoint.x - 0.5, 0, endPoint.z + 1.5));
+// ─── Hero (auto-aim defender, moveable via WASD/joystick)
+const hero = new Hero(scene, new THREE.Vector3(-2, 0, -1));
+
+// Keyboard
+const keys = { w: 0, a: 0, s: 0, d: 0 };
+window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 1;
+  if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 1;
+  if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 1;
+  if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 1;
+});
+window.addEventListener("keyup", (e) => {
+  if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 0;
+  if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 0;
+  if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 0;
+  if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 0;
+});
+
+// Touch joystick (bottom-left)
+const joystick = { active: false, sx: 0, sy: 0, dx: 0, dy: 0, id: -1 };
+const joyEl = document.getElementById("joystick");
+const joyKnob = document.getElementById("joystick-knob");
+function joyStart(e) {
+  const t = e.touches ? e.touches[0] : e;
+  joystick.active = true;
+  joystick.sx = t.clientX;
+  joystick.sy = t.clientY;
+  joystick.id = e.touches ? t.identifier : -1;
+  joyEl.style.left = (t.clientX - 60) + "px";
+  joyEl.style.top = (t.clientY - 60) + "px";
+  joyEl.style.opacity = 1;
+}
+function joyMove(e) {
+  if (!joystick.active) return;
+  let t = null;
+  if (e.touches) {
+    for (const tt of e.touches) if (tt.identifier === joystick.id) { t = tt; break; }
+    if (!t) return;
+  } else {
+    t = e;
+  }
+  let dx = t.clientX - joystick.sx;
+  let dy = t.clientY - joystick.sy;
+  const len = Math.hypot(dx, dy);
+  const max = 50;
+  if (len > max) { dx = dx * max / len; dy = dy * max / len; }
+  joystick.dx = dx / max;
+  joystick.dy = dy / max;
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+}
+function joyEnd() {
+  joystick.active = false;
+  joystick.dx = 0;
+  joystick.dy = 0;
+  joyKnob.style.transform = "translate(0, 0)";
+  joyEl.style.opacity = 0.3;
+}
+const touchZone = document.getElementById("touch-zone");
+touchZone.addEventListener("touchstart", (e) => { e.preventDefault(); joyStart(e); }, { passive: false });
+touchZone.addEventListener("touchmove", (e) => { e.preventDefault(); joyMove(e); }, { passive: false });
+touchZone.addEventListener("touchend", (e) => { e.preventDefault(); joyEnd(); }, { passive: false });
+touchZone.addEventListener("touchcancel", joyEnd);
 
 // ─── Spawn points (clickable tower slots along the path)
 const towerSlots = [
@@ -261,15 +326,21 @@ function tick() {
     }
   }
 
-  // Update hero (auto-aim closest enemy)
+  // Hero input → movement
+  let mx = (keys.d - keys.a) + joystick.dx;
+  let mz = (keys.s - keys.w) + joystick.dy;
+  hero.setMove(mx, mz);
+
+  // Update hero (auto-aim closest enemy + movement)
   hero.tick(dt, state.enemies);
 
   // Update towers
   for (const t of state.towers) t.tick(dt, state.enemies);
 
-  // Camera ambient bob (subtle to feel alive)
-  const tElapsed = clock.getElapsedTime();
-  camera.position.y = 28 + Math.sin(tElapsed * 0.5) * 0.15;
+  // Camera follows hero softly (lerp toward hero pos with offset)
+  CAM_TARGET.x += (hero.group.position.x - CAM_TARGET.x) * 0.06;
+  CAM_TARGET.z += (hero.group.position.z - CAM_TARGET.z) * 0.06;
+  refitCamera();
 
   renderer.render(scene, camera);
   requestAnimationFrame(tick);

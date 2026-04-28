@@ -4,6 +4,9 @@ const FIRE_RATE_MS = 350;
 const RANGE = 12;
 const DAMAGE = 1;
 const PROJ_SPEED = 22;
+const MOVE_SPEED = 6;
+const BOUND_X = 14;
+const BOUND_Z = 9;
 
 export class Hero {
   constructor(scene, position) {
@@ -26,7 +29,6 @@ export class Hero {
     head.castShadow = true;
     this.group.add(head);
 
-    // Cape detail
     const cape = new THREE.Mesh(
       new THREE.PlaneGeometry(0.55, 0.7),
       new THREE.MeshLambertMaterial({ color: 0xc63a10, side: THREE.DoubleSide }),
@@ -34,20 +36,51 @@ export class Hero {
     cape.position.set(0, 0.55, -0.27);
     this.group.add(cape);
 
-    // Aim turret (pivot for projectile origin)
-    this.aim = new THREE.Group();
-    this.aim.position.y = 0.7;
-    this.group.add(this.aim);
+    // Position marker at feet (helps locate hero visually)
+    const feet = new THREE.Mesh(
+      new THREE.RingGeometry(0.45, 0.55, 16),
+      new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.5, side: THREE.DoubleSide }),
+    );
+    feet.rotation.x = -Math.PI / 2;
+    feet.position.y = 0.02;
+    this.group.add(feet);
 
     this.group.position.copy(position);
     scene.add(this.group);
 
     this.cooldown = 0;
     this.projectiles = [];
+
+    // Movement state
+    this.moveDir = new THREE.Vector2(0, 0);
+    this._bobPhase = 0;
+  }
+
+  setMove(dx, dz) {
+    const len = Math.hypot(dx, dz);
+    if (len > 0.05) {
+      this.moveDir.set(dx / len, dz / len);
+    } else {
+      this.moveDir.set(0, 0);
+    }
   }
 
   tick(dt, enemies) {
     this.cooldown -= dt * 1000;
+
+    // Movement
+    if (this.moveDir.lengthSq() > 0.01) {
+      this.group.position.x += this.moveDir.x * MOVE_SPEED * dt;
+      this.group.position.z += this.moveDir.y * MOVE_SPEED * dt;
+      this.group.position.x = Math.max(-BOUND_X, Math.min(BOUND_X, this.group.position.x));
+      this.group.position.z = Math.max(-BOUND_Z, Math.min(BOUND_Z, this.group.position.z));
+      // Walk bob
+      this._bobPhase += dt * 12;
+      this.group.position.y = Math.abs(Math.sin(this._bobPhase)) * 0.08;
+    } else {
+      this._bobPhase = 0;
+      this.group.position.y = 0;
+    }
 
     // Find nearest alive enemy in range
     let target = null;
@@ -72,6 +105,9 @@ export class Hero {
         this.cooldown = FIRE_RATE_MS;
         this._fire(target);
       }
+    } else if (this.moveDir.lengthSq() > 0.01) {
+      // Face movement direction when no target
+      this.group.rotation.y = Math.atan2(this.moveDir.x, this.moveDir.y);
     }
 
     // Update projectiles
@@ -81,7 +117,6 @@ export class Hero {
       p.mesh.position.x += p.dir.x * PROJ_SPEED * dt;
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
 
-      // Hit detection
       let hit = false;
       for (const e of enemies) {
         if (e.dead) continue;

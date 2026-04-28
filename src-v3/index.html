@@ -2,18 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <title>Milan Crowd Defense</title>
     <style>
       :root { color-scheme: dark; }
-      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0d1418; font-family: system-ui, sans-serif; color: #fff; }
-      #app { position: fixed; inset: 0; }
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #0d1418; font-family: system-ui, sans-serif; color: #fff; -webkit-tap-highlight-color: transparent; }
+      #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
       #ui {
         position: fixed; inset: 0; pointer-events: none;
         display: flex; flex-direction: column; justify-content: space-between;
-        padding: 14px 18px; box-sizing: border-box;
+        padding: 14px 18px;
       }
-      #ui > .row { display: flex; gap: 12px; align-items: center; pointer-events: auto; }
+      #ui > .row { display: flex; gap: 12px; align-items: center; pointer-events: none; }
       #coins {
         background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
         padding: 6px 14px; font-size: 22px; font-weight: 700;
@@ -21,8 +22,31 @@
       }
       #coins::before { content: "🪙 "; }
       #wave { background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px; padding: 6px 14px; font-size: 16px; }
-      #title { font-size: 28px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
-      #footer { font-size: 12px; opacity: 0.6; }
+      #title { font-size: 22px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
+      #footer { font-size: 12px; opacity: 0.7; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 8px; }
+      /* Touch zone covers bottom-left quarter — joystick anchors where you start touching */
+      #touch-zone {
+        position: fixed; left: 0; bottom: 0; width: 50%; height: 60%;
+        z-index: 5;
+      }
+      #joystick {
+        position: fixed; width: 120px; height: 120px;
+        border-radius: 50%; border: 3px solid rgba(255,255,255,0.4);
+        background: rgba(20,28,36,0.45);
+        opacity: 0.3; transition: opacity 0.15s ease;
+        pointer-events: none; z-index: 10;
+        left: 30px; bottom: 30px;
+      }
+      #joystick-knob {
+        position: absolute; left: 50%; top: 50%;
+        width: 50px; height: 50px; margin-left: -25px; margin-top: -25px;
+        border-radius: 50%; background: rgba(255,210,63,0.85);
+        border: 2px solid #c88a00;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+      }
+      @media (hover: hover) {
+        #touch-zone, #joystick { display: none; }
+      }
     </style>
   </head>
   <body>
@@ -34,9 +58,11 @@
         <div id="coins">100</div>
       </div>
       <div class="row">
-        <div id="footer">Clic sur un emplacement vert pour poser une tour — MVP</div>
+        <div id="footer">WASD ou flèches pour bouger · clic sur ⭕ pour poser une tour · le héros tire tout seul</div>
       </div>
     </div>
+    <div id="touch-zone"></div>
+    <div id="joystick"><div id="joystick-knob"></div></div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
