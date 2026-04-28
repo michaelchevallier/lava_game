@@ -69,15 +69,41 @@ export const SaveSystem = {
 
   recordLevelDone(levelId, payload = {}) {
     const s = ensureCached();
-    if (!s.levels[levelId]) s.levels[levelId] = { wins: 0, bestCastleHP: 0, lastWave: 0 };
+    if (!s.levels[levelId]) s.levels[levelId] = { wins: 0, bestCastleHP: 0, lastWave: 0, bestStars: 0 };
     const slot = s.levels[levelId];
     slot.wins = (slot.wins || 0) + (payload.win ? 1 : 0);
     if (payload.castleHP != null && payload.castleHP > (slot.bestCastleHP || 0)) {
       slot.bestCastleHP = payload.castleHP;
     }
     if (payload.wave != null) slot.lastWave = payload.wave;
+    if (payload.stars != null && payload.stars > (slot.bestStars || 0)) {
+      slot.bestStars = payload.stars;
+    }
     s.lastLevel = levelId;
     persist();
+  },
+
+  getStars(levelId) {
+    const s = ensureCached();
+    return s.levels[levelId]?.bestStars || 0;
+  },
+
+  isLevelComplete(levelId) {
+    const s = ensureCached();
+    return (s.levels[levelId]?.bestStars || 0) >= 1;
+  },
+
+  totalStars() {
+    const s = ensureCached();
+    return Object.values(s.levels || {}).reduce((sum, l) => sum + (l.bestStars || 0), 0);
+  },
+
+  isLevelUnlocked(levelId, levelOrder) {
+    if (!levelOrder || !levelOrder.length) return true;
+    const idx = levelOrder.indexOf(levelId);
+    if (idx <= 0) return true;
+    const prevId = levelOrder[idx - 1];
+    return this.isLevelComplete(prevId);
   },
 
   reset() {

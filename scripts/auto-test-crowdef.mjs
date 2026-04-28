@@ -127,7 +127,12 @@ const result = await page.evaluate(async (maxRealMs) => {
 
       let target = null;
       for (const s of cd.runner.slots) {
-        if (s.currentLevel < s.maxLevel) { target = s; break; }
+        if (s.currentLevel === 0) { target = s; break; }
+      }
+      if (!target) {
+        for (const s of cd.runner.slots) {
+          if (s.currentLevel < s.maxLevel) { target = s; break; }
+        }
       }
 
       if (!target) {
