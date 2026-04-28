@@ -238,7 +238,32 @@ const ui = {
   worldmapGrid: document.getElementById("worldmap-grid"),
   worldmapStars: document.getElementById("worldmap-stars"),
   mapBtn: document.getElementById("map-btn"),
+  bossBanner: document.getElementById("boss-banner"),
+  bossBannerName: document.getElementById("boss-banner-name"),
+  bossBannerFill: document.getElementById("boss-banner-fill"),
 };
+
+let _bossRef = null;
+let _bossChargeFlashTimer = 0;
+function trackBossFromRunner() {
+  if (_bossRef && (_bossRef.dead || _bossRef._dying)) {
+    ui.bossBanner.classList.remove("show", "charging");
+    _bossRef = null;
+  }
+  if (!_bossRef && runner.enemies) {
+    for (const e of runner.enemies) {
+      if (e.isBoss && !e.dead && !e._dying) { _bossRef = e; break; }
+    }
+  }
+  if (_bossRef) {
+    const ratio = Math.max(0, _bossRef.hp / _bossRef.hpMax);
+    ui.bossBannerFill.style.width = (ratio * 100).toFixed(1) + "%";
+  }
+  if (_bossChargeFlashTimer > 0) {
+    _bossChargeFlashTimer -= 1;
+    if (_bossChargeFlashTimer <= 0) ui.bossBanner.classList.remove("charging");
+  }
+}
 
 function refreshHUD() {
   ui.coins.textContent = Math.floor(runner.coins);
@@ -260,6 +285,23 @@ function refreshHUD() {
   }
 }
 refreshHUD();
+document.addEventListener("crowdef:boss-spawned", (e) => {
+  ui.bossBannerName.textContent = e.detail.name || "BOSS";
+  ui.bossBannerFill.style.width = "100%";
+  ui.bossBanner.classList.add("show");
+});
+document.addEventListener("crowdef:boss-charge", () => {
+  ui.bossBanner.classList.add("charging");
+  _bossChargeFlashTimer = 90;
+});
+document.addEventListener("crowdef:level-restart", () => {
+  ui.bossBanner.classList.remove("show", "charging");
+  _bossRef = null;
+});
+document.addEventListener("crowdef:level-loaded", () => {
+  ui.bossBanner.classList.remove("show", "charging");
+  _bossRef = null;
+});
 document.addEventListener("crowdef:wave-start", refreshHUD);
 document.addEventListener("crowdef:enemy-killed", refreshHUD);
 document.addEventListener("crowdef:tower-built", refreshHUD);
@@ -566,6 +608,7 @@ function tick() {
   const shake = JuiceFX.tick(dt);
   SHAKE_OFFSET.copy(shake);
   refreshHUD();
+  trackBossFromRunner();
 
   if (runner.hero) {
     CAM_TARGET.x += (runner.hero.group.position.x - CAM_TARGET.x) * 0.06;
@@ -595,5 +638,5 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j3-c1",
+  version: "j3-c5",
 };

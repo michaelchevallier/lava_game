@@ -39,6 +39,13 @@ export const ENEMY_TYPES = {
     asset: "pirate", scale: 0.9, walkAnim: "Walk",
     bodyColor: 0x2c1810, isBoss: true,
   },
+  brigand_boss: {
+    hp: 80, speed: 0.6, damage: 40, reward: 100,
+    asset: "pirate", scale: 1.1, walkAnim: "Walk",
+    bodyColor: 0x8a1a0a, isBoss: true, isBrigand: true,
+    chargeMs: 1500, chargeCooldownMs: 6000, chargeMul: 4,
+    bossName: "Brigand de la Plaine",
+  },
 };
 
 export class Enemy {
@@ -60,6 +67,16 @@ export class Enemy {
     this._dying = false;
     this._dyingTimer = 0;
     this._lastTangent = new THREE.Vector3(0, 0, 1);
+
+    this.chargeMs = cfg.chargeMs || 0;
+    this.chargeCooldownMs = cfg.chargeCooldownMs || 0;
+    this.chargeMul = cfg.chargeMul || 1;
+    this.isBoss = !!cfg.isBoss;
+    this.bossName = cfg.bossName || null;
+    this._chargeActive = false;
+    this._chargeTimer = 0;
+    this._chargeCooldown = this.chargeCooldownMs > 0 ? 2000 : 0;
+    this._spawned = false;
 
     this.group = new THREE.Group();
 
@@ -185,14 +202,52 @@ export class Enemy {
   tick(dt) {
     if (this.anim) this.anim.tick(dt);
 
+    if (!this._spawned && this.isBoss) {
+      this._spawned = true;
+      document.dispatchEvent(new CustomEvent("crowdef:boss-spawned", {
+        detail: { type: this.type, name: this.bossName, hp: this.hpMax },
+      }));
+    }
+
     if (this._dying) {
       this._dyingTimer -= dt;
       if (this._dyingTimer <= 0) this.dead = true;
       return;
     }
 
+    let effSpeed = this.speed;
+    if (this.chargeMs > 0) {
+      if (this._chargeActive) {
+        this._chargeTimer -= dt * 1000;
+        if (this._chargeTimer <= 0) {
+          this._chargeActive = false;
+          this._chargeCooldown = this.chargeCooldownMs;
+        }
+        effSpeed = this.speed * this.chargeMul;
+        Particles.emit(
+          { x: this.group.position.x, y: this.group.position.y + 0.4, z: this.group.position.z },
+          0xff3a10, 1,
+          { speed: 1.5, life: 0.25, scale: 0.3 },
+        );
+      } else {
+        this._chargeCooldown -= dt * 1000;
+        if (this._chargeCooldown <= 0) {
+          this._chargeActive = true;
+          this._chargeTimer = this.chargeMs;
+          Particles.emit(
+            { x: this.group.position.x, y: this.group.position.y + 0.6, z: this.group.position.z },
+            0xff3a10, 12,
+            { speed: 4, life: 0.5, scale: 0.5, yLift: 1.2 },
+          );
+          document.dispatchEvent(new CustomEvent("crowdef:boss-charge", {
+            detail: { type: this.type },
+          }));
+        }
+      }
+    }
+
     const len = this.curve.getLength();
-    this.t += (this.speed * dt) / len;
+    this.t += (effSpeed * dt) / len;
     if (this.t >= 1) {
       this.t = 1;
       this.reachedEnd = true;

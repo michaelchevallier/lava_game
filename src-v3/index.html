@@ -209,6 +209,38 @@
       .perk-card .desc { font-size: 13px; opacity: 0.9; line-height: 1.3; }
       .perk-card .stack { font-size: 11px; opacity: 0.6; margin-top: 8px; }
 
+      #boss-banner {
+        position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+        background: linear-gradient(180deg, rgba(40,8,8,0.95), rgba(20,4,4,0.95));
+        border: 3px solid #c63a10; border-radius: 14px;
+        padding: 8px 18px; min-width: 320px; max-width: 80vw;
+        text-align: center; pointer-events: none; z-index: 18;
+        box-shadow: 0 8px 0 rgba(0,0,0,0.5), 0 0 24px rgba(255,80,40,0.4);
+        opacity: 0; transform: translate(-50%, -20px) scale(0.9);
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #boss-banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      #boss-banner .boss-name {
+        font-size: 18px; font-weight: 900; letter-spacing: 1px;
+        color: #ffe273; text-shadow: 0 2px 0 #000, 0 0 8px rgba(255,80,40,0.7);
+        margin-bottom: 4px;
+      }
+      #boss-banner .boss-name::before { content: "💀 "; }
+      #boss-banner .boss-name::after { content: " 💀"; }
+      #boss-banner .boss-bar {
+        position: relative; height: 12px; border-radius: 6px;
+        background: #1d0a0a; overflow: hidden; border: 1px solid rgba(0,0,0,0.5);
+      }
+      #boss-banner .boss-fill {
+        height: 100%; background: linear-gradient(90deg, #c63a10, #ff7a55);
+        transition: width 0.25s ease; width: 100%;
+      }
+      #boss-banner.charging { animation: boss-charge-pulse 0.6s ease-in-out infinite; }
+      @keyframes boss-charge-pulse {
+        0%, 100% { box-shadow: 0 8px 0 rgba(0,0,0,0.5), 0 0 24px rgba(255,80,40,0.4); border-color: #c63a10; }
+        50% { box-shadow: 0 8px 0 rgba(0,0,0,0.5), 0 0 36px rgba(255,160,80,0.9); border-color: #ff7a55; }
+      }
+
       .damage-popup {
         position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
         background: rgba(198, 58, 16, 0.92); color: #fff;
@@ -252,6 +284,11 @@
         <div id="footer">WASD/flèches ou joystick pour bouger · entre dans un cercle jaune pour construire (l'or s'écoule pendant que tu y restes)</div>
       </div>
     </div>
+    <div id="boss-banner">
+      <div class="boss-name" id="boss-banner-name">—</div>
+      <div class="boss-bar"><div class="boss-fill" id="boss-banner-fill"></div></div>
+    </div>
+
     <div id="touch-zone"></div>
     <div id="joystick"><div id="joystick-knob"></div></div>
 
