@@ -10,3 +10,6 @@ dist-kingshot/
 .claude/worktrees/
 test-results/
 src-v3/assets/quaternius/Ultimate*/
+src-v3/assets/quaternius/Stylized*/
+src-v3/assets/quaternius/Medieval*/
+src-v3/assets/quaternius/Fantasy*/

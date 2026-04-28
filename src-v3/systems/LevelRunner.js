@@ -35,11 +35,32 @@ export class LevelRunner {
 
     this._waveActive = true;
     this._spawnTimer = 0;
-    this._enemiesSpawned = 0;
-    this._enemiesPerWave = level.waves.firstSize;
-    this._spawnRate = level.waves.spawnRateMs;
     this._waveBreakTimer = 0;
-    this._levelEndTimer = 0;
+    this._initWave(0);
+  }
+
+  _initWave(idx) {
+    const w = this.level.waves.list[idx];
+    if (!w) {
+      this._pendingSpawns = [];
+      this._spawnRate = 600;
+      return;
+    }
+    const list = [];
+    for (const [type, count] of Object.entries(w.types)) {
+      for (let i = 0; i < count; i++) list.push(type);
+    }
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    this._pendingSpawns = list;
+    this._spawnRate = w.spawnRateMs || 600;
+    this._currentBreakMs = w.breakMs ?? 4000;
+  }
+
+  _hasMoreWaves() {
+    return this.wave < this.level.waves.list.length;
   }
 
   setup() {
@@ -71,27 +92,26 @@ export class LevelRunner {
 
     if (this._waveActive) {
       this._spawnTimer += dtMs;
-      if (this._spawnTimer >= this._spawnRate && this._enemiesSpawned < this._enemiesPerWave) {
+      if (this._spawnTimer >= this._spawnRate && this._pendingSpawns.length > 0) {
         this._spawnTimer = 0;
-        this._enemiesSpawned++;
-        this._spawnEnemy();
+        const type = this._pendingSpawns.shift();
+        this._spawnEnemy(type);
       }
-      if (this._enemiesSpawned >= this._enemiesPerWave && this.enemies.length === 0) {
+      if (this._pendingSpawns.length === 0 && this.enemies.length === 0) {
         this._waveActive = false;
         this._waveBreakTimer = 0;
         emit("crowdef:wave-cleared", { wave: this.wave });
       }
     } else {
       this._waveBreakTimer += dtMs;
-      if (this._waveBreakTimer > this.level.waves.breakMs) {
-        if (this.wave >= this.level.waves.finalWave) {
+      const breakMs = this._currentBreakMs ?? 4000;
+      if (this._waveBreakTimer > breakMs) {
+        if (!this._hasMoreWaves()) {
           this._winLevel();
           return;
         }
         this.wave++;
-        this._enemiesPerWave = Math.round(this._enemiesPerWave * this.level.waves.sizeMultiplier);
-        this._spawnRate = Math.max(this.level.waves.spawnRateMinMs, this._spawnRate - this.level.waves.spawnRateDecMs);
-        this._enemiesSpawned = 0;
+        this._initWave(this.wave - 1);
         this._spawnTimer = 0;
         this._waveActive = true;
         Audio.sfxWaveStart();
@@ -166,8 +186,8 @@ export class LevelRunner {
     emit("crowdef:level-won", { wave: this.wave, castleHP: this.castleHP, castleHPMax: this.castleHPMax });
   }
 
-  _spawnEnemy() {
-    const e = new Enemy(this.scene, this.path);
+  _spawnEnemy(type = "basic") {
+    const e = new Enemy(this.scene, this.path, type);
     this.enemies.push(e);
   }
 
@@ -193,10 +213,8 @@ export class LevelRunner {
     this.gameTime = 0;
     this._waveActive = true;
     this._spawnTimer = 0;
-    this._enemiesSpawned = 0;
-    this._enemiesPerWave = this.level.waves.firstSize;
-    this._spawnRate = this.level.waves.spawnRateMs;
     this._waveBreakTimer = 0;
+    this._initWave(0);
     this.setup();
     emit("crowdef:level-restart", { level: this.level.id });
   }

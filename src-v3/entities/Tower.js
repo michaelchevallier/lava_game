@@ -76,11 +76,11 @@ export class Tower {
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
       let hit = false;
       for (const e of enemies) {
-        if (e.dead) continue;
+        if (e.dead || e._dying) continue;
         const dx = e.group.position.x - p.mesh.position.x;
         const dz = e.group.position.z - p.mesh.position.z;
         if (dx * dx + dz * dz < 0.36) {
-          e.takeDamage(DAMAGE);
+          e.takeDamage(DAMAGE, p.mesh.position);
           hit = true;
           break;
         }

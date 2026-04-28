@@ -8,6 +8,11 @@ let readyPromise = null;
 const MANIFEST = {
   knight: "quaternius/Knight_Male.gltf",
   zombie: "quaternius/Zombie_Male.gltf",
+  goblin: "quaternius/Goblin_Male.gltf",
+  soldier: "quaternius/Soldier_Male.gltf",
+  knightgolden: "quaternius/Knight_Golden_Male.gltf",
+  wizard: "quaternius/Wizard.gltf",
+  pirate: "quaternius/Pirate_Male.gltf",
 };
 
 function loadOne(url) {
