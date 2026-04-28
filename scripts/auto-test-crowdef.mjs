@@ -250,9 +250,27 @@ const shopPhase = await page.evaluate(async () => {
   };
 });
 
+log("phase 4: music auto-switch via __cd.music");
+const musicPhase = await page.evaluate(async () => {
+  const cd = window.__cd;
+  if (!cd.music) return { available: false };
+  cd.music.play("calm");
+  await new Promise((r) => setTimeout(r, 100));
+  const t1 = cd.music.getCurrentTrack();
+  cd.music.play("boss");
+  await new Promise((r) => setTimeout(r, 100));
+  const t2 = cd.music.getCurrentTrack();
+  cd.music.setMusicVolume(0.42);
+  const v = cd.music.getMusicVolume();
+  cd.music.stop();
+  await new Promise((r) => setTimeout(r, 100));
+  const t3 = cd.music.getCurrentTrack();
+  return { available: true, t1, t2, t3, vol: v };
+});
+
 writeFileSync(
   path.join(RESULTS_DIR, "crowdef-summary.json"),
-  JSON.stringify({ result, summary, bossPhase, skinPhase, shopPhase, consoleErrors, pageErrors }, null, 2),
+  JSON.stringify({ result, summary, bossPhase, skinPhase, shopPhase, musicPhase, consoleErrors, pageErrors }, null, 2),
 );
 
 await browser.close();
@@ -285,6 +303,11 @@ allOk &= pass(`5 gems spent on upgrade`, shopPhase.gemsBefore - shopPhase.gemsAf
 allOk &= pass(`castle HP +10% applied in run`, shopPhase.castleHPMax === shopPhase.expectedCastleHP, `(got ${shopPhase.castleHPMax}, expected ${shopPhase.expectedCastleHP})`);
 allOk &= pass(`hero skin equipped via API`, skinPhase.equipped === "hero_wizard", `(got ${skinPhase.equipped})`);
 allOk &= pass(`hero GLB swap (wizard asset)`, skinPhase.heroAsset === "wizard", `(got ${skinPhase.heroAsset})`);
+allOk &= pass(`MusicManager exposed via __cd.music`, musicPhase.available === true);
+allOk &= pass(`music play("calm") sets currentTrack`, musicPhase.t1 === "calm", `(got ${musicPhase.t1})`);
+allOk &= pass(`music play("boss") switches track`, musicPhase.t2 === "boss", `(got ${musicPhase.t2})`);
+allOk &= pass(`music setMusicVolume persists`, Math.abs((musicPhase.vol || 0) - 0.42) < 0.01, `(got ${musicPhase.vol})`);
+allOk &= pass(`music stop() clears track`, musicPhase.t3 === null, `(got ${musicPhase.t3})`);
 
 console.log("\n=== SUMMARY ===");
 console.log(JSON.stringify({ result, summary }, null, 2));

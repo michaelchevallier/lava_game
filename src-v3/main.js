@@ -957,6 +957,7 @@ window.__cd = {
   scene,
   camera,
   audio: Audio,
+  music: MusicManager,
   save: SaveSystem,
   setSpeed: (n) => runner.setSpeed(n),
   pickPerk: (idx = 0) => {

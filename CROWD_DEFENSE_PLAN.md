@@ -256,7 +256,7 @@ Trigger côté user : « on enchaîne J2 du plan `CROWD_DEFENSE_PLAN.md` ». Pas
 - [x] J3 — Monde 1 ([changelog](docs/changelog/J3-monde-1.md))
 - [x] J4.A — Boutique + upgrades ([changelog](docs/changelog/J4A-boutique.md))
 - [x] J4.B — Skins + tours déblocables ([changelog](docs/changelog/J4B-skins.md))
-- [ ] J5 — Audio complet
+- [x] J5 — Audio complet ([changelog](docs/changelog/J5-audio.md))
 - [ ] J6.A — Forêt Sombre
 - [ ] J6.B — Désert Brûlant
 - [ ] J6.C — Volcan du Dragon
