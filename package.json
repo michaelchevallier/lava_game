@@ -5,11 +5,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:kingshot": "vite --config vite.kingshot.config.js",
+    "build:kingshot": "vite build --config vite.kingshot.config.js",
+    "preview:kingshot": "vite preview --config vite.kingshot.config.js"
   },
   "dependencies": {
     "kaplay": "^3001.0.19",
-    "phaser": "^4.0.0"
+    "phaser": "^4.0.0",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "playwright": "^1.59.1",

@@ -34,13 +34,15 @@ jobs:
           git fetch origin phaser-pivot
           git worktree add pivot origin/phaser-pivot
 
-      - name: Build Park Defense (root /)
+      - name: Build Park Defense (root /) + Crowd Defense (/v3/)
         env:
           PARKDEF_BASE: /lava_game/
+          KINGSHOT_BASE: /lava_game/v3/
         run: |
           cd pivot
           npm ci
           npm run build
+          npm run build:kingshot
           cd ..
           mkdir -p _root
           cp -r pivot/dist/* _root/
@@ -48,6 +50,8 @@ jobs:
           cp -r dist/* _root/v1/
           mkdir -p _root/v2
           cp -r pivot/dist/* _root/v2/
+          mkdir -p _root/v3
+          cp -r pivot/dist-kingshot/* _root/v3/
           rm -rf dist
           mv _root dist
 

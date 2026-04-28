@@ -1,0 +1,280 @@
+import * as THREE from "three";
+import { buildPath, makePathLine } from "./systems/Path.js";
+import { Enemy } from "./entities/Enemy.js";
+import { Hero } from "./entities/Hero.js";
+import { Tower } from "./entities/Tower.js";
+
+const canvas = document.getElementById("app");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x6fc16d);
+scene.fog = new THREE.Fog(0x7fd07c, 30, 80);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+camera.position.set(0, 28, 22);
+camera.lookAt(0, 0, 0);
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ─── Lighting (toon-ish: bright key + cool fill, soft ground)
+const sun = new THREE.DirectionalLight(0xfff4d6, 1.4);
+sun.position.set(15, 25, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -25;
+sun.shadow.camera.right = 25;
+sun.shadow.camera.top = 25;
+sun.shadow.camera.bottom = -25;
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 60;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+const fill = new THREE.HemisphereLight(0xb0e0ff, 0x4a6a3a, 0.55);
+scene.add(fill);
+
+// ─── Ground
+const groundGeom = new THREE.PlaneGeometry(80, 80, 1, 1);
+const groundMat = new THREE.MeshLambertMaterial({ color: 0x6fc16d });
+const ground = new THREE.Mesh(groundGeom, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Ground accent stripes (path bed)
+const dirtMat = new THREE.MeshLambertMaterial({ color: 0xcca06a });
+
+// ─── Path
+const path = buildPath();
+const pathLine = makePathLine(path, dirtMat);
+scene.add(pathLine);
+
+// Decorative trees (simple cones)
+function addTree(x, z, h = 2.5) {
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.22, 0.8),
+    new THREE.MeshLambertMaterial({ color: 0x6a4422 }),
+  );
+  trunk.position.set(x, 0.4, z);
+  trunk.castShadow = true;
+  scene.add(trunk);
+
+  const leaves = new THREE.Mesh(
+    new THREE.ConeGeometry(0.9, h, 8),
+    new THREE.MeshLambertMaterial({ color: 0x2f8a3a }),
+  );
+  leaves.position.set(x, 0.8 + h / 2, z);
+  leaves.castShadow = true;
+  scene.add(leaves);
+}
+for (let i = 0; i < 16; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const r = 14 + Math.random() * 8;
+  const x = Math.cos(angle) * r;
+  const z = Math.sin(angle) * r;
+  if (Math.abs(x) > 6 || Math.abs(z) > 6) addTree(x, z, 2 + Math.random() * 2);
+}
+
+// ─── Castle (the thing you defend) at the path's END
+const castle = new THREE.Group();
+const base = new THREE.Mesh(
+  new THREE.BoxGeometry(3, 1.2, 3),
+  new THREE.MeshLambertMaterial({ color: 0xdcdcdc }),
+);
+base.position.y = 0.6;
+base.castShadow = true;
+castle.add(base);
+
+const roof = new THREE.Mesh(
+  new THREE.ConeGeometry(2.2, 1.6, 4),
+  new THREE.MeshLambertMaterial({ color: 0x3a6abf }),
+);
+roof.position.y = 1.2 + 0.8;
+roof.rotation.y = Math.PI / 4;
+roof.castShadow = true;
+castle.add(roof);
+
+const endPoint = path.getPointAt(1);
+castle.position.set(endPoint.x, 0, endPoint.z);
+scene.add(castle);
+
+// ─── Hero (auto-aim defender at center)
+const hero = new Hero(scene, new THREE.Vector3(endPoint.x - 0.5, 0, endPoint.z + 1.5));
+
+// ─── Spawn points (clickable tower slots along the path)
+const towerSlots = [
+  { t: 0.30, cost: 25 },
+  { t: 0.50, cost: 35 },
+  { t: 0.70, cost: 50 },
+];
+const slots = [];
+for (const s of towerSlots) {
+  const p = path.getPointAt(s.t);
+  const offset = path.getTangentAt(s.t).cross(new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(2.2);
+  const pos = p.clone().add(offset);
+
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.6, 0.95, 24),
+    new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+  );
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(pos.x, 0.02, pos.z);
+  scene.add(ring);
+
+  // Floating cost label as sprite
+  const canvas2 = document.createElement("canvas");
+  canvas2.width = 128; canvas2.height = 64;
+  const ctx2 = canvas2.getContext("2d");
+  ctx2.fillStyle = "rgba(20,28,36,0.85)";
+  ctx2.fillRect(0, 0, 128, 64);
+  ctx2.strokeStyle = "#ffd23f";
+  ctx2.lineWidth = 4;
+  ctx2.strokeRect(2, 2, 124, 60);
+  ctx2.fillStyle = "#ffd23f";
+  ctx2.font = "bold 36px system-ui";
+  ctx2.textAlign = "center";
+  ctx2.textBaseline = "middle";
+  ctx2.fillText("🪙" + s.cost, 64, 32);
+
+  const tex = new THREE.CanvasTexture(canvas2);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const labelMat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+  const label = new THREE.Sprite(labelMat);
+  label.position.set(pos.x, 1.5, pos.z);
+  label.scale.set(2, 1, 1);
+  scene.add(label);
+
+  slots.push({ pos, ring, label, cost: s.cost, tower: null, t: s.t });
+}
+
+// ─── State
+const state = {
+  coins: 100,
+  wave: 1,
+  enemies: [],
+  spawnTimer: 0,
+  spawnRate: 600, // ms between enemies during a wave
+  enemiesPerWave: 25,
+  enemiesSpawned: 0,
+  waveActive: true,
+  waveBreakTimer: 0,
+  hero,
+  towers: [],
+  path,
+};
+
+const ui = {
+  coins: document.getElementById("coins"),
+  wave: document.getElementById("wave"),
+};
+function refreshUI() {
+  ui.coins.textContent = state.coins;
+  ui.wave.textContent = "Vague " + state.wave;
+}
+refreshUI();
+
+// ─── Click handling for tower placement
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+canvas.addEventListener("pointerdown", (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  for (const slot of slots) {
+    if (slot.tower) continue;
+    const intersects = raycaster.intersectObject(slot.ring);
+    if (intersects.length > 0) {
+      if (state.coins < slot.cost) return;
+      state.coins -= slot.cost;
+      const tower = new Tower(scene, slot.pos.clone());
+      slot.tower = tower;
+      state.towers.push(tower);
+      scene.remove(slot.ring);
+      scene.remove(slot.label);
+      refreshUI();
+      return;
+    }
+  }
+});
+
+// ─── Game loop
+const clock = new THREE.Clock();
+function spawnEnemy() {
+  const e = new Enemy(scene, path);
+  state.enemies.push(e);
+}
+
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const dtMs = dt * 1000;
+
+  // Wave management
+  if (state.waveActive) {
+    state.spawnTimer += dtMs;
+    if (state.spawnTimer >= state.spawnRate && state.enemiesSpawned < state.enemiesPerWave) {
+      state.spawnTimer = 0;
+      state.enemiesSpawned++;
+      spawnEnemy();
+    }
+    if (state.enemiesSpawned >= state.enemiesPerWave && state.enemies.length === 0) {
+      state.waveActive = false;
+      state.waveBreakTimer = 0;
+    }
+  } else {
+    state.waveBreakTimer += dtMs;
+    if (state.waveBreakTimer > 4000) {
+      state.wave++;
+      state.enemiesPerWave = Math.round(state.enemiesPerWave * 1.25);
+      state.spawnRate = Math.max(200, state.spawnRate - 40);
+      state.enemiesSpawned = 0;
+      state.spawnTimer = 0;
+      state.waveActive = true;
+      refreshUI();
+    }
+  }
+
+  // Update enemies
+  for (let i = state.enemies.length - 1; i >= 0; i--) {
+    const e = state.enemies[i];
+    e.tick(dt);
+    if (e.dead || e.reachedEnd) {
+      if (e.dead) {
+        state.coins += 2;
+        refreshUI();
+      }
+      e.destroy();
+      state.enemies.splice(i, 1);
+    }
+  }
+
+  // Update hero (auto-aim closest enemy)
+  hero.tick(dt, state.enemies);
+
+  // Update towers
+  for (const t of state.towers) t.tick(dt, state.enemies);
+
+  // Camera ambient bob (subtle to feel alive)
+  const tElapsed = clock.getElapsedTime();
+  camera.position.y = 28 + Math.sin(tElapsed * 0.5) * 0.15;
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+
+// debug
+window.__cd = { state, scene, camera };

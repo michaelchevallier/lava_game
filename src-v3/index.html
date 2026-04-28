@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Milan Crowd Defense</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0d1418; font-family: system-ui, sans-serif; color: #fff; }
+      #app { position: fixed; inset: 0; }
+      #ui {
+        position: fixed; inset: 0; pointer-events: none;
+        display: flex; flex-direction: column; justify-content: space-between;
+        padding: 14px 18px; box-sizing: border-box;
+      }
+      #ui > .row { display: flex; gap: 12px; align-items: center; pointer-events: auto; }
+      #coins {
+        background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
+        padding: 6px 14px; font-size: 22px; font-weight: 700;
+        margin-left: auto;
+      }
+      #coins::before { content: "🪙 "; }
+      #wave { background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px; padding: 6px 14px; font-size: 16px; }
+      #title { font-size: 28px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
+      #footer { font-size: 12px; opacity: 0.6; }
+    </style>
+  </head>
+  <body>
+    <canvas id="app"></canvas>
+    <div id="ui">
+      <div class="row">
+        <div id="title">Milan Crowd Defense</div>
+        <div id="wave">Vague 1</div>
+        <div id="coins">100</div>
+      </div>
+      <div class="row">
+        <div id="footer">Clic sur un emplacement vert pour poser une tour — MVP</div>
+      </div>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
