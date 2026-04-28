@@ -124,6 +124,12 @@ function disposeMeshGroup(group) {
   });
 }
 
+function parseHexColor(s) {
+  if (typeof s === "number") return s;
+  if (typeof s !== "string") return 0xdcdcdc;
+  return parseInt(s.replace("#", ""), 16);
+}
+
 function rebuildLevelDecor() {
   disposeMeshGroup(pathLine);
   disposeMeshGroup(castle);
@@ -131,17 +137,22 @@ function rebuildLevelDecor() {
   pathLine = makePathLine(runner.path, dirtMat);
   scene.add(pathLine);
 
+  const castleSkinId = SaveSystem.getEquippedSkin("castle") || "castle_default";
+  const castleSkin = SKIN_BY_ID[castleSkinId];
+  const baseColor = parseHexColor(castleSkin?.color || "#dcdcdc");
+  const roofColor = parseHexColor(castleSkin?.roofColor || "#3a6abf");
+
   castle = new THREE.Group();
   const castleBase = new THREE.Mesh(
     new THREE.BoxGeometry(3, 1.2, 3),
-    new THREE.MeshLambertMaterial({ color: 0xdcdcdc }),
+    new THREE.MeshLambertMaterial({ color: baseColor }),
   );
   castleBase.position.y = 0.6;
   castleBase.castShadow = true;
   castle.add(castleBase);
   const castleRoof = new THREE.Mesh(
     new THREE.ConeGeometry(2.2, 1.6, 4),
-    new THREE.MeshLambertMaterial({ color: 0x3a6abf }),
+    new THREE.MeshLambertMaterial({ color: roofColor }),
   );
   castleRoof.position.y = 1.2 + 0.8;
   castleRoof.rotation.y = Math.PI / 4;
@@ -331,6 +342,13 @@ document.addEventListener("crowdef:level-restart", () => {
 document.addEventListener("crowdef:level-loaded", () => {
   ui.bossBanner.classList.remove("show", "charging");
   _bossRef = null;
+});
+document.addEventListener("crowdef:skin-equipped", (e) => {
+  if (e.detail.category === "castle") {
+    rebuildLevelDecor();
+  } else if (e.detail.category === "hero") {
+    runner.restart();
+  }
 });
 document.addEventListener("crowdef:wave-start", refreshHUD);
 document.addEventListener("crowdef:enemy-killed", refreshHUD);
@@ -860,7 +878,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4b-c2",
+  version: "j4b-c3",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

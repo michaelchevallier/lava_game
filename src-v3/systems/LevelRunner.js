@@ -8,6 +8,7 @@ import { Enemy, ENEMY_TYPES } from "../entities/Enemy.js";
 import { Slot } from "../entities/Slot.js";
 import { SaveSystem } from "./SaveSystem.js";
 import { computeActiveBonuses } from "../data/metaUpgrades.js";
+import { computeSkinBonuses, SKIN_BY_ID, getDefaultSkinId } from "../data/skins.js";
 
 function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail }));
@@ -19,8 +20,9 @@ export class LevelRunner {
     this.level = level;
     this.deps = deps;
     this.metaBonuses = computeActiveBonuses(SaveSystem);
+    this.skinBonuses = computeSkinBonuses(SaveSystem);
 
-    const castleMul = this.metaBonuses.castleHPMul || 1;
+    const castleMul = (this.metaBonuses.castleHPMul || 1) * (this.skinBonuses.castleHPMul || 1);
     const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
 
     this.state = "play";
@@ -74,8 +76,11 @@ export class LevelRunner {
     this.pathLength = this.path.getLength();
 
     const heroPos = new THREE.Vector3(...(this.level.heroSpawn || [-2, 0, -1]));
-    this.hero = new Hero(this.scene, heroPos);
+    const heroSkinId = SaveSystem.getEquippedSkin("hero") || getDefaultSkinId("hero");
+    const heroSkin = SKIN_BY_ID[heroSkinId];
+    this.hero = new Hero(this.scene, heroPos, { skinAsset: heroSkin?.asset || "knight" });
     this.hero.applyMetaBonuses(this.metaBonuses);
+    if (heroSkin?.bonus) this.hero.applySkinBonuses(heroSkin.bonus);
 
     for (const cfg of this.level.slots) {
       this.slots.push(new Slot(this.scene, this.path, cfg));
@@ -160,9 +165,11 @@ export class LevelRunner {
             emit("crowdef:gems-gained", { amount: finalGems, total, source: e.type });
           }
         }
+        const vfxSkinId = SaveSystem.getEquippedSkin("vfx") || getDefaultSkinId("vfx");
+        const vfxColor = SKIN_BY_ID[vfxSkinId]?.killColor || 0xc63a10;
         Particles.emit(
           { x: e.group.position.x, y: e.group.position.y + 0.5, z: e.group.position.z },
-          0xc63a10,
+          vfxColor,
           8,
           { speed: 3, life: 0.55, scale: 0.45, yLift: 1.2 },
         );
@@ -247,7 +254,8 @@ export class LevelRunner {
     this.dispose();
     this.level = newLevel;
     this.metaBonuses = computeActiveBonuses(SaveSystem);
-    const castleMul = this.metaBonuses.castleHPMul || 1;
+    this.skinBonuses = computeSkinBonuses(SaveSystem);
+    const castleMul = (this.metaBonuses.castleHPMul || 1) * (this.skinBonuses.castleHPMul || 1);
     const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
     this.state = "play";
     this.castleHP = Math.round(newLevel.castleHP * castleMul);

@@ -19,14 +19,15 @@ const XP_CURVE = [30, 50, 75, 100, 130];
 const MAX_LEVEL = 1 + XP_CURVE.length;
 
 export class Hero {
-  constructor(scene, position) {
+  constructor(scene, position, options = {}) {
     this.scene = scene;
+    this.skinAsset = options.skinAsset || "knight";
 
     this.group = new THREE.Group();
     this.group.position.copy(position);
     scene.add(this.group);
 
-    const gltf = AssetLoader.get("knight");
+    const gltf = AssetLoader.get(this.skinAsset) || AssetLoader.get("knight");
     if (gltf && gltf.scene) {
       const cloned = cloneSkinned(gltf.scene);
       cloned.scale.setScalar(MODEL_SCALE);
@@ -40,7 +41,8 @@ export class Hero {
       addOutlineToScene(cloned, 1.04);
       this.group.add(cloned);
       this.anim = new AnimationController(cloned, gltf.animations);
-      this.anim.play("Idle");
+      const idleName = this.anim.has("Idle") ? "Idle" : (this.anim.has("Walk") ? "Walk" : null);
+      if (idleName) this.anim.play(idleName);
       this.model = cloned;
     } else {
       this._buildFallback();
@@ -83,6 +85,16 @@ export class Hero {
     if (bonuses.heroDamageMul) this.damageMul *= bonuses.heroDamageMul;
     if (bonuses.heroRangeMul) this.rangeMul *= bonuses.heroRangeMul;
     if (bonuses.heroFireRateMul) this.fireRateMul *= 1 / bonuses.heroFireRateMul;
+    if (bonuses.coinGainMul) this.coinGainMul *= bonuses.coinGainMul;
+    if (bonuses.xpMul) this.xpMul *= bonuses.xpMul;
+  }
+
+  applySkinBonuses(bonuses) {
+    if (!bonuses) return;
+    if (bonuses.damageMul) this.damageMul *= bonuses.damageMul;
+    if (bonuses.rangeMul) this.rangeMul *= bonuses.rangeMul;
+    if (bonuses.fireRateMul) this.fireRateMul *= 1 / bonuses.fireRateMul;
+    if (bonuses.moveSpeedMul) this.moveSpeedMul *= bonuses.moveSpeedMul;
     if (bonuses.coinGainMul) this.coinGainMul *= bonuses.coinGainMul;
     if (bonuses.xpMul) this.xpMul *= bonuses.xpMul;
   }
@@ -154,9 +166,13 @@ export class Hero {
       this.group.position.z += this.moveDir.y * moveSpeed * dt;
       this.group.position.x = Math.max(-BOUND_X, Math.min(BOUND_X, this.group.position.x));
       this.group.position.z = Math.max(-BOUND_Z, Math.min(BOUND_Z, this.group.position.z));
-      if (this.anim && this.anim.has("Run")) this.anim.play("Run");
-    } else if (this.anim && this.anim.has("Idle")) {
-      this.anim.play("Idle");
+      if (this.anim) {
+        const runName = this.anim.has("Run") ? "Run" : (this.anim.has("Walk") ? "Walk" : null);
+        if (runName) this.anim.play(runName);
+      }
+    } else if (this.anim) {
+      const idleName = this.anim.has("Idle") ? "Idle" : (this.anim.has("Walk") ? "Walk" : null);
+      if (idleName) this.anim.play(idleName);
     }
 
     const range = RANGE * this.rangeMul;
