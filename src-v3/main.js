@@ -7,6 +7,10 @@ import { Audio } from "./systems/Audio.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
+import {
+  META_UPGRADES, UPGRADE_TIERS, UPGRADE_MAX_LEVEL,
+  getCostForLevel, isTierUnlocked, RESET_COST_GEMS,
+} from "./data/metaUpgrades.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -242,6 +246,10 @@ const ui = {
   bossBannerName: document.getElementById("boss-banner-name"),
   bossBannerFill: document.getElementById("boss-banner-fill"),
   gems: document.getElementById("gems"),
+  shop: document.getElementById("shop"),
+  shopTiers: document.getElementById("shop-tiers"),
+  shopGems: document.getElementById("shop-gems"),
+  shopBtn: document.getElementById("shop-btn"),
 };
 
 let _bossRef = null;
@@ -506,7 +514,107 @@ window.addEventListener("keydown", (e) => {
     if (ui.worldmap.classList.contains("show")) closeWorldMap();
     else showWorldMap();
   }
+  if (e.code === "KeyU" && !e.repeat) {
+    if (ui.shop.classList.contains("show")) closeShop();
+    else showShop();
+  }
 });
+
+function renderShop() {
+  ui.shopGems.textContent = SaveSystem.getGems();
+  const tiersDiv = ui.shopTiers;
+  tiersDiv.innerHTML = "";
+  const byTier = { 1: [], 2: [], 3: [] };
+  for (const u of META_UPGRADES) byTier[u.tier].push(u);
+
+  for (const tier of [1, 2, 3]) {
+    const tierCfg = UPGRADE_TIERS[tier];
+    const unlocked = isTierUnlocked(tier, SaveSystem);
+    const tierDiv = document.createElement("div");
+    tierDiv.className = "shop-tier" + (unlocked ? "" : " locked");
+    const title = document.createElement("div");
+    title.className = "shop-tier-title";
+    title.textContent = tierCfg.name;
+    if (!unlocked) title.setAttribute("data-hint", tierCfg.unlockHint);
+    tierDiv.appendChild(title);
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    for (const u of byTier[tier]) {
+      grid.appendChild(buildShopCard(u, unlocked));
+    }
+    tierDiv.appendChild(grid);
+    tiersDiv.appendChild(tierDiv);
+  }
+}
+
+function buildShopCard(upgrade, tierUnlocked) {
+  const lvl = SaveSystem.getUpgradeLevel(upgrade.id);
+  const maxed = lvl >= UPGRADE_MAX_LEVEL;
+  const card = document.createElement("div");
+  card.className = `shop-card cat-${upgrade.category}` + (maxed ? " maxed" : "") + (tierUnlocked ? "" : " locked");
+  const nextCost = maxed ? null : getCostForLevel(lvl);
+  const canAfford = nextCost != null && SaveSystem.getGems() >= nextCost;
+  const canBuy = tierUnlocked && !maxed && canAfford;
+  const canReset = tierUnlocked && lvl > 0 && SaveSystem.getGems() >= RESET_COST_GEMS;
+
+  const pips = [];
+  for (let i = 0; i < UPGRADE_MAX_LEVEL; i++) {
+    pips.push(`<div class="pip${i < lvl ? " filled" : ""}"></div>`);
+  }
+  const currentEffect = lvl > 0 ? upgrade.perLevelLabel[lvl - 1] : "—";
+  const nextEffect = maxed ? "MAX" : upgrade.perLevelLabel[lvl];
+
+  card.innerHTML = `
+    <div class="row1">
+      <div class="icon">${upgrade.icon}</div>
+      <div class="name">${upgrade.name}</div>
+      <div class="level-pips">${pips.join("")}</div>
+    </div>
+    <div class="desc">${upgrade.description}<br><strong>Actuel :</strong> ${currentEffect} → <strong>Prochain :</strong> ${nextEffect}</div>
+    <div class="actions">
+      <button class="upgrade-btn" data-id="${upgrade.id}" ${canBuy ? "" : "disabled"}>${maxed ? "MAX" : `${nextCost} 💎`}</button>
+      <button class="reset-btn" data-id="${upgrade.id}" ${canReset ? "" : "disabled"} title="Reset (${RESET_COST_GEMS}💎)">↺</button>
+    </div>
+  `;
+  const upgradeBtn = card.querySelector(".upgrade-btn");
+  upgradeBtn.addEventListener("click", () => {
+    if (!canBuy) return;
+    if (!SaveSystem.spendGems(nextCost)) return;
+    SaveSystem.setUpgradeLevel(upgrade.id, lvl + 1);
+    document.dispatchEvent(new CustomEvent("crowdef:upgrade-purchased", { detail: { id: upgrade.id, level: lvl + 1 } }));
+    renderShop();
+    refreshHUD();
+  });
+  const resetBtn = card.querySelector(".reset-btn");
+  resetBtn.addEventListener("click", () => {
+    if (!canReset) return;
+    if (!SaveSystem.spendGems(RESET_COST_GEMS)) return;
+    const refund = [0, 5, 20, 60][lvl] || 0;
+    SaveSystem.addGems(refund);
+    SaveSystem.resetUpgrade(upgrade.id);
+    document.dispatchEvent(new CustomEvent("crowdef:upgrade-reset", { detail: { id: upgrade.id, refund } }));
+    renderShop();
+    refreshHUD();
+  });
+  return card;
+}
+
+function showShop() {
+  if (ui.briefing.classList.contains("show")) return;
+  renderShop();
+  ui.shop.classList.add("show");
+  runner.pause();
+}
+
+function closeShop() {
+  ui.shop.classList.remove("show");
+  if (!ui.result.classList.contains("show") && !ui.briefing.classList.contains("show") && !ui.perkOverlay.classList.contains("show") && !ui.worldmap.classList.contains("show")) {
+    runner.resume();
+  }
+}
+
+ui.shopBtn.addEventListener("click", showShop);
+ui.shop.querySelector('button[data-action="close"]').addEventListener("click", closeShop);
 
 let _briefingTimer = null;
 let _briefingDisabled = false;
@@ -657,5 +765,15 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4a-c1",
+  version: "j4a-c2",
+  shop: {
+    open: () => showShop(),
+    close: () => closeShop(),
+    isOpen: () => ui.shop.classList.contains("show"),
+    buy: (id) => {
+      if (!ui.shop.classList.contains("show")) showShop();
+      const btn = ui.shopTiers.querySelector(`.upgrade-btn[data-id="${id}"]`);
+      if (btn && !btn.disabled) btn.click();
+    },
+  },
 };
