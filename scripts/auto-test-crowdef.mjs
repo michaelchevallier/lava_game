@@ -100,7 +100,10 @@ await page.evaluate(() => {
   };
 });
 
-await page.evaluate((speed) => { window.__cd.runner.setSpeed(speed); }, SPEED);
+await page.evaluate((speed) => {
+  window.__cd.runner.setSpeed(speed);
+  if (window.__cd.skipBriefing) window.__cd.skipBriefing();
+}, SPEED);
 
 log(`autopilot run (speed ${SPEED}× max ${MAX_REAL_MS}ms)`);
 const result = await page.evaluate(async (maxRealMs) => {

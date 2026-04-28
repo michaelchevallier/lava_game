@@ -108,6 +108,21 @@
       .overlay#gameover h2 { color: #ff7a55; }
       .overlay#victory .panel { border-color: #ffd23f; }
       .overlay#victory h2 { color: #ffe273; }
+      .overlay#result .panel { border-color: #5fe079; min-width: 360px; }
+      .overlay#result h2 { color: #aae5b3; }
+      .overlay#result.lost .panel { border-color: #c63a10; }
+      .overlay#result.lost h2 { color: #ff7a55; }
+      .overlay#briefing { background: rgba(8,12,18,0.65); }
+      .overlay#briefing .panel { border-color: #66ccff; min-width: 320px; }
+      .overlay#briefing h2 { color: #aae5ff; }
+      #briefing-countdown { font-size: 60px; font-weight: 900; color: #ffe273; text-shadow: 0 4px 0 #000; }
+
+      .stars-row { display: flex; gap: 8px; justify-content: center; margin: 14px 0; }
+      .star {
+        font-size: 42px; line-height: 1; opacity: 0.25; transform: scale(0.8);
+        transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .star.earned { opacity: 1; transform: scale(1.1); color: #ffd23f; text-shadow: 0 0 12px rgba(255,210,63,0.6); }
       .overlay .panel .stats { margin: 14px 0; font-size: 16px; opacity: 0.9; }
       .overlay .panel .actions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
       .overlay .panel .actions button {
@@ -206,22 +221,31 @@
     <div id="touch-zone"></div>
     <div id="joystick"><div id="joystick-knob"></div></div>
 
-    <div id="gameover" class="overlay">
+    <div id="briefing" class="overlay">
       <div class="panel">
-        <h2>Château tombé</h2>
-        <div class="stats">Vague atteinte : <strong id="gameover-wave">—</strong></div>
-        <div class="actions">
-          <button class="primary" data-action="restart">Recommencer</button>
-        </div>
+        <h2 id="briefing-name">—</h2>
+        <div class="stats" id="briefing-text">—</div>
+        <div id="briefing-countdown">3</div>
       </div>
     </div>
 
-    <div id="victory" class="overlay">
+    <div id="result" class="overlay">
       <div class="panel">
-        <h2>Victoire !</h2>
-        <div class="stats">Château : <strong id="victory-castle">—</strong> · Vagues : <strong id="victory-wave">—</strong></div>
+        <h2 id="result-title">Victoire !</h2>
+        <div class="stars-row">
+          <span class="star" id="star-1">★</span>
+          <span class="star" id="star-2">★</span>
+          <span class="star" id="star-3">★</span>
+        </div>
+        <div class="stats">
+          Château : <strong id="result-castle">—</strong> ·
+          Vagues : <strong id="result-wave">—</strong> ·
+          Or final : <strong id="result-coins">—</strong>
+        </div>
         <div class="actions">
+          <button data-action="map" id="result-map-btn">Carte</button>
           <button class="primary" data-action="restart">Rejouer</button>
+          <button class="primary" data-action="next" id="result-next-btn">Niveau suivant</button>
         </div>
       </div>
     </div>

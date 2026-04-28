@@ -224,18 +224,26 @@ export class LevelRunner {
     this.hero = null;
   }
 
-  restart() {
+  loadLevel(newLevel) {
     this.dispose();
+    this.level = newLevel;
     this.state = "play";
-    this.castleHP = this.castleHPMax;
-    this.coins = this.level.startCoins;
+    this.castleHP = newLevel.castleHP;
+    this.castleHPMax = newLevel.castleHP;
+    this.coins = newLevel.startCoins;
     this.wave = 1;
     this.gameTime = 0;
+    this.paused = false;
     this._waveActive = true;
     this._spawnTimer = 0;
     this._waveBreakTimer = 0;
     this._initWave(0);
     this.setup();
+    emit("crowdef:level-loaded", { levelId: newLevel.id });
+  }
+
+  restart() {
+    this.loadLevel(this.level);
     emit("crowdef:level-restart", { level: this.level.id });
   }
 }

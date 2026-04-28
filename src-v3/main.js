@@ -8,6 +8,7 @@ import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
 import world1_1 from "./data/levels/world1-1.js";
+import { getLevel, getNextLevelId } from "./data/levels/index.js";
 
 SaveSystem.load();
 Audio.setMuted(SaveSystem.isMuted());
@@ -101,28 +102,50 @@ JuiceFX.init();
 const runner = new LevelRunner(scene, world1_1);
 runner.setup();
 
-const pathLine = makePathLine(runner.path, dirtMat);
-scene.add(pathLine);
+let pathLine = null;
+let castle = null;
 
-const castle = new THREE.Group();
-const castleBase = new THREE.Mesh(
-  new THREE.BoxGeometry(3, 1.2, 3),
-  new THREE.MeshLambertMaterial({ color: 0xdcdcdc }),
-);
-castleBase.position.y = 0.6;
-castleBase.castShadow = true;
-castle.add(castleBase);
-const castleRoof = new THREE.Mesh(
-  new THREE.ConeGeometry(2.2, 1.6, 4),
-  new THREE.MeshLambertMaterial({ color: 0x3a6abf }),
-);
-castleRoof.position.y = 1.2 + 0.8;
-castleRoof.rotation.y = Math.PI / 4;
-castleRoof.castShadow = true;
-castle.add(castleRoof);
-const endPoint = runner.path.getPointAt(1);
-castle.position.set(endPoint.x, 0, endPoint.z);
-scene.add(castle);
+function disposeMeshGroup(group) {
+  if (!group) return;
+  scene.remove(group);
+  group.traverse((c) => {
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) {
+      if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+      else c.material.dispose();
+    }
+  });
+}
+
+function rebuildLevelDecor() {
+  disposeMeshGroup(pathLine);
+  disposeMeshGroup(castle);
+
+  pathLine = makePathLine(runner.path, dirtMat);
+  scene.add(pathLine);
+
+  castle = new THREE.Group();
+  const castleBase = new THREE.Mesh(
+    new THREE.BoxGeometry(3, 1.2, 3),
+    new THREE.MeshLambertMaterial({ color: 0xdcdcdc }),
+  );
+  castleBase.position.y = 0.6;
+  castleBase.castShadow = true;
+  castle.add(castleBase);
+  const castleRoof = new THREE.Mesh(
+    new THREE.ConeGeometry(2.2, 1.6, 4),
+    new THREE.MeshLambertMaterial({ color: 0x3a6abf }),
+  );
+  castleRoof.position.y = 1.2 + 0.8;
+  castleRoof.rotation.y = Math.PI / 4;
+  castleRoof.castShadow = true;
+  castle.add(castleRoof);
+  const endPoint = runner.path.getPointAt(1);
+  castle.position.set(endPoint.x, 0, endPoint.z);
+  scene.add(castle);
+}
+
+rebuildLevelDecor();
 
 const keys = { w: 0, a: 0, s: 0, d: 0 };
 window.addEventListener("keydown", (e) => {
@@ -189,11 +212,20 @@ const ui = {
   castleHpMax: document.getElementById("castle-hp-max"),
   castleHpFill: document.getElementById("castle-hp-fill"),
   castleHpBox: document.getElementById("castle-hp"),
-  gameover: document.getElementById("gameover"),
-  victory: document.getElementById("victory"),
-  gameoverWave: document.getElementById("gameover-wave"),
-  victoryCastle: document.getElementById("victory-castle"),
-  victoryWave: document.getElementById("victory-wave"),
+  briefing: document.getElementById("briefing"),
+  briefingName: document.getElementById("briefing-name"),
+  briefingText: document.getElementById("briefing-text"),
+  briefingCountdown: document.getElementById("briefing-countdown"),
+  result: document.getElementById("result"),
+  resultTitle: document.getElementById("result-title"),
+  resultCastle: document.getElementById("result-castle"),
+  resultWave: document.getElementById("result-wave"),
+  resultCoins: document.getElementById("result-coins"),
+  resultMapBtn: document.getElementById("result-map-btn"),
+  resultNextBtn: document.getElementById("result-next-btn"),
+  star1: document.getElementById("star-1"),
+  star2: document.getElementById("star-2"),
+  star3: document.getElementById("star-3"),
   heroLevel: document.getElementById("hero-level"),
   heroXp: document.getElementById("hero-xp"),
   heroXpNext: document.getElementById("hero-xpnext"),
@@ -243,27 +275,63 @@ function spawnDamagePopup(dmg) {
   setTimeout(() => popup.remove(), 900);
 }
 
+function computeStars(castleHP, castleHPMax) {
+  if (castleHP <= 0) return 0;
+  const ratio = castleHP / castleHPMax;
+  if (ratio >= 0.95) return 3;
+  if (ratio >= 0.5) return 2;
+  return 1;
+}
+
+function showResult(won, detail) {
+  const stars = won ? computeStars(detail.castleHP, detail.castleHPMax) : 0;
+  ui.resultTitle.textContent = won ? "Victoire !" : "Château tombé";
+  ui.result.classList.toggle("lost", !won);
+  ui.resultCastle.textContent = won ? `${Math.ceil(detail.castleHP)}/${detail.castleHPMax}` : `0/${detail.castleHPMax || runner.castleHPMax}`;
+  ui.resultWave.textContent = detail.wave;
+  ui.resultCoins.textContent = Math.floor(runner.coins);
+
+  ui.star1.classList.toggle("earned", stars >= 1);
+  ui.star2.classList.toggle("earned", stars >= 2);
+  ui.star3.classList.toggle("earned", stars >= 3);
+
+  ui.resultNextBtn.disabled = !won;
+  ui.resultNextBtn.style.display = won ? "" : "none";
+
+  ui.result.classList.add("show");
+
+  SaveSystem.recordWaveReached(detail.wave);
+  SaveSystem.recordLevelDone(runner.level.id, {
+    win: won,
+    wave: detail.wave,
+    castleHP: won ? detail.castleHP : 0,
+    stars,
+  });
+}
+
 document.addEventListener("crowdef:level-lost", (e) => {
-  ui.gameoverWave.textContent = e.detail.wave;
-  ui.gameover.classList.add("show");
-  SaveSystem.recordWaveReached(e.detail.wave);
-  SaveSystem.recordLevelDone(runner.level.id, { win: false, wave: e.detail.wave, castleHP: 0 });
+  showResult(false, { wave: e.detail.wave, castleHPMax: runner.castleHPMax });
 });
 
 document.addEventListener("crowdef:level-won", (e) => {
-  ui.victoryCastle.textContent = `${Math.ceil(e.detail.castleHP)}/${e.detail.castleHPMax}`;
-  ui.victoryWave.textContent = e.detail.wave;
-  ui.victory.classList.add("show");
-  SaveSystem.recordWaveReached(e.detail.wave);
-  SaveSystem.recordLevelDone(runner.level.id, { win: true, wave: e.detail.wave, castleHP: e.detail.castleHP });
+  showResult(true, e.detail);
 });
 
 document.addEventListener("crowdef:level-restart", () => {
-  ui.gameover.classList.remove("show");
-  ui.victory.classList.remove("show");
+  ui.result.classList.remove("show");
   ui.perkOverlay.classList.remove("show");
   _perkQueue = 0;
   refreshHUD();
+  showBriefing(runner.level);
+});
+
+document.addEventListener("crowdef:level-loaded", () => {
+  ui.result.classList.remove("show");
+  ui.perkOverlay.classList.remove("show");
+  _perkQueue = 0;
+  rebuildLevelDecor();
+  refreshHUD();
+  showBriefing(runner.level);
 });
 
 let _perkQueue = 0;
@@ -309,12 +377,61 @@ function showNextPerkChoice() {
   ui.perkOverlay.classList.add("show");
 }
 
-ui.gameover.querySelector('button[data-action="restart"]').addEventListener("click", () => {
+ui.result.querySelector('button[data-action="restart"]').addEventListener("click", () => {
   runner.restart();
 });
-ui.victory.querySelector('button[data-action="restart"]').addEventListener("click", () => {
-  runner.restart();
+ui.result.querySelector('button[data-action="next"]').addEventListener("click", () => {
+  const nextId = getNextLevelId(runner.level.id);
+  const next = nextId ? getLevel(nextId) : null;
+  if (next) runner.loadLevel(next);
+  else runner.restart();
 });
+ui.result.querySelector('button[data-action="map"]').addEventListener("click", () => {
+  document.dispatchEvent(new CustomEvent("crowdef:show-map"));
+});
+
+let _briefingTimer = null;
+let _briefingDisabled = false;
+function showBriefing(level) {
+  if (_briefingTimer) {
+    clearInterval(_briefingTimer);
+    _briefingTimer = null;
+  }
+  if (_briefingDisabled) {
+    ui.briefing.classList.remove("show");
+    runner.resume();
+    return;
+  }
+  ui.briefingName.textContent = level.name || level.id;
+  ui.briefingText.textContent = level.briefing || "";
+  ui.briefing.classList.add("show");
+  runner.pause();
+  let count = 3;
+  ui.briefingCountdown.textContent = count;
+  _briefingTimer = setInterval(() => {
+    count--;
+    if (count <= 0) {
+      clearInterval(_briefingTimer);
+      _briefingTimer = null;
+      ui.briefing.classList.remove("show");
+      runner.resume();
+    } else {
+      ui.briefingCountdown.textContent = count;
+    }
+  }, 800);
+}
+
+function skipBriefing() {
+  _briefingDisabled = true;
+  if (_briefingTimer) {
+    clearInterval(_briefingTimer);
+    _briefingTimer = null;
+  }
+  ui.briefing.classList.remove("show");
+  runner.resume();
+}
+
+showBriefing(runner.level);
 
 const muteBtn = document.getElementById("mute-btn");
 function refreshMuteUI() {
@@ -416,5 +533,10 @@ window.__cd = {
     if (cards[idx]) cards[idx].click();
   },
   isPerkOpen: () => ui.perkOverlay.classList.contains("show"),
-  version: "j2-c4",
+  skipBriefing: () => skipBriefing(),
+  loadLevel: (id) => {
+    const lvl = getLevel(id);
+    if (lvl) runner.loadLevel(lvl);
+  },
+  version: "j3-c1",
 };
