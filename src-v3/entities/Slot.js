@@ -114,7 +114,8 @@ export class Slot {
     const targetGlowAlpha = inside ? 0.35 : 0.12;
     this.glow.material.opacity += (targetGlowAlpha - this.glow.material.opacity) * 0.15;
 
-    const targetCost = this.upgradeCosts[this.currentLevel];
+    const discount = (this.currentLevel > 0 && runner.metaBonuses) ? (runner.metaBonuses.towerUpgradeDiscount || 0) : 0;
+    const targetCost = Math.round(this.upgradeCosts[this.currentLevel] * (1 - discount));
     if (inside && runner.coins > 0 && this.paidThisLevel < targetCost) {
       const drain = Math.min(runner.coins, BUILD_DRAIN_PER_SEC * dt);
       runner.coins -= drain;

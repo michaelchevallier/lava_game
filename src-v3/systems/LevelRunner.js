@@ -7,6 +7,7 @@ import { Hero } from "../entities/Hero.js";
 import { Enemy, ENEMY_TYPES } from "../entities/Enemy.js";
 import { Slot } from "../entities/Slot.js";
 import { SaveSystem } from "./SaveSystem.js";
+import { computeActiveBonuses } from "../data/metaUpgrades.js";
 
 function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail }));
@@ -17,11 +18,15 @@ export class LevelRunner {
     this.scene = scene;
     this.level = level;
     this.deps = deps;
+    this.metaBonuses = computeActiveBonuses(SaveSystem);
+
+    const castleMul = this.metaBonuses.castleHPMul || 1;
+    const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
 
     this.state = "play";
-    this.castleHP = level.castleHP;
-    this.castleHPMax = level.castleHP;
-    this.coins = level.startCoins;
+    this.castleHP = Math.round(level.castleHP * castleMul);
+    this.castleHPMax = Math.round(level.castleHP * castleMul);
+    this.coins = level.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
     this.gameSpeed = 1;
@@ -70,6 +75,7 @@ export class LevelRunner {
 
     const heroPos = new THREE.Vector3(...(this.level.heroSpawn || [-2, 0, -1]));
     this.hero = new Hero(this.scene, heroPos);
+    this.hero.applyMetaBonuses(this.metaBonuses);
 
     for (const cfg of this.level.slots) {
       this.slots.push(new Slot(this.scene, this.path, cfg));
@@ -148,8 +154,10 @@ export class LevelRunner {
           if (cfg.isBoss) gems = 20;
           else if (cfg.isMidBoss) gems = 5;
           if (gems > 0) {
-            const total = SaveSystem.addGems(gems);
-            emit("crowdef:gems-gained", { amount: gems, total, source: e.type });
+            const mul = this.metaBonuses.gemGainMul || 1;
+            const finalGems = Math.round(gems * mul);
+            const total = SaveSystem.addGems(finalGems);
+            emit("crowdef:gems-gained", { amount: finalGems, total, source: e.type });
           }
         }
         Particles.emit(
@@ -238,10 +246,13 @@ export class LevelRunner {
   loadLevel(newLevel) {
     this.dispose();
     this.level = newLevel;
+    this.metaBonuses = computeActiveBonuses(SaveSystem);
+    const castleMul = this.metaBonuses.castleHPMul || 1;
+    const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
     this.state = "play";
-    this.castleHP = newLevel.castleHP;
-    this.castleHPMax = newLevel.castleHP;
-    this.coins = newLevel.startCoins;
+    this.castleHP = Math.round(newLevel.castleHP * castleMul);
+    this.castleHPMax = Math.round(newLevel.castleHP * castleMul);
+    this.coins = newLevel.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
     this.paused = false;

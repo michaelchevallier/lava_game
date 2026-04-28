@@ -418,7 +418,8 @@ document.addEventListener("crowdef:hero-levelup", (e) => {
 
 function showNextPerkChoice() {
   if (_perkQueue <= 0 || !runner.hero) return;
-  const choices = rollPerkChoices(runner.hero, 3);
+  const perkCount = (runner.metaBonuses && runner.metaBonuses.perkChoiceCount) || 3;
+  const choices = rollPerkChoices(runner.hero, perkCount);
   if (!choices.length) {
     _perkQueue = 0;
     return;
@@ -765,7 +766,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4a-c2",
+  version: "j4a-c3",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

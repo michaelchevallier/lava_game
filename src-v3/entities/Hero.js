@@ -75,11 +75,21 @@ export class Hero {
     this.pierceCount = 0;
     this.lifesteal = 0;
     this.waveRegen = 0;
+    this.xpMul = 1;
+  }
+
+  applyMetaBonuses(bonuses) {
+    if (!bonuses) return;
+    if (bonuses.heroDamageMul) this.damageMul *= bonuses.heroDamageMul;
+    if (bonuses.heroRangeMul) this.rangeMul *= bonuses.heroRangeMul;
+    if (bonuses.heroFireRateMul) this.fireRateMul *= 1 / bonuses.heroFireRateMul;
+    if (bonuses.coinGainMul) this.coinGainMul *= bonuses.coinGainMul;
+    if (bonuses.xpMul) this.xpMul *= bonuses.xpMul;
   }
 
   gainXp(amount) {
     if (this.level >= this.maxLevel) return;
-    this.xp += amount;
+    this.xp += Math.max(1, Math.round(amount * (this.xpMul || 1)));
     while (this.xp >= this.xpToNext && this.level < this.maxLevel) {
       this.xp -= this.xpToNext;
       this.level++;
