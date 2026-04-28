@@ -180,50 +180,95 @@ touchZone.addEventListener("touchmove", (e) => { e.preventDefault(); joyMove(e);
 touchZone.addEventListener("touchend", (e) => { e.preventDefault(); joyEnd(); }, { passive: false });
 touchZone.addEventListener("touchcancel", joyEnd);
 
-// ─── Spawn points (clickable tower slots along the path)
-const towerSlots = [
-  { t: 0.30, cost: 25 },
-  { t: 0.50, cost: 35 },
-  { t: 0.70, cost: 50 },
+// ─── Tower slots — proximity-build (Kingshot-ad style)
+//   Hero rentre dans le cercle → l'or coule → la tour se construit
+const SLOT_RADIUS = 1.6;
+const BUILD_DRAIN_PER_SEC = 30; // ¢/sec when hero stands inside
+const towerSlotsConfig = [
+  { t: 0.28, cost: 30 },
+  { t: 0.50, cost: 50 },
+  { t: 0.72, cost: 75 },
 ];
+
+function makeLabelSprite(text) {
+  const canvas2 = document.createElement("canvas");
+  canvas2.width = 256; canvas2.height = 96;
+  const ctx2 = canvas2.getContext("2d");
+  ctx2.fillStyle = "rgba(20,28,36,0.88)";
+  ctx2.fillRect(0, 0, 256, 96);
+  ctx2.strokeStyle = "#ffd23f";
+  ctx2.lineWidth = 6;
+  ctx2.strokeRect(3, 3, 250, 90);
+  ctx2.fillStyle = "#ffd23f";
+  ctx2.font = "bold 60px system-ui";
+  ctx2.textAlign = "center";
+  ctx2.textBaseline = "middle";
+  ctx2.fillText(text, 128, 48);
+  const tex = new THREE.CanvasTexture(canvas2);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return { tex, canvas: canvas2, ctx: ctx2 };
+}
+
+function updateLabelSprite(spriteData, text) {
+  const { ctx, canvas, tex } = spriteData;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(20,28,36,0.88)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#ffd23f";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
+  ctx.fillStyle = "#ffd23f";
+  ctx.font = "bold 60px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  tex.needsUpdate = true;
+}
+
 const slots = [];
-for (const s of towerSlots) {
+for (const s of towerSlotsConfig) {
   const p = path.getPointAt(s.t);
-  const offset = path.getTangentAt(s.t).cross(new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(2.2);
+  const offset = path.getTangentAt(s.t).cross(new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(2.4);
   const pos = p.clone().add(offset);
 
+  // Outer ring (footprint, dashed-feel via larger radius)
   const ring = new THREE.Mesh(
-    new THREE.RingGeometry(0.6, 0.95, 24),
-    new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+    new THREE.RingGeometry(SLOT_RADIUS - 0.15, SLOT_RADIUS, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
   );
   ring.rotation.x = -Math.PI / 2;
   ring.position.set(pos.x, 0.02, pos.z);
   scene.add(ring);
 
-  // Floating cost label as sprite
-  const canvas2 = document.createElement("canvas");
-  canvas2.width = 128; canvas2.height = 64;
-  const ctx2 = canvas2.getContext("2d");
-  ctx2.fillStyle = "rgba(20,28,36,0.85)";
-  ctx2.fillRect(0, 0, 128, 64);
-  ctx2.strokeStyle = "#ffd23f";
-  ctx2.lineWidth = 4;
-  ctx2.strokeRect(2, 2, 124, 60);
-  ctx2.fillStyle = "#ffd23f";
-  ctx2.font = "bold 36px system-ui";
-  ctx2.textAlign = "center";
-  ctx2.textBaseline = "middle";
-  ctx2.fillText("🪙" + s.cost, 64, 32);
+  // Inner fill ring — grows as build progresses
+  const fill = new THREE.Mesh(
+    new THREE.CircleGeometry(SLOT_RADIUS - 0.2, 32, 0, 0.001),
+    new THREE.MeshBasicMaterial({ color: 0x66ddaa, transparent: true, opacity: 0.5, side: THREE.DoubleSide }),
+  );
+  fill.rotation.x = -Math.PI / 2;
+  fill.position.set(pos.x, 0.025, pos.z);
+  scene.add(fill);
 
-  const tex = new THREE.CanvasTexture(canvas2);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const labelMat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+  // Floor glow (pulse when hero approaches)
+  const glow = new THREE.Mesh(
+    new THREE.CircleGeometry(SLOT_RADIUS, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.12, side: THREE.DoubleSide }),
+  );
+  glow.rotation.x = -Math.PI / 2;
+  glow.position.set(pos.x, 0.015, pos.z);
+  scene.add(glow);
+
+  const labelData = makeLabelSprite("🪙" + s.cost);
+  const labelMat = new THREE.SpriteMaterial({ map: labelData.tex, depthTest: false });
   const label = new THREE.Sprite(labelMat);
-  label.position.set(pos.x, 1.5, pos.z);
-  label.scale.set(2, 1, 1);
+  label.position.set(pos.x, 1.6, pos.z);
+  label.scale.set(2.2, 0.85, 1);
   scene.add(label);
 
-  slots.push({ pos, ring, label, cost: s.cost, tower: null, t: s.t });
+  slots.push({
+    pos, ring, fill, glow, label, labelData,
+    cost: s.cost, paid: 0, tower: null, t: s.t,
+  });
 }
 
 // ─── State
@@ -252,29 +297,54 @@ function refreshUI() {
 }
 refreshUI();
 
-// ─── Click handling for tower placement
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-canvas.addEventListener("pointerdown", (e) => {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
+// ─── Proximity-build : hero entre dans le cercle, l'or s'écoule, la tour se monte
+function updateBuilds(dt) {
   for (const slot of slots) {
     if (slot.tower) continue;
-    const intersects = raycaster.intersectObject(slot.ring);
-    if (intersects.length > 0) {
-      if (state.coins < slot.cost) return;
-      state.coins -= slot.cost;
+    const dx = hero.group.position.x - slot.pos.x;
+    const dz = hero.group.position.z - slot.pos.z;
+    const inside = (dx * dx + dz * dz) < SLOT_RADIUS * SLOT_RADIUS;
+
+    // Pulse glow
+    const targetGlowAlpha = inside ? 0.35 : 0.12;
+    slot.glow.material.opacity += (targetGlowAlpha - slot.glow.material.opacity) * 0.15;
+
+    if (inside && state.coins > 0) {
+      const drain = Math.min(state.coins, BUILD_DRAIN_PER_SEC * dt);
+      state.coins -= drain;
+      slot.paid += drain;
+      if (slot.paid >= slot.cost) slot.paid = slot.cost;
+      refreshUI();
+    }
+
+    // Update fill arc (CircleGeometry-like)
+    const ratio = slot.paid / slot.cost;
+    if (slot.fill._lastRatio !== ratio) {
+      slot.fill._lastRatio = ratio;
+      slot.fill.geometry.dispose();
+      const angle = Math.max(0.001, Math.PI * 2 * ratio);
+      slot.fill.geometry = new THREE.CircleGeometry(SLOT_RADIUS - 0.2, 32, -Math.PI / 2, -angle);
+    }
+
+    // Update label : remaining cost
+    const remaining = Math.max(0, Math.ceil(slot.cost - slot.paid));
+    if (slot.labelData._lastText !== remaining) {
+      slot.labelData._lastText = remaining;
+      updateLabelSprite(slot.labelData, "🪙" + remaining);
+    }
+
+    // Build complete → spawn tower
+    if (slot.paid >= slot.cost) {
       const tower = new Tower(scene, slot.pos.clone());
       slot.tower = tower;
       state.towers.push(tower);
       scene.remove(slot.ring);
+      scene.remove(slot.fill);
+      scene.remove(slot.glow);
       scene.remove(slot.label);
-      refreshUI();
-      return;
     }
   }
-});
+}
 
 // ─── Game loop
 const clock = new THREE.Clock();
@@ -333,6 +403,9 @@ function tick() {
 
   // Update hero (auto-aim closest enemy + movement)
   hero.tick(dt, state.enemies);
+
+  // Proximity-build : hero rentre dans un slot → l'or coule
+  updateBuilds(dt);
 
   // Update towers
   for (const t of state.towers) t.tick(dt, state.enemies);
