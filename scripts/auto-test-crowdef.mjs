@@ -69,8 +69,10 @@ await page.evaluate(() => {
   const types = [
     "crowdef:wave-start", "crowdef:wave-cleared",
     "crowdef:enemy-killed", "crowdef:tower-built",
-    "crowdef:castle-hit", "crowdef:level-won",
-    "crowdef:level-lost", "crowdef:level-restart",
+    "crowdef:tower-upgraded", "crowdef:hero-levelup",
+    "crowdef:perk-picked", "crowdef:castle-hit",
+    "crowdef:level-won", "crowdef:level-lost",
+    "crowdef:level-restart",
   ];
   for (const t of types) {
     document.addEventListener(t, (e) => {
@@ -105,7 +107,6 @@ const result = await page.evaluate(async (maxRealMs) => {
   const cd = window.__cd;
   const start = performance.now();
   return new Promise((resolve) => {
-    let slotIndex = 0;
     const tick = () => {
       const elapsed = performance.now() - start;
       if (elapsed > maxRealMs) {
@@ -121,16 +122,17 @@ const result = await page.evaluate(async (maxRealMs) => {
         return;
       }
 
-      const slot = cd.runner.slots[Math.min(slotIndex, cd.runner.slots.length - 1)];
-      if (!slot || slot.tower) {
-        slotIndex++;
-        if (slotIndex >= cd.runner.slots.length) {
-          window.__cdInput.dx = 0; window.__cdInput.dz = 0;
-        }
+      let target = null;
+      for (const s of cd.runner.slots) {
+        if (s.currentLevel < s.maxLevel) { target = s; break; }
+      }
+
+      if (!target) {
+        window.__cdInput.dx = 0; window.__cdInput.dz = 0;
       } else {
         const hp = cd.runner.hero.group.position;
-        const dx = slot.pos.x - hp.x;
-        const dz = slot.pos.z - hp.z;
+        const dx = target.pos.x - hp.x;
+        const dz = target.pos.z - hp.z;
         const dist = Math.hypot(dx, dz);
         if (dist > 0.05) {
           window.__cdInput.dx = dx / dist;
@@ -184,6 +186,9 @@ allOk &= pass(`console errors = 0`, consoleErrors.length === 0, `(got ${consoleE
 allOk &= pass(`runner reached terminal state`, summary.state === "won" || summary.state === "lost", `(state=${summary.state})`);
 allOk &= pass(`enemies killed >= 5`, (summary.counts["crowdef:enemy-killed"] || 0) >= 5, `(got ${summary.counts["crowdef:enemy-killed"] || 0})`);
 allOk &= pass(`towers built >= 1`, (summary.counts["crowdef:tower-built"] || 0) >= 1, `(got ${summary.counts["crowdef:tower-built"] || 0})`);
+allOk &= pass(`hero level-ups >= 1`, (summary.counts["crowdef:hero-levelup"] || 0) >= 1, `(got ${summary.counts["crowdef:hero-levelup"] || 0})`);
+allOk &= pass(`perks picked >= 1`, (summary.counts["crowdef:perk-picked"] || 0) >= 1, `(got ${summary.counts["crowdef:perk-picked"] || 0})`);
+allOk &= pass(`tower upgrades >= 1`, (summary.counts["crowdef:tower-upgraded"] || 0) >= 1, `(got ${summary.counts["crowdef:tower-upgraded"] || 0})`);
 // Seuil 15 — Chromium headless throttle + 50+ SkinnedMesh anim simultanés.
 // En prod desktop attendu 50+ FPS (à valider iPad J7).
 allOk &= pass(`fps avg >= 15 (headless w/ rigged crowd)`, summary.fpsAvg >= 15, `(got ${(summary.fpsAvg || 0).toFixed(1)})`);
