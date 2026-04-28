@@ -4,8 +4,9 @@ import { Particles } from "./Particles.js";
 import { JuiceFX } from "./JuiceFX.js";
 import { Audio } from "./Audio.js";
 import { Hero } from "../entities/Hero.js";
-import { Enemy } from "../entities/Enemy.js";
+import { Enemy, ENEMY_TYPES } from "../entities/Enemy.js";
 import { Slot } from "../entities/Slot.js";
+import { SaveSystem } from "./SaveSystem.js";
 
 function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail }));
@@ -139,6 +140,16 @@ export class LevelRunner {
           this.hero.gainXp(1);
           if (this.hero.lifesteal > 0) {
             this.castleHP = Math.min(this.castleHPMax, this.castleHP + this.hero.lifesteal);
+          }
+        }
+        const cfg = ENEMY_TYPES[e.type];
+        if (cfg) {
+          let gems = 0;
+          if (cfg.isBoss) gems = 20;
+          else if (cfg.isMidBoss) gems = 5;
+          if (gems > 0) {
+            const total = SaveSystem.addGems(gems);
+            emit("crowdef:gems-gained", { amount: gems, total, source: e.type });
           }
         }
         Particles.emit(

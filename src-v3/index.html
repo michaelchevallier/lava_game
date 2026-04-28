@@ -23,6 +23,13 @@
         padding: 6px 14px; font-size: 22px; font-weight: 700;
       }
       #coins::before { content: "🪙 "; }
+      #gems {
+        background: rgba(40,18,52,0.85); border: 2px solid #6a3aa0; border-radius: 12px;
+        padding: 6px 14px; font-size: 22px; font-weight: 700; color: #d8a8ff;
+      }
+      #gems::before { content: "💎 "; }
+      #gems.flash { animation: gems-flash 0.45s ease; }
+      @keyframes gems-flash { 0% { transform: scale(1); } 40% { transform: scale(1.18); border-color: #d8a8ff; } 100% { transform: scale(1); } }
       #wave { background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px; padding: 6px 14px; font-size: 16px; }
       #mute-btn {
         background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
@@ -278,6 +285,7 @@
           <button id="map-btn" type="button" aria-label="Carte des mondes" title="Carte (M)">🗺️</button>
           <button id="mute-btn" type="button" aria-label="Mute" title="Couper le son">🔊</button>
           <div id="coins">100</div>
+          <div id="gems">0</div>
         </div>
       </div>
       <div class="row">

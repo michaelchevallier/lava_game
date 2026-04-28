@@ -1,5 +1,5 @@
 const KEY = "crowdef:save";
-const VERSION = 1;
+const VERSION = 2;
 
 function defaultSave() {
   return {
@@ -8,6 +8,8 @@ function defaultSave() {
     bestWave: 0,
     lastLevel: "world1-1",
     levels: {},
+    gems: 0,
+    upgrades: {},
     lastPlayedAt: 0,
   };
 }
@@ -23,7 +25,13 @@ function ensureCached() {
       return cached;
     }
     const parsed = JSON.parse(raw);
-    cached = { ...defaultSave(), ...parsed, levels: { ...(parsed.levels || {}) } };
+    cached = {
+      ...defaultSave(),
+      ...parsed,
+      levels: { ...(parsed.levels || {}) },
+      upgrades: { ...(parsed.upgrades || {}) },
+      gems: parsed.gems || 0,
+    };
     if (cached.version !== VERSION) cached.version = VERSION;
     return cached;
   } catch (e) {
@@ -104,6 +112,35 @@ export const SaveSystem = {
     if (idx <= 0) return true;
     const prevId = levelOrder[idx - 1];
     return this.isLevelComplete(prevId);
+  },
+
+  getGems() { return ensureCached().gems || 0; },
+  addGems(n) {
+    const s = ensureCached();
+    s.gems = Math.max(0, (s.gems || 0) + n);
+    persist();
+    return s.gems;
+  },
+  spendGems(n) {
+    const s = ensureCached();
+    if ((s.gems || 0) < n) return false;
+    s.gems -= n;
+    persist();
+    return true;
+  },
+
+  getUpgradeLevel(id) {
+    return ensureCached().upgrades[id] || 0;
+  },
+  setUpgradeLevel(id, level) {
+    const s = ensureCached();
+    s.upgrades[id] = Math.max(0, level);
+    persist();
+  },
+  resetUpgrade(id) {
+    const s = ensureCached();
+    delete s.upgrades[id];
+    persist();
   },
 
   reset() {

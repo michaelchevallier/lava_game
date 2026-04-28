@@ -241,6 +241,7 @@ const ui = {
   bossBanner: document.getElementById("boss-banner"),
   bossBannerName: document.getElementById("boss-banner-name"),
   bossBannerFill: document.getElementById("boss-banner-fill"),
+  gems: document.getElementById("gems"),
 };
 
 let _bossRef = null;
@@ -267,6 +268,7 @@ function trackBossFromRunner() {
 
 function refreshHUD() {
   ui.coins.textContent = Math.floor(runner.coins);
+  ui.gems.textContent = SaveSystem.getGems();
   ui.wave.textContent = "Vague " + runner.wave;
   ui.castleHpMax.textContent = runner.castleHPMax;
   ui.castleHpCur.textContent = Math.max(0, Math.ceil(runner.castleHP));
@@ -285,6 +287,23 @@ function refreshHUD() {
   }
 }
 refreshHUD();
+document.addEventListener("crowdef:gems-gained", (e) => {
+  ui.gems.textContent = e.detail.total;
+  ui.gems.classList.remove("flash");
+  void ui.gems.offsetWidth;
+  ui.gems.classList.add("flash");
+  spawnGemsPopup(e.detail.amount);
+});
+function spawnGemsPopup(amount) {
+  const popup = document.createElement("div");
+  popup.className = "damage-popup";
+  popup.style.background = "rgba(106, 58, 160, 0.92)";
+  popup.style.borderColor = "#d8a8ff";
+  popup.style.color = "#fff";
+  popup.textContent = `+${amount} 💎`;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 900);
+}
 document.addEventListener("crowdef:boss-spawned", (e) => {
   ui.bossBannerName.textContent = e.detail.name || "BOSS";
   ui.bossBannerFill.style.width = "100%";
@@ -638,5 +657,5 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j3-c5",
+  version: "j4a-c1",
 };
