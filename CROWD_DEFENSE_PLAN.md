@@ -251,7 +251,7 @@ Trigger côté user : « on enchaîne J2 du plan `CROWD_DEFENSE_PLAN.md` ». Pas
 
 ## État des jalons
 
-- [ ] J1 — Foundation
+- [x] J1 — Foundation ([changelog](docs/changelog/J1-foundation.md))
 - [ ] J2 — Combat vivant
 - [ ] J3 — Monde 1
 - [ ] J4.A — Boutique + upgrades
