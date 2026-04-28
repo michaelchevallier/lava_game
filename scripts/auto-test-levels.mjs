@@ -37,7 +37,15 @@ process.on('exit', cleanup);
 process.on('SIGINT', () => { cleanup(); process.exit(); });
 
 console.log(`[runner] launching chromium`);
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  args: [
+    '--disable-background-timer-throttling',
+    '--disable-renderer-backgrounding',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-features=IntensiveWakeUpThrottling,CalculateNativeWinOcclusion',
+  ],
+});
 const page = await browser.newPage();
 
 page.on('pageerror', (err) => console.error(`[page error]`, err.message));
@@ -96,8 +104,22 @@ await page.evaluate(() => {
     const canPlace = (id) => def(id) && !tb.isOnCooldown(id) && canPay(id);
     const isEmpty = (col, row) => !s.gridState[row][col];
 
-    // pick offensive tile (lava preferred)
-    const offensive = ['lava', 'catapult', 'laser', 'neon', 'bulle'].find(has);
+    // Detect wave composition to pick best offensive
+    const allVisitors = (s.waveManager?.waves || []).flatMap((w) => w.visitors);
+    const totalV = allVisitors.length;
+    // skeletons + lavewalker + lavaqueen + dragon are LAVA-IMMUNE
+    const lavaImmuneTypes = new Set(['skeleton', 'lavewalker', 'lavaqueen', 'dragon']);
+    const lavaImmuneCount = allVisitors.filter((v) => lavaImmuneTypes.has(v.type)).length;
+    const flyerCount = allVisitors.filter((v) => v.type === 'flying').length;
+    const needNonLava = (lavaImmuneCount + flyerCount) / Math.max(1, totalV) > 0.25;
+
+    // catapult > laser handle flyers + skeletons. lava cheap baseline.
+    const offensiveOrder = needNonLava
+      ? ['catapult', 'laser', 'neon', 'bulle', 'lava']
+      : ['lava', 'catapult', 'laser', 'neon', 'bulle'];
+    const offensive = offensiveOrder.find(has);
+    // If primary is expensive but we have lava as cheap option, also place lava as fallback
+    const cheapBackup = (offensive !== 'lava' && has('lava') && !needNonLava) ? 'lava' : null;
 
     // Count lanes with active threats (visitors not yet too close to base)
     const threatLanesByCol = {};  // row -> max col of visitor
@@ -127,6 +149,29 @@ await page.evaluate(() => {
     }
 
     const elapsed = s._gameTime;
+
+    // Count current coin gens
+    let coinCount = 0;
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 12; c++) {
+      const t = s.gridState[r][c]; if (t && t.constructor.name === 'CoinGenerator') coinCount++;
+    }
+
+    // Priority 0: pre-build coins early (before first wave) — need 3-4 coins for sustained economy
+    const needCoinPriority = elapsed < 11000 && coinCount < 4 && has('coin') && canPlace('coin');
+    if (needCoinPriority) {
+      for (let row = 0; row < 5; row++) {
+        for (const col of [0, 1]) {
+          if (isEmpty(col, row)) {
+            const before = s.coins;
+            window.__pd_place('coin', col, row);
+            if (s.coins < before) {
+              window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'coin', col, row, reason: 'eco-prebuild' });
+              return true;
+            }
+          }
+        }
+      }
+    }
 
     // Priority 1: emergency — any active threat lane without offensive tile
     if (activeLanes.length && offensive && canPlace(offensive)) {
@@ -192,6 +237,10 @@ await page.evaluate(() => {
         }
       }
     }
+
+    // Pre-wave phase: don't burn budget on offensive too early — wait for income
+    const preWave = elapsed < 11500 && coinCount < 4;
+    if (preWave) return false;
 
     // Priority 4: extend defense — fill all 5 lanes with offensive + water
     if (offensive) {

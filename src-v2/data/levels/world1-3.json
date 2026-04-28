@@ -12,7 +12,7 @@
   "loseEscaped": 4,
   "waves": [
     {
-      "delayMs": 10000,
+      "delayMs": 12000,
       "visitors": [
         {
           "type": "basic",

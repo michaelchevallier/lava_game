@@ -15,7 +15,7 @@
   "loseEscaped": 2,
   "waves": [
     {
-      "delayMs": 8000,
+      "delayMs": 12000,
       "visitors": [
         {
           "type": "flying",

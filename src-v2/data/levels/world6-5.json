@@ -19,7 +19,7 @@
   "loseEscaped": 2,
   "waves": [
     {
-      "delayMs": 6000,
+      "delayMs": 12000,
       "visitors": [
         {
           "type": "magicien",

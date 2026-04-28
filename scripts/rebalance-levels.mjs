@@ -7,13 +7,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LEVELS_DIR = path.join(__dirname, "..", "src-v2", "data", "levels");
 
 const FIRST_WAVE_MAX = 12000;
+const FIRST_WAVE_MIN = 12000;
 
 function rebalanceLevel(level) {
   if (!level.waves || level.waves.length === 0) return level;
 
-  // 1) Cap wave 0 delayMs at 12000ms (early start)
+  // 1) Standardize wave 0 delayMs to 12000ms — give players time to pre-build
+  //    (WaveManager runtime caps at 15000ms anyway)
   if (level.waves[0].delayMs > FIRST_WAVE_MAX) {
     level.waves[0].delayMs = FIRST_WAVE_MAX;
+  }
+  if (level.waves[0].delayMs < FIRST_WAVE_MIN) {
+    level.waves[0].delayMs = FIRST_WAVE_MIN;
   }
 
   // 2) Densify waves: add 1 extra visitor per existing visitor in waves of size <= 4

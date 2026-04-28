@@ -15,7 +15,7 @@
   "loseEscaped": 4,
   "waves": [
     {
-      "delayMs": 5000,
+      "delayMs": 12000,
       "visitors": [
         {
           "type": "vip",

@@ -17,7 +17,7 @@
   "loseEscaped": 2,
   "waves": [
     {
-      "delayMs": 10000,
+      "delayMs": 12000,
       "visitors": [
         {
           "type": "tank",
