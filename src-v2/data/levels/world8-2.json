@@ -2,7 +2,7 @@
   "id": "8.2",
   "name": "Bancs de Méduses",
   "world": 8,
-  "startCoins": 325,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

@@ -2,7 +2,7 @@
   "id": "5.6",
   "name": "APOCALYPSE — boss rush",
   "world": 5,
-  "startCoins": 300,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

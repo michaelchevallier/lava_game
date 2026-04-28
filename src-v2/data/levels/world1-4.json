@@ -2,7 +2,7 @@
   "id": "1.4",
   "name": "Catapulte foraine",
   "world": 1,
-  "startCoins": 250,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

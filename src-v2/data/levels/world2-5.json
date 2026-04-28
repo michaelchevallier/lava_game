@@ -2,7 +2,7 @@
   "id": "2.5",
   "name": "Crépuscule rouge",
   "world": 2,
-  "startCoins": 250,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

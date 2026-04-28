@@ -2,7 +2,7 @@
   "id": "3.6",
   "name": "Tempête — finale",
   "world": 3,
-  "startCoins": 300,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

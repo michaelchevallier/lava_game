@@ -2,7 +2,7 @@
   "id": "1.3",
   "name": "Vent du soir",
   "world": 1,
-  "startCoins": 225,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

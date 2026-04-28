@@ -2,7 +2,7 @@
   "id": "7.2",
   "name": "Satellites",
   "world": 7,
-  "startCoins": 325,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

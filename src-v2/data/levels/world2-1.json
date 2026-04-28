@@ -2,7 +2,7 @@
   "id": "2.1",
   "name": "Le maire arrive",
   "world": 2,
-  "startCoins": 250,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

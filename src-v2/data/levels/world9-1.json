@@ -2,7 +2,7 @@
   "id": "9.1",
   "name": "Le Pont-Levis",
   "world": 9,
-  "startCoins": 300,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

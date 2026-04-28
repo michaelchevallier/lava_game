@@ -2,7 +2,7 @@
   "id": "2.6",
   "name": "Crépuscule — finale",
   "world": 2,
-  "startCoins": 250,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",

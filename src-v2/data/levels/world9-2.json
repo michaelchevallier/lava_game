@@ -2,7 +2,7 @@
   "id": "9.2",
   "name": "Chevaliers Lourds",
   "world": 9,
-  "startCoins": 325,
+  "startCoins": 350,
   "allowedTiles": [
     "coin",
     "lava",
