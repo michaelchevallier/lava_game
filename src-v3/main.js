@@ -914,6 +914,7 @@ window.__cd = {
       if (!skin) return false;
       if (!isSkinUnlocked(skinId, SaveSystem)) return false;
       SaveSystem.equipSkin(skin.category, skinId);
+      document.dispatchEvent(new CustomEvent("crowdef:skin-equipped", { detail: { id: skinId, category: skin.category } }));
       return true;
     },
   },

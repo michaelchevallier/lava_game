@@ -202,6 +202,26 @@ const bossPhase = await page.evaluate(async () => {
   };
 });
 
+log("phase 3.5: skin equip + GLB swap smoke test");
+const skinPhase = await page.evaluate(async () => {
+  const cd = window.__cd;
+  cd.save.addGems(80);
+  cd.save.ownSkin("hero_wizard");
+  const before = cd.save.getEquippedSkin("hero");
+  let restartFired = false;
+  const tmpHandler = () => { restartFired = true; };
+  document.addEventListener("crowdef:level-restart", tmpHandler);
+  cd.shop.equipSkin("hero_wizard");
+  const equipped = cd.save.getEquippedSkin("hero");
+  await new Promise((r) => setTimeout(r, 800));
+  document.removeEventListener("crowdef:level-restart", tmpHandler);
+  const heroAsset = cd.runner.hero?.skinAsset;
+  const heroExists = !!cd.runner.hero;
+  cd.shop.equipSkin("hero_default");
+  await new Promise((r) => setTimeout(r, 400));
+  return { before, equipped, heroAsset, restartFired, heroExists };
+});
+
 log("phase 3: meta-shop (gems → upgrade → applied)");
 const shopPhase = await page.evaluate(async () => {
   const cd = window.__cd;
@@ -232,7 +252,7 @@ const shopPhase = await page.evaluate(async () => {
 
 writeFileSync(
   path.join(RESULTS_DIR, "crowdef-summary.json"),
-  JSON.stringify({ result, summary, bossPhase, shopPhase, consoleErrors, pageErrors }, null, 2),
+  JSON.stringify({ result, summary, bossPhase, skinPhase, shopPhase, consoleErrors, pageErrors }, null, 2),
 );
 
 await browser.close();
@@ -263,6 +283,8 @@ allOk &= pass(`shop opened via __cd.shop.open()`, shopPhase.shopOpened, `(got ${
 allOk &= pass(`castle_hp upgrade purchased (lvl 1)`, shopPhase.upgradeLvl === 1, `(got lvl=${shopPhase.upgradeLvl})`);
 allOk &= pass(`5 gems spent on upgrade`, shopPhase.gemsBefore - shopPhase.gemsAfter === 5, `(spent ${shopPhase.gemsBefore - shopPhase.gemsAfter})`);
 allOk &= pass(`castle HP +10% applied in run`, shopPhase.castleHPMax === shopPhase.expectedCastleHP, `(got ${shopPhase.castleHPMax}, expected ${shopPhase.expectedCastleHP})`);
+allOk &= pass(`hero skin equipped via API`, skinPhase.equipped === "hero_wizard", `(got ${skinPhase.equipped})`);
+allOk &= pass(`hero GLB swap (wizard asset)`, skinPhase.heroAsset === "wizard", `(got ${skinPhase.heroAsset})`);
 
 console.log("\n=== SUMMARY ===");
 console.log(JSON.stringify({ result, summary }, null, 2));
