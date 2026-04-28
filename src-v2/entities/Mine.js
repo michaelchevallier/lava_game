@@ -92,13 +92,13 @@ export class Mine extends Phaser.GameObjects.Container {
         primary = v;
       }
     }
-    if (primary) primary.takeDamage(this.damage);
+    if (primary) primary.takeDamage(this.damage, "mine");
     for (const v of visitors) {
       if (!v.active || v._dying || v === primary) continue;
       const dx = v.x - this.x;
       const dy = v.y - this.y;
       if (dx * dx + dy * dy <= this.aoeRadius * this.aoeRadius) {
-        v.takeDamage(this.damage * this.splashDamage);
+        v.takeDamage(this.damage * this.splashDamage, "mine");
       }
     }
 

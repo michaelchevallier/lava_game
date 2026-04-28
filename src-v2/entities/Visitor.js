@@ -509,6 +509,7 @@ export class Visitor extends Phaser.GameObjects.Container {
       }
     }
 
+    this._lastDamageSource = source || "unknown";
     Flash.entity(this, 0xffffff, 80);
     this.hp -= dmg;
     if (this.hpBar) {
@@ -532,7 +533,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     if (this._dying) return;
     this._dying = true;
     JuiceFX.kill(this.scene);
-    this.scene.events.emit("visitor-killed", this);
+    this.scene.events.emit("visitor-killed", this, this._lastDamageSource);
 
     // Boudeur drops stolen coins back
     if (this._stolenAmount > 0) {

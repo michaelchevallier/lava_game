@@ -118,7 +118,7 @@ export class Catapult extends Phaser.GameObjects.Container {
         if (!v.active || v._dying) continue;
         if (Math.abs(v.x - endX) > 30) continue;
         if (Math.abs(v.y - endY) > 30) continue;
-        v.takeDamage(dmg);
+        v.takeDamage(dmg, "catapult");
       }
     });
   }

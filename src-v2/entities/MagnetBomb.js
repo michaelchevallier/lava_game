@@ -75,7 +75,7 @@ export class MagnetBomb extends Phaser.GameObjects.Container {
       const dx = v.x - this.x;
       const dy = v.y - this.y;
       if (dx * dx + dy * dy > this.radius * this.radius) continue;
-      v.takeDamage(this.damage);
+      v.takeDamage(this.damage, "magnet");
     }
 
     this.scene.events.emit("tile-destroyed", this);
