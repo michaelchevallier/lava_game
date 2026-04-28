@@ -115,6 +115,12 @@ const result = await page.evaluate(async (maxRealMs) => {
       if (cd.runner.state === "won") return resolve({ reason: "won", elapsed });
       if (cd.runner.state === "lost") return resolve({ reason: "lost", elapsed });
 
+      if (cd.isPerkOpen && cd.isPerkOpen()) {
+        cd.pickPerk(0);
+        setTimeout(tick, 100);
+        return;
+      }
+
       const slot = cd.runner.slots[Math.min(slotIndex, cd.runner.slots.length - 1)];
       if (!slot || slot.tower) {
         slotIndex++;

@@ -6,6 +6,7 @@ import { JuiceFX } from "./systems/JuiceFX.js";
 import { Audio } from "./systems/Audio.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
+import { rollPerkChoices } from "./data/perks.js";
 import world1_1 from "./data/levels/world1-1.js";
 
 SaveSystem.load();
@@ -198,6 +199,9 @@ const ui = {
   heroXpNext: document.getElementById("hero-xpnext"),
   heroXpFill: document.getElementById("hero-xp-fill"),
   heroBar: document.getElementById("hero-bar"),
+  perkOverlay: document.getElementById("perk-overlay"),
+  perkCards: document.getElementById("perk-cards"),
+  perkLevel: document.getElementById("perk-level"),
 };
 
 function refreshHUD() {
@@ -257,8 +261,53 @@ document.addEventListener("crowdef:level-won", (e) => {
 document.addEventListener("crowdef:level-restart", () => {
   ui.gameover.classList.remove("show");
   ui.victory.classList.remove("show");
+  ui.perkOverlay.classList.remove("show");
+  _perkQueue = 0;
   refreshHUD();
 });
+
+let _perkQueue = 0;
+
+document.addEventListener("crowdef:hero-levelup", (e) => {
+  _perkQueue++;
+  if (!ui.perkOverlay.classList.contains("show")) {
+    showNextPerkChoice();
+  }
+});
+
+function showNextPerkChoice() {
+  if (_perkQueue <= 0 || !runner.hero) return;
+  const choices = rollPerkChoices(runner.hero, 3);
+  if (!choices.length) {
+    _perkQueue = 0;
+    return;
+  }
+  ui.perkLevel.textContent = runner.hero.level;
+  ui.perkCards.innerHTML = "";
+  for (const perk of choices) {
+    const card = document.createElement("div");
+    card.className = `perk-card cat-${perk.category}`;
+    card.innerHTML = `
+      <div class="icon">${perk.icon}</div>
+      <div class="name">${perk.name}</div>
+      <div class="desc">${perk.description}</div>
+      <div class="stack">${perk.stackable ? "Empilable" : "Une seule fois"}</div>
+    `;
+    card.addEventListener("click", () => {
+      runner.hero.applyPerk(perk);
+      document.dispatchEvent(new CustomEvent("crowdef:perk-picked", { detail: { id: perk.id, level: runner.hero.level } }));
+      ui.perkOverlay.classList.remove("show");
+      _perkQueue--;
+      runner.resume();
+      if (_perkQueue > 0) {
+        setTimeout(showNextPerkChoice, 250);
+      }
+    });
+    ui.perkCards.appendChild(card);
+  }
+  runner.pause();
+  ui.perkOverlay.classList.add("show");
+}
 
 ui.gameover.querySelector('button[data-action="restart"]').addEventListener("click", () => {
   runner.restart();
@@ -362,5 +411,10 @@ window.__cd = {
   audio: Audio,
   save: SaveSystem,
   setSpeed: (n) => runner.setSpeed(n),
-  version: "j1-c7",
+  pickPerk: (idx = 0) => {
+    const cards = ui.perkCards.querySelectorAll(".perk-card");
+    if (cards[idx]) cards[idx].click();
+  },
+  isPerkOpen: () => ui.perkOverlay.classList.contains("show"),
+  version: "j2-c4",
 };

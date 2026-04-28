@@ -100,6 +100,9 @@ export class LevelRunner {
       if (this._pendingSpawns.length === 0 && this.enemies.length === 0) {
         this._waveActive = false;
         this._waveBreakTimer = 0;
+        if (this.hero && this.hero.waveRegen > 0) {
+          this.castleHP = Math.min(this.castleHPMax, this.castleHP + this.hero.waveRegen);
+        }
         emit("crowdef:wave-cleared", { wave: this.wave });
       }
     } else {

@@ -1,0 +1,107 @@
+export const PERKS = [
+  {
+    id: "range",
+    name: "Œil de l'aigle",
+    icon: "🎯",
+    description: "Portée du Roi +30%",
+    category: "offensive",
+    stackable: true,
+    range: 0.3,
+  },
+  {
+    id: "fire_rate",
+    name: "Doigts vifs",
+    icon: "⚡",
+    description: "Cadence de tir +25%",
+    category: "offensive",
+    stackable: true,
+    fireRate: 0.25,
+  },
+  {
+    id: "damage",
+    name: "Frappe puissante",
+    icon: "💥",
+    description: "Dégâts +50%",
+    category: "offensive",
+    stackable: true,
+    damage: 0.5,
+  },
+  {
+    id: "multi_shot",
+    name: "Tir double",
+    icon: "🏹",
+    description: "Tire 2 projectiles en éventail",
+    category: "offensive",
+    stackable: false,
+    multiShot: 1,
+  },
+  {
+    id: "crit",
+    name: "Coup critique",
+    icon: "🎲",
+    description: "+20% chance de doubler les dégâts",
+    category: "offensive",
+    stackable: true,
+    critChance: 0.2,
+  },
+  {
+    id: "pierce",
+    name: "Flèche perçante",
+    icon: "📌",
+    description: "Les projectiles traversent +1 ennemi",
+    category: "offensive",
+    stackable: true,
+    pierceCount: 1,
+  },
+  {
+    id: "coin_gain",
+    name: "Pillage royal",
+    icon: "🪙",
+    description: "Or par kill +50%",
+    category: "economy",
+    stackable: true,
+    coinGain: 0.5,
+  },
+  {
+    id: "lifesteal",
+    name: "Pacte du sang",
+    icon: "❤️",
+    description: "+1 HP au château par kill",
+    category: "economy",
+    stackable: true,
+    lifesteal: 1,
+  },
+  {
+    id: "move_speed",
+    name: "Pieds rapides",
+    icon: "👟",
+    description: "Vitesse de déplacement +20%",
+    category: "mobility",
+    stackable: true,
+    moveSpeed: 0.2,
+  },
+  {
+    id: "wave_regen",
+    name: "Bénédiction royale",
+    icon: "🛡️",
+    description: "+5 HP au château à la fin de chaque vague",
+    category: "economy",
+    stackable: true,
+    waveRegen: 5,
+  },
+];
+
+export function rollPerkChoices(hero, count = 3) {
+  const available = PERKS.filter((p) => p.stackable || !hero.perks.includes(p.id));
+  if (!available.length) return [];
+  const shuffled = [...available];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
+export function getPerkById(id) {
+  return PERKS.find((p) => p.id === id) || null;
+}

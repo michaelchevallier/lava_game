@@ -74,6 +74,7 @@ export class Hero {
     this.multiShot = 0;
     this.pierceCount = 0;
     this.lifesteal = 0;
+    this.waveRegen = 0;
   }
 
   gainXp(amount) {
@@ -101,6 +102,7 @@ export class Hero {
     if (perk.multiShot) this.multiShot += perk.multiShot;
     if (perk.pierceCount) this.pierceCount += perk.pierceCount;
     if (perk.lifesteal) this.lifesteal += perk.lifesteal;
+    if (perk.waveRegen) this.waveRegen += perk.waveRegen;
   }
 
   _buildFallback() {
