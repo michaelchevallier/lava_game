@@ -159,11 +159,27 @@ export class LevelRunner {
           if (cfg.isBoss) gems = 20;
           else if (cfg.isMidBoss) gems = 5;
           if (gems > 0) {
-            const mul = this.metaBonuses.gemGainMul || 1;
+            const skinMul = this.skinBonuses.gemBonusMul || 1;
+            const mul = (this.metaBonuses.gemGainMul || 1) * skinMul;
             const finalGems = Math.round(gems * mul);
             const total = SaveSystem.addGems(finalGems);
             emit("crowdef:gems-gained", { amount: finalGems, total, source: e.type });
           }
+          if (cfg.isBoss) {
+            const dropSkin = Object.values(SKIN_BY_ID).find(
+              (s) => s.unlock?.type === "drop" && s.unlock.boss === e.type,
+            );
+            if (dropSkin && !SaveSystem.isSkinOwned(dropSkin.id)) {
+              SaveSystem.ownSkin(dropSkin.id);
+              emit("crowdef:skin-dropped", { id: dropSkin.id, source: e.type });
+            }
+          }
+        }
+        SaveSystem.addKills(1);
+        if (SaveSystem.getTotalKills() >= 100 && !SaveSystem.hasAchievement("kills_100")) {
+          SaveSystem.unlockAchievement("kills_100");
+          if (!SaveSystem.isSkinOwned("vfx_lightning")) SaveSystem.ownSkin("vfx_lightning");
+          emit("crowdef:achievement-unlocked", { id: "kills_100" });
         }
         const vfxSkinId = SaveSystem.getEquippedSkin("vfx") || getDefaultSkinId("vfx");
         const vfxColor = SKIN_BY_ID[vfxSkinId]?.killColor || 0xc63a10;
@@ -229,6 +245,13 @@ export class LevelRunner {
     if (this.state !== "play") return;
     this.state = "won";
     Audio.sfxLevelWon();
+    if (this.level.id === "world1-8" && this.castleHP === this.castleHPMax) {
+      if (!SaveSystem.hasAchievement("perfect_world1")) {
+        SaveSystem.unlockAchievement("perfect_world1");
+        if (!SaveSystem.isSkinOwned("castle_royal")) SaveSystem.ownSkin("castle_royal");
+        emit("crowdef:achievement-unlocked", { id: "perfect_world1" });
+      }
+    }
     emit("crowdef:level-won", { wave: this.wave, castleHP: this.castleHP, castleHPMax: this.castleHPMax });
   }
 

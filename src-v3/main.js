@@ -316,6 +316,26 @@ document.addEventListener("crowdef:gems-gained", (e) => {
   ui.gems.classList.add("flash");
   spawnGemsPopup(e.detail.amount);
 });
+function spawnToast(title, body) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = `<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+document.addEventListener("crowdef:skin-dropped", (e) => {
+  const skin = SKIN_BY_ID[e.detail.id];
+  if (skin) spawnToast(`${skin.icon} Nouveau skin !`, `${skin.name} débloqué`);
+});
+document.addEventListener("crowdef:achievement-unlocked", (e) => {
+  const id = e.detail.id;
+  const labels = {
+    perfect_world1: "🏆 Termine W1 sans perdre PV — skin Citadelle royale débloqué",
+    kills_100: "🏆 100 ennemis tués — skin Foudre céleste débloqué",
+  };
+  spawnToast("Succès débloqué !", labels[id] || id);
+});
+
 function spawnGemsPopup(amount) {
   const popup = document.createElement("div");
   popup.className = "damage-popup";
@@ -878,7 +898,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4b-c3",
+  version: "j4b-c4",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
