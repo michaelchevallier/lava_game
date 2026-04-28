@@ -11,6 +11,9 @@ import {
   META_UPGRADES, UPGRADE_TIERS, UPGRADE_MAX_LEVEL,
   getCostForLevel, isTierUnlocked, RESET_COST_GEMS,
 } from "./data/metaUpgrades.js";
+import {
+  SKINS, SKIN_BY_ID, getSkinsByCategory, getDefaultSkinId, isSkinUnlocked,
+} from "./data/skins.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -612,9 +615,88 @@ function buildShopCard(upgrade, tierUnlocked) {
   return card;
 }
 
+function renderSkins(category) {
+  const grid = document.getElementById(`skins-grid-${category}`);
+  if (!grid) return;
+  grid.innerHTML = "";
+  const skins = getSkinsByCategory(category);
+  const equippedId = SaveSystem.getEquippedSkin(category);
+  for (const skin of skins) {
+    const owned = isSkinUnlocked(skin.id, SaveSystem);
+    const equipped = equippedId === skin.id;
+    const card = document.createElement("div");
+    card.className = "skin-card" + (equipped ? " equipped" : "") + (!owned ? " locked" : "");
+    card.dataset.skinId = skin.id;
+    const bgColor = skin.color || "#2c3e54";
+    let unlockHint = "";
+    let unlockClass = "";
+    if (skin.unlock.type === "default") { unlockHint = "Par défaut"; unlockClass = "unlocked"; }
+    else if (owned) { unlockHint = equipped ? "Équipé" : "Cliquer pour équiper"; unlockClass = "unlocked"; }
+    else if (skin.unlock.type === "purchase") { unlockHint = `${skin.unlock.cost} 💎 — clic pour acheter`; unlockClass = "purchase"; }
+    else if (skin.unlock.type === "drop") { unlockHint = `Tombe du boss ${skin.unlock.boss}`; unlockClass = "locked-text"; }
+    else if (skin.unlock.type === "achievement") { unlockHint = achievementHint(skin.unlock.id); unlockClass = "locked-text"; }
+
+    card.innerHTML = `
+      <div class="skin-icon-box" style="background:${bgColor};">${skin.icon}</div>
+      <div class="name">${skin.name}</div>
+      <div class="desc">${skin.description}</div>
+      <div class="unlock-hint ${unlockClass}">${unlockHint}</div>
+    `;
+    card.addEventListener("click", () => onSkinCardClick(skin));
+    grid.appendChild(card);
+  }
+}
+
+function achievementHint(achId) {
+  const map = {
+    perfect_world1: "Termine W1 sans perdre PV château",
+    kills_100: `${SaveSystem.getTotalKills()}/100 ennemis tués`,
+  };
+  return map[achId] || `Succès : ${achId}`;
+}
+
+function onSkinCardClick(skin) {
+  const owned = isSkinUnlocked(skin.id, SaveSystem);
+  if (owned) {
+    SaveSystem.equipSkin(skin.category, skin.id);
+    document.dispatchEvent(new CustomEvent("crowdef:skin-equipped", { detail: { id: skin.id, category: skin.category } }));
+    renderSkins(skin.category);
+    return;
+  }
+  if (skin.unlock.type === "purchase") {
+    if (!SaveSystem.spendGems(skin.unlock.cost)) return;
+    SaveSystem.ownSkin(skin.id);
+    SaveSystem.equipSkin(skin.category, skin.id);
+    document.dispatchEvent(new CustomEvent("crowdef:skin-purchased", { detail: { id: skin.id, cost: skin.unlock.cost } }));
+    renderSkins(skin.category);
+    refreshHUD();
+    ui.shopGems.textContent = SaveSystem.getGems();
+  }
+}
+
+function setShopTab(tabName) {
+  for (const t of ui.shop.querySelectorAll(".shop-tab")) {
+    t.classList.toggle("active", t.dataset.tab === tabName);
+  }
+  for (const p of ui.shop.querySelectorAll(".shop-page")) {
+    p.classList.toggle("active", p.dataset.page === tabName);
+  }
+  if (tabName === "skins-hero") renderSkins("hero");
+  else if (tabName === "skins-castle") renderSkins("castle");
+  else if (tabName === "skins-vfx") renderSkins("vfx");
+  else renderShop();
+}
+
+for (const tab of ui.shop.querySelectorAll(".shop-tab")) {
+  tab.addEventListener("click", () => setShopTab(tab.dataset.tab));
+}
+
 function showShop() {
   if (ui.briefing.classList.contains("show")) return;
   renderShop();
+  renderSkins("hero");
+  renderSkins("castle");
+  renderSkins("vfx");
   ui.shop.classList.add("show");
   runner.pause();
 }
@@ -778,7 +860,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j4a-c4",
+  version: "j4b-c2",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
@@ -787,6 +869,14 @@ window.__cd = {
       if (!ui.shop.classList.contains("show")) showShop();
       const btn = ui.shopTiers.querySelector(`.upgrade-btn[data-id="${id}"]`);
       if (btn && !btn.disabled) btn.click();
+    },
+    setTab: (tab) => setShopTab(tab),
+    equipSkin: (skinId) => {
+      const skin = SKIN_BY_ID[skinId];
+      if (!skin) return false;
+      if (!isSkinUnlocked(skinId, SaveSystem)) return false;
+      SaveSystem.equipSkin(skin.category, skinId);
+      return true;
     },
   },
 };
