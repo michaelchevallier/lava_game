@@ -65,7 +65,7 @@ export class Visitor extends Phaser.GameObjects.Container {
     const speedMul = opts.speedMul ?? 1;
     this.hp = (opts.hp ?? def.hp) * hpMul;
     this.maxHp = this.hp;
-    this.speed = (opts.speed ?? def.speed) * speedMul;
+    this.speed = (opts.speed ?? def.speed) * speedMul * 0.9;
     this.baseSpeed = this.speed;
     this.immune = def.immune;
     this.canFly = def.canFly;
