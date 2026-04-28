@@ -3,9 +3,9 @@ import { getEquippedSkin } from "../systems/SaveSystem.js";
 import { SKINS } from "../scenes/SkinsScene.js";
 
 export const TILE_DEFS = [
-  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 2500,
+  { id: "coin", label: "Coin Gen", cost: 50, color: 0xffd23f, accent: 0xc88a00, cooldownMs: 1500,
     desc: "Génère 30¢ toutes les 6s", stats: ["+30¢ / 6s", "HP 5"] },
-  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 2500,
+  { id: "water", label: "Water Block", cost: 50, color: 0x4ea3d8, accent: 0x1a4a6a, cooldownMs: 1500,
     desc: "Mur tank — encaisse les morsures", stats: ["HP 30", "Bloque la lane"] },
   { id: "cottoncandy", label: "Barbe-à-Papa", cost: 75, color: 0xff66cc, accent: 0xffaaee, cooldownMs: 4000,
     desc: "Ralentit les visiteurs dans la zone (3×3)", stats: ["Slow 50%", "Zone 3×3", "HP 3"] },
