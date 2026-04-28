@@ -35,6 +35,7 @@ export class Slot {
     this.path = path;
     this.cost = config.cost;
     this.t = config.t;
+    this.towerType = config.towerType || "archer";
     this.paid = 0;
     this.tower = null;
     this._lastRatio = -1;
@@ -111,7 +112,7 @@ export class Slot {
     }
 
     if (this.paid >= this.cost && !this.tower) {
-      this.tower = new Tower(this.scene, this.pos.clone());
+      this.tower = new Tower(this.scene, this.pos.clone(), this.towerType);
       this.scene.remove(this.ring);
       this.scene.remove(this.fill);
       this.scene.remove(this.glow);

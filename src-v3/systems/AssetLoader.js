@@ -13,6 +13,10 @@ const MANIFEST = {
   knightgolden: "quaternius/Knight_Golden_Male.gltf",
   wizard: "quaternius/Wizard.gltf",
   pirate: "quaternius/Pirate_Male.gltf",
+  tower_archer: "quaternius/Tower_Archer.gltf",
+  tower_mage: "quaternius/Tower_Mage.gltf",
+  tower_tank: "quaternius/Tower_Tank.gltf",
+  tower_ballista: "quaternius/Tower_Ballista.gltf",
 };
 
 function loadOne(url) {

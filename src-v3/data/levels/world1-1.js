@@ -7,9 +7,10 @@ export default {
     [4, 0, -8], [8, 0, -2], [6, 0, 4], [2, 0, 6],
   ],
   slots: [
-    { t: 0.28, cost: 30, lateralOffset: 2.4 },
-    { t: 0.50, cost: 50, lateralOffset: 2.4 },
-    { t: 0.72, cost: 75, lateralOffset: 2.4 },
+    { t: 0.22, cost: 30, lateralOffset: 2.4, towerType: "archer" },
+    { t: 0.45, cost: 60, lateralOffset: 2.4, towerType: "tank" },
+    { t: 0.68, cost: 80, lateralOffset: 2.4, towerType: "mage" },
+    { t: 0.86, cost: 110, lateralOffset: 2.4, towerType: "ballista" },
   ],
   waves: {
     list: [
