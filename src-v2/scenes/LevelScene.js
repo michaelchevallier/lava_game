@@ -90,6 +90,8 @@ export class LevelScene extends Phaser.Scene {
     this.events.removeAllListeners("tower-disabled");
     this.events.removeAllListeners("coins-refund");
     this.events.removeAllListeners("ticket-collected");
+    this.events.removeAllListeners("wave-started");
+    this.events.removeAllListeners("endless-wave");
     if (this.lavaMeter) { this.lavaMeter.destroy(); this.lavaMeter = null; }
 
     this.gridState = createGridState();

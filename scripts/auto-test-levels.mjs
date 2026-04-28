@@ -56,7 +56,7 @@ page.on('console', (msg) => {
 await page.goto('http://localhost:4173/');
 await page.waitForFunction(() => window.__game && window.__game.scene && window.__game.scene.scenes.length > 0, null, { timeout: 15000 });
 
-await page.evaluate(() => {
+const solverSetupFn = () => {
   window.__solve = {};
   window.__solve.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -340,12 +340,21 @@ await page.evaluate(() => {
       events: window.__events.slice(),
     };
   };
-});
+};
+
+await page.evaluate(solverSetupFn);
 
 const summary = [];
 const t_start = Date.now();
+const BATCH_SIZE = 8;
 
 for (let i = 0; i < LEVELS.length; i++) {
+  if (i > 0 && i % BATCH_SIZE === 0) {
+    console.log(`[runner] reloading page (batch boundary at level ${i})`);
+    await page.goto('http://localhost:4173/');
+    await page.waitForFunction(() => window.__game && window.__game.scene && window.__game.scene.scenes.length > 0, null, { timeout: 15000 });
+    await page.evaluate(solverSetupFn);
+  }
   const lvl = LEVELS[i];
   const t0 = Date.now();
   const r = await page.evaluate(async (args) => window.__solve.runLevel(args.lvl, { speed: args.speed, maxRealMs: args.max }), { lvl, speed: SPEED, max: MAX_REAL_MS });

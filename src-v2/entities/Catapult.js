@@ -71,10 +71,13 @@ export class Catapult extends Phaser.GameObjects.Container {
 
     const startX = this.x;
     const startY = this.y - 24;
-    const endX = target.x;
-    const endY = target.y;
     const flightMs = 600;
     const apex = -80;
+    // Lead the target: predict where it'll be when projectile lands
+    const targetSpeed = target.baseSpeed ?? target.speed ?? 45;
+    const leadDist = (targetSpeed * flightMs) / 1000;
+    const endX = target.x - leadDist;
+    const endY = target.y;
 
     const proj = this.scene.add.circle(startX, startY, 9, 0x9bd84a).setStrokeStyle(2, 0x4a8a3a);
     proj.setDepth(15);
@@ -116,8 +119,8 @@ export class Catapult extends Phaser.GameObjects.Container {
       const visitors = scene.visitors || [];
       for (const v of visitors) {
         if (!v.active || v._dying) continue;
-        if (Math.abs(v.x - endX) > 30) continue;
-        if (Math.abs(v.y - endY) > 30) continue;
+        if (Math.abs(v.x - endX) > 40) continue;
+        if (Math.abs(v.y - endY) > 40) continue;
         v.takeDamage(dmg, "catapult");
       }
     });
