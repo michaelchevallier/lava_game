@@ -33,18 +33,31 @@ export class Tower {
     this.scene = scene;
     this.type = type;
     this.cfg = cfg;
+
+    this.upgradeLevel = 1;
     this.range = cfg.range;
     this.fireRateMs = cfg.fireRateMs;
     this.damage = cfg.damage;
+    this.aoe = cfg.aoe;
+    this.pierce = cfg.pierce;
+    this.multiShot = 0;
 
     this.group = new THREE.Group();
     this.group.position.copy(position);
     scene.add(this.group);
 
-    const gltf = AssetLoader.get(cfg.asset);
+    this.model = null;
+    this._loadModel(cfg.asset, cfg.scale);
+
+    this.cooldown = 0;
+    this.projectiles = [];
+  }
+
+  _loadModel(assetKey, scale) {
+    const gltf = AssetLoader.get(assetKey) || AssetLoader.get(this.cfg.asset);
     if (gltf && gltf.scene) {
       const cloned = gltf.scene.clone(true);
-      cloned.scale.setScalar(cfg.scale);
+      cloned.scale.setScalar(scale);
       cloned.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true;
@@ -55,11 +68,46 @@ export class Tower {
       this.group.add(cloned);
       this.model = cloned;
     } else {
-      this._buildFallback(cfg.fallbackColor);
+      this._buildFallback(this.cfg.fallbackColor);
     }
+  }
 
-    this.cooldown = 0;
-    this.projectiles = [];
+  _disposeModel() {
+    if (!this.model) return;
+    this.group.remove(this.model);
+    this.model.traverse((c) => {
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) {
+        if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+        else c.material.dispose();
+      }
+    });
+    this.model = null;
+  }
+
+  upgradeTo(level) {
+    if (level <= this.upgradeLevel) return;
+    this.upgradeLevel = level;
+    const base = this.cfg;
+    if (level === 2) {
+      this.damage = base.damage * 1.5;
+      this.range = base.range * 1.2;
+    } else if (level === 3) {
+      this.damage = base.damage * 2.5;
+      this.range = base.range * 1.4;
+      if (this.type === "archer") this.multiShot = 1;
+      else if (this.type === "mage") this.aoe = 2.5;
+      else if (this.type === "tank") this.pierce = 1;
+      else if (this.type === "ballista") this.pierce = 4;
+    }
+    let assetKey = base.asset;
+    if (level === 2) assetKey = base.asset + "_l2";
+    else if (level === 3) assetKey = base.asset + "_l3";
+    if (this.type === "mage" && level === 3) assetKey = base.asset + "_l2";
+
+    this._disposeModel();
+    const scaleBoost = 1 + (level - 1) * 0.06;
+    this._loadModel(assetKey, base.scale * scaleBoost);
   }
 
   _buildFallback(color = 0x3a6abf) {
@@ -118,10 +166,10 @@ export class Tower {
         const dz = e.group.position.z - p.mesh.position.z;
         if (dx * dx + dz * dz < 0.36) {
           this._applyHit(p, e, enemies);
-          if (this.cfg.pierce > 0) {
+          if (this.pierce > 0) {
             if (!p._hitSet) p._hitSet = new Set();
             p._hitSet.add(e);
-            p._pierceLeft = (p._pierceLeft ?? this.cfg.pierce) - 1;
+            p._pierceLeft = (p._pierceLeft ?? this.pierce) - 1;
             if (p._pierceLeft <= 0) consumed = true;
           } else {
             consumed = true;
@@ -139,9 +187,9 @@ export class Tower {
   }
 
   _applyHit(projectile, enemy, enemies) {
-    if (this.cfg.aoe > 0) {
+    if (this.aoe > 0) {
       const center = projectile.mesh.position;
-      const r2 = this.cfg.aoe * this.cfg.aoe;
+      const r2 = this.aoe * this.aoe;
       for (const e of enemies) {
         if (e.dead || e._dying) continue;
         const dx = e.group.position.x - center.x;
@@ -163,33 +211,44 @@ export class Tower {
   _fire(target) {
     const start = new THREE.Vector3().copy(this.group.position);
     start.y = 1.45;
-    const tx = target.group.position.x - start.x;
-    const tz = target.group.position.z - start.z;
-    const len = Math.hypot(tx, tz) || 1;
+    const baseTx = target.group.position.x - start.x;
+    const baseTz = target.group.position.z - start.z;
+    const baseLen = Math.hypot(baseTx, baseTz) || 1;
+    const baseDirX = baseTx / baseLen;
+    const baseDirZ = baseTz / baseLen;
 
-    let geom;
-    if (this.type === "ballista") {
-      geom = new THREE.BoxGeometry(0.06, 0.06, 0.8);
-    } else if (this.type === "mage") {
-      geom = new THREE.SphereGeometry(0.18, 8, 8);
-    } else {
-      geom = new THREE.BoxGeometry(0.08, 0.08, 0.5);
+    const shots = 1 + this.multiShot;
+    const spreadDeg = shots > 1 ? 12 : 0;
+    for (let s = 0; s < shots; s++) {
+      const angle = shots > 1 ? (s - (shots - 1) / 2) * (spreadDeg * Math.PI / 180) : 0;
+      const cos = Math.cos(angle), sin = Math.sin(angle);
+      const dx = baseDirX * cos - baseDirZ * sin;
+      const dz = baseDirX * sin + baseDirZ * cos;
+
+      let geom;
+      if (this.type === "ballista") {
+        geom = new THREE.BoxGeometry(0.06, 0.06, 0.8);
+      } else if (this.type === "mage") {
+        geom = new THREE.SphereGeometry(0.18, 8, 8);
+      } else {
+        geom = new THREE.BoxGeometry(0.08, 0.08, 0.5);
+      }
+
+      const proj = new THREE.Mesh(
+        geom,
+        new THREE.MeshBasicMaterial({ color: this.cfg.projColor }),
+      );
+      proj.position.copy(start);
+      proj.rotation.y = Math.atan2(dx, dz);
+      this.scene.add(proj);
+
+      this.projectiles.push({
+        mesh: proj,
+        dir: new THREE.Vector3(dx, 0, dz),
+        life: this.range / this.cfg.projSpeed * 1.4,
+        _pierceLeft: this.pierce,
+      });
     }
-
-    const proj = new THREE.Mesh(
-      geom,
-      new THREE.MeshBasicMaterial({ color: this.cfg.projColor }),
-    );
-    proj.position.copy(start);
-    proj.rotation.y = Math.atan2(tx, tz);
-    this.scene.add(proj);
-
-    this.projectiles.push({
-      mesh: proj,
-      dir: new THREE.Vector3(tx / len, 0, tz / len),
-      life: this.range / this.cfg.projSpeed * 1.4,
-      _pierceLeft: this.cfg.pierce,
-    });
     Audio.sfxTowerShoot();
   }
 

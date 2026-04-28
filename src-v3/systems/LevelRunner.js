@@ -159,18 +159,27 @@ export class LevelRunner {
 
     for (const slot of this.slots) {
       const slotPos = slot.pos;
-      const built = slot.tick(adt, this.hero, this);
-      if (built) {
+      const status = slot.tick(adt, this.hero, this);
+      if (status === 1) {
         this.towers.push(slot.tower);
         Particles.emit(
           { x: slotPos.x, y: 0.4, z: slotPos.z },
-          0xffd23f,
-          14,
+          0xffd23f, 14,
           { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
         );
         JuiceFX.shake(0.15, 200);
         Audio.sfxTowerBuilt();
-        emit("crowdef:tower-built", { cost: slot.cost, position: { x: slotPos.x, z: slotPos.z } });
+        emit("crowdef:tower-built", { cost: slot.baseCost, towerType: slot.towerType, position: { x: slotPos.x, z: slotPos.z } });
+      } else if (status > 1) {
+        const upgradeColor = status === 2 ? 0xff9a55 : 0xff5050;
+        Particles.emit(
+          { x: slotPos.x, y: 0.6, z: slotPos.z },
+          upgradeColor, 18,
+          { speed: 5, life: 0.85, scale: 0.6, yLift: 2.0 },
+        );
+        JuiceFX.shake(0.2, 250);
+        Audio.sfxTowerBuilt();
+        emit("crowdef:tower-upgraded", { level: status, towerType: slot.towerType, position: { x: slotPos.x, z: slotPos.z } });
       }
     }
 

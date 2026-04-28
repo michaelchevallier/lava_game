@@ -14,9 +14,16 @@ const MANIFEST = {
   wizard: "quaternius/Wizard.gltf",
   pirate: "quaternius/Pirate_Male.gltf",
   tower_archer: "quaternius/Tower_Archer.gltf",
+  tower_archer_l2: "quaternius/Tower_Archer_L2.gltf",
+  tower_archer_l3: "quaternius/Tower_Archer_L3.gltf",
   tower_mage: "quaternius/Tower_Mage.gltf",
+  tower_mage_l2: "quaternius/Tower_Mage_L2.gltf",
   tower_tank: "quaternius/Tower_Tank.gltf",
+  tower_tank_l2: "quaternius/Tower_Tank_L2.gltf",
+  tower_tank_l3: "quaternius/Tower_Tank_L3.gltf",
   tower_ballista: "quaternius/Tower_Ballista.gltf",
+  tower_ballista_l2: "quaternius/Tower_Ballista_L2.gltf",
+  tower_ballista_l3: "quaternius/Tower_Ballista_L3.gltf",
 };
 
 function loadOne(url) {
