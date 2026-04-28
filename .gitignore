@@ -9,3 +9,4 @@ dist-kingshot/
 .claude/scheduled_tasks.lock
 .claude/worktrees/
 test-results/
+src-v3/assets/quaternius/Ultimate*/

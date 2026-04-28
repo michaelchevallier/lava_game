@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     outDir: resolve(process.cwd(), "dist-kingshot"),
     emptyOutDir: true,
-    target: "es2020",
+    target: "es2022",
     minify: "terser",
     terserOptions: {
       compress: { drop_console: true, drop_debugger: true },

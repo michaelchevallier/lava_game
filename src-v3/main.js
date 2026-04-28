@@ -5,10 +5,13 @@ import { Particles } from "./systems/Particles.js";
 import { JuiceFX } from "./systems/JuiceFX.js";
 import { Audio } from "./systems/Audio.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
+import { AssetLoader } from "./systems/AssetLoader.js";
 import world1_1 from "./data/levels/world1-1.js";
 
 SaveSystem.load();
 Audio.setMuted(SaveSystem.isMuted());
+
+await AssetLoader.ready();
 
 const canvas = document.getElementById("app");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
