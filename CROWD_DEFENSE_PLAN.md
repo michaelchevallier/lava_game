@@ -253,7 +253,7 @@ Trigger côté user : « on enchaîne J2 du plan `CROWD_DEFENSE_PLAN.md` ». Pas
 
 - [x] J1 — Foundation ([changelog](docs/changelog/J1-foundation.md))
 - [x] J2 — Combat vivant ([changelog](docs/changelog/J2-combat-vivant.md))
-- [ ] J3 — Monde 1
+- [x] J3 — Monde 1 ([changelog](docs/changelog/J3-monde-1.md))
 - [ ] J4.A — Boutique + upgrades
 - [ ] J4.B — Skins + tours déblocables
 - [ ] J5 — Audio complet

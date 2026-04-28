@@ -173,9 +173,32 @@ const summary = await page.evaluate(() => {
   };
 });
 
+log("phase 2: boss spawn smoke test (world1-8)");
+const bossPhase = await page.evaluate(async () => {
+  const cd = window.__cd;
+  window.__cdBossEvents = [];
+  const handler = (e) => window.__cdBossEvents.push({ t: e.type, detail: e.detail });
+  document.addEventListener("crowdef:boss-spawned", handler);
+  document.addEventListener("crowdef:boss-charge", handler);
+  cd.loadLevel("world1-8");
+  if (cd.skipBriefing) cd.skipBriefing();
+  cd.setSpeed(8);
+  await new Promise((r) => setTimeout(r, 200));
+  cd.runner._spawnEnemy("brigand_boss");
+  await new Promise((r) => setTimeout(r, 9000));
+  const events = window.__cdBossEvents.slice();
+  document.removeEventListener("crowdef:boss-spawned", handler);
+  document.removeEventListener("crowdef:boss-charge", handler);
+  return {
+    spawned: events.filter((e) => e.t === "crowdef:boss-spawned").length,
+    charged: events.filter((e) => e.t === "crowdef:boss-charge").length,
+    bossName: events.find((e) => e.t === "crowdef:boss-spawned")?.detail?.name || null,
+  };
+});
+
 writeFileSync(
   path.join(RESULTS_DIR, "crowdef-summary.json"),
-  JSON.stringify({ result, summary, consoleErrors, pageErrors }, null, 2),
+  JSON.stringify({ result, summary, bossPhase, consoleErrors, pageErrors }, null, 2),
 );
 
 await browser.close();
@@ -200,6 +223,8 @@ allOk &= pass(`tower upgrades >= 1`, (summary.counts["crowdef:tower-upgraded"] |
 // Seuil 15 — Chromium headless throttle + 50+ SkinnedMesh anim simultanés.
 // En prod desktop attendu 50+ FPS (à valider iPad J7).
 allOk &= pass(`fps avg >= 15 (headless w/ rigged crowd)`, summary.fpsAvg >= 15, `(got ${(summary.fpsAvg || 0).toFixed(1)})`);
+allOk &= pass(`boss-spawned event fired (world1-8)`, bossPhase.spawned >= 1, `(got ${bossPhase.spawned}, name="${bossPhase.bossName}")`);
+allOk &= pass(`boss-charge event fired within 9s`, bossPhase.charged >= 1, `(got ${bossPhase.charged})`);
 
 console.log("\n=== SUMMARY ===");
 console.log(JSON.stringify({ result, summary }, null, 2));
