@@ -5,8 +5,8 @@ export class CoinGenerator extends Phaser.GameObjects.Container {
   constructor(scene, x, y, opts = {}) {
     super(scene, x, y);
 
-    this.amount = opts.amount ?? 25;
-    this.intervalMs = opts.intervalMs ?? 9000;
+    this.amount = opts.amount ?? 30;
+    this.intervalMs = opts.intervalMs ?? 8000;
     this.lastTickAt = scene.time.now;
     this.maxHp = opts.hp ?? 5;
     this.hp = this.maxHp;

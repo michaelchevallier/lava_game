@@ -93,7 +93,7 @@ const solverSetupFn = () => {
     });
   };
 
-  // Smart solver — per-lane threat priority + adaptive economy
+  // Smart solver v3 — pre-wave parallel build, mine/magnet panic, cottoncandy slow
   window.__solve.smartTick = (s) => {
     const allowed = s.level.allowedTiles || [];
     const has = (id) => allowed.includes(id);
@@ -107,19 +107,15 @@ const solverSetupFn = () => {
     // Detect wave composition to pick best offensive
     const allVisitors = (s.waveManager?.waves || []).flatMap((w) => w.visitors);
     const totalV = allVisitors.length;
-    // skeletons + lavewalker + lavaqueen + dragon are LAVA-IMMUNE
     const lavaImmuneTypes = new Set(['skeleton', 'lavewalker', 'lavaqueen', 'dragon']);
     const lavaImmuneCount = allVisitors.filter((v) => lavaImmuneTypes.has(v.type)).length;
     const flyerCount = allVisitors.filter((v) => v.type === 'flying').length;
     const needNonLava = (lavaImmuneCount + flyerCount) / Math.max(1, totalV) > 0.25;
 
-    // catapult > laser handle flyers + skeletons. lava cheap baseline.
     const offensiveOrder = needNonLava
       ? ['catapult', 'laser', 'neon', 'bulle', 'lava']
       : ['lava', 'catapult', 'laser', 'neon', 'bulle'];
     const offensive = offensiveOrder.find(has);
-    // If primary is expensive but we have lava as cheap option, also place lava as fallback
-    const cheapBackup = (offensive !== 'lava' && has('lava') && !needNonLava) ? 'lava' : null;
 
     // Count lanes with active threats (visitors not yet too close to base)
     const threatLanesByCol = {};  // row -> max col of visitor
@@ -149,160 +145,162 @@ const solverSetupFn = () => {
     }
 
     const elapsed = s._gameTime;
+    const visitors = (s.visitors || []).filter((v) => v.active && !v._dying);
 
-    // Count current coin gens
+    // Count tile types
     let coinCount = 0;
     for (let r = 0; r < 5; r++) for (let c = 0; c < 12; c++) {
       const t = s.gridState[r][c]; if (t && t.constructor.name === 'CoinGenerator') coinCount++;
     }
 
-    // Priority 0: pre-build coins early (before first wave) — need 3-4 coins for sustained economy
-    const needCoinPriority = elapsed < 11000 && coinCount < 4 && has('coin') && canPlace('coin');
-    if (needCoinPriority) {
-      for (let row = 0; row < 5; row++) {
-        for (const col of [0, 1]) {
-          if (isEmpty(col, row)) {
-            const before = s.coins;
-            window.__pd_place('coin', col, row);
-            if (s.coins < before) {
-              window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'coin', col, row, reason: 'eco-prebuild' });
-              return true;
-            }
+    const tryPlace = (tool, col, row, reason) => {
+      if (!isEmpty(col, row)) return false;
+      if (!canPlace(tool)) return false;
+      const before = s.coins;
+      window.__pd_place(tool, col, row);
+      if (s.coins < before) {
+        window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool, col, row, reason });
+        return true;
+      }
+      return false;
+    };
+
+    // ===== PRE-WAVE (elapsed < 11500ms) =====
+    // Strategy: 3 coin (lanes 0/2/4) + 2 water (mid lanes 1/3) = 250c, leaves 100c reserve
+    // Income from 3 coins by t=12s: ~75c → 175c at wave start for emergency offensive
+    if (elapsed < 11500) {
+      // 3 coins on lanes 0/2/4
+      if (coinCount < 3 && has('coin') && canPlace('coin')) {
+        for (const row of [2, 0, 4]) {
+          if (isEmpty(0, row)) {
+            if (tryPlace('coin', 0, row, 'eco-prebuild')) return true;
           }
+        }
+      }
+      // 2 water walls on mid lanes (most attacked)
+      if (has('water') && canPlace('water')) {
+        for (const row of [2, 1, 3]) {
+          if (!laneStatus[row].hasWater) {
+            if (tryPlace('water', 5, row, 'wall-prebuild-' + row)) return true;
+          }
+        }
+      }
+      return false;  // hold reserve for post-wave reaction
+    }
+
+    // ===== POST-WAVE (elapsed >= 11500ms) =====
+
+    // Priority 1: PANIC — magnet on cluster (4+ visitors in same 3x3 area)
+    if (has('magnet') && canPlace('magnet')) {
+      // group visitors by cell
+      const cellCounts = {};
+      for (const v of visitors) {
+        const cellCol = Math.floor((v.x - 100) / 90);
+        const cellRow = v.row;
+        if (cellCol < 1 || cellCol > 7) continue;
+        // 3x3 area around v: (cellCol-1..cellCol+1, cellRow-1..cellRow+1)
+        const key = cellCol + ',' + cellRow;
+        cellCounts[key] = (cellCounts[key] || 0) + 1;
+      }
+      let bestCell = null, bestCount = 0;
+      for (const [key, count] of Object.entries(cellCounts)) {
+        if (count >= 4 && count > bestCount) {
+          bestCount = count;
+          const [c, r] = key.split(',').map(Number);
+          bestCell = { col: c, row: r };
+        }
+      }
+      if (bestCell && isEmpty(bestCell.col, bestCell.row)) {
+        if (tryPlace('magnet', bestCell.col, bestCell.row, 'panic-magnet-' + bestCount)) return true;
+      }
+    }
+
+    // Priority 2: Mine — single visitor close to base on lane without offensive
+    if (has('mine') && canPlace('mine')) {
+      for (const v of visitors) {
+        const cellCol = Math.floor((v.x - 100) / 90);
+        if (cellCol >= 1 && cellCol <= 4 && !laneStatus[v.row].hasOffensive) {
+          if (tryPlace('mine', Math.max(1, cellCol - 1), v.row, 'mine-trap')) return true;
         }
       }
     }
 
-    // Priority 1: emergency — any active threat lane without offensive tile
+    // Priority 3: Emergency offensive on most threatened lane (closest visitor to base)
     if (activeLanes.length && offensive && canPlace(offensive)) {
-      // pick the most threatening lane (lowest col = closest to base)
       const sorted = activeLanes.sort((a, b) => threatLanesByCol[a] - threatLanesByCol[b]);
       for (const row of sorted) {
         if (!laneStatus[row].hasOffensive) {
-          // place offensive at col 4 if possible, else col 3 or 5
           for (const col of [4, 3, 5, 6]) {
-            if (isEmpty(col, row)) {
-              const before = s.coins;
-              window.__pd_place(offensive, col, row);
-              if (s.coins < before) {
-                window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: offensive, col, row, reason: 'emergency-lane-' + row });
-                return true;
-              }
-            }
+            if (tryPlace(offensive, col, row, 'emergency-lane-' + row)) return true;
           }
         }
       }
     }
 
-    // Priority 2: water in front of any lane with threat but no water yet
-    if (activeLanes.length && has('water') && canPlace('water')) {
+    // Priority 4: Cottoncandy slow on threat lane (cheap, helps when offensive on CD)
+    if (has('cottoncandy') && canPlace('cottoncandy') && activeLanes.length) {
+      for (const row of activeLanes) {
+        if (tryPlace('cottoncandy', 6, row, 'slow-lane-' + row)) return true;
+      }
+    }
+
+    // Priority 5: Replace destroyed water on threat lanes
+    if (has('water') && canPlace('water') && activeLanes.length) {
       for (const row of activeLanes) {
         if (!laneStatus[row].hasWater) {
           for (const col of [5, 6, 4]) {
-            if (isEmpty(col, row)) {
-              const before = s.coins;
-              window.__pd_place('water', col, row);
-              if (s.coins < before) {
-                window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'water', col, row, reason: 'wall-lane-' + row });
-                return true;
-              }
-            }
+            if (tryPlace('water', col, row, 'water-replace-' + row)) return true;
           }
         }
       }
     }
 
-    // Priority 3: coin gen in safe lanes (no current threat)
-    if (has('coin') && canPlace('coin')) {
-      // count existing coins
-      let coinCount = 0;
-      for (let r = 0; r < 5; r++) for (let c = 0; c < 12; c++) {
-        const t = s.gridState[r][c]; if (t && t.constructor.name === 'CoinGenerator') coinCount++;
-      }
-      // cap coins at 8 (more than enough)
-      if (coinCount < 8) {
-        // place in row furthest from active threats
-        const safeRows = [0, 1, 2, 3, 4].filter((r) => !activeLanes.includes(r) || elapsed < 12000);
-        for (const row of safeRows) {
-          for (const col of [0, 1]) {
-            if (isEmpty(col, row)) {
-              const before = s.coins;
-              window.__pd_place('coin', col, row);
-              if (s.coins < before) {
-                window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'coin', col, row, reason: 'eco' });
-                return true;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Pre-wave phase: don't burn budget on offensive too early — wait for income
-    const preWave = elapsed < 11500 && coinCount < 4;
-    if (preWave) return false;
-
-    // Priority 4: extend defense — fill all 5 lanes with offensive + water
-    if (offensive) {
+    // Priority 6: Fill remaining lanes with offensive FIRST (defense before economy)
+    if (offensive && canPlace(offensive)) {
       for (let row = 0; row < 5; row++) {
-        if (!laneStatus[row].hasOffensive && canPlace(offensive)) {
-          for (const col of [4, 3, 5, 6]) {
-            if (isEmpty(col, row)) {
-              const before = s.coins;
-              window.__pd_place(offensive, col, row);
-              if (s.coins < before) {
-                window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: offensive, col, row, reason: 'fill-off' });
-                return true;
-              }
-            }
-          }
-        }
-      }
-    }
-    if (has('water')) {
-      for (let row = 0; row < 5; row++) {
-        if (!laneStatus[row].hasWater && canPlace('water')) {
-          for (const col of [5, 6]) {
-            if (isEmpty(col, row)) {
-              const before = s.coins;
-              window.__pd_place('water', col, row);
-              if (s.coins < before) {
-                window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'water', col, row, reason: 'fill-water' });
-                return true;
-              }
-            }
+        if (!laneStatus[row].hasOffensive) {
+          for (const col of [4, 3, 5]) {
+            if (tryPlace(offensive, col, row, 'fill-off-' + row)) return true;
           }
         }
       }
     }
 
-    // Priority 5: backup offensive (col 3) and frost (col 7)
+    // Priority 6.5: Cheap offensive fallback — if primary offensive too expensive, use lava
+    if (offensive !== 'lava' && has('lava') && canPlace('lava')) {
+      for (let row = 0; row < 5; row++) {
+        if (!laneStatus[row].hasOffensive) {
+          for (const col of [4, 3, 5]) {
+            if (tryPlace('lava', col, row, 'lava-fallback-' + row)) return true;
+          }
+        }
+      }
+    }
+
+    // Priority 7: Add 4th coin gen ONLY if all 5 lanes have offensive (defense > eco)
+    const allLanesCovered = [0,1,2,3,4].every((r) => laneStatus[r].hasOffensive);
+    if (allLanesCovered && coinCount < 5 && has('coin') && canPlace('coin')) {
+      const safeRows = [0, 1, 2, 3, 4].filter((r) => threatLanesByCol[r] == null || threatLanesByCol[r] > 6);
+      for (const row of safeRows) {
+        for (const col of [0, 1]) {
+          if (tryPlace('coin', col, row, 'eco-add')) return true;
+        }
+      }
+    }
+
+    // Priority 8: Backup offensive layer (col 3 if col 4 occupied)
     if (offensive && canPlace(offensive)) {
       for (let row = 0; row < 5; row++) {
         for (const col of [3, 2]) {
-          if (isEmpty(col, row)) {
-            const before = s.coins;
-            window.__pd_place(offensive, col, row);
-            if (s.coins < before) {
-              window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: offensive, col, row, reason: 'backup-off' });
-              return true;
-            }
-          }
+          if (tryPlace(offensive, col, row, 'backup-off-' + row)) return true;
         }
       }
     }
+
+    // Priority 9: Frost trap on cols 7-8 (slow + dmg)
     if (has('frost') && canPlace('frost')) {
       for (let row = 0; row < 5; row++) {
-        for (const col of [7]) {
-          if (isEmpty(col, row)) {
-            const before = s.coins;
-            window.__pd_place('frost', col, row);
-            if (s.coins < before) {
-              window.__events.push({ t: Math.floor(elapsed), kind: 'place', tool: 'frost', col, row, reason: 'frost' });
-              return true;
-            }
-          }
-        }
+        if (tryPlace('frost', 7, row, 'frost')) return true;
       }
     }
 
@@ -346,7 +344,7 @@ await page.evaluate(solverSetupFn);
 
 const summary = [];
 const t_start = Date.now();
-const BATCH_SIZE = 8;
+const BATCH_SIZE = 1;
 
 for (let i = 0; i < LEVELS.length; i++) {
   if (i > 0 && i % BATCH_SIZE === 0) {
