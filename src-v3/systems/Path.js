@@ -1,17 +1,13 @@
 import * as THREE from "three";
 
-// Build a winding path from spawn (left) to castle (right-bottom)
-export function buildPath() {
-  const points = [
-    new THREE.Vector3(-15, 0, -8),
-    new THREE.Vector3(-9, 0, -2),
-    new THREE.Vector3(-5, 0, -7),
-    new THREE.Vector3(0, 0, -3),
-    new THREE.Vector3(4, 0, -8),
-    new THREE.Vector3(8, 0, -2),
-    new THREE.Vector3(6, 0, 4),
-    new THREE.Vector3(2, 0, 6),
-  ];
+const DEFAULT_POINTS = [
+  [-15, 0, -8], [-9, 0, -2], [-5, 0, -7], [0, 0, -3],
+  [4, 0, -8], [8, 0, -2], [6, 0, 4], [2, 0, 6],
+];
+
+export function buildPath(rawPoints) {
+  const src = rawPoints || DEFAULT_POINTS;
+  const points = src.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
   return new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.5);
 }
 

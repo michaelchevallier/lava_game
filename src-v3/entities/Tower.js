@@ -114,4 +114,18 @@ export class Tower {
       life: 1.2,
     });
   }
+
+  destroy() {
+    this.scene.remove(this.group);
+    this.group.traverse((c) => {
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) c.material.dispose();
+    });
+    for (const p of this.projectiles) {
+      this.scene.remove(p.mesh);
+      p.mesh.geometry.dispose();
+      p.mesh.material.dispose();
+    }
+    this.projectiles = [];
+  }
 }
