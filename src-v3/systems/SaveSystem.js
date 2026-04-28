@@ -67,6 +67,23 @@ export const SaveSystem = {
     persist();
   },
 
+  getMusicVolume() {
+    const v = ensureCached().musicVolume;
+    return v == null ? 0.35 : v;
+  },
+  setMusicVolume(v) {
+    ensureCached().musicVolume = Math.max(0, Math.min(1, v));
+    persist();
+  },
+  getSfxVolume() {
+    const v = ensureCached().sfxVolume;
+    return v == null ? 0.5 : v;
+  },
+  setSfxVolume(v) {
+    ensureCached().sfxVolume = Math.max(0, Math.min(1, v));
+    persist();
+  },
+
   getBestWave() { return ensureCached().bestWave || 0; },
   recordWaveReached(wave) {
     const s = ensureCached();

@@ -20,6 +20,8 @@ import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
 SaveSystem.load();
 Audio.setMuted(SaveSystem.isMuted());
+Audio.setVolume(SaveSystem.getSfxVolume());
+MusicManager.setMusicVolume(SaveSystem.getMusicVolume());
 
 await AssetLoader.ready();
 
@@ -834,6 +836,44 @@ muteBtn.addEventListener("click", () => {
 });
 refreshMuteUI();
 
+const settingsBtn = document.getElementById("settings-btn");
+const settingsOverlay = document.getElementById("settings");
+const musicVolSlider = document.getElementById("settings-music-vol");
+const sfxVolSlider = document.getElementById("settings-sfx-vol");
+const musicVolVal = document.getElementById("settings-music-val");
+const sfxVolVal = document.getElementById("settings-sfx-val");
+function refreshSettingsUI() {
+  const mv = SaveSystem.getMusicVolume();
+  const sv = SaveSystem.getSfxVolume();
+  musicVolSlider.value = Math.round(mv * 100);
+  sfxVolSlider.value = Math.round(sv * 100);
+  musicVolVal.textContent = `${Math.round(mv * 100)}%`;
+  sfxVolVal.textContent = `${Math.round(sv * 100)}%`;
+}
+musicVolSlider.addEventListener("input", () => {
+  const v = parseInt(musicVolSlider.value, 10) / 100;
+  SaveSystem.setMusicVolume(v);
+  MusicManager.setMusicVolume(v);
+  musicVolVal.textContent = `${Math.round(v * 100)}%`;
+});
+sfxVolSlider.addEventListener("input", () => {
+  const v = parseInt(sfxVolSlider.value, 10) / 100;
+  SaveSystem.setSfxVolume(v);
+  Audio.setVolume(v);
+  sfxVolVal.textContent = `${Math.round(v * 100)}%`;
+});
+settingsBtn.addEventListener("click", () => {
+  refreshSettingsUI();
+  settingsOverlay.classList.add("show");
+  runner.pause();
+});
+settingsOverlay.querySelector('button[data-action="close"]').addEventListener("click", () => {
+  settingsOverlay.classList.remove("show");
+  if (!ui.shop.classList.contains("show") && !ui.briefing.classList.contains("show") && !ui.perkOverlay.classList.contains("show") && !ui.worldmap.classList.contains("show") && !ui.result.classList.contains("show")) {
+    runner.resume();
+  }
+});
+
 function startAudioOnGesture() {
   Audio.start();
   MusicManager.start();
@@ -929,7 +969,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j5-c3",
+  version: "j5-c4",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

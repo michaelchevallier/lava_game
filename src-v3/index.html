@@ -156,13 +156,13 @@
       .level-tile .level-stars .filled { color: #ffd23f; }
       .level-tile .level-stars .empty { color: #4a5d75; }
 
-      #map-btn, #shop-btn {
+      #map-btn, #shop-btn, #settings-btn {
         background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
         padding: 4px 10px; font-size: 22px; cursor: pointer; pointer-events: auto;
         transition: background 0.12s ease, transform 0.08s ease;
       }
-      #map-btn:hover, #shop-btn:hover { background: rgba(40,52,68,0.9); }
-      #map-btn:active, #shop-btn:active { transform: translateY(1px); }
+      #map-btn:hover, #shop-btn:hover, #settings-btn:hover { background: rgba(40,52,68,0.9); }
+      #map-btn:active, #shop-btn:active, #settings-btn:active { transform: translateY(1px); }
       #shop-btn { border-color: #6a3aa0; }
       #shop-btn:hover { background: rgba(60,28,80,0.9); }
       .overlay .panel .stats { margin: 14px 0; font-size: 16px; opacity: 0.9; }
@@ -400,6 +400,7 @@
         <div class="right">
           <button id="shop-btn" type="button" aria-label="Boutique méta" title="Boutique (U)">🛒</button>
           <button id="map-btn" type="button" aria-label="Carte des mondes" title="Carte (M)">🗺️</button>
+          <button id="settings-btn" type="button" aria-label="Réglages" title="Réglages">⚙️</button>
           <button id="mute-btn" type="button" aria-label="Mute" title="Couper le son">🔊</button>
           <div id="coins">100</div>
           <div id="gems">0</div>
@@ -452,6 +453,27 @@
         <h2>🌳 Plaine du Royaume</h2>
         <div class="subtitle">Total : <span id="worldmap-stars">0</span> ★ · Monde 1/4</div>
         <div id="worldmap-grid"></div>
+        <div class="actions">
+          <button data-action="close">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings" class="overlay">
+      <div class="panel" style="min-width:340px;">
+        <h2 style="color:#aae5ff;">⚙️ Réglages audio</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;margin:14px 0;">
+          <label style="display:flex;align-items:center;gap:10px;font-size:14px;">
+            <span style="flex:0 0 100px;text-align:left;">🎵 Musique</span>
+            <input type="range" id="settings-music-vol" min="0" max="100" value="35" style="flex:1;">
+            <span id="settings-music-val" style="flex:0 0 36px;text-align:right;font-weight:700;">35%</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:14px;">
+            <span style="flex:0 0 100px;text-align:left;">🔔 SFX</span>
+            <input type="range" id="settings-sfx-vol" min="0" max="100" value="50" style="flex:1;">
+            <span id="settings-sfx-val" style="flex:0 0 36px;text-align:right;font-weight:700;">50%</span>
+          </label>
+        </div>
         <div class="actions">
           <button data-action="close">Fermer</button>
         </div>
