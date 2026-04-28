@@ -90,6 +90,7 @@ export class CampaignMenuScene extends Phaser.Scene {
     this.drawTrophyButton();
     this.drawStatsButton();
     this.drawFairgroundButton();
+    this.drawEncyclopediaButton();
 
     this.scrollContainer = this.add.container(0, 0);
     this.scrollContainer.setDepth(5);
@@ -196,6 +197,24 @@ export class CampaignMenuScene extends Phaser.Scene {
         this.cameras.main.fadeOut(250, 0, 0, 0);
         this.cameras.main.once("camerafadeoutcomplete", () => {
           this.scene.start("StatsScene");
+          this.scene.stop();
+        });
+      },
+    });
+  }
+
+  drawEncyclopediaButton() {
+    makeClickable(this, {
+      x: 320, y: 110, width: 95, height: 38,
+      fillColor: 0x000000, fillAlpha: 0.5,
+      strokeColor: 0x90ff90,
+      hoverFill: 0x1a3a1a,
+      label: "📖 Aide",
+      labelStyle: { fontFamily: "Fredoka, system-ui", fontSize: "14px", fontStyle: "bold", color: "#bbffbb" },
+      onClick: () => {
+        this.cameras.main.fadeOut(250, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.scene.start("EncyclopediaScene");
           this.scene.stop();
         });
       },
