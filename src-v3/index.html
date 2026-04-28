@@ -35,6 +35,20 @@
       #title { font-size: 20px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
       #footer { font-size: 12px; opacity: 0.7; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 8px; }
 
+      #hero-bar {
+        background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 12px;
+        padding: 4px 10px; min-width: 180px; pointer-events: none;
+      }
+      #hero-bar .label { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.85; margin-bottom: 2px; }
+      #hero-bar .label .name::before { content: "👑 "; }
+      #hero-bar .bar { position: relative; height: 8px; border-radius: 4px; background: #1d2a36; overflow: hidden; border: 1px solid rgba(0,0,0,0.4); }
+      #hero-bar .fill {
+        height: 100%; background: linear-gradient(90deg, #66ccff, #aae5ff);
+        transition: width 0.2s ease;
+        width: 0;
+      }
+      #hero-bar.maxed .fill { background: linear-gradient(90deg, #ffd23f, #ffe273); width: 100%; }
+
       #castle-hp {
         background: rgba(20,28,36,0.92); border: 2px solid #3a4a5a; border-radius: 12px;
         padding: 4px 10px; min-width: 240px; max-width: 320px; pointer-events: none;
@@ -145,6 +159,10 @@
         <div class="left">
           <div id="title">Milan Crowd Defense</div>
           <div id="wave">Vague 1</div>
+          <div id="hero-bar">
+            <div class="label"><span class="name">Lv <span id="hero-level">1</span></span><span class="value"><span id="hero-xp">0</span>/<span id="hero-xpnext">30</span></span></div>
+            <div class="bar"><div class="fill" id="hero-xp-fill"></div></div>
+          </div>
         </div>
         <div id="castle-hp">
           <div class="label"><span class="name">Château</span><span class="value"><span id="castle-hp-cur">100</span>/<span id="castle-hp-max">100</span></span></div>

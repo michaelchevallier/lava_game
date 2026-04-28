@@ -129,7 +129,15 @@ export class LevelRunner {
         continue;
       }
       if (e.dead) {
-        this.coins += e.reward || 2;
+        const baseReward = e.reward || 2;
+        const reward = Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1));
+        this.coins += reward;
+        if (this.hero) {
+          this.hero.gainXp(1);
+          if (this.hero.lifesteal > 0) {
+            this.castleHP = Math.min(this.castleHPMax, this.castleHP + this.hero.lifesteal);
+          }
+        }
         Particles.emit(
           { x: e.group.position.x, y: e.group.position.y + 0.5, z: e.group.position.z },
           0xc63a10,
@@ -138,7 +146,7 @@ export class LevelRunner {
         );
         JuiceFX.shake(0.05, 80);
         Audio.sfxEnemyDie();
-        emit("crowdef:enemy-killed", { type: e.type || "basic", reward: e.reward || 2 });
+        emit("crowdef:enemy-killed", { type: e.type || "basic", reward });
         e.destroy();
         this.enemies.splice(i, 1);
       }

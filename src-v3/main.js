@@ -193,6 +193,11 @@ const ui = {
   gameoverWave: document.getElementById("gameover-wave"),
   victoryCastle: document.getElementById("victory-castle"),
   victoryWave: document.getElementById("victory-wave"),
+  heroLevel: document.getElementById("hero-level"),
+  heroXp: document.getElementById("hero-xp"),
+  heroXpNext: document.getElementById("hero-xpnext"),
+  heroXpFill: document.getElementById("hero-xp-fill"),
+  heroBar: document.getElementById("hero-bar"),
 };
 
 function refreshHUD() {
@@ -204,6 +209,15 @@ function refreshHUD() {
   ui.castleHpFill.style.width = (ratio * 100).toFixed(1) + "%";
   ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
   ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+  if (runner.hero) {
+    ui.heroLevel.textContent = runner.hero.level;
+    ui.heroXp.textContent = runner.hero.xp;
+    const maxed = runner.hero.level >= runner.hero.maxLevel;
+    ui.heroXpNext.textContent = maxed ? "MAX" : runner.hero.xpToNext;
+    const xpRatio = maxed ? 1 : Math.min(1, runner.hero.xp / Math.max(1, runner.hero.xpToNext));
+    ui.heroXpFill.style.width = (xpRatio * 100).toFixed(1) + "%";
+    ui.heroBar.classList.toggle("maxed", maxed);
+  }
 }
 refreshHUD();
 document.addEventListener("crowdef:wave-start", refreshHUD);

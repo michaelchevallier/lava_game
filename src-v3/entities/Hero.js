@@ -15,6 +15,8 @@ const MOVE_SPEED = 6;
 const BOUND_X = 14;
 const BOUND_Z = 9;
 const MODEL_SCALE = 0.6;
+const XP_CURVE = [30, 50, 75, 100, 130];
+const MAX_LEVEL = 1 + XP_CURVE.length;
 
 export class Hero {
   constructor(scene, position) {
@@ -56,6 +58,49 @@ export class Hero {
     this.cooldown = 0;
     this.projectiles = [];
     this.moveDir = new THREE.Vector2(0, 0);
+
+    this.level = 1;
+    this.xp = 0;
+    this.xpToNext = XP_CURVE[0];
+    this.maxLevel = MAX_LEVEL;
+    this.perks = [];
+
+    this.fireRateMul = 1;
+    this.rangeMul = 1;
+    this.damageMul = 1;
+    this.moveSpeedMul = 1;
+    this.coinGainMul = 1;
+    this.critChance = 0;
+    this.multiShot = 0;
+    this.pierceCount = 0;
+    this.lifesteal = 0;
+  }
+
+  gainXp(amount) {
+    if (this.level >= this.maxLevel) return;
+    this.xp += amount;
+    while (this.xp >= this.xpToNext && this.level < this.maxLevel) {
+      this.xp -= this.xpToNext;
+      this.level++;
+      const next = XP_CURVE[this.level - 1];
+      this.xpToNext = next != null ? next : Infinity;
+      document.dispatchEvent(new CustomEvent("crowdef:hero-levelup", {
+        detail: { level: this.level, xp: this.xp, xpToNext: this.xpToNext },
+      }));
+    }
+  }
+
+  applyPerk(perk) {
+    this.perks.push(perk.id);
+    if (perk.range != null) this.rangeMul *= 1 + perk.range;
+    if (perk.fireRate != null) this.fireRateMul *= 1 - perk.fireRate;
+    if (perk.damage != null) this.damageMul *= 1 + perk.damage;
+    if (perk.moveSpeed != null) this.moveSpeedMul *= 1 + perk.moveSpeed;
+    if (perk.coinGain != null) this.coinGainMul *= 1 + perk.coinGain;
+    if (perk.critChance != null) this.critChance += perk.critChance;
+    if (perk.multiShot) this.multiShot += perk.multiShot;
+    if (perk.pierceCount) this.pierceCount += perk.pierceCount;
+    if (perk.lifesteal) this.lifesteal += perk.lifesteal;
   }
 
   _buildFallback() {
@@ -91,9 +136,10 @@ export class Hero {
     this.cooldown -= dt * 1000;
     if (this.anim) this.anim.tick(dt);
 
+    const moveSpeed = MOVE_SPEED * this.moveSpeedMul;
     if (this.moveDir.lengthSq() > 0.01) {
-      this.group.position.x += this.moveDir.x * MOVE_SPEED * dt;
-      this.group.position.z += this.moveDir.y * MOVE_SPEED * dt;
+      this.group.position.x += this.moveDir.x * moveSpeed * dt;
+      this.group.position.z += this.moveDir.y * moveSpeed * dt;
       this.group.position.x = Math.max(-BOUND_X, Math.min(BOUND_X, this.group.position.x));
       this.group.position.z = Math.max(-BOUND_Z, Math.min(BOUND_Z, this.group.position.z));
       if (this.anim && this.anim.has("Run")) this.anim.play("Run");
@@ -101,11 +147,12 @@ export class Hero {
       this.anim.play("Idle");
     }
 
+    const range = RANGE * this.rangeMul;
     let target = null;
-    let bestDist = RANGE;
+    let bestDist = range;
     const myPos = this.group.position;
     for (const e of enemies) {
-      if (e.dead) continue;
+      if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
       const d = Math.hypot(dx, dz);
@@ -117,7 +164,7 @@ export class Hero {
       const dz = target.group.position.z - myPos.z;
       this.group.rotation.y = Math.atan2(dx, dz);
       if (this.cooldown <= 0) {
-        this.cooldown = FIRE_RATE_MS;
+        this.cooldown = FIRE_RATE_MS * this.fireRateMul;
         this._fire(target);
       }
     } else if (this.moveDir.lengthSq() > 0.01) {
@@ -129,18 +176,28 @@ export class Hero {
       p.life -= dt;
       p.mesh.position.x += p.dir.x * PROJ_SPEED * dt;
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
-      let hit = false;
+      let consumed = false;
       for (const e of enemies) {
         if (e.dead || e._dying) continue;
+        if (p._hitSet && p._hitSet.has(e)) continue;
         const dx = e.group.position.x - p.mesh.position.x;
         const dz = e.group.position.z - p.mesh.position.z;
         if (dx * dx + dz * dz < 0.36) {
-          e.takeDamage(DAMAGE, p.mesh.position);
-          hit = true;
+          let dmg = DAMAGE * this.damageMul;
+          if (this.critChance > 0 && Math.random() < this.critChance) dmg *= 2;
+          e.takeDamage(dmg, p.mesh.position);
+          if (this.pierceCount > 0) {
+            if (!p._hitSet) p._hitSet = new Set();
+            p._hitSet.add(e);
+            p._pierceLeft = (p._pierceLeft ?? this.pierceCount) - 1;
+            if (p._pierceLeft <= 0) consumed = true;
+          } else {
+            consumed = true;
+          }
           break;
         }
       }
-      if (hit || p.life <= 0) {
+      if (consumed || p.life <= 0) {
         this.scene.remove(p.mesh);
         p.mesh.geometry.dispose();
         p.mesh.material.dispose();
@@ -152,25 +209,37 @@ export class Hero {
   _fire(target) {
     const start = new THREE.Vector3().copy(this.group.position);
     start.y = 0.9;
-    const tx = target.group.position.x - start.x;
-    const tz = target.group.position.z - start.z;
-    const len = Math.hypot(tx, tz) || 1;
+    const baseTx = target.group.position.x - start.x;
+    const baseTz = target.group.position.z - start.z;
+    const baseLen = Math.hypot(baseTx, baseTz) || 1;
+    const baseDirX = baseTx / baseLen;
+    const baseDirZ = baseTz / baseLen;
 
-    const proj = new THREE.Mesh(
-      new THREE.SphereGeometry(0.12, 8, 8),
-      new THREE.MeshBasicMaterial({ color: 0xfff4d6 }),
-    );
-    proj.position.copy(start);
-    this.scene.add(proj);
+    const shots = 1 + this.multiShot;
+    const spreadDeg = shots > 1 ? 12 : 0;
+    for (let s = 0; s < shots; s++) {
+      const angle = shots > 1 ? (s - (shots - 1) / 2) * (spreadDeg * Math.PI / 180) : 0;
+      const cos = Math.cos(angle), sin = Math.sin(angle);
+      const dx = baseDirX * cos - baseDirZ * sin;
+      const dz = baseDirX * sin + baseDirZ * cos;
 
-    this.projectiles.push({
-      mesh: proj,
-      dir: new THREE.Vector3(tx / len, 0, tz / len),
-      life: 1.2,
-    });
+      const proj = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xfff4d6 }),
+      );
+      proj.position.copy(start);
+      this.scene.add(proj);
+
+      this.projectiles.push({
+        mesh: proj,
+        dir: new THREE.Vector3(dx, 0, dz),
+        life: 1.2,
+        _pierceLeft: this.pierceCount,
+      });
+    }
 
     Particles.emit(
-      { x: start.x + (tx / len) * 0.4, y: start.y, z: start.z + (tz / len) * 0.4 },
+      { x: start.x + baseDirX * 0.4, y: start.y, z: start.z + baseDirZ * 0.4 },
       0xfff4d6,
       2,
       { speed: 1.2, life: 0.18, scale: 0.18, yLift: 0.2 },
