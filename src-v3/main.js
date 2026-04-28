@@ -4,7 +4,11 @@ import { LevelRunner } from "./systems/LevelRunner.js";
 import { Particles } from "./systems/Particles.js";
 import { JuiceFX } from "./systems/JuiceFX.js";
 import { Audio } from "./systems/Audio.js";
+import { SaveSystem } from "./systems/SaveSystem.js";
 import world1_1 from "./data/levels/world1-1.js";
+
+SaveSystem.load();
+Audio.setMuted(SaveSystem.isMuted());
 
 const canvas = document.getElementById("app");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
@@ -221,12 +225,16 @@ function spawnDamagePopup(dmg) {
 document.addEventListener("crowdef:level-lost", (e) => {
   ui.gameoverWave.textContent = e.detail.wave;
   ui.gameover.classList.add("show");
+  SaveSystem.recordWaveReached(e.detail.wave);
+  SaveSystem.recordLevelDone(runner.level.id, { win: false, wave: e.detail.wave, castleHP: 0 });
 });
 
 document.addEventListener("crowdef:level-won", (e) => {
   ui.victoryCastle.textContent = `${Math.ceil(e.detail.castleHP)}/${e.detail.castleHPMax}`;
   ui.victoryWave.textContent = e.detail.wave;
   ui.victory.classList.add("show");
+  SaveSystem.recordWaveReached(e.detail.wave);
+  SaveSystem.recordLevelDone(runner.level.id, { win: true, wave: e.detail.wave, castleHP: e.detail.castleHP });
 });
 
 document.addEventListener("crowdef:level-restart", () => {
@@ -251,6 +259,7 @@ function refreshMuteUI() {
 }
 muteBtn.addEventListener("click", () => {
   Audio.toggleMuted();
+  SaveSystem.setMuted(Audio.isMuted());
   refreshMuteUI();
 });
 refreshMuteUI();
@@ -299,6 +308,8 @@ window.__cd = {
   runner,
   scene,
   camera,
+  audio: Audio,
+  save: SaveSystem,
   setSpeed: (n) => runner.setSpeed(n),
-  version: "j1-c2",
+  version: "j1-c7",
 };
