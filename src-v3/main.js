@@ -283,8 +283,14 @@ const clock = new THREE.Clock();
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05);
 
-  let mx = (keys.d - keys.a) + joystick.dx;
-  let mz = (keys.s - keys.w) + joystick.dy;
+  let mx, mz;
+  if (window.__cdInput && window.__cdInput.override) {
+    mx = window.__cdInput.dx;
+    mz = window.__cdInput.dz;
+  } else {
+    mx = (keys.d - keys.a) + joystick.dx;
+    mz = (keys.s - keys.w) + joystick.dy;
+  }
   runner.setMove(mx, mz);
 
   runner.tick(dt);

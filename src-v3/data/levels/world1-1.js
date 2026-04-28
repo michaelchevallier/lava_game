@@ -18,7 +18,7 @@ export default {
     spawnRateDecMs: 40,
     spawnRateMinMs: 200,
     breakMs: 4000,
-    finalWave: 99,
+    finalWave: 5,
   },
   castleHP: 100,
   startCoins: 100,

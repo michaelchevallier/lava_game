@@ -9,6 +9,11 @@ export default defineConfig({
     host: true,
     open: false,
   },
+  preview: {
+    port: 4174,
+    strictPort: true,
+    host: true,
+  },
   build: {
     outDir: resolve(process.cwd(), "dist-kingshot"),
     emptyOutDir: true,

@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "dev:kingshot": "vite --config vite.kingshot.config.js",
     "build:kingshot": "vite build --config vite.kingshot.config.js",
-    "preview:kingshot": "vite preview --config vite.kingshot.config.js"
+    "preview:kingshot": "vite preview --config vite.kingshot.config.js",
+    "test:crowdef": "node scripts/auto-test-crowdef.mjs"
   },
   "dependencies": {
     "kaplay": "^3001.0.19",
