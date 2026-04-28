@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Particles } from "../systems/Particles.js";
 
 const FIRE_RATE_MS = 350;
 const RANGE = 12;
@@ -156,6 +157,13 @@ export class Hero {
       dir: new THREE.Vector3(tx / len, 0, tz / len),
       life: 1.2,
     });
+
+    Particles.emit(
+      { x: start.x + (tx / len) * 0.4, y: start.y, z: start.z + (tz / len) * 0.4 },
+      0xfff4d6,
+      2,
+      { speed: 1.2, life: 0.18, scale: 0.18, yLift: 0.2 },
+    );
   }
 
   destroy() {

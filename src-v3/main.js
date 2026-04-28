@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { makePathLine } from "./systems/Path.js";
 import { LevelRunner } from "./systems/LevelRunner.js";
+import { Particles } from "./systems/Particles.js";
+import { JuiceFX } from "./systems/JuiceFX.js";
 import world1_1 from "./data/levels/world1-1.js";
 
 const canvas = document.getElementById("app");
@@ -26,8 +28,9 @@ function resize() {
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
+const SHAKE_OFFSET = new THREE.Vector3();
 function refitCamera() {
-  camera.position.copy(CAM_TARGET).add(CAM_OFFSET);
+  camera.position.copy(CAM_TARGET).add(CAM_OFFSET).add(SHAKE_OFFSET);
   camera.lookAt(CAM_TARGET);
 }
 refitCamera();
@@ -82,6 +85,9 @@ for (let i = 0; i < 16; i++) {
   const z = Math.sin(angle) * r;
   if (Math.abs(x) > 6 || Math.abs(z) > 6) addTree(x, z, 2 + Math.random() * 2);
 }
+
+Particles.init(scene);
+JuiceFX.init();
 
 const runner = new LevelRunner(scene, world1_1);
 runner.setup();
@@ -195,12 +201,21 @@ refreshHUD();
 document.addEventListener("crowdef:wave-start", refreshHUD);
 document.addEventListener("crowdef:enemy-killed", refreshHUD);
 document.addEventListener("crowdef:tower-built", refreshHUD);
-document.addEventListener("crowdef:castle-hit", () => {
+document.addEventListener("crowdef:castle-hit", (e) => {
   refreshHUD();
   ui.castleHpBox.classList.remove("flash");
   void ui.castleHpBox.offsetWidth;
   ui.castleHpBox.classList.add("flash");
+  spawnDamagePopup(e.detail.dmg);
 });
+
+function spawnDamagePopup(dmg) {
+  const popup = document.createElement("div");
+  popup.className = "damage-popup";
+  popup.textContent = `-${dmg}`;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 900);
+}
 
 document.addEventListener("crowdef:level-lost", (e) => {
   ui.gameoverWave.textContent = e.detail.wave;
@@ -240,6 +255,9 @@ function tick() {
   runner.setMove(mx, mz);
 
   runner.tick(dt);
+  Particles.tick(dt);
+  const shake = JuiceFX.tick(dt);
+  SHAKE_OFFSET.copy(shake);
   refreshHUD();
 
   if (runner.hero) {

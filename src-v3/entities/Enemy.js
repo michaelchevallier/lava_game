@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Particles } from "../systems/Particles.js";
 
 const SPEED = 1.2; // units/sec along path
 const HP_MAX = 3;
@@ -68,6 +69,12 @@ export class Enemy {
     const ratio = Math.max(0, this.hp / HP_MAX);
     this.hpBar.scale.x = ratio;
     this.hpBar.position.x = -(0.58 * (1 - ratio)) / 2;
+    Particles.emit(
+      { x: this.group.position.x, y: this.group.position.y + 0.6, z: this.group.position.z },
+      0xffffff,
+      3,
+      { speed: 2, life: 0.3, scale: 0.25 },
+    );
     if (this.hp <= 0) this.dead = true;
   }
 

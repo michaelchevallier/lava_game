@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { buildPath } from "./Path.js";
+import { Particles } from "./Particles.js";
+import { JuiceFX } from "./JuiceFX.js";
 import { Hero } from "../entities/Hero.js";
 import { Enemy } from "../entities/Enemy.js";
 import { Slot } from "../entities/Slot.js";
@@ -106,6 +108,13 @@ export class LevelRunner {
       }
       if (e.dead) {
         this.coins += e.reward || 2;
+        Particles.emit(
+          { x: e.group.position.x, y: e.group.position.y + 0.5, z: e.group.position.z },
+          0xc63a10,
+          8,
+          { speed: 3, life: 0.55, scale: 0.45, yLift: 1.2 },
+        );
+        JuiceFX.shake(0.05, 80);
         emit("crowdef:enemy-killed", { type: e.type || "basic", reward: e.reward || 2 });
         e.destroy();
         this.enemies.splice(i, 1);
@@ -115,10 +124,18 @@ export class LevelRunner {
     if (this.hero) this.hero.tick(adt, this.enemies);
 
     for (const slot of this.slots) {
+      const slotPos = slot.pos;
       const built = slot.tick(adt, this.hero, this);
       if (built) {
         this.towers.push(slot.tower);
-        emit("crowdef:tower-built", { cost: slot.cost });
+        Particles.emit(
+          { x: slotPos.x, y: 0.4, z: slotPos.z },
+          0xffd23f,
+          14,
+          { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
+        );
+        JuiceFX.shake(0.15, 200);
+        emit("crowdef:tower-built", { cost: slot.cost, position: { x: slotPos.x, z: slotPos.z } });
       }
     }
 
@@ -127,9 +144,11 @@ export class LevelRunner {
 
   onCastleHit(dmg) {
     this.castleHP = Math.max(0, this.castleHP - dmg);
+    JuiceFX.shake(0.4, 350);
     emit("crowdef:castle-hit", { dmg, castleHP: this.castleHP });
     if (this.castleHP <= 0 && this.state === "play") {
       this.state = "lost";
+      JuiceFX.shake(0.7, 700);
       emit("crowdef:level-lost", { wave: this.wave });
     }
   }
