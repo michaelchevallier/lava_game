@@ -5,7 +5,8 @@ import { JuiceFX } from "./JuiceFX.js";
 import { Audio } from "./Audio.js";
 import { Hero } from "../entities/Hero.js";
 import { Enemy, ENEMY_TYPES } from "../entities/Enemy.js";
-import { Slot } from "../entities/Slot.js";
+import { Tower, TOWER_TYPES } from "../entities/Tower.js";
+import { generateBuildPointGrid, BUILD_POINT_RADIUS, BUILD_DRAIN_PER_SEC } from "../entities/BuildPoint.js";
 import { SaveSystem } from "./SaveSystem.js";
 import { computeActiveBonuses } from "../data/metaUpgrades.js";
 import { computeSkinBonuses, SKIN_BY_ID, getDefaultSkinId } from "../data/skins.js";
@@ -40,7 +41,9 @@ export class LevelRunner {
     this.hero = null;
     this.enemies = [];
     this.towers = [];
-    this.slots = [];
+    this.buildPoints = [];
+    this.selectedTowerType = "archer";
+    this._activeBuildPoint = null;
 
     this._waveActive = true;
     this._spawnTimer = 0;
@@ -114,13 +117,77 @@ export class LevelRunner {
     this.hero.applyMetaBonuses(this.metaBonuses);
     if (heroSkin?.bonus) this.hero.applySkinBonuses(heroSkin.bonus);
 
-    for (const cfg of this.level.slots) {
-      const pathIdx = cfg.pathIdx || 0;
-      const targetPath = this.paths[pathIdx] || this.path;
-      this.slots.push(new Slot(this.scene, targetPath, cfg));
-    }
+    this.buildPoints = generateBuildPointGrid(this.scene, this.paths);
 
     emit("crowdef:wave-start", { wave: 1 });
+  }
+
+  findClosestBuildPoint(pos, radius = BUILD_POINT_RADIUS) {
+    let best = null;
+    let bestDist = radius * radius;
+    for (const bp of this.buildPoints) {
+      const dx = pos.x - bp.pos.x;
+      const dz = pos.z - bp.pos.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 < bestDist) { bestDist = d2; best = bp; }
+    }
+    return best;
+  }
+
+  _findUnlockedTowerCfg(type) {
+    const cfg = TOWER_TYPES[type];
+    if (!cfg) return null;
+    return cfg;
+  }
+
+  _tryBuild(bp, dt) {
+    const type = this.selectedTowerType || "archer";
+    const cfg = this._findUnlockedTowerCfg(type);
+    if (!cfg) return;
+    if (this.coins <= 0) return;
+    const baseCost = (cfg.cost) || this._defaultTowerCost(type);
+    const drain = Math.min(this.coins, BUILD_DRAIN_PER_SEC * dt);
+    this.coins -= drain;
+    bp.paidThisLevel += drain;
+    bp.totalInvested += drain;
+    bp.updateBuildFill(bp.paidThisLevel / baseCost);
+    if (bp.paidThisLevel >= baseCost) {
+      const tower = new Tower(this.scene, bp.pos.clone(), type);
+      this.towers.push(tower);
+      bp.attachTower(tower, baseCost);
+      emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z } });
+    }
+  }
+
+  _defaultTowerCost(type) {
+    const COSTS = { archer: 30, tank: 50, mage: 70, ballista: 100, cannon: 130, crossbow: 110, fan: 90, mine: 60, magnet: 100, portal: 150, frost: 80 };
+    return COSTS[type] || 50;
+  }
+
+  _tickBuildPoints(dt, hero) {
+    if (!hero) return;
+    const closest = this.findClosestBuildPoint(hero.group.position, 4.5);
+    let activeNear = null;
+    for (const bp of this.buildPoints) {
+      if (bp === closest) continue;
+      bp.setHaloState("idle");
+    }
+    if (closest) {
+      const dx = hero.group.position.x - closest.pos.x;
+      const dz = hero.group.position.z - closest.pos.z;
+      const d2 = dx * dx + dz * dz;
+      const onPoint = d2 < BUILD_POINT_RADIUS * BUILD_POINT_RADIUS;
+      if (closest.occupied) {
+        closest.setHaloState(onPoint ? "occupied" : "near");
+      } else if (onPoint) {
+        closest.setHaloState("active");
+        activeNear = closest;
+        this._tryBuild(closest, dt);
+      } else {
+        closest.setHaloState("near");
+      }
+    }
+    this._activeBuildPoint = activeNear;
   }
 
   setSpeed(n) { this.gameSpeed = Math.max(0.1, Math.min(8, n)); }
@@ -237,31 +304,7 @@ export class LevelRunner {
 
     if (this.hero) this.hero.tick(adt, this.enemies);
 
-    for (const slot of this.slots) {
-      const slotPos = slot.pos;
-      const status = slot.tick(adt, this.hero, this);
-      if (status === 1) {
-        this.towers.push(slot.tower);
-        Particles.emit(
-          { x: slotPos.x, y: 0.4, z: slotPos.z },
-          0xffd23f, 14,
-          { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
-        );
-        JuiceFX.shake(0.15, 200);
-        Audio.sfxTowerBuilt();
-        emit("crowdef:tower-built", { cost: slot.baseCost, towerType: slot.towerType, position: { x: slotPos.x, z: slotPos.z } });
-      } else if (status > 1) {
-        const upgradeColor = status === 2 ? 0xff9a55 : 0xff5050;
-        Particles.emit(
-          { x: slotPos.x, y: 0.6, z: slotPos.z },
-          upgradeColor, 18,
-          { speed: 5, life: 0.85, scale: 0.6, yLift: 2.0 },
-        );
-        JuiceFX.shake(0.2, 250);
-        Audio.sfxTowerBuilt();
-        emit("crowdef:tower-upgraded", { level: status, towerType: slot.towerType, position: { x: slotPos.x, z: slotPos.z } });
-      }
-    }
+    this._tickBuildPoints(adt, this.hero);
 
     for (const t of this.towers) t.tick(adt, this.enemies);
   }
@@ -319,10 +362,10 @@ export class LevelRunner {
     for (const t of this.towers) {
       if (t.destroy) t.destroy();
     }
-    for (const s of this.slots) s.dispose();
+    for (const bp of this.buildPoints) bp.dispose();
     this.enemies = [];
     this.towers = [];
-    this.slots = [];
+    this.buildPoints = [];
     this.hero = null;
   }
 

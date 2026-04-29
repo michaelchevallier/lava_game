@@ -5,13 +5,6 @@ export default {
   name: "Volcan — Geyser",
   theme: "volcan",
   ...mergeY(),
-  slots: [
-    { t: 0.20, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.20, cost: 80, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.55, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
-    { t: 0.78, cost: 120, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.88, cost: 160, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { imp: 18, flyer: 12, brute: 6 }, spawnRateMs: 430, breakMs: 4000 },

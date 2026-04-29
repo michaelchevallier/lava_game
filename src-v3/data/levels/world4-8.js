@@ -15,14 +15,6 @@ export default {
       [15, 0, -3], [10, 0, 0], [5, 0, -2], [2, 0, 1], [0, 0, 5],
     ],
   ],
-  slots: [
-    { t: 0.18, cost: 60, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.45, cost: 90, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.18, cost: 60, lateralOffset: 2.4, towerType: "archer", pathIdx: 1 },
-    { t: 0.45, cost: 90, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.30, cost: 90, lateralOffset: 2.4, towerType: "tank", pathIdx: 2 },
-    { t: 0.85, cost: 175, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { basic: 14, runner: 10, imp: 8 }, spawnRateMs: 470, breakMs: 4000 },

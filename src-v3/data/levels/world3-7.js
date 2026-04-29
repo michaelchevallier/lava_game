@@ -5,13 +5,6 @@ export default {
   name: "Désert — Pyramide",
   theme: "desert",
   ...parallels(),
-  slots: [
-    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.18, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.55, cost: 100, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
-    { t: 0.55, cost: 115, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.88, cost: 155, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { flyer: 18, runner: 12, brute: 6 }, spawnRateMs: 450, breakMs: 4000 },

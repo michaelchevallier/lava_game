@@ -5,13 +5,6 @@ export default {
   name: "Désert — Cratère",
   theme: "desert",
   ...parallels(),
-  slots: [
-    { t: 0.18, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.18, cost: 65, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.55, cost: 95, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.55, cost: 110, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.86, cost: 145, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { runner: 14, flyer: 10, brute: 4 }, spawnRateMs: 480, breakMs: 4000 },

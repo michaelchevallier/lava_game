@@ -5,13 +5,6 @@ export default {
   name: "Volcan — Antre",
   theme: "volcan",
   ...encirclement(),
-  slots: [
-    { t: 0.30, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.65, cost: 110, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
-    { t: 0.20, cost: 85, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.50, cost: 125, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.80, cost: 165, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-  ],
   waves: {
     list: [
       { types: { imp: 22, flyer: 14, brute: 8 }, spawnRateMs: 410, breakMs: 4000 },

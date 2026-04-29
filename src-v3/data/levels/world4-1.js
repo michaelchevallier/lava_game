@@ -5,12 +5,6 @@ export default {
   name: "Volcan — Caldera",
   theme: "volcan",
   ...mergeY(),
-  slots: [
-    { t: 0.20, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.20, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.62, cost: 100, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { basic: 14, runner: 10, imp: 5 }, spawnRateMs: 480, breakMs: 4000 },

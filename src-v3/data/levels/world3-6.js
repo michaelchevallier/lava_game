@@ -5,13 +5,6 @@ export default {
   name: "Désert — Caravane",
   theme: "desert",
   ...splitV(),
-  slots: [
-    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.45, cost: 95, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.78, cost: 110, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
-    { t: 0.86, cost: 150, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { flyer: 18, brute: 6 }, spawnRateMs: 450, breakMs: 4000 },

@@ -5,13 +5,6 @@ export default {
   name: "Volcan — Forge",
   theme: "volcan",
   ...parallels(),
-  slots: [
-    { t: 0.18, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.18, cost: 80, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.55, cost: 105, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-    { t: 0.55, cost: 120, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.86, cost: 160, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { imp: 20, flyer: 14, brute: 7 }, spawnRateMs: 420, breakMs: 4000 },

@@ -216,12 +216,12 @@ function isOnPath(x, z, runner) {
       if (dx * dx + dz * dz < PATH_CLEAR_RADIUS_SQ) return true;
     }
   }
-  if (runner.slots) {
-    const SLOT_CLEAR_SQ = 9;
-    for (const s of runner.slots) {
-      const dx = s.pos.x - x;
-      const dz = s.pos.z - z;
-      if (dx * dx + dz * dz < SLOT_CLEAR_SQ) return true;
+  if (runner.buildPoints) {
+    const BP_CLEAR_SQ = 4;
+    for (const bp of runner.buildPoints) {
+      const dx = bp.pos.x - x;
+      const dz = bp.pos.z - z;
+      if (dx * dx + dz * dz < BP_CLEAR_SQ) return true;
     }
   }
   return false;
@@ -333,11 +333,20 @@ rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
 
 const keys = { w: 0, a: 0, s: 0, d: 0 };
+const TOWER_HOTKEYS = ["archer", "tank", "mage", "ballista", "cannon", "crossbow", "fan", "mine", "magnet", "portal", "frost"];
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 1;
   if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 1;
   if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 1;
   if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 1;
+  // Tower selection 1-9, 0=10ème, Minus=11ème
+  if (e.code === "Digit0") { runner.selectedTowerType = TOWER_HOTKEYS[9]; return; }
+  if (e.code === "Minus" || e.code === "NumpadSubtract") { runner.selectedTowerType = TOWER_HOTKEYS[10]; return; }
+  const m = e.code.match(/^Digit([1-9])$/);
+  if (m) {
+    const idx = parseInt(m[1], 10) - 1;
+    if (TOWER_HOTKEYS[idx]) runner.selectedTowerType = TOWER_HOTKEYS[idx];
+  }
 });
 window.addEventListener("keyup", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 0;
@@ -460,34 +469,23 @@ const towerPreviewName = document.getElementById("tower-preview-name");
 const towerPreviewStats = document.getElementById("tower-preview-stats");
 const _previewVec = new THREE.Vector3();
 
-function getNearbyEmptySlot(hero, radius = 1.6) {
-  if (!hero || !runner.slots) return null;
-  for (const s of runner.slots) {
-    if (s.currentLevel >= s.maxLevel) continue;
-    if (s.currentLevel > 0) continue;
-    const dx = hero.group.position.x - s.pos.x;
-    const dz = hero.group.position.z - s.pos.z;
-    if (dx * dx + dz * dz < radius * radius) return s;
-  }
-  return null;
-}
-
 function updateTowerPreview() {
   if (!runner.hero) {
     towerPreviewEl.style.display = "none";
     return;
   }
-  const slot = getNearbyEmptySlot(runner.hero);
-  if (!slot) {
+  const bp = runner._activeBuildPoint;
+  if (!bp || bp.occupied) {
     towerPreviewEl.style.display = "none";
     return;
   }
-  const cfg = TOWER_TYPES[slot.towerType];
+  const type = runner.selectedTowerType || "archer";
+  const cfg = TOWER_TYPES[type];
   if (!cfg) {
     towerPreviewEl.style.display = "none";
     return;
   }
-  _previewVec.set(slot.pos.x, 1.4, slot.pos.z);
+  _previewVec.set(bp.pos.x, 1.4, bp.pos.z);
   _previewVec.project(camera);
   const sx = (_previewVec.x * 0.5 + 0.5) * window.innerWidth;
   const sy = (-_previewVec.y * 0.5 + 0.5) * window.innerHeight;
@@ -498,17 +496,19 @@ function updateTowerPreview() {
   towerPreviewEl.style.left = `${Math.round(sx) + 30}px`;
   towerPreviewEl.style.top = `${Math.round(sy) - 20}px`;
   towerPreviewEl.style.display = "block";
-  towerPreviewName.textContent = cfg.label || slot.towerType;
+  towerPreviewName.textContent = cfg.label || type;
   let extras = [];
   if (cfg.aoe > 0) extras.push(`AoE ${cfg.aoe}`);
   if (cfg.pierce > 0) extras.push(`pierce ×${cfg.pierce}`);
+  if (cfg.pendingMechanic) extras.push("WIP");
   const cdSec = (cfg.fireRateMs / 1000).toFixed(2);
+  const cost = runner._defaultTowerCost(type);
   towerPreviewStats.innerHTML = `
     <div>🎯 Portée : <strong>${cfg.range}</strong></div>
     <div>💥 Dégâts : <strong>${cfg.damage}</strong></div>
     <div>⏱️ Cadence : <strong>${cdSec}s</strong></div>
     ${extras.length ? `<div>✨ ${extras.join(" · ")}</div>` : ""}
-    <div style="margin-top:4px;color:#ffd23f;">🪙 Coût : <strong>${slot.baseCost}</strong></div>
+    <div style="margin-top:4px;color:#ffd23f;">🪙 Coût : <strong>${cost}</strong></div>
   `;
 }
 

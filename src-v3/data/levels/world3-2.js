@@ -5,12 +5,6 @@ export default {
   name: "Désert — Oasis",
   theme: "desert",
   ...mergeY(),
-  slots: [
-    { t: 0.20, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.20, cost: 65, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.62, cost: 90, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-    { t: 0.84, cost: 120, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { runner: 12, flyer: 6, brute: 3 }, spawnRateMs: 500, breakMs: 4000 },

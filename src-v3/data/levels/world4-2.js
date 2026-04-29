@@ -5,12 +5,6 @@ export default {
   name: "Volcan — Falaise",
   theme: "volcan",
   ...parallels(),
-  slots: [
-    { t: 0.18, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.18, cost: 75, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.56, cost: 100, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { runner: 14, imp: 10, flyer: 6 }, spawnRateMs: 460, breakMs: 4000 },

@@ -5,13 +5,6 @@ export default {
   name: "Volcan — Grotte",
   theme: "volcan",
   ...splitV(),
-  slots: [
-    { t: 0.18, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.45, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.45, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.78, cost: 115, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-    { t: 0.86, cost: 155, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { imp: 14, flyer: 10, brute: 5 }, spawnRateMs: 450, breakMs: 4000 },

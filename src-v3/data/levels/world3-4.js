@@ -5,13 +5,6 @@ export default {
   name: "Désert — Tempête",
   theme: "desert",
   ...splitV(),
-  slots: [
-    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.45, cost: 95, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
-    { t: 0.78, cost: 110, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
-    { t: 0.88, cost: 145, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
-  ],
   waves: {
     list: [
       { types: { flyer: 14, basic: 12, brute: 5 }, spawnRateMs: 470, breakMs: 4000 },

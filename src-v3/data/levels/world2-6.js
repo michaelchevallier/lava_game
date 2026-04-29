@@ -6,13 +6,6 @@ export default {
     [-15, 0, -3], [-10, 0, 1], [-4, 0, -2], [0, 0, 2],
     [4, 0, -2], [8, 0, 2], [4, 0, 5], [0, 0, 6],
   ],
-  slots: [
-    { t: 0.14, cost: 40, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.30, cost: 65, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.48, cost: 90, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.66, cost: 105, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.84, cost: 140, lateralOffset: 2.4, towerType: "ballista" },
-  ],
   waves: {
     list: [
       { types: { assassin: 14, basic: 10, brute: 5 }, spawnRateMs: 470, breakMs: 4000 },

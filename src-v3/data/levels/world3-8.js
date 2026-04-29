@@ -5,13 +5,6 @@ export default {
   name: "Désert — Corsaire",
   theme: "desert",
   ...encirclement(),
-  slots: [
-    { t: 0.30, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
-    { t: 0.65, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
-    { t: 0.20, cost: 80, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-    { t: 0.50, cost: 120, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
-    { t: 0.80, cost: 165, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
-  ],
   waves: {
     list: [
       { types: { basic: 14, runner: 10, flyer: 6 }, spawnRateMs: 490, breakMs: 4000 },
