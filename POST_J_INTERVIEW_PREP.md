@@ -156,16 +156,28 @@ Liste legacy /v2/ (cf `CLAUDE.md`) :
    - Conversion totale → cohérence
    - Hybride → moins de risque de régressions
 
-## Assets téléchargés requis pour POST.J
+## Assets — ✅ déjà en place (commit 49d8d5d)
 
-Cf. liste fournie dans le plan POST.I, section assets (Mike doit télécharger) :
-- KayKit Dungeon Pack Remastered (catapulte + props)
-- Quaternius Fantasy Props MegaKit (mine, magnet, portal)
-- Recherche Poly Pizza pour frost / fan / specifics manquants
+Les 6 GLBs Park Defense sont téléchargés, déplacés dans `src-v3/public/towers/`, ajoutés à `AssetLoader.MANIFEST` et déclarés dans `Tower.TOWER_TYPES` :
 
-**Si Mike n'a pas les assets prêts au moment de POST.J** :
-- Phase 1 du refacto (free placement + radial menu) peut démarrer sans (utilise les 5 towers actuelles)
-- Phase 2 (Park Defense features) attendra les assets, ou on utilise des primitives Three.js stylisées en placeholder
+| Tour | GLB | Mécanique | État infra |
+|---|---|---|---|
+| Catapulte (`cannon`) | cannon_quaternius.glb | parabolic AoE 2.2u | ✅ Fonctionnel (prêt à poser) |
+| Baliste géante (`crossbow`) | giant_crossbow.glb | pierce 4 dmg 5 | ✅ Fonctionnel (prêt à poser) |
+| Soufflerie (`fan`) | tower_windmill.glb | push enemies | ⏳ pendingMechanic — interview |
+| Mine (`mine`) | spike_mine.glb | one-shot AoE 2.5u | ⏳ pendingMechanic — interview |
+| Aimant (`magnet`) | magnet_polygoogle.glb | pull centripète | ⏳ pendingMechanic — interview |
+| Portail (`portal`) | teleporter_base.glb | teleport (concept TBD) | ⏳ pendingMechanic — interview |
+
+`ASSETS_LICENSES.md` créé pour le tracking (CC0 vs CC-BY).
+
+**Test live** : `__cd.runner.towers` peut désormais accueillir des Tower de ces 6 types. Cannon + crossbow tirent normalement. Les 4 autres affichent leur model mais leur tick() return early (pas de comportement).
+
+**À déterminer pendant l'interview** :
+- Mécaniques exactes 3D pour fan / mine / magnet / portal (cf section C)
+- Économie : coûts initiaux + upgrade tiers
+- Unlock : par world ou tout dispo dès W1 ?
+- Affichage HUD toolbar : 9 types tours = trop pour un toolbar mobile ?
 
 ## Points de vigilance
 
