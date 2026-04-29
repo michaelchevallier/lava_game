@@ -5,6 +5,34 @@ import { Audio } from "../systems/Audio.js";
 import { AssetLoader } from "../systems/AssetLoader.js";
 import { AnimationController } from "../systems/AnimationController.js";
 import { applyToonToScene } from "../systems/ToonMaterial.js";
+import { JuiceFX } from "../systems/JuiceFX.js";
+
+const HIT_FLASH_DURATION = 0.09;
+const POPUP_LIFE = 0.5;
+
+let _popupCanvasCache = null;
+function makeDamageSprite(value) {
+  if (!_popupCanvasCache) _popupCanvasCache = document.createElement("canvas");
+  const canvas = document.createElement("canvas");
+  canvas.width = 96;
+  canvas.height = 48;
+  const ctx = canvas.getContext("2d");
+  const text = `-${Math.round(value)}`;
+  ctx.font = "bold 36px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "rgba(0,0,0,0.85)";
+  ctx.strokeText(text, 48, 24);
+  ctx.fillStyle = "#fff2a8";
+  ctx.fillText(text, 48, 24);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(1.2, 0.6, 1);
+  return sprite;
+}
 
 const DEATH_DURATION = 0.55;
 
@@ -105,6 +133,9 @@ export class Enemy {
     this._dying = false;
     this._dyingTimer = 0;
     this._lastTangent = new THREE.Vector3(0, 0, 1);
+    this._hitFlashTimer = 0;
+    this._hitFlashMats = null;
+    this._popups = [];
 
     this.chargeMs = cfg.chargeMs || 0;
     this.chargeCooldownMs = cfg.chargeCooldownMs || 0;
@@ -243,6 +274,9 @@ export class Enemy {
         0xffffff, 3,
         { speed: 2, life: 0.3, scale: 0.25 },
       );
+      this._triggerHitFlash();
+      this._spawnDamagePopup(actualDmg);
+      JuiceFX.shake(0.05, 80);
     }
     Audio.sfxEnemyHit();
     if (this.hp <= 0) {
@@ -254,8 +288,62 @@ export class Enemy {
     }
   }
 
+  _triggerHitFlash() {
+    if (!this._hitFlashMats) {
+      const mats = [];
+      this.group.traverse((o) => {
+        if (!(o.isMesh || o.isSkinnedMesh)) return;
+        if (o === this.hpBar || o === this.hpBarBg || o === this.shieldRing) return;
+        const list = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of list) {
+          if (m && m.emissive) mats.push(m);
+        }
+      });
+      this._hitFlashMats = mats;
+    }
+    for (const m of this._hitFlashMats) {
+      m.emissive.setHex(0xff2020);
+    }
+    this._hitFlashTimer = HIT_FLASH_DURATION;
+  }
+
+  _spawnDamagePopup(value) {
+    const sprite = makeDamageSprite(value);
+    sprite.position.set(
+      this.group.position.x + (Math.random() - 0.5) * 0.3,
+      this.group.position.y + 1.7,
+      this.group.position.z,
+    );
+    this.scene.add(sprite);
+    this._popups.push({ sprite, life: POPUP_LIFE, maxLife: POPUP_LIFE });
+  }
+
+  _tickHitFeedback(dt) {
+    if (this._hitFlashTimer > 0) {
+      this._hitFlashTimer -= dt;
+      if (this._hitFlashTimer <= 0 && this._hitFlashMats) {
+        for (const m of this._hitFlashMats) m.emissive.setHex(0x000000);
+      }
+    }
+    for (let i = this._popups.length - 1; i >= 0; i--) {
+      const p = this._popups[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        this.scene.remove(p.sprite);
+        if (p.sprite.material.map) p.sprite.material.map.dispose();
+        p.sprite.material.dispose();
+        this._popups.splice(i, 1);
+        continue;
+      }
+      const t = 1 - p.life / p.maxLife;
+      p.sprite.position.y += dt * 1.6;
+      p.sprite.material.opacity = 1 - t;
+    }
+  }
+
   tick(dt) {
     if (this.anim) this.anim.tick(dt);
+    this._tickHitFeedback(dt);
 
     if (!this._spawned && this.isBoss) {
       this._spawned = true;
@@ -365,6 +453,12 @@ export class Enemy {
   }
 
   destroy() {
+    for (const p of this._popups) {
+      this.scene.remove(p.sprite);
+      if (p.sprite.material.map) p.sprite.material.map.dispose();
+      p.sprite.material.dispose();
+    }
+    this._popups.length = 0;
     this.scene.remove(this.group);
     if (this.anim) this.anim.dispose();
     this.group.traverse((c) => {

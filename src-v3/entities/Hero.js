@@ -266,12 +266,36 @@ export class Hero {
       });
     }
 
+    const muzzlePos = { x: start.x + baseDirX * 0.4, y: start.y, z: start.z + baseDirZ * 0.4 };
     Particles.emit(
-      { x: start.x + baseDirX * 0.4, y: start.y, z: start.z + baseDirZ * 0.4 },
+      muzzlePos,
       0xfff4d6,
-      2,
-      { speed: 1.2, life: 0.18, scale: 0.18, yLift: 0.2 },
+      6,
+      { speed: 3.5, life: 0.18, scale: 0.18, yLift: 0.2 },
     );
+
+    const flash = new THREE.PointLight(0xfff4d6, 5, 3.5);
+    flash.position.set(muzzlePos.x, muzzlePos.y, muzzlePos.z);
+    this.scene.add(flash);
+    setTimeout(() => {
+      this.scene.remove(flash);
+      flash.dispose();
+    }, 60);
+
+    if (this.model) {
+      const ox = this.model.position.x;
+      const oz = this.model.position.z;
+      this.model.position.x = ox - baseDirX * 0.08;
+      this.model.position.z = oz - baseDirZ * 0.08;
+      const m = this.model;
+      setTimeout(() => {
+        if (m && m.parent) {
+          m.position.x = ox;
+          m.position.z = oz;
+        }
+      }, 90);
+    }
+
     Audio.sfxHeroShoot();
   }
 
