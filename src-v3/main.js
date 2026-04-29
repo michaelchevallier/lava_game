@@ -662,7 +662,16 @@ if (radialEl) {
       refreshRadialButtons();
     } else if (action === "info") {
       const cfg = t.cfg;
-      sellToastMsgEl.textContent = `${cfg.label} L${t.upgradeLevel || 1} · 🎯${t.range || cfg.range} · 💥${(t.damage || cfg.damage).toFixed(1)} · 💀${t.kills || 0}`;
+      const lvl = t.upgradeLevel || 1;
+      const parts = [`${cfg.label} L${lvl}`, `🎯${(t.range || cfg.range).toFixed(1)}u`];
+      if (cfg.behavior === "push") parts.push(`💨 push ${(cfg.pushStrength || 0.04).toFixed(3)}/s`);
+      else if (cfg.behavior === "cluster") parts.push(`💣 ${cfg.damage} AoE${cfg.aoe} cd${(cfg.cooldownMs / 1000).toFixed(0)}s`);
+      else if (cfg.behavior === "slow") parts.push(`❄️ ×${cfg.slowMul} ${(cfg.slowDurationMs / 1000).toFixed(0)}s`);
+      else if (cfg.behavior === "buffAura") parts.push(`✨ aura ×${cfg.buffMul}`);
+      else if (cfg.behavior === "coinPull") parts.push(`🪙 ×${cfg.coinMul}`);
+      else parts.push(`💥${(t.damage || cfg.damage).toFixed(1)}`, `⏱${(cfg.fireRateMs / 1000).toFixed(2)}s`);
+      parts.push(`💀${t.kills || 0}`, `📊${Math.round(t.totalDamage || 0)}dmg`);
+      sellToastMsgEl.textContent = parts.join(" · ");
       sellUndoBtnEl.style.display = "none";
       sellToastEl.style.display = "block";
       _radialPendingTimer = 3.0;

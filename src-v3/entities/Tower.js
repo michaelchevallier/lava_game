@@ -99,6 +99,8 @@ export class Tower {
 
     this.cooldown = 0;
     this.projectiles = [];
+    this.kills = 0;
+    this.totalDamage = 0;
   }
 
   _loadModel(assetKey, scale) {
@@ -289,7 +291,7 @@ export class Tower {
         const dx = e.group.position.x - center.x;
         const dz = e.group.position.z - center.z;
         if (dx * dx + dz * dz <= r2) {
-          e.takeDamage(this.damage, projectile.mesh.position);
+          this._dealDamage(e, this.damage, projectile.mesh.position);
         }
       }
       Particles.emit(
@@ -298,8 +300,17 @@ export class Tower {
         { speed: 4, life: 0.45, scale: 0.4, yLift: 0.8 },
       );
     } else {
-      enemy.takeDamage(this.damage, projectile.mesh.position);
+      this._dealDamage(enemy, this.damage, projectile.mesh.position);
     }
+  }
+
+  _dealDamage(enemy, dmg, origin) {
+    if (enemy._dying || enemy.dead) return;
+    const hpBefore = enemy.hp;
+    enemy.takeDamage(dmg, origin);
+    const dealt = Math.max(0, hpBefore - enemy.hp);
+    this.totalDamage += dealt;
+    if (enemy._dying && hpBefore > 0) this.kills++;
   }
 
   _tickPush(dt, enemies) {
@@ -343,7 +354,7 @@ export class Tower {
       if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
-      if (dx * dx + dz * dz <= aoe2) e.takeDamage(this.cfg.damage || 8, this.group.position);
+      if (dx * dx + dz * dz <= aoe2) this._dealDamage(e, this.cfg.damage || 8, this.group.position);
     }
     Particles.emit(
       { x: myPos.x, y: 0.6, z: myPos.z },
