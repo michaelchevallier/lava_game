@@ -83,33 +83,81 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 const dirtMat = new THREE.MeshLambertMaterial({ color: 0xcca06a });
-const trees = [];
+const decor = [];
 
-function addTree(x, z, h, trunkColor, leavesColor) {
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.18, 0.22, 0.8),
-    new THREE.MeshLambertMaterial({ color: trunkColor }),
-  );
-  trunk.position.set(x, 0.4, z);
-  trunk.castShadow = true;
-  scene.add(trunk);
-  const leaves = new THREE.Mesh(
-    new THREE.ConeGeometry(0.9, h, 8),
-    new THREE.MeshLambertMaterial({ color: leavesColor }),
-  );
-  leaves.position.set(x, 0.8 + h / 2, z);
-  leaves.castShadow = true;
-  scene.add(leaves);
-  trees.push(trunk, leaves);
+const THEME_PALETTE = {
+  plaine: {
+    big: ["nature_commontree1", "nature_commontree2", "nature_commontree3"],
+    medium: ["nature_bush", "nature_bushflower"],
+    small: ["nature_flower3", "nature_flower4"],
+    rocks: ["nature_rock1", "nature_pebble1"],
+    bigCount: 6, mediumCount: 3, smallCount: 5, rockCount: 2,
+  },
+  foret: {
+    big: ["nature_pine1", "nature_pine2", "nature_pine3", "nature_twisted1"],
+    medium: ["nature_bush", "nature_fern"],
+    small: ["nature_mushroom"],
+    rocks: ["nature_rock1", "nature_rock2"],
+    bigCount: 7, mediumCount: 4, smallCount: 5, rockCount: 2,
+  },
+  desert: {
+    big: ["nature_dead1", "nature_dead2"],
+    medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
+    small: ["nature_pebble1", "nature_pebble2"],
+    rocks: ["nature_rock3", "nature_pebble1"],
+    bigCount: 4, mediumCount: 5, smallCount: 5, rockCount: 3,
+  },
+  volcan: {
+    big: ["nature_dead1", "nature_dead2", "nature_dead3"],
+    medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
+    small: ["nature_pebble1", "nature_pebble2"],
+    rocks: ["nature_rock1", "nature_rock2"],
+    bigCount: 4, mediumCount: 5, smallCount: 4, rockCount: 4,
+  },
+};
+
+function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = false) {
+  const gltf = AssetLoader.get(assetKey);
+  if (!gltf || !gltf.scene) return;
+  const cloned = gltf.scene.clone(true);
+  cloned.scale.setScalar(scale);
+  cloned.position.set(x, 0, z);
+  cloned.rotation.y = rot != null ? rot : Math.random() * Math.PI * 2;
+  cloned.traverse((o) => {
+    if (o.isMesh) {
+      o.castShadow = withShadow;
+      o.receiveShadow = false;
+      o.frustumCulled = true;
+    }
+  });
+  scene.add(cloned);
+  decor.push(cloned);
 }
 
-function clearTrees() {
-  for (const t of trees) {
-    scene.remove(t);
-    t.geometry?.dispose();
-    t.material?.dispose();
+function clearDecor() {
+  for (const d of decor) {
+    scene.remove(d);
+    d.traverse((c) => {
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) {
+        if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+        else c.material.dispose();
+      }
+    });
   }
-  trees.length = 0;
+  decor.length = 0;
+}
+
+function isOnPath(x, z, runner) {
+  if (!runner || !runner.path) return false;
+  const samples = 30;
+  for (let i = 0; i <= samples; i++) {
+    const p = runner.path.getPointAt(i / samples);
+    const dx = p.x - x;
+    const dz = p.z - z;
+    if (dx * dx + dz * dz < 4.5) return true;
+  }
+  return false;
 }
 
 function applyTheme(themeId) {
@@ -118,16 +166,30 @@ function applyTheme(themeId) {
   scene.fog = new THREE.Fog(t.fog, 30, 80);
   ground.material.color.setHex(t.ground);
   dirtMat.color.setHex(t.dirt);
-  clearTrees();
-  for (let i = 0; i < 16; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const r = 14 + Math.random() * 8;
-    const x = Math.cos(angle) * r;
-    const z = Math.sin(angle) * r;
-    if (Math.abs(x) > 6 || Math.abs(z) > 6) addTree(x, z, 2 + Math.random() * 2, t.treeTrunk, t.treeLeaves);
+  clearDecor();
+  const palette = THEME_PALETTE[themeId] || THEME_PALETTE.plaine;
+  const tries = 60;
+  function spawnSet(keys, count, scaleMin, scaleMax, ringMin, ringMax) {
+    let placed = 0;
+    let attempts = 0;
+    while (placed < count && attempts < tries * count) {
+      attempts++;
+      const angle = Math.random() * Math.PI * 2;
+      const r = ringMin + Math.random() * (ringMax - ringMin);
+      const x = Math.cos(angle) * r;
+      const z = Math.sin(angle) * r;
+      if (isOnPath(x, z, runner)) continue;
+      const key = keys[Math.floor(Math.random() * keys.length)];
+      const scale = scaleMin + Math.random() * (scaleMax - scaleMin);
+      placeNatureProp(key, x, z, scale);
+      placed++;
+    }
   }
+  spawnSet(palette.big, palette.bigCount, 1.0, 1.6, 9, 22);
+  spawnSet(palette.medium, palette.mediumCount, 0.8, 1.4, 8, 20);
+  spawnSet(palette.small, palette.smallCount, 0.7, 1.3, 6, 18);
+  spawnSet(palette.rocks, palette.rockCount, 0.6, 1.2, 7, 18);
 }
-applyTheme(world1_1.theme || "plaine");
 
 Particles.init(scene);
 JuiceFX.init();
@@ -190,6 +252,7 @@ function rebuildLevelDecor() {
 }
 
 rebuildLevelDecor();
+applyTheme(world1_1.theme || "plaine");
 
 const keys = { w: 0, a: 0, s: 0, d: 0 };
 window.addEventListener("keydown", (e) => {
@@ -1052,7 +1115,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "post-a",
+  version: "post-c",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
