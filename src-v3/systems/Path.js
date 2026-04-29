@@ -46,33 +46,69 @@ let _pathTextureCache = null;
 function makePathTexture() {
   if (_pathTextureCache) return _pathTextureCache;
   const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 256;
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#9a7038";
-  ctx.fillRect(0, 0, 128, 128);
-  for (let i = 0; i < 80; i++) {
-    const x = Math.random() * 128;
-    const y = Math.random() * 128;
-    const r = 2 + Math.random() * 5;
-    ctx.fillStyle = `rgba(${100 + Math.random() * 80}, ${70 + Math.random() * 60}, ${40 + Math.random() * 30}, 0.7)`;
+
+  ctx.fillStyle = "#8a5a28";
+  ctx.fillRect(0, 0, 256, 256);
+
+  for (let i = 0; i < 120; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
+    const r = 4 + Math.random() * 8;
+    ctx.fillStyle = `rgba(${130 + Math.random() * 40}, ${85 + Math.random() * 30}, ${45 + Math.random() * 20}, 0.5)`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.strokeStyle = "rgba(50, 30, 15, 0.5)";
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i < 30; i++) {
+
+  for (let i = 0; i < 80; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
+    const r = 2 + Math.random() * 4;
+    ctx.fillStyle = `rgba(60, 35, 15, ${0.4 + Math.random() * 0.4})`;
     ctx.beginPath();
-    ctx.moveTo(Math.random() * 128, Math.random() * 128);
-    ctx.lineTo(Math.random() * 128, Math.random() * 128);
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  _pathTextureCache = tex;
+  return tex;
+}
+
+let _grassBorderTextureCache = null;
+function makeGrassBorderTexture() {
+  if (_grassBorderTextureCache) return _grassBorderTextureCache;
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, "#4a7a2a");
+  grad.addColorStop(1, "#3a6a20");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  ctx.strokeStyle = "rgba(40, 60, 20, 0.7)";
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < 80; i++) {
+    const x = Math.random() * 128;
+    const y = Math.random() * 128;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + (Math.random() - 0.5) * 4, y - 4 - Math.random() * 6);
     ctx.stroke();
   }
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
-  _pathTextureCache = tex;
+  _grassBorderTextureCache = tex;
   return tex;
 }
 
@@ -109,21 +145,29 @@ function makeArrowMaterial() {
 export function makePathLine(curve, mat) {
   const group = new THREE.Group();
 
-  const borderHalf = 1.85;
-  const innerHalf = 1.55;
-  const borderColor = mat?.color ? mat.color.clone().multiplyScalar(0.55) : new THREE.Color(0x4a3018);
-  const borderMat = new THREE.MeshLambertMaterial({ color: borderColor });
-  const borderGeom = buildRibbon(curve, borderHalf, 0.005);
+  const borderHalf = 2.8;
+  const innerHalf = 2.1;
+  const borderMat = new THREE.MeshBasicMaterial({
+    color: 0x3a2410,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
+  });
+  const borderGeom = buildRibbon(curve, borderHalf, 0.05);
   const borderMesh = new THREE.Mesh(borderGeom, borderMat);
-  borderMesh.receiveShadow = true;
+  borderMesh.renderOrder = 1;
   group.add(borderMesh);
 
-  const innerMat = new THREE.MeshLambertMaterial({
+  const innerMat = new THREE.MeshBasicMaterial({
     map: makePathTexture(),
+    color: 0xc89060,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
   });
-  const innerGeom = buildRibbon(curve, innerHalf, 0.012);
+  const innerGeom = buildRibbon(curve, innerHalf, 0.10);
   const innerMesh = new THREE.Mesh(innerGeom, innerMat);
-  innerMesh.receiveShadow = true;
+  innerMesh.renderOrder = 2;
   group.add(innerMesh);
 
   const arrowMat = makeArrowMaterial();

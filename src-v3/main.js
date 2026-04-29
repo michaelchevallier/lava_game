@@ -26,6 +26,23 @@ Audio.setMuted(SaveSystem.isMuted());
 Audio.setVolume(SaveSystem.getSfxVolume());
 MusicManager.setMusicVolume(SaveSystem.getMusicVolume());
 
+const _params = new URLSearchParams(window.location.search);
+const DEBUG_MODE = _params.get("debug") === "1";
+if (DEBUG_MODE) {
+  console.log("[crowdef] debug mode ON — unlocking all levels");
+  for (const id of ["world1-1", "world1-2", "world1-3", "world1-4", "world1-5", "world1-6", "world1-7", "world1-8",
+                    "world2-1", "world2-2", "world2-3", "world2-4", "world2-5", "world2-6", "world2-7", "world2-8",
+                    "world3-1", "world3-2", "world3-3", "world3-4", "world3-5", "world3-6", "world3-7", "world3-8",
+                    "world4-1", "world4-2", "world4-3", "world4-4", "world4-5", "world4-6", "world4-7", "world4-8"]) {
+    SaveSystem.recordLevelDone(id, { win: true, wave: 6, castleHP: 100, stars: 1 });
+  }
+  SaveSystem.markCutsceneSeen("world1");
+  SaveSystem.markCutsceneSeen("world2");
+  SaveSystem.markCutsceneSeen("world3");
+  SaveSystem.markCutsceneSeen("world4");
+  SaveSystem.addGems(1000);
+}
+
 await AssetLoader.ready();
 
 const canvas = document.getElementById("app");
@@ -152,13 +169,22 @@ function clearDecor() {
 function isOnPath(x, z, runner) {
   if (!runner) return false;
   const allPaths = (runner.paths && runner.paths.length) ? runner.paths : (runner.path ? [runner.path] : []);
-  const samples = 30;
+  const samples = 40;
+  const PATH_CLEAR_RADIUS_SQ = 16;
   for (const path of allPaths) {
     for (let i = 0; i <= samples; i++) {
       const p = path.getPointAt(i / samples);
       const dx = p.x - x;
       const dz = p.z - z;
-      if (dx * dx + dz * dz < 4.5) return true;
+      if (dx * dx + dz * dz < PATH_CLEAR_RADIUS_SQ) return true;
+    }
+  }
+  if (runner.slots) {
+    const SLOT_CLEAR_SQ = 9;
+    for (const s of runner.slots) {
+      const dx = s.pos.x - x;
+      const dz = s.pos.z - z;
+      if (dx * dx + dz * dz < SLOT_CLEAR_SQ) return true;
     }
   }
   return false;
@@ -1182,7 +1208,8 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "post-b",
+  version: "post-fix-path-debug",
+  debug: DEBUG_MODE,
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
