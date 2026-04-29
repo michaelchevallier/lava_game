@@ -30,6 +30,7 @@ const MANIFEST = {
   tower_mine: "towers/spike_mine.glb",
   tower_magnet: "towers/magnet_polygoogle.glb",
   tower_portal: "towers/teleporter_base.glb",
+  tower_frost: "towers/snowman.glb",
   nature_commontree1: "nature/CommonTree_1.gltf",
   nature_commontree2: "nature/CommonTree_2.gltf",
   nature_commontree3: "nature/CommonTree_3.gltf",
