@@ -109,6 +109,7 @@ const THEME_PALETTE = {
     medium: ["nature_bush", "nature_bushflower"],
     small: ["nature_flower3", "nature_flower4"],
     rocks: ["nature_rock1", "nature_pebble1"],
+    feature: ["nature_commontree3", "nature_bushflower"],
     bigCount: 6, mediumCount: 3, smallCount: 5, rockCount: 2,
   },
   foret: {
@@ -117,6 +118,7 @@ const THEME_PALETTE = {
     medium: ["nature_bush", "nature_fern"],
     small: ["nature_mushroom"],
     rocks: ["nature_rock1", "nature_rock2"],
+    feature: ["nature_mushroom", "nature_twisted1"],
     bigCount: 6, twistedCount: 2, mediumCount: 4, smallCount: 5, rockCount: 2,
   },
   desert: {
@@ -124,6 +126,7 @@ const THEME_PALETTE = {
     medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock3", "nature_pebble1"],
+    feature: ["nature_dead2", "nature_rock3"],
     bigCount: 4, mediumCount: 5, smallCount: 5, rockCount: 3,
   },
   volcan: {
@@ -131,9 +134,42 @@ const THEME_PALETTE = {
     medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock1", "nature_rock2"],
+    feature: ["nature_dead3", "nature_rock1"],
     bigCount: 4, mediumCount: 5, smallCount: 4, rockCount: 4,
   },
 };
+
+function _hashLevelId(id) {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h;
+}
+
+function placeFeatureProp(level, palette) {
+  const override = level.featureProp;
+  if (override) {
+    const [x, y, z] = override.pos || [0, 0, 0];
+    placeNatureProp(override.asset, x, z, override.scale || 3.0, override.rot ?? null, true);
+    return;
+  }
+  if (!palette.feature || palette.feature.length === 0) return;
+  const seed = _hashLevelId(level.id || "default");
+  const key = palette.feature[seed % palette.feature.length];
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const ang = ((seed >> (attempt * 2)) & 0xff) / 255 * Math.PI * 2;
+    const radius = 11 + ((seed >> (attempt * 3)) & 0x7) * 1.5;
+    const x = Math.cos(ang) * radius;
+    const z = Math.sin(ang) * radius;
+    if (isOnPath(x, z, runner)) continue;
+    const scale = 2.6 + ((seed >> 11) & 0x7) * 0.12;
+    const rot = ((seed >> 17) & 0xff) / 255 * Math.PI * 2;
+    placeNatureProp(key, x, z, scale, rot, true);
+    return;
+  }
+}
 
 function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = false) {
   const gltf = AssetLoader.get(assetKey);
@@ -221,6 +257,7 @@ function applyTheme(themeId) {
   spawnSet(palette.medium, palette.mediumCount, 0.8, 1.4, 8, 20);
   spawnSet(palette.small, palette.smallCount, 0.7, 1.3, 6, 18);
   spawnSet(palette.rocks, palette.rockCount, 0.6, 1.2, 7, 18);
+  if (runner.level) placeFeatureProp(runner.level, palette);
 }
 
 Particles.init(scene);
@@ -593,7 +630,10 @@ document.addEventListener("crowdef:skin-equipped", (e) => {
   }
 });
 document.addEventListener("crowdef:wave-start", refreshHUD);
-document.addEventListener("crowdef:enemy-killed", refreshHUD);
+document.addEventListener("crowdef:enemy-killed", (e) => {
+  refreshHUD();
+  if (e.detail?.pos) spawnFlyingCoin(e.detail.pos);
+});
 document.addEventListener("crowdef:tower-built", refreshHUD);
 document.addEventListener("crowdef:castle-hit", (e) => {
   refreshHUD();
@@ -609,6 +649,28 @@ function spawnDamagePopup(dmg) {
   popup.textContent = `-${dmg}`;
   document.body.appendChild(popup);
   setTimeout(() => popup.remove(), 900);
+}
+
+const _coinFlyVec = new THREE.Vector3();
+function spawnFlyingCoin(worldPos) {
+  _coinFlyVec.set(worldPos.x, worldPos.y, worldPos.z);
+  _coinFlyVec.project(camera);
+  if (_coinFlyVec.z >= 1) return;
+  const sx = (_coinFlyVec.x * 0.5 + 0.5) * window.innerWidth;
+  const sy = (-_coinFlyVec.y * 0.5 + 0.5) * window.innerHeight;
+  const target = ui.coins.getBoundingClientRect();
+  const tx = target.left + target.width / 2;
+  const ty = target.top + target.height / 2;
+  const el = document.createElement("div");
+  el.className = "coin-fly";
+  el.textContent = "🪙";
+  el.style.transform = `translate(${sx - 12}px, ${sy - 12}px) scale(1)`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => {
+    el.classList.add("flying");
+    el.style.transform = `translate(${tx - 12}px, ${ty - 12}px) scale(0.55)`;
+  });
+  setTimeout(() => el.remove(), 620);
 }
 
 function computeStars(castleHP, castleHPMax) {

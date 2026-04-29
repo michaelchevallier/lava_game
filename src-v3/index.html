@@ -396,6 +396,16 @@
         80% { opacity: 1; }
         100% { opacity: 0; transform: translate(-50%, -28px) scale(0.95); }
       }
+
+      .coin-fly {
+        position: fixed; left: 0; top: 0;
+        font-size: 24px; line-height: 1;
+        pointer-events: none; z-index: 22;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        transition: transform 0.55s cubic-bezier(0.5, -0.2, 0.6, 1.0), opacity 0.55s ease;
+        will-change: transform, opacity;
+      }
+      .coin-fly.flying { opacity: 0.4; }
     </style>
   </head>
   <body>

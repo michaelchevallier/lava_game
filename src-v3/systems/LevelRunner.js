@@ -225,7 +225,11 @@ export class LevelRunner {
         );
         JuiceFX.shake(0.05, 80);
         Audio.sfxEnemyDie();
-        emit("crowdef:enemy-killed", { type: e.type || "basic", reward });
+        emit("crowdef:enemy-killed", {
+          type: e.type || "basic",
+          reward,
+          pos: { x: e.group.position.x, y: e.group.position.y + 0.6, z: e.group.position.z },
+        });
         e.destroy();
         this.enemies.splice(i, 1);
       }

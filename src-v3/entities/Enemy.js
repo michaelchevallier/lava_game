@@ -5,6 +5,7 @@ import { Audio } from "../systems/Audio.js";
 import { AssetLoader } from "../systems/AssetLoader.js";
 import { AnimationController } from "../systems/AnimationController.js";
 import { applyToonToScene } from "../systems/ToonMaterial.js";
+import { addOutlineToScene } from "../systems/Outline.js";
 import { JuiceFX } from "../systems/JuiceFX.js";
 
 const HIT_FLASH_DURATION = 0.09;
@@ -177,6 +178,7 @@ export class Enemy {
         }
       });
       applyToonToScene(cloned);
+      if (this.isBoss) addOutlineToScene(cloned, 1.06);
       this.group.add(cloned);
       this.anim = new AnimationController(cloned, gltf.animations);
       const walkName = this.anim.has(cfg.walkAnim) ? cfg.walkAnim : (this.anim.has("Walk") ? "Walk" : "Idle");
