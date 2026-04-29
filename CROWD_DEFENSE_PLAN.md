@@ -260,4 +260,4 @@ Trigger côté user : « on enchaîne J2 du plan `CROWD_DEFENSE_PLAN.md` ». Pas
 - [x] J6.A — Forêt Sombre ([changelog](docs/changelog/J6A-foret-sombre.md))
 - [x] J6.B — Désert Brûlant ([changelog](docs/changelog/J6B-desert-brulant.md))
 - [x] J6.C — Volcan du Dragon ([changelog](docs/changelog/J6C-volcan-dragon.md))
-- [ ] J7 — Polish & mobile
+- [x] J7 — Polish & mobile ([changelog](docs/changelog/J7-polish.md))

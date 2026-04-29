@@ -252,6 +252,22 @@ const shopPhase = await page.evaluate(async () => {
   };
 });
 
+log("phase 5: endless + cutscene smoke test");
+const j7Phase = await page.evaluate(async () => {
+  const cd = window.__cd;
+  cd.save.recordLevelDone("world1-8", { win: true, wave: 6, castleHP: 100, stars: 1 });
+  cd.loadLevel("endless");
+  await new Promise((r) => setTimeout(r, 500));
+  if (cd.skipCutscene) cd.skipCutscene();
+  if (cd.skipBriefing) cd.skipBriefing();
+  await new Promise((r) => setTimeout(r, 200));
+  const isEndless = cd.runner.level?.id === "endless";
+  const startCoins = cd.runner.coins;
+  const wavesCount = cd.runner.level?.waves?.list?.length || 0;
+  const w1Cs = cd.save.hasSeenCutscene("world1");
+  return { isEndless, startCoins, wavesCount, world1CutsceneSeen: w1Cs };
+});
+
 log("phase 4: music auto-switch via __cd.music");
 const musicPhase = await page.evaluate(async () => {
   const cd = window.__cd;
@@ -272,7 +288,7 @@ const musicPhase = await page.evaluate(async () => {
 
 writeFileSync(
   path.join(RESULTS_DIR, "crowdef-summary.json"),
-  JSON.stringify({ result, summary, bossPhase, skinPhase, shopPhase, musicPhase, consoleErrors, pageErrors }, null, 2),
+  JSON.stringify({ result, summary, bossPhase, skinPhase, shopPhase, musicPhase, j7Phase, consoleErrors, pageErrors }, null, 2),
 );
 
 await browser.close();
@@ -310,6 +326,9 @@ allOk &= pass(`music play("calm") sets currentTrack`, musicPhase.t1 === "calm", 
 allOk &= pass(`music play("boss") switches track`, musicPhase.t2 === "boss", `(got ${musicPhase.t2})`);
 allOk &= pass(`music setMusicVolume persists`, Math.abs((musicPhase.vol || 0) - 0.42) < 0.01, `(got ${musicPhase.vol})`);
 allOk &= pass(`music stop() clears track`, musicPhase.t3 === null, `(got ${musicPhase.t3})`);
+allOk &= pass(`endless level loadable`, j7Phase.isEndless === true, `(got ${j7Phase.isEndless})`);
+allOk &= pass(`endless has 30 waves`, j7Phase.wavesCount === 30, `(got ${j7Phase.wavesCount})`);
+allOk &= pass(`world1 cutscene marked seen after load`, j7Phase.world1CutsceneSeen === true, `(got ${j7Phase.world1CutsceneSeen})`);
 
 console.log("\n=== SUMMARY ===");
 console.log(JSON.stringify({ result, summary }, null, 2));
