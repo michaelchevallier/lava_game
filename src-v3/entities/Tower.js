@@ -25,6 +25,40 @@ export const TOWER_TYPES = {
     asset: "tower_ballista", scale: 0.75, label: "Baliste", aoe: 0, pierce: 2,
     fallbackColor: 0x4a4a4a,
   },
+  cannon: {
+    range: 9, fireRateMs: 2000, damage: 5, projColor: 0xff7530, projSpeed: 16,
+    asset: "tower_cannon", scale: 0.7, label: "Catapulte", aoe: 2.2, pierce: 0,
+    fallbackColor: 0x4a3a2a, parabolic: true,
+  },
+  crossbow: {
+    range: 16, fireRateMs: 1800, damage: 5, projColor: 0xc0e8ff, projSpeed: 32,
+    asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
+    fallbackColor: 0x6a4a2a,
+  },
+  fan: {
+    range: 5, fireRateMs: 0, damage: 0, projColor: 0xa8e0ff, projSpeed: 0,
+    asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
+    fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.04,
+    pendingMechanic: true,
+  },
+  mine: {
+    range: 1.8, fireRateMs: 0, damage: 8, projColor: 0xff3030, projSpeed: 0,
+    asset: "tower_mine", scale: 0.6, label: "Mine", aoe: 2.5, pierce: 0,
+    fallbackColor: 0xaa2020, behavior: "oneShot",
+    pendingMechanic: true,
+  },
+  magnet: {
+    range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
+    asset: "tower_magnet", scale: 0.7, label: "Aimant", aoe: 0, pierce: 0,
+    fallbackColor: 0xff4488, behavior: "pull", pullStrength: 0.03,
+    pendingMechanic: true,
+  },
+  portal: {
+    range: 4, fireRateMs: 0, damage: 0, projColor: 0xb088ff, projSpeed: 0,
+    asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
+    fallbackColor: 0x6a3aa0, behavior: "teleport",
+    pendingMechanic: true,
+  },
 };
 
 export class Tower {
@@ -135,6 +169,7 @@ export class Tower {
   }
 
   tick(dt, enemies) {
+    if (this.cfg.pendingMechanic) return; // wired during POST.J (interview)
     this.cooldown -= dt * 1000;
 
     let target = null;
@@ -158,6 +193,12 @@ export class Tower {
       p.life -= dt;
       p.mesh.position.x += p.dir.x * this.cfg.projSpeed * dt;
       p.mesh.position.z += p.dir.z * this.cfg.projSpeed * dt;
+      if (p._arc) {
+        p._arcT += dt / p._arcDuration;
+        const t = Math.min(1, p._arcT);
+        p.mesh.position.y = p._arcStartY + (p._arcPeak - p._arcStartY) * 4 * t * (1 - t);
+        if (t >= 1) p.life = 0;
+      }
       let consumed = false;
       for (const e of enemies) {
         if (e.dead || e._dying) continue;
@@ -226,10 +267,12 @@ export class Tower {
       const dz = baseDirX * sin + baseDirZ * cos;
 
       let geom;
-      if (this.type === "ballista") {
+      if (this.type === "ballista" || this.type === "crossbow") {
         geom = new THREE.BoxGeometry(0.06, 0.06, 0.8);
       } else if (this.type === "mage") {
         geom = new THREE.SphereGeometry(0.18, 8, 8);
+      } else if (this.type === "cannon") {
+        geom = new THREE.SphereGeometry(0.22, 10, 10);
       } else {
         geom = new THREE.BoxGeometry(0.08, 0.08, 0.5);
       }
@@ -242,12 +285,21 @@ export class Tower {
       proj.rotation.y = Math.atan2(dx, dz);
       this.scene.add(proj);
 
-      this.projectiles.push({
+      const projData = {
         mesh: proj,
         dir: new THREE.Vector3(dx, 0, dz),
         life: this.range / this.cfg.projSpeed * 1.4,
         _pierceLeft: this.pierce,
-      });
+      };
+      if (this.cfg.parabolic) {
+        const dist = Math.hypot(target.group.position.x - start.x, target.group.position.z - start.z);
+        projData._arc = true;
+        projData._arcT = 0;
+        projData._arcStartY = start.y;
+        projData._arcPeak = start.y + Math.min(4.5, dist * 0.35);
+        projData._arcDuration = dist / this.cfg.projSpeed;
+      }
+      this.projectiles.push(projData);
     }
     Audio.sfxTowerShoot();
   }

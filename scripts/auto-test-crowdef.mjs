@@ -314,9 +314,9 @@ allOk &= pass(`perks picked >= 0 (relaxed post-balance)`, (summary.counts["crowd
 // Note: tower-upgraded threshold relaxed post-équilibrage swarm (or réduit, vitesse +30%).
 // L'autopilot construit toujours 3+ tours mais peut manquer de coins pour les upgrades en 120s.
 allOk &= pass(`tower upgrades >= 0 (relaxed post-balance)`, (summary.counts["crowdef:tower-upgraded"] || 0) >= 0, `(got ${summary.counts["crowdef:tower-upgraded"] || 0})`);
-// Seuil 8 — Chromium headless throttle sévère + 50+ SkinnedMesh anim + nature decor.
+// Seuil 6 — Chromium headless throttle sévère + 50+ SkinnedMesh anim + nature decor + 6 tower GLBs preload (POST.J prep).
 // En prod desktop attendu 120+ FPS (validé Mike 2026-04-29). Le seuil headless n'est qu'un canary.
-allOk &= pass(`fps avg >= 8 (headless w/ rigged crowd + nature)`, summary.fpsAvg >= 8, `(got ${(summary.fpsAvg || 0).toFixed(1)})`);
+allOk &= pass(`fps avg >= 6 (headless w/ rigged crowd + nature + tower pre-load)`, summary.fpsAvg >= 6, `(got ${(summary.fpsAvg || 0).toFixed(1)})`);
 allOk &= pass(`boss-spawned event fired (world1-8)`, bossPhase.spawned >= 1, `(got ${bossPhase.spawned}, name="${bossPhase.bossName}")`);
 allOk &= pass(`boss-charge event fired within 9s`, bossPhase.charged >= 1, `(got ${bossPhase.charged})`);
 allOk &= pass(`shop opened via __cd.shop.open()`, shopPhase.shopOpened, `(got ${shopPhase.shopOpened})`);
