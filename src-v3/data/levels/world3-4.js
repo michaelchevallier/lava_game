@@ -23,7 +23,7 @@ export default {
     ],
   },
   castleHP: 165,
-  startCoins: 170,
+  startCoins: 195,
   heroSpawn: [-2, 0, -1],
   briefing: "Tempête de sable + 2 mid-bosses.",
 };

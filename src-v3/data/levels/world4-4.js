@@ -23,7 +23,7 @@ export default {
     ],
   },
   castleHP: 195,
-  startCoins: 210,
+  startCoins: 240,
   heroSpawn: [-2, 0, -1],
   briefing: "Coulée de lave + 2 mid-bosses.",
 };

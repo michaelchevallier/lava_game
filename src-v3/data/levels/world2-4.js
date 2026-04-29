@@ -29,7 +29,7 @@ export default {
     ],
   },
   castleHP: 145,
-  startCoins: 145,
+  startCoins: 165,
   heroSpawn: [-2, 0, -1],
   briefing: "Marécage : 2 chemins distincts à travers la forêt.",
 };
