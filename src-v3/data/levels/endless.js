@@ -2,7 +2,7 @@ function buildEndlessWaves(count = 30) {
   const list = [];
   for (let i = 0; i < count; i++) {
     const tier = Math.floor(i / 5);
-    const ratio = 1 + i * 0.18;
+    const ratio = 1 + i * 0.14;
     const types = {};
     if (tier === 0) {
       types.basic = Math.round(10 * ratio);
@@ -34,7 +34,7 @@ function buildEndlessWaves(count = 30) {
     }
     list.push({
       types,
-      spawnRateMs: Math.max(220, 480 - i * 8),
+      spawnRateMs: Math.max(280, 480 - i * 8),
       breakMs: 3500,
     });
   }

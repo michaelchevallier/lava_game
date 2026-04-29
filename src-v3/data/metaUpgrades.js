@@ -49,10 +49,11 @@ export const META_UPGRADES = [
     category: "utility",
     icon: "✨",
     name: "Expérience accrue",
-    description: "+10/+20/+30% XP par kill",
-    perLevelLabel: ["+10% XP", "+20% XP", "+30% XP"],
+    description: "+25/+50/+100% XP par kill",
+    perLevelLabel: ["+25% XP", "+50% XP", "+100% XP"],
     apply: (lvl, ctx) => {
-      ctx.xpMul = (ctx.xpMul || 1) * (1 + 0.1 * lvl);
+      const mul = [0, 0.25, 0.5, 1.0][lvl] || 0;
+      ctx.xpMul = (ctx.xpMul || 1) * (1 + mul);
     },
   },
 
