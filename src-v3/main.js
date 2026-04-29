@@ -1052,7 +1052,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j7-c4",
+  version: "post-a",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

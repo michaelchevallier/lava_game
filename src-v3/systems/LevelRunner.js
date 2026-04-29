@@ -31,7 +31,7 @@ export class LevelRunner {
     this.coins = level.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
-    this.gameSpeed = 1;
+    this.gameSpeed = 1.3;
     this.paused = false;
 
     this.path = null;
@@ -54,16 +54,19 @@ export class LevelRunner {
       this._spawnRate = 600;
       return;
     }
+    const SWARM_MUL = 1.4;
     const list = [];
     for (const [type, count] of Object.entries(w.types)) {
-      for (let i = 0; i < count; i++) list.push(type);
+      const isUnique = type.includes("boss") || type === "midboss";
+      const finalCount = isUnique ? count : Math.round(count * SWARM_MUL);
+      for (let i = 0; i < finalCount; i++) list.push(type);
     }
     for (let i = list.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [list[i], list[j]] = [list[j], list[i]];
     }
     this._pendingSpawns = list;
-    this._spawnRate = w.spawnRateMs || 600;
+    this._spawnRate = Math.round((w.spawnRateMs || 600) * 0.75);
     this._currentBreakMs = w.breakMs ?? 4000;
   }
 
@@ -168,8 +171,8 @@ export class LevelRunner {
         continue;
       }
       if (e.dead) {
-        const baseReward = e.reward || 2;
-        const reward = Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1));
+        const baseReward = (e.reward || 2) * 0.55;
+        const reward = Math.max(1, Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1)));
         this.coins += reward;
         if (this.hero) {
           this.hero.gainXp(1);
