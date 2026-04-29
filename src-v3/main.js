@@ -409,6 +409,11 @@ document.addEventListener("crowdef:level-loaded", () => {
 document.addEventListener("crowdef:boss-charge", () => {
   ui.bossBanner.classList.add("charging");
   _bossChargeFlashTimer = 90;
+  const v = document.getElementById("danger-vignette");
+  if (v) {
+    v.classList.add("active");
+    setTimeout(() => v.classList.remove("active"), 1500);
+  }
 });
 document.addEventListener("crowdef:level-restart", () => {
   ui.bossBanner.classList.remove("show", "charging");
@@ -1047,7 +1052,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j7-c2",
+  version: "j7-c3",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
