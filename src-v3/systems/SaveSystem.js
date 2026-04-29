@@ -188,6 +188,19 @@ export const SaveSystem = {
   },
   getOwnedSkins() { return [...ensureCached().skinsOwned]; },
 
+  hasSeenCutscene(id) {
+    const s = ensureCached();
+    return Array.isArray(s.seenCutscenes) && s.seenCutscenes.includes(id);
+  },
+  markCutsceneSeen(id) {
+    const s = ensureCached();
+    if (!Array.isArray(s.seenCutscenes)) s.seenCutscenes = [];
+    if (!s.seenCutscenes.includes(id)) {
+      s.seenCutscenes.push(id);
+      persist();
+    }
+  },
+
   hasAchievement(id) { return ensureCached().achievements.includes(id); },
   unlockAchievement(id) {
     const s = ensureCached();

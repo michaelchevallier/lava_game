@@ -101,6 +101,7 @@ await page.evaluate(() => {
 });
 
 await page.evaluate((speed) => {
+  if (window.__cd.skipCutscene) window.__cd.skipCutscene();
   window.__cd.runner.setSpeed(speed);
   if (window.__cd.skipBriefing) window.__cd.skipBriefing();
 }, SPEED);
@@ -187,6 +188,7 @@ const bossPhase = await page.evaluate(async () => {
   document.addEventListener("crowdef:boss-spawned", handler);
   document.addEventListener("crowdef:boss-charge", handler);
   cd.loadLevel("world1-8");
+  if (cd.skipCutscene) cd.skipCutscene();
   if (cd.skipBriefing) cd.skipBriefing();
   cd.setSpeed(8);
   await new Promise((r) => setTimeout(r, 200));

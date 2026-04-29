@@ -16,6 +16,7 @@ import {
   SKINS, SKIN_BY_ID, getSkinsByCategory, getDefaultSkinId, isSkinUnlocked,
 } from "./data/skins.js";
 import { getTheme } from "./data/themes.js";
+import { getCutsceneForLevel } from "./data/cutscenes.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -508,7 +509,9 @@ document.addEventListener("crowdef:level-loaded", () => {
   _perkQueue = 0;
   rebuildLevelDecor();
   refreshHUD();
-  showBriefing(runner.level);
+  if (!maybeShowCutscene(runner.level)) {
+    showBriefing(runner.level);
+  }
 });
 
 let _perkQueue = 0;
@@ -817,6 +820,33 @@ ui.shop.querySelector('button[data-action="close"]').addEventListener("click", c
 
 let _briefingTimer = null;
 let _briefingDisabled = false;
+const cutsceneOverlay = document.getElementById("cutscene");
+const cutsceneIcon = document.getElementById("cutscene-icon");
+const cutsceneTitle = document.getElementById("cutscene-title");
+const cutsceneText = document.getElementById("cutscene-text");
+let _pendingBriefingLevel = null;
+
+function maybeShowCutscene(level) {
+  const cs = getCutsceneForLevel(level.id);
+  if (!cs) return false;
+  if (SaveSystem.hasSeenCutscene(cs.id)) return false;
+  cutsceneIcon.textContent = cs.icon;
+  cutsceneTitle.textContent = cs.title;
+  cutsceneText.innerHTML = cs.paragraphs.map((p) => `<p style="margin:0 0 10px 0;">${p}</p>`).join("");
+  cutsceneOverlay.classList.add("show");
+  runner.pause();
+  _pendingBriefingLevel = level;
+  SaveSystem.markCutsceneSeen(cs.id);
+  return true;
+}
+
+cutsceneOverlay.querySelector('button[data-action="continue"]').addEventListener("click", () => {
+  cutsceneOverlay.classList.remove("show");
+  const lvl = _pendingBriefingLevel;
+  _pendingBriefingLevel = null;
+  if (lvl) showBriefing(lvl);
+});
+
 function showBriefing(level) {
   if (_briefingTimer) {
     clearInterval(_briefingTimer);
@@ -856,7 +886,9 @@ function skipBriefing() {
   runner.resume();
 }
 
-showBriefing(runner.level);
+if (!maybeShowCutscene(runner.level)) {
+  showBriefing(runner.level);
+}
 
 const muteBtn = document.getElementById("mute-btn");
 function refreshMuteUI() {
@@ -1003,11 +1035,19 @@ window.__cd = {
   },
   isPerkOpen: () => ui.perkOverlay.classList.contains("show"),
   skipBriefing: () => skipBriefing(),
+  skipCutscene: () => {
+    if (cutsceneOverlay.classList.contains("show")) {
+      cutsceneOverlay.classList.remove("show");
+      const lvl = _pendingBriefingLevel;
+      _pendingBriefingLevel = null;
+      if (lvl) showBriefing(lvl);
+    }
+  },
   loadLevel: (id) => {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j7-c1",
+  version: "j7-c2",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
