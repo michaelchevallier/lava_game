@@ -22,6 +22,14 @@ import world3_5 from "./world3-5.js";
 import world3_6 from "./world3-6.js";
 import world3_7 from "./world3-7.js";
 import world3_8 from "./world3-8.js";
+import world4_1 from "./world4-1.js";
+import world4_2 from "./world4-2.js";
+import world4_3 from "./world4-3.js";
+import world4_4 from "./world4-4.js";
+import world4_5 from "./world4-5.js";
+import world4_6 from "./world4-6.js";
+import world4_7 from "./world4-7.js";
+import world4_8 from "./world4-8.js";
 
 export const LEVELS_BY_ID = {
   "world1-1": world1_1, "world1-2": world1_2, "world1-3": world1_3, "world1-4": world1_4,
@@ -30,12 +38,15 @@ export const LEVELS_BY_ID = {
   "world2-5": world2_5, "world2-6": world2_6, "world2-7": world2_7, "world2-8": world2_8,
   "world3-1": world3_1, "world3-2": world3_2, "world3-3": world3_3, "world3-4": world3_4,
   "world3-5": world3_5, "world3-6": world3_6, "world3-7": world3_7, "world3-8": world3_8,
+  "world4-1": world4_1, "world4-2": world4_2, "world4-3": world4_3, "world4-4": world4_4,
+  "world4-5": world4_5, "world4-6": world4_6, "world4-7": world4_7, "world4-8": world4_8,
 };
 
 export const LEVEL_ORDER = [
   "world1-1", "world1-2", "world1-3", "world1-4", "world1-5", "world1-6", "world1-7", "world1-8",
   "world2-1", "world2-2", "world2-3", "world2-4", "world2-5", "world2-6", "world2-7", "world2-8",
   "world3-1", "world3-2", "world3-3", "world3-4", "world3-5", "world3-6", "world3-7", "world3-8",
+  "world4-1", "world4-2", "world4-3", "world4-4", "world4-5", "world4-6", "world4-7", "world4-8",
 ];
 
 export function getLevel(id) {

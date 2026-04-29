@@ -993,7 +993,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j6-b",
+  version: "j6-c",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

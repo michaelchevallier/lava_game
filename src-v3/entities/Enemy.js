@@ -71,6 +71,19 @@ export const ENEMY_TYPES = {
     aoeBlastMs: 8000, aoeBlastRadius: 4.5, aoeBlastDamage: 30,
     bossName: "Capitaine Corsaire",
   },
+  imp: {
+    hp: 4, speed: 1.5, damage: 8, reward: 5,
+    asset: "goblin", scale: 0.55, walkAnim: "Run",
+    bodyColor: 0xff3a10, isFiery: true,
+  },
+  dragon_boss: {
+    hp: 180, speed: 0.5, damage: 50, reward: 200,
+    asset: "wizard", scale: 1.5, walkAnim: "Walk",
+    bodyColor: 0xff3a10, isBoss: true, isFlyer: true, flyHeight: 2.0,
+    aoeBlastMs: 6000, aoeBlastRadius: 5.0, aoeBlastDamage: 35,
+    summonsMinions: true, summonCooldownMs: 4500, summonType: "imp",
+    bossName: "Dragon de Lave",
+  },
 };
 
 export class Enemy {
