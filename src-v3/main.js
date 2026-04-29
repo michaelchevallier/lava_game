@@ -388,6 +388,9 @@ document.addEventListener("crowdef:wave-start", (e) => {
   if (MusicManager.getCurrentTrack() === "boss") return;
   if (e.detail.wave >= 4) MusicManager.play("intense");
   else MusicManager.play("calm");
+  if (runner.level && runner.level.id === "endless") {
+    SaveSystem.recordWaveReached(e.detail.wave);
+  }
 });
 document.addEventListener("crowdef:wave-cleared", () => {
   if (MusicManager.getCurrentTrack() === "boss") return;
@@ -572,7 +575,9 @@ ui.result.querySelector('button[data-action="shop"]').addEventListener("click", 
 function showWorldMap() {
   const grid = ui.worldmapGrid;
   grid.innerHTML = "";
-  for (const id of LEVEL_ORDER) {
+  const allIds = [...LEVEL_ORDER];
+  if (SaveSystem.isLevelComplete("world1-8")) allIds.push("endless");
+  for (const id of allIds) {
     const lvl = getLevel(id);
     if (!lvl) continue;
     const tile = document.createElement("div");
@@ -582,16 +587,25 @@ function showWorldMap() {
     const stars = SaveSystem.getStars(id);
     if (!unlocked) tile.classList.add("locked");
     if (completed) tile.classList.add("completed");
-    const num = id.split("-")[1] || "?";
-    tile.innerHTML = `
-      <div class="level-num">${num}</div>
-      <div class="level-name">${lvl.name || id}</div>
-      <div class="level-stars">
-        <span class="${stars >= 1 ? "filled" : "empty"}">★</span>
-        <span class="${stars >= 2 ? "filled" : "empty"}">★</span>
-        <span class="${stars >= 3 ? "filled" : "empty"}">★</span>
-      </div>
-    `;
+    const num = id === "endless" ? "∞" : (id.split("-")[1] || "?");
+    if (id === "endless") {
+      const bestWave = SaveSystem.getBestWave();
+      tile.innerHTML = `
+        <div class="level-num">${num}</div>
+        <div class="level-name">${lvl.name}</div>
+        <div class="level-stars">Vague ${bestWave}</div>
+      `;
+    } else {
+      tile.innerHTML = `
+        <div class="level-num">${num}</div>
+        <div class="level-name">${lvl.name || id}</div>
+        <div class="level-stars">
+          <span class="${stars >= 1 ? "filled" : "empty"}">★</span>
+          <span class="${stars >= 2 ? "filled" : "empty"}">★</span>
+          <span class="${stars >= 3 ? "filled" : "empty"}">★</span>
+        </div>
+      `;
+    }
     if (unlocked) {
       tile.addEventListener("click", () => {
         ui.worldmap.classList.remove("show");
@@ -993,7 +1007,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j6-c",
+  version: "j7-c1",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
