@@ -57,7 +57,7 @@ export class Tower {
     const gltf = AssetLoader.get(assetKey) || AssetLoader.get(this.cfg.asset);
     if (gltf && gltf.scene) {
       const cloned = gltf.scene.clone(true);
-      cloned.scale.setScalar(scale);
+      cloned.scale.setScalar(scale * 1.5);
       cloned.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true;

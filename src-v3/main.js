@@ -8,6 +8,7 @@ import { MusicManager } from "./systems/MusicManager.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
+import { TOWER_TYPES } from "./entities/Tower.js";
 import {
   META_UPGRADES, UPGRADE_TIERS, UPGRADE_MAX_LEVEL,
   getCostForLevel, isTierUnlocked, RESET_COST_GEMS,
@@ -375,6 +376,63 @@ function trackBossFromRunner() {
     _bossChargeFlashTimer -= 1;
     if (_bossChargeFlashTimer <= 0) ui.bossBanner.classList.remove("charging");
   }
+}
+
+const towerPreviewEl = document.getElementById("tower-preview");
+const towerPreviewName = document.getElementById("tower-preview-name");
+const towerPreviewStats = document.getElementById("tower-preview-stats");
+const _previewVec = new THREE.Vector3();
+
+function getNearbyEmptySlot(hero, radius = 1.6) {
+  if (!hero || !runner.slots) return null;
+  for (const s of runner.slots) {
+    if (s.currentLevel >= s.maxLevel) continue;
+    if (s.currentLevel > 0) continue;
+    const dx = hero.group.position.x - s.pos.x;
+    const dz = hero.group.position.z - s.pos.z;
+    if (dx * dx + dz * dz < radius * radius) return s;
+  }
+  return null;
+}
+
+function updateTowerPreview() {
+  if (!runner.hero) {
+    towerPreviewEl.style.display = "none";
+    return;
+  }
+  const slot = getNearbyEmptySlot(runner.hero);
+  if (!slot) {
+    towerPreviewEl.style.display = "none";
+    return;
+  }
+  const cfg = TOWER_TYPES[slot.towerType];
+  if (!cfg) {
+    towerPreviewEl.style.display = "none";
+    return;
+  }
+  _previewVec.set(slot.pos.x, 1.4, slot.pos.z);
+  _previewVec.project(camera);
+  const sx = (_previewVec.x * 0.5 + 0.5) * window.innerWidth;
+  const sy = (-_previewVec.y * 0.5 + 0.5) * window.innerHeight;
+  if (_previewVec.z >= 1) {
+    towerPreviewEl.style.display = "none";
+    return;
+  }
+  towerPreviewEl.style.left = `${Math.round(sx) + 30}px`;
+  towerPreviewEl.style.top = `${Math.round(sy) - 20}px`;
+  towerPreviewEl.style.display = "block";
+  towerPreviewName.textContent = cfg.label || slot.towerType;
+  let extras = [];
+  if (cfg.aoe > 0) extras.push(`AoE ${cfg.aoe}`);
+  if (cfg.pierce > 0) extras.push(`pierce ×${cfg.pierce}`);
+  const cdSec = (cfg.fireRateMs / 1000).toFixed(2);
+  towerPreviewStats.innerHTML = `
+    <div>🎯 Portée : <strong>${cfg.range}</strong></div>
+    <div>💥 Dégâts : <strong>${cfg.damage}</strong></div>
+    <div>⏱️ Cadence : <strong>${cdSec}s</strong></div>
+    ${extras.length ? `<div>✨ ${extras.join(" · ")}</div>` : ""}
+    <div style="margin-top:4px;color:#ffd23f;">🪙 Coût : <strong>${slot.baseCost}</strong></div>
+  `;
 }
 
 function refreshHUD() {
@@ -1077,6 +1135,7 @@ function tick() {
   SHAKE_OFFSET.copy(shake);
   refreshHUD();
   trackBossFromRunner();
+  updateTowerPreview();
 
   if (runner.hero) {
     CAM_TARGET.x += (runner.hero.group.position.x - CAM_TARGET.x) * 0.06;
@@ -1115,7 +1174,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "post-c",
+  version: "post-d",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
