@@ -142,13 +142,16 @@ function makeArrowMaterial() {
   return _arrowMatCache;
 }
 
-export function makePathLine(curve, mat) {
+export function makePathLine(curve, mat, opts = {}) {
   const group = new THREE.Group();
+
+  const innerColor = opts.innerColor != null ? opts.innerColor : 0xc89060;
+  const borderColor = opts.borderColor != null ? opts.borderColor : 0x3a2410;
 
   const borderHalf = 2.8;
   const innerHalf = 2.1;
   const borderMat = new THREE.MeshBasicMaterial({
-    color: 0x3a2410,
+    color: borderColor,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
@@ -160,7 +163,7 @@ export function makePathLine(curve, mat) {
 
   const innerMat = new THREE.MeshBasicMaterial({
     map: makePathTexture(),
-    color: 0xc89060,
+    color: innerColor,
     polygonOffset: true,
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,

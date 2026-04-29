@@ -112,11 +112,12 @@ const THEME_PALETTE = {
     bigCount: 6, mediumCount: 3, smallCount: 5, rockCount: 2,
   },
   foret: {
-    big: ["nature_pine1", "nature_pine2", "nature_pine3", "nature_twisted1"],
+    big: ["nature_pine1", "nature_pine2", "nature_pine3"],
+    twisted: ["nature_twisted1"],
     medium: ["nature_bush", "nature_fern"],
     small: ["nature_mushroom"],
     rocks: ["nature_rock1", "nature_rock2"],
-    bigCount: 7, mediumCount: 4, smallCount: 5, rockCount: 2,
+    bigCount: 6, twistedCount: 2, mediumCount: 4, smallCount: 5, rockCount: 2,
   },
   desert: {
     big: ["nature_dead1", "nature_dead2"],
@@ -216,6 +217,7 @@ function applyTheme(themeId) {
     }
   }
   spawnSet(palette.big, palette.bigCount, 1.0, 1.6, 9, 22);
+  if (palette.twisted) spawnSet(palette.twisted, palette.twistedCount || 0, 0.35, 0.55, 9, 22);
   spawnSet(palette.medium, palette.mediumCount, 0.8, 1.4, 8, 20);
   spawnSet(palette.small, palette.smallCount, 0.7, 1.3, 6, 18);
   spawnSet(palette.rocks, palette.rockCount, 0.6, 1.2, 7, 18);
@@ -253,9 +255,13 @@ function rebuildLevelDecor() {
   pathLines = [];
   disposeMeshGroup(castle);
 
+  const themeForPath = getTheme(runner.level.theme || "plaine");
   for (const p of (runner.paths || [runner.path])) {
     if (!p) continue;
-    const pl = makePathLine(p, dirtMat);
+    const pl = makePathLine(p, dirtMat, {
+      innerColor: themeForPath.pathInner,
+      borderColor: themeForPath.pathBorder,
+    });
     scene.add(pl);
     pathLines.push(pl);
   }
