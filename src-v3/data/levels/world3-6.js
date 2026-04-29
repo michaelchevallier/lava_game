@@ -1,17 +1,16 @@
+import { splitV } from "./_pathTemplates.js";
+
 export default {
   id: "world3-6",
   name: "Désert — Caravane",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, -3], [-10, 0, 2], [-3, 0, -2], [2, 0, 1],
-    [5, 0, -2], [9, 0, 2], [4, 0, 5], [0, 0, 6],
-  ],
+  ...splitV(),
   slots: [
-    { t: 0.14, cost: 45, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.30, cost: 70, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.48, cost: 95, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.66, cost: 110, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.84, cost: 150, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.45, cost: 95, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.78, cost: 110, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.86, cost: 150, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 175,
   startCoins: 185,
   heroSpawn: [-2, 0, -1],
-  briefing: "Caravane volée — vague swarm de flyers.",
+  briefing: "Caravane — la route se sépare. Flyers swarm sur les 2 branches.",
 };

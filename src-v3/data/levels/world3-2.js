@@ -1,16 +1,15 @@
+import { mergeY } from "./_pathTemplates.js";
+
 export default {
   id: "world3-2",
   name: "Désert — Oasis",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -3], [2, 0, 1],
-    [6, 0, -3], [9, 0, 2], [4, 0, 5], [0, 0, 6],
-  ],
+  ...mergeY(),
   slots: [
-    { t: 0.16, cost: 40, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.36, cost: 65, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.56, cost: 90, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.84, cost: 120, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.20, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.20, cost: 65, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.62, cost: 90, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
+    { t: 0.84, cost: 120, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -24,5 +23,5 @@ export default {
   castleHP: 155,
   startCoins: 155,
   heroSpawn: [-2, 0, -1],
-  briefing: "Plus de volants. Garde au moins une baliste anti-air.",
+  briefing: "Désert — 2 chemins convergent vers l'oasis. Couvre les 2 entrées.",
 };

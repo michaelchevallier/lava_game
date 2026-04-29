@@ -1,17 +1,16 @@
+import { splitV } from "./_pathTemplates.js";
+
 export default {
   id: "world3-4",
   name: "Désert — Tempête",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -2], [2, 0, 2],
-    [6, 0, -3], [8, 0, 1], [4, 0, 5], [0, 0, 6],
-  ],
+  ...splitV(),
   slots: [
-    { t: 0.14, cost: 45, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 70, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 95, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.70, cost: 110, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.88, cost: 145, lateralOffset: 2.4, towerType: "tank" },
+    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.45, cost: 95, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.78, cost: 110, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.88, cost: 145, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 165,
   startCoins: 195,
   heroSpawn: [-2, 0, -1],
-  briefing: "Tempête de sable + 2 mid-bosses.",
+  briefing: "Tempête — le chemin se divise. 2 mid-bosses random sur les branches.",
 };

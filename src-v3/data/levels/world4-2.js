@@ -1,16 +1,15 @@
+import { parallels } from "./_pathTemplates.js";
+
 export default {
   id: "world4-2",
   name: "Volcan — Falaise",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -3], [2, 0, 1],
-    [6, 0, -2], [9, 0, 3], [4, 0, 5], [0, 0, 6],
-  ],
+  ...parallels(),
   slots: [
-    { t: 0.16, cost: 50, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.36, cost: 75, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.56, cost: 100, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "tank" },
+    { t: 0.18, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.18, cost: 75, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.56, cost: 100, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -24,5 +23,5 @@ export default {
   castleHP: 185,
   startCoins: 185,
   heroSpawn: [-2, 0, -1],
-  briefing: "Falaise instable. Les imps bondissent du précipice.",
+  briefing: "Falaise — 2 lanes croisées. Imps bondissent du précipice.",
 };

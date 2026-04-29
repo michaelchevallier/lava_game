@@ -1,17 +1,16 @@
+import { parallels } from "./_pathTemplates.js";
+
 export default {
   id: "world4-6",
   name: "Volcan — Forge",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, -3], [-10, 0, 2], [-3, 0, -2], [2, 0, 1],
-    [5, 0, -2], [9, 0, 2], [4, 0, 5], [0, 0, 6],
-  ],
+  ...parallels(),
   slots: [
-    { t: 0.14, cost: 55, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.30, cost: 80, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.48, cost: 105, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.66, cost: 120, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.84, cost: 160, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.18, cost: 80, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.55, cost: 105, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
+    { t: 0.55, cost: 120, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.86, cost: 160, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 215,
   startCoins: 230,
   heroSpawn: [-2, 0, -1],
-  briefing: "Forge ardente. Swarm d'imps.",
+  briefing: "Forge — 2 lanes croisées. Swarm d'imps des 2 côtés.",
 };

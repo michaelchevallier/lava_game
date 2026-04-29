@@ -1,17 +1,16 @@
+import { mergeY } from "./_pathTemplates.js";
+
 export default {
   id: "world4-5",
   name: "Volcan — Geyser",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, 1], [-10, 0, -4], [-4, 0, 0], [-1, 0, -4],
-    [4, 0, 0], [8, 0, -3], [6, 0, 4], [2, 0, 6],
-  ],
+  ...mergeY(),
   slots: [
-    { t: 0.14, cost: 55, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.30, cost: 80, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.48, cost: 105, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.66, cost: 120, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.86, cost: 160, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.20, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.20, cost: 80, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.55, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.78, cost: 120, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.88, cost: 160, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 205,
   startCoins: 220,
   heroSpawn: [-2, 0, -1],
-  briefing: "Mélange chaotique : tous les types d'ennemis.",
+  briefing: "Geyser — 2 chemins convergent. Mélange chaotique de tous les types.",
 };

@@ -1,17 +1,16 @@
+import { parallels } from "./_pathTemplates.js";
+
 export default {
   id: "world3-7",
   name: "Désert — Pyramide",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, 0], [-10, 0, -4], [-4, 0, 0], [0, 0, -3],
-    [5, 0, 0], [8, 0, -2], [6, 0, 4], [2, 0, 6],
-  ],
+  ...parallels(),
   slots: [
-    { t: 0.14, cost: 45, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 75, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 100, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.70, cost: 115, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.88, cost: 155, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 45, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.18, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.55, cost: 100, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.55, cost: 115, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.88, cost: 155, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 180,
   startCoins: 195,
   heroSpawn: [-2, 0, -1],
-  briefing: "Pré-boss : prépare-toi pour le Capitaine Corsaire.",
+  briefing: "Pyramide — 2 lanes croisées. Pré-boss : prépare-toi pour le Capitaine Corsaire.",
 };

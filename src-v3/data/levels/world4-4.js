@@ -1,17 +1,16 @@
+import { encirclement } from "./_pathTemplates.js";
+
 export default {
   id: "world4-4",
   name: "Volcan — Coulée",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -2], [2, 0, 2],
-    [6, 0, -3], [8, 0, 1], [4, 0, 5], [0, 0, 6],
-  ],
+  ...encirclement(),
   slots: [
-    { t: 0.14, cost: 55, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 80, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 105, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.70, cost: 120, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.88, cost: 160, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.30, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.65, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.20, cost: 80, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.50, cost: 120, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.80, cost: 160, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 195,
   startCoins: 240,
   heroSpawn: [-2, 0, -1],
-  briefing: "Coulée de lave + 2 mid-bosses.",
+  briefing: "Coulée — court direct + long encerclement. 2 mid-bosses.",
 };

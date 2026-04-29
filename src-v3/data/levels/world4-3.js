@@ -1,17 +1,16 @@
+import { splitV } from "./_pathTemplates.js";
+
 export default {
   id: "world4-3",
   name: "Volcan — Grotte",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, 1], [-10, 0, -3], [-4, 0, 1], [1, 0, -3],
-    [5, 0, 1], [9, 0, -2], [5, 0, 4], [1, 0, 6],
-  ],
+  ...splitV(),
   slots: [
-    { t: 0.14, cost: 50, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 75, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 105, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.68, cost: 115, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.86, cost: 155, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.45, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.45, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.78, cost: 115, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
+    { t: 0.86, cost: 155, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 190,
   startCoins: 200,
   heroSpawn: [-2, 0, -1],
-  briefing: "Grotte volcanique. Mid-boss en finale.",
+  briefing: "Grotte — la galerie se sépare. Mid-boss random sur les branches.",
 };

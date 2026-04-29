@@ -1,17 +1,16 @@
+import { encirclement } from "./_pathTemplates.js";
+
 export default {
   id: "world3-8",
   name: "Désert — Corsaire",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -2], [2, 0, 1],
-    [5, 0, -3], [8, 0, 1], [4, 0, 5], [0, 0, 6],
-  ],
+  ...encirclement(),
   slots: [
-    { t: 0.14, cost: 50, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 80, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 105, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.68, cost: 120, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.85, cost: 165, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.30, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.65, cost: 105, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.20, cost: 80, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.50, cost: 120, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.80, cost: 165, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
   ],
   waves: {
     list: [
@@ -26,5 +25,5 @@ export default {
   castleHP: 200,
   startCoins: 220,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS : le Capitaine Corsaire lance des explosions AOE toutes les 8s.",
+  briefing: "Corsaire — court direct + long encerclement. Boss avec AOE 8s.",
 };

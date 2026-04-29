@@ -1,16 +1,15 @@
+import { mergeY } from "./_pathTemplates.js";
+
 export default {
   id: "world4-1",
   name: "Volcan — Caldera",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, 0], [-10, 0, -3], [-3, 0, 2], [3, 0, -3],
-    [7, 0, 1], [9, 0, -2], [5, 0, 4], [1, 0, 6],
-  ],
+  ...mergeY(),
   slots: [
-    { t: 0.18, cost: 50, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.40, cost: 75, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.62, cost: 100, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.20, cost: 50, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.20, cost: 75, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.62, cost: 100, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
+    { t: 0.84, cost: 130, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -24,5 +23,5 @@ export default {
   castleHP: 180,
   startCoins: 180,
   heroSpawn: [-2, 0, -1],
-  briefing: "Bienvenue au Volcan. Les Imps brûlent vite — fais attention.",
+  briefing: "Volcan — 2 chemins convergent vers la caldera. Imps brûlent vite.",
 };

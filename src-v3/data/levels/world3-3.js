@@ -1,17 +1,16 @@
+import { parallels } from "./_pathTemplates.js";
+
 export default {
   id: "world3-3",
   name: "Désert — Cratère",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, 1], [-10, 0, -3], [-4, 0, 1], [1, 0, -3],
-    [5, 0, 1], [9, 0, -2], [5, 0, 4], [1, 0, 6],
-  ],
+  ...parallels(),
   slots: [
-    { t: 0.14, cost: 40, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 65, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.50, cost: 95, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.68, cost: 110, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.86, cost: 145, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.18, cost: 65, lateralOffset: 2.4, towerType: "mage", pathIdx: 1 },
+    { t: 0.55, cost: 95, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.55, cost: 110, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.86, cost: 145, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 160,
   startCoins: 160,
   heroSpawn: [-2, 0, -1],
-  briefing: "Mid-boss en finale. Tiens bon.",
+  briefing: "Cratère — 2 lanes parallèles qui se croisent au milieu. Mid-boss final.",
 };

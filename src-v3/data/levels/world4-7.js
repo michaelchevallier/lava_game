@@ -1,17 +1,16 @@
+import { encirclement } from "./_pathTemplates.js";
+
 export default {
   id: "world4-7",
   name: "Volcan — Antre",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, 0], [-10, 0, -4], [-4, 0, 0], [0, 0, -3],
-    [5, 0, 0], [8, 0, -2], [6, 0, 4], [2, 0, 6],
-  ],
+  ...encirclement(),
   slots: [
-    { t: 0.14, cost: 55, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 85, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 110, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.70, cost: 125, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.88, cost: 165, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.30, cost: 55, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.65, cost: 110, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.20, cost: 85, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.50, cost: 125, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.80, cost: 165, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
   ],
   waves: {
     list: [
@@ -25,5 +24,5 @@ export default {
   castleHP: 225,
   startCoins: 240,
   heroSpawn: [-2, 0, -1],
-  briefing: "L'Antre du Dragon. Pré-boss.",
+  briefing: "Antre — court vs long encerclement. Pré-boss Dragon.",
 };
