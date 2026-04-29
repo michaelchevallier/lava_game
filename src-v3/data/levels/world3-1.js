@@ -2,15 +2,22 @@ export default {
   id: "world3-1",
   name: "Désert — Dunes",
   theme: "desert",
-  pathPoints: [
-    [-15, 0, 0], [-9, 0, 3], [-3, 0, -2], [3, 0, 2],
-    [7, 0, -2], [9, 0, 2], [4, 0, 5], [0, 0, 6],
+  paths: [
+    [
+      [-15, 0, -5], [-9, 0, -2], [-3, 0, -5], [3, 0, -2],
+      [7, 0, -4], [4, 0, 2], [2, 0, 4], [0, 0, 5],
+    ],
+    [
+      [-15, 0, 5], [-9, 0, 2], [-3, 0, 5], [3, 0, 2],
+      [7, 0, 4], [4, 0, 2], [2, 0, 4], [0, 0, 5],
+    ],
   ],
   slots: [
-    { t: 0.18, cost: 40, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.40, cost: 65, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.62, cost: 95, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.84, cost: 120, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.20, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.50, cost: 65, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.20, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 1 },
+    { t: 0.50, cost: 65, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.85, cost: 120, lateralOffset: 2.4, towerType: "tank", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -24,5 +31,5 @@ export default {
   castleHP: 150,
   startCoins: 150,
   heroSpawn: [-2, 0, -1],
-  briefing: "Bienvenue au Désert. Les Volants ignorent les ennemis au sol — Baliste recommandée.",
+  briefing: "Désert : 2 chemins. Les ennemis arrivent du nord ET du sud — adapte tes tours.",
 };

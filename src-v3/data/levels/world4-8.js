@@ -2,16 +2,26 @@ export default {
   id: "world4-8",
   name: "Volcan — Dragon",
   theme: "volcan",
-  pathPoints: [
-    [-15, 0, -2], [-10, 0, 2], [-3, 0, -2], [2, 0, 1],
-    [5, 0, -3], [8, 0, 1], [4, 0, 5], [0, 0, 6],
+  paths: [
+    [
+      [-15, 0, -5], [-10, 0, -2], [-3, 0, -5], [2, 0, -2],
+      [5, 0, -4], [3, 0, 2], [1, 0, 4], [0, 0, 5],
+    ],
+    [
+      [-15, 0, 5], [-10, 0, 2], [-3, 0, 5], [2, 0, 2],
+      [5, 0, 4], [3, 0, 2], [1, 0, 4], [0, 0, 5],
+    ],
+    [
+      [15, 0, -3], [10, 0, 0], [5, 0, -2], [2, 0, 1], [0, 0, 5],
+    ],
   ],
   slots: [
-    { t: 0.14, cost: 60, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.32, cost: 90, lateralOffset: 2.4, towerType: "ballista" },
-    { t: 0.50, cost: 115, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.68, cost: 130, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.85, cost: 175, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 60, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.45, cost: 90, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
+    { t: 0.18, cost: 60, lateralOffset: 2.4, towerType: "archer", pathIdx: 1 },
+    { t: 0.45, cost: 90, lateralOffset: 2.4, towerType: "ballista", pathIdx: 1 },
+    { t: 0.30, cost: 90, lateralOffset: 2.4, towerType: "tank", pathIdx: 2 },
+    { t: 0.85, cost: 175, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -26,5 +36,5 @@ export default {
   castleHP: 250,
   startCoins: 280,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS FINAL : le Dragon de Lave vole, invoque des imps, et lance des AOE de feu.",
+  briefing: "BOSS FINAL : 3 chemins ! Le Dragon arrive avec ses minions de toutes parts.",
 };

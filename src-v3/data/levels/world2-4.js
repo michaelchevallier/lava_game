@@ -2,16 +2,22 @@ export default {
   id: "world2-4",
   name: "Forêt — Marécage",
   theme: "foret",
-  pathPoints: [
-    [-15, 0, -3], [-10, 0, 1], [-4, 0, -3], [1, 0, 2],
-    [5, 0, -3], [8, 0, 1], [4, 0, 5], [0, 0, 6],
+  paths: [
+    [
+      [-15, 0, -4], [-10, 0, -1], [-4, 0, -4], [1, 0, -1],
+      [5, 0, -3], [3, 0, 2], [1, 0, 4], [0, 0, 5],
+    ],
+    [
+      [-15, 0, 4], [-10, 0, 1], [-4, 0, 4], [1, 0, 1],
+      [5, 0, 3], [3, 0, 2], [1, 0, 4], [0, 0, 5],
+    ],
   ],
   slots: [
-    { t: 0.16, cost: 40, lateralOffset: 2.4, towerType: "archer" },
-    { t: 0.34, cost: 65, lateralOffset: 2.4, towerType: "mage" },
-    { t: 0.52, cost: 90, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.72, cost: 110, lateralOffset: 2.4, towerType: "tank" },
-    { t: 0.88, cost: 140, lateralOffset: 2.4, towerType: "ballista" },
+    { t: 0.18, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 0 },
+    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "mage", pathIdx: 0 },
+    { t: 0.18, cost: 40, lateralOffset: 2.4, towerType: "archer", pathIdx: 1 },
+    { t: 0.45, cost: 70, lateralOffset: 2.4, towerType: "tank", pathIdx: 1 },
+    { t: 0.85, cost: 140, lateralOffset: 2.4, towerType: "ballista", pathIdx: 0 },
   ],
   waves: {
     list: [
@@ -25,5 +31,5 @@ export default {
   castleHP: 145,
   startCoins: 145,
   heroSpawn: [-2, 0, -1],
-  briefing: "Le sol marécageux ralentit le hero. Reste prudent.",
+  briefing: "Marécage : 2 chemins distincts à travers la forêt.",
 };

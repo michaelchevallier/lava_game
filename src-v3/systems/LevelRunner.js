@@ -35,6 +35,7 @@ export class LevelRunner {
     this.paused = false;
 
     this.path = null;
+    this.paths = [];
     this.pathLength = 0;
     this.hero = null;
     this.enemies = [];
@@ -75,7 +76,11 @@ export class LevelRunner {
   }
 
   setup() {
-    this.path = buildPath(this.level.pathPoints);
+    const rawPaths = Array.isArray(this.level.paths) && this.level.paths.length > 0
+      ? this.level.paths
+      : [this.level.pathPoints];
+    this.paths = rawPaths.map((pts) => buildPath(pts));
+    this.path = this.paths[0];
     this.pathLength = this.path.getLength();
 
     if (!this._summonHandler) {
@@ -110,7 +115,9 @@ export class LevelRunner {
     if (heroSkin?.bonus) this.hero.applySkinBonuses(heroSkin.bonus);
 
     for (const cfg of this.level.slots) {
-      this.slots.push(new Slot(this.scene, this.path, cfg));
+      const pathIdx = cfg.pathIdx || 0;
+      const targetPath = this.paths[pathIdx] || this.path;
+      this.slots.push(new Slot(this.scene, targetPath, cfg));
     }
 
     emit("crowdef:wave-start", { wave: 1 });
@@ -283,7 +290,9 @@ export class LevelRunner {
   }
 
   _spawnEnemy(type = "basic") {
-    const e = new Enemy(this.scene, this.path, type);
+    const pathIdx = this.paths.length > 1 ? Math.floor(Math.random() * this.paths.length) : 0;
+    const targetPath = this.paths[pathIdx];
+    const e = new Enemy(this.scene, targetPath, type);
     this.enemies.push(e);
   }
 

@@ -150,13 +150,16 @@ function clearDecor() {
 }
 
 function isOnPath(x, z, runner) {
-  if (!runner || !runner.path) return false;
+  if (!runner) return false;
+  const allPaths = (runner.paths && runner.paths.length) ? runner.paths : (runner.path ? [runner.path] : []);
   const samples = 30;
-  for (let i = 0; i <= samples; i++) {
-    const p = runner.path.getPointAt(i / samples);
-    const dx = p.x - x;
-    const dz = p.z - z;
-    if (dx * dx + dz * dz < 4.5) return true;
+  for (const path of allPaths) {
+    for (let i = 0; i <= samples; i++) {
+      const p = path.getPointAt(i / samples);
+      const dx = p.x - x;
+      const dz = p.z - z;
+      if (dx * dx + dz * dz < 4.5) return true;
+    }
   }
   return false;
 }
@@ -198,7 +201,7 @@ JuiceFX.init();
 const runner = new LevelRunner(scene, world1_1);
 runner.setup();
 
-let pathLine = null;
+let pathLines = [];
 let castle = null;
 
 function disposeMeshGroup(group) {
@@ -220,11 +223,16 @@ function parseHexColor(s) {
 }
 
 function rebuildLevelDecor() {
-  disposeMeshGroup(pathLine);
+  for (const pl of pathLines) disposeMeshGroup(pl);
+  pathLines = [];
   disposeMeshGroup(castle);
 
-  pathLine = makePathLine(runner.path, dirtMat);
-  scene.add(pathLine);
+  for (const p of (runner.paths || [runner.path])) {
+    if (!p) continue;
+    const pl = makePathLine(p, dirtMat);
+    scene.add(pl);
+    pathLines.push(pl);
+  }
 
   const castleSkinId = SaveSystem.getEquippedSkin("castle") || "castle_default";
   const castleSkin = SKIN_BY_ID[castleSkinId];
@@ -1174,7 +1182,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "post-d",
+  version: "post-b",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),
