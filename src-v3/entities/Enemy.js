@@ -437,6 +437,15 @@ export class Enemy {
       }
     }
 
+    if (this._slowUntil) {
+      const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      if (now < this._slowUntil) {
+        effSpeed *= (this._slowMul || 1);
+      } else {
+        this._slowUntil = 0;
+        this._slowMul = 1;
+      }
+    }
     const len = this.curve.getLength();
     this.t += (effSpeed * dt) / len;
     if (this.t >= 1) {

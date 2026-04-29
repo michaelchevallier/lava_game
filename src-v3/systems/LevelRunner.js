@@ -250,7 +250,17 @@ export class LevelRunner {
       }
       if (e.dead) {
         const baseReward = (e.reward || 2) * 0.55;
-        const reward = Math.max(1, Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1)));
+        let magnetMul = 1;
+        for (const t of this.towers) {
+          if (t.cfg.behavior !== "coinPull") continue;
+          const dx = e.group.position.x - t.group.position.x;
+          const dz = e.group.position.z - t.group.position.z;
+          const r = t.cfg.range || 6;
+          if (dx * dx + dz * dz < r * r) {
+            magnetMul = Math.max(magnetMul, t.cfg.coinMul || 1.5);
+          }
+        }
+        const reward = Math.max(1, Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1) * magnetMul));
         this.coins += reward;
         if (this.hero) {
           this.hero.gainXp(1);
@@ -310,7 +320,7 @@ export class LevelRunner {
 
     this._tickBuildPoints(adt, this.hero);
 
-    for (const t of this.towers) t.tick(adt, this.enemies);
+    for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
   }
 
   onCastleHit(dmg) {

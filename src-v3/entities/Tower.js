@@ -182,9 +182,16 @@ export class Tower {
     this.group.add(this.head);
   }
 
-  tick(dt, enemies) {
-    if (this.cfg.pendingMechanic) return; // wired during POST.J (interview)
+  tick(dt, enemies, towers = null) {
+    const behavior = this.cfg.behavior;
+    if (behavior === "push") return this._tickPush(dt, enemies);
+    if (behavior === "cluster") return this._tickCluster(dt, enemies);
+    if (behavior === "slow") return this._tickSlow(dt, enemies);
+    if (behavior === "buffAura") return this._tickBuffAura(dt);
+    if (behavior === "coinPull") return; // passive, handled in LevelRunner kill
     this.cooldown -= dt * 1000;
+    // Portal aura buff: re-evaluate damage multiplier (cached 1×/sec)
+    this._evalAuraBuff(towers, dt);
 
     let target = null;
     let bestDist = this.range;
@@ -261,6 +268,97 @@ export class Tower {
     } else {
       enemy.takeDamage(this.damage, projectile.mesh.position);
     }
+  }
+
+  _tickPush(dt, enemies) {
+    const r2 = this.range * this.range;
+    const myPos = this.group.position;
+    const strength = (this.cfg.pushStrength || 0.04) * dt;
+    let any = false;
+    for (const e of enemies) {
+      if (e.dead || e._dying || e.t == null) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz < r2) {
+        e.t = Math.max(0, e.t - strength);
+        any = true;
+      }
+    }
+    if (this.model && any) {
+      this.model.rotation.y += 4 * dt;
+    }
+  }
+
+  _tickCluster(dt, enemies) {
+    this.cooldown -= dt * 1000;
+    if (this.cooldown > 0) return;
+    const myPos = this.group.position;
+    const triggerR2 = 4 * 4;
+    let inRange = 0;
+    const targets = [];
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz < triggerR2) {
+        inRange++;
+        targets.push(e);
+      }
+    }
+    if (inRange < (this.cfg.clusterCount || 3)) return;
+    const aoe2 = (this.cfg.aoe || 2.5) * (this.cfg.aoe || 2.5);
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz <= aoe2) e.takeDamage(this.cfg.damage || 8, this.group.position);
+    }
+    Particles.emit(
+      { x: myPos.x, y: 0.6, z: myPos.z },
+      0xff7530, 24,
+      { speed: 6, life: 0.55, scale: 0.5, yLift: 1.0 },
+    );
+    Audio.sfxBoom?.();
+    this.cooldown = this.cfg.cooldownMs || 8000;
+  }
+
+  _tickSlow(dt, enemies) {
+    const r2 = this.range * this.range;
+    const myPos = this.group.position;
+    const mul = this.cfg.slowMul || 0.5;
+    const dur = this.cfg.slowDurationMs || 4000;
+    const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz < r2) {
+        e._slowMul = mul;
+        e._slowUntil = now + dur;
+      }
+    }
+  }
+
+  _tickBuffAura(_dt) {
+    // Passive — read by other towers via _evalAuraBuff
+  }
+
+  _evalAuraBuff(towers, dt) {
+    if (!towers) return;
+    this._auraEvalT = (this._auraEvalT || 0) - dt;
+    if (this._auraEvalT > 0) return;
+    this._auraEvalT = 1.0;
+    let mul = 1;
+    for (const t of towers) {
+      if (t === this || t.cfg.behavior !== "buffAura") continue;
+      const dx = t.group.position.x - this.group.position.x;
+      const dz = t.group.position.z - this.group.position.z;
+      const r = t.cfg.range || 4;
+      if (dx * dx + dz * dz < r * r) {
+        mul = Math.max(mul, t.cfg.buffMul || 1.5);
+      }
+    }
+    this.damage = (this.cfg.damage || 1) * mul;
   }
 
   _fire(target) {
