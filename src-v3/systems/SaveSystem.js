@@ -1,5 +1,5 @@
 const KEY = "crowdef:save";
-const VERSION = 3;
+const VERSION = 4;
 
 function defaultSave() {
   return {
@@ -29,6 +29,11 @@ function ensureCached() {
       return cached;
     }
     const parsed = JSON.parse(raw);
+    if ((parsed?.version || 0) < VERSION) {
+      // POST.J architecture pivot: invalider les saves antérieures (slots → BuildPoint, towers refacto)
+      cached = defaultSave();
+      return cached;
+    }
     const def = defaultSave();
     cached = {
       ...def,

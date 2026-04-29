@@ -156,6 +156,38 @@ export class Tower {
     this._disposeModel();
     const scaleBoost = 1 + (level - 1) * 0.06;
     this._loadModel(assetKey, base.scale * scaleBoost);
+    this._drawTierPips(level);
+    if (level === 3) this._tintGold();
+  }
+
+  _drawTierPips(level) {
+    if (this._pipsMesh) {
+      this.group.remove(this._pipsMesh);
+      this._pipsMesh.geometry.dispose();
+      this._pipsMesh.material.map?.dispose();
+      this._pipsMesh.material.dispose();
+      this._pipsMesh = null;
+    }
+    if (level <= 1) return;
+    const tex = Tower._pipTextureCache[level] || (Tower._pipTextureCache[level] = _makePipTexture(level));
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), mat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = 0.06;
+    mesh.renderOrder = 4;
+    this.group.add(mesh);
+    this._pipsMesh = mesh;
+  }
+
+  _tintGold() {
+    if (!this.model) return;
+    this.model.traverse((c) => {
+      if (c.isMesh && c.material && c.material.color) {
+        c.material = c.material.clone();
+        c.material.color.lerp(new THREE.Color(0xffd23f), 0.4);
+        c.material.emissive?.setHex?.(0x553311);
+      }
+    });
   }
 
   _buildFallback(color = 0x3a6abf) {
@@ -432,4 +464,53 @@ export class Tower {
     }
     this.projectiles = [];
   }
+}
+
+Tower._pipTextureCache = {};
+
+function _makePipTexture(count) {
+  const size = 256;
+  const cv = document.createElement("canvas");
+  cv.width = size; cv.height = size;
+  const ctx = cv.getContext("2d");
+  ctx.clearRect(0, 0, size, size);
+  const cx = size / 2, cy = size / 2;
+  const ringR = size * 0.42;
+  ctx.strokeStyle = "rgba(255, 210, 63, 0.35)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < count; i++) {
+    const a = -Math.PI / 2 + i * (Math.PI * 2 / count);
+    const sx = cx + Math.cos(a) * ringR;
+    const sy = cy + Math.sin(a) * ringR;
+    _drawStar(ctx, sx, sy, 5, 18, 8, "#ffd23f");
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.needsUpdate = true;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function _drawStar(ctx, cx, cy, points, outer, inner, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = -Math.PI / 2 + i * Math.PI / points;
+    const x = Math.cos(a) * r;
+    const y = Math.sin(a) * r;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.shadowColor = "rgba(0,0,0,0.6)";
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "#5a3a00";
+  ctx.stroke();
+  ctx.restore();
 }
