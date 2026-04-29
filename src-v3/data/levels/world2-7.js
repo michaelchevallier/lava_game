@@ -1,0 +1,29 @@
+export default {
+  id: "world2-7",
+  name: "Forêt — Couronne",
+  theme: "foret",
+  pathPoints: [
+    [-15, 0, 0], [-10, 0, -4], [-4, 0, 0], [0, 0, -3],
+    [5, 0, 0], [8, 0, -2], [6, 0, 4], [2, 0, 6],
+  ],
+  slots: [
+    { t: 0.14, cost: 40, lateralOffset: 2.4, towerType: "archer" },
+    { t: 0.32, cost: 65, lateralOffset: 2.4, towerType: "tank" },
+    { t: 0.50, cost: 95, lateralOffset: 2.4, towerType: "mage" },
+    { t: 0.70, cost: 110, lateralOffset: 2.4, towerType: "tank" },
+    { t: 0.88, cost: 145, lateralOffset: 2.4, towerType: "ballista" },
+  ],
+  waves: {
+    list: [
+      { types: { assassin: 16, basic: 10, brute: 5, shielded: 4 }, spawnRateMs: 460, breakMs: 4000 },
+      { types: { runner: 14, assassin: 14, brute: 7, shielded: 5 }, spawnRateMs: 430, breakMs: 4000 },
+      { types: { assassin: 18, brute: 8, shielded: 7 }, spawnRateMs: 410, breakMs: 4000 },
+      { types: { midboss: 1, assassin: 14, brute: 8, shielded: 6 }, spawnRateMs: 400, breakMs: 4500 },
+      { types: { midboss: 1, assassin: 18, brute: 10, shielded: 7 }, spawnRateMs: 380, breakMs: 0 },
+    ],
+  },
+  castleHP: 160,
+  startCoins: 165,
+  heroSpawn: [-2, 0, -1],
+  briefing: "Pré-boss : prépare-toi pour le Sorcier de la Forêt.",
+};

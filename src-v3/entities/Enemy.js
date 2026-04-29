@@ -46,6 +46,19 @@ export const ENEMY_TYPES = {
     chargeMs: 1500, chargeCooldownMs: 6000, chargeMul: 4,
     bossName: "Brigand de la Plaine",
   },
+  assassin: {
+    hp: 2, speed: 2.0, damage: 6, reward: 4,
+    asset: "goblin", scale: 0.50, walkAnim: "Run",
+    bodyColor: 0x222244, isStealth: true,
+    stealthCycleMs: 2200, stealthOpacity: 0.25,
+  },
+  warlord_boss: {
+    hp: 100, speed: 0.55, damage: 35, reward: 120,
+    asset: "soldier", scale: 1.2, walkAnim: "Walk",
+    bodyColor: 0xff7a00, isBoss: true,
+    summonsMinions: true, summonCooldownMs: 5000, summonType: "runner",
+    bossName: "Sorcier de la Forêt",
+  },
 };
 
 export class Enemy {
@@ -77,6 +90,16 @@ export class Enemy {
     this._chargeTimer = 0;
     this._chargeCooldown = this.chargeCooldownMs > 0 ? 2000 : 0;
     this._spawned = false;
+
+    this.isStealth = !!cfg.isStealth;
+    this.stealthCycleMs = cfg.stealthCycleMs || 0;
+    this.stealthOpacity = cfg.stealthOpacity || 0.25;
+    this._stealthTimer = 0;
+
+    this.summonsMinions = !!cfg.summonsMinions;
+    this.summonCooldownMs = cfg.summonCooldownMs || 0;
+    this.summonType = cfg.summonType || "basic";
+    this._summonTimer = this.summonCooldownMs > 0 ? 3000 : 0;
 
     this.group = new THREE.Group();
 
@@ -213,6 +236,33 @@ export class Enemy {
       this._dyingTimer -= dt;
       if (this._dyingTimer <= 0) this.dead = true;
       return;
+    }
+
+    if (this.isStealth) {
+      this._stealthTimer += dt * 1000;
+      const phase = (this._stealthTimer % this.stealthCycleMs) / this.stealthCycleMs;
+      const visible = phase < 0.5;
+      const targetOp = visible ? 1 : this.stealthOpacity;
+      this.group.traverse((o) => {
+        if (o.isMesh || o.isSkinnedMesh) {
+          if (Array.isArray(o.material)) {
+            for (const m of o.material) { m.transparent = true; m.opacity = targetOp; }
+          } else if (o.material) {
+            o.material.transparent = true;
+            o.material.opacity = targetOp;
+          }
+        }
+      });
+    }
+
+    if (this.summonsMinions) {
+      this._summonTimer -= dt * 1000;
+      if (this._summonTimer <= 0) {
+        this._summonTimer = this.summonCooldownMs;
+        document.dispatchEvent(new CustomEvent("crowdef:boss-summon", {
+          detail: { type: this.summonType, x: this.group.position.x, z: this.group.position.z, t: this.t },
+        }));
+      }
     }
 
     let effSpeed = this.speed;

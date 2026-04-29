@@ -15,6 +15,7 @@ import {
 import {
   SKINS, SKIN_BY_ID, getSkinsByCategory, getDefaultSkinId, isSkinUnlocked,
 } from "./data/skins.js";
+import { getTheme } from "./data/themes.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -81,30 +82,51 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 const dirtMat = new THREE.MeshLambertMaterial({ color: 0xcca06a });
+const trees = [];
 
-function addTree(x, z, h) {
+function addTree(x, z, h, trunkColor, leavesColor) {
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(0.18, 0.22, 0.8),
-    new THREE.MeshLambertMaterial({ color: 0x6a4422 }),
+    new THREE.MeshLambertMaterial({ color: trunkColor }),
   );
   trunk.position.set(x, 0.4, z);
   trunk.castShadow = true;
   scene.add(trunk);
   const leaves = new THREE.Mesh(
     new THREE.ConeGeometry(0.9, h, 8),
-    new THREE.MeshLambertMaterial({ color: 0x2f8a3a }),
+    new THREE.MeshLambertMaterial({ color: leavesColor }),
   );
   leaves.position.set(x, 0.8 + h / 2, z);
   leaves.castShadow = true;
   scene.add(leaves);
+  trees.push(trunk, leaves);
 }
-for (let i = 0; i < 16; i++) {
-  const angle = Math.random() * Math.PI * 2;
-  const r = 14 + Math.random() * 8;
-  const x = Math.cos(angle) * r;
-  const z = Math.sin(angle) * r;
-  if (Math.abs(x) > 6 || Math.abs(z) > 6) addTree(x, z, 2 + Math.random() * 2);
+
+function clearTrees() {
+  for (const t of trees) {
+    scene.remove(t);
+    t.geometry?.dispose();
+    t.material?.dispose();
+  }
+  trees.length = 0;
 }
+
+function applyTheme(themeId) {
+  const t = getTheme(themeId);
+  scene.background = new THREE.Color(t.bg);
+  scene.fog = new THREE.Fog(t.fog, 30, 80);
+  ground.material.color.setHex(t.ground);
+  dirtMat.color.setHex(t.dirt);
+  clearTrees();
+  for (let i = 0; i < 16; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = 14 + Math.random() * 8;
+    const x = Math.cos(angle) * r;
+    const z = Math.sin(angle) * r;
+    if (Math.abs(x) > 6 || Math.abs(z) > 6) addTree(x, z, 2 + Math.random() * 2, t.treeTrunk, t.treeLeaves);
+  }
+}
+applyTheme(world1_1.theme || "plaine");
 
 Particles.init(scene);
 JuiceFX.init();
@@ -391,6 +413,7 @@ document.addEventListener("crowdef:level-restart", () => {
 document.addEventListener("crowdef:level-loaded", () => {
   ui.bossBanner.classList.remove("show", "charging");
   _bossRef = null;
+  applyTheme(runner.level.theme || "plaine");
 });
 document.addEventListener("crowdef:skin-equipped", (e) => {
   if (e.detail.category === "castle") {
@@ -970,7 +993,7 @@ window.__cd = {
     const lvl = getLevel(id);
     if (lvl) runner.loadLevel(lvl);
   },
-  version: "j5-c4",
+  version: "j6-a",
   shop: {
     open: () => showShop(),
     close: () => closeShop(),

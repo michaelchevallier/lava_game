@@ -75,6 +75,16 @@ export class LevelRunner {
     this.path = buildPath(this.level.pathPoints);
     this.pathLength = this.path.getLength();
 
+    if (!this._summonHandler) {
+      this._summonHandler = (ev) => {
+        const type = ev.detail.type || "basic";
+        const e = new Enemy(this.scene, this.path, type);
+        e.t = Math.max(0, Math.min(0.95, ev.detail.t || 0.5));
+        this.enemies.push(e);
+      };
+      document.addEventListener("crowdef:boss-summon", this._summonHandler);
+    }
+
     const heroPos = new THREE.Vector3(...(this.level.heroSpawn || [-2, 0, -1]));
     const heroSkinId = SaveSystem.getEquippedSkin("hero") || getDefaultSkinId("hero");
     const heroSkin = SKIN_BY_ID[heroSkinId];
@@ -261,6 +271,10 @@ export class LevelRunner {
   }
 
   dispose() {
+    if (this._summonHandler) {
+      document.removeEventListener("crowdef:boss-summon", this._summonHandler);
+      this._summonHandler = null;
+    }
     if (this.hero && this.hero.destroy) this.hero.destroy();
     for (const e of this.enemies) e.destroy();
     for (const t of this.towers) {
