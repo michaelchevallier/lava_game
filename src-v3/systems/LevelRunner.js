@@ -84,6 +84,20 @@ export class LevelRunner {
       };
       document.addEventListener("crowdef:boss-summon", this._summonHandler);
     }
+    if (!this._aoeHandler) {
+      this._aoeHandler = (ev) => {
+        const { x, z, radius, damage } = ev.detail;
+        if (!this.hero) return;
+        const hx = this.hero.group.position.x;
+        const hz = this.hero.group.position.z;
+        const distSq = (hx - x) * (hx - x) + (hz - z) * (hz - z);
+        if (distSq < radius * radius) {
+          this.onCastleHit(damage);
+        }
+        JuiceFX.shake(0.5, 400);
+      };
+      document.addEventListener("crowdef:boss-aoe", this._aoeHandler);
+    }
 
     const heroPos = new THREE.Vector3(...(this.level.heroSpawn || [-2, 0, -1]));
     const heroSkinId = SaveSystem.getEquippedSkin("hero") || getDefaultSkinId("hero");
@@ -274,6 +288,10 @@ export class LevelRunner {
     if (this._summonHandler) {
       document.removeEventListener("crowdef:boss-summon", this._summonHandler);
       this._summonHandler = null;
+    }
+    if (this._aoeHandler) {
+      document.removeEventListener("crowdef:boss-aoe", this._aoeHandler);
+      this._aoeHandler = null;
     }
     if (this.hero && this.hero.destroy) this.hero.destroy();
     for (const e of this.enemies) e.destroy();

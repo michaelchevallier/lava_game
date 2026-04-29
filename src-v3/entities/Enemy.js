@@ -59,6 +59,18 @@ export const ENEMY_TYPES = {
     summonsMinions: true, summonCooldownMs: 5000, summonType: "runner",
     bossName: "Sorcier de la Forêt",
   },
+  flyer: {
+    hp: 3, speed: 1.6, damage: 5, reward: 4,
+    asset: "wizard", scale: 0.45, walkAnim: "Walk",
+    bodyColor: 0x5fbcff, isFlyer: true, flyHeight: 1.4,
+  },
+  corsair_boss: {
+    hp: 130, speed: 0.5, damage: 40, reward: 150,
+    asset: "pirate", scale: 1.2, walkAnim: "Walk",
+    bodyColor: 0x5fbcff, isBoss: true, isCorsair: true,
+    aoeBlastMs: 8000, aoeBlastRadius: 4.5, aoeBlastDamage: 30,
+    bossName: "Capitaine Corsaire",
+  },
 };
 
 export class Enemy {
@@ -100,6 +112,13 @@ export class Enemy {
     this.summonCooldownMs = cfg.summonCooldownMs || 0;
     this.summonType = cfg.summonType || "basic";
     this._summonTimer = this.summonCooldownMs > 0 ? 3000 : 0;
+
+    this.isFlyer = !!cfg.isFlyer;
+    this.flyHeight = cfg.flyHeight || 0;
+    this.aoeBlastMs = cfg.aoeBlastMs || 0;
+    this.aoeBlastRadius = cfg.aoeBlastRadius || 0;
+    this.aoeBlastDamage = cfg.aoeBlastDamage || 0;
+    this._aoeTimer = this.aoeBlastMs > 0 ? 4000 : 0;
 
     this.group = new THREE.Group();
 
@@ -255,6 +274,24 @@ export class Enemy {
       });
     }
 
+    if (this.aoeBlastMs > 0) {
+      this._aoeTimer -= dt * 1000;
+      if (this._aoeTimer <= 0) {
+        this._aoeTimer = this.aoeBlastMs;
+        document.dispatchEvent(new CustomEvent("crowdef:boss-aoe", {
+          detail: {
+            x: this.group.position.x, z: this.group.position.z,
+            radius: this.aoeBlastRadius, damage: this.aoeBlastDamage,
+          },
+        }));
+        Particles.emit(
+          { x: this.group.position.x, y: this.group.position.y + 0.6, z: this.group.position.z },
+          0x5fbcff, 24,
+          { speed: 6, life: 0.8, scale: 0.7, yLift: 1.5 },
+        );
+      }
+    }
+
     if (this.summonsMinions) {
       this._summonTimer -= dt * 1000;
       if (this._summonTimer <= 0) {
@@ -305,6 +342,10 @@ export class Enemy {
     const p = this.curve.getPointAt(this.t);
     this.group.position.x = p.x;
     this.group.position.z = p.z;
+    if (this.isFlyer) {
+      const bob = Math.sin(this.t * 20) * 0.15;
+      this.group.position.y = this.flyHeight + bob;
+    }
     const tangent = this.curve.getTangentAt(this.t).normalize();
     this._lastTangent.copy(tangent);
     this.group.rotation.y = Math.atan2(tangent.x, tangent.z);
