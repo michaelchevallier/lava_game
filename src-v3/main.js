@@ -8,7 +8,7 @@ import { MusicManager } from "./systems/MusicManager.js";
 import { SaveSystem } from "./systems/SaveSystem.js";
 import { AssetLoader } from "./systems/AssetLoader.js";
 import { rollPerkChoices } from "./data/perks.js";
-import { TOWER_TYPES } from "./entities/Tower.js";
+import { TOWER_TYPES, TOWER_ORDER, Tower } from "./entities/Tower.js";
 import {
   META_UPGRADES, UPGRADE_TIERS, UPGRADE_MAX_LEVEL,
   getCostForLevel, isTierUnlocked, RESET_COST_GEMS,
@@ -333,20 +333,74 @@ rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
 
 const keys = { w: 0, a: 0, s: 0, d: 0 };
-const TOWER_HOTKEYS = ["archer", "tank", "mage", "ballista", "cannon", "crossbow", "fan", "mine", "magnet", "portal", "frost"];
+const TOWER_HOTKEYS = TOWER_ORDER;
+
+function getCurrentWorld() {
+  const id = runner.level?.id || "";
+  const m = id.match(/^world(\d+)/);
+  return m ? parseInt(m[1], 10) : 99;
+}
+
+const toolbarEl = document.getElementById("tower-toolbar");
+function buildToolbar() {
+  if (!toolbarEl) return;
+  toolbarEl.innerHTML = "";
+  TOWER_ORDER.forEach((type, idx) => {
+    const cfg = TOWER_TYPES[type];
+    if (!cfg) return;
+    const cell = document.createElement("div");
+    cell.className = "tt-cell";
+    cell.dataset.towerType = type;
+    const keyLbl = idx < 9 ? `${idx + 1}` : (idx === 9 ? "0" : "-");
+    cell.innerHTML = `<span class="tt-key">${keyLbl}</span><span class="tt-icon">${cfg.icon || "🏰"}</span><span class="tt-cost">${cfg.cost}¢</span>`;
+    cell.title = `${cfg.label} — ${cfg.cost}¢ (touche ${keyLbl})`;
+    cell.addEventListener("click", () => {
+      const world = getCurrentWorld();
+      if ((cfg.unlockWorld || 1) > world) return;
+      runner.selectedTowerType = type;
+      refreshToolbarSelection();
+    });
+    toolbarEl.appendChild(cell);
+  });
+  refreshToolbarSelection();
+}
+
+function refreshToolbarSelection() {
+  if (!toolbarEl) return;
+  const sel = runner.selectedTowerType || "archer";
+  const world = getCurrentWorld();
+  const coins = runner.coins || 0;
+  toolbarEl.querySelectorAll(".tt-cell").forEach((cell) => {
+    const type = cell.dataset.towerType;
+    const cfg = TOWER_TYPES[type];
+    if (!cfg) return;
+    const locked = (cfg.unlockWorld || 1) > world;
+    cell.classList.toggle("selected", type === sel && !locked);
+    cell.classList.toggle("locked", locked);
+    cell.classList.toggle("poor", !locked && coins < cfg.cost);
+    if (locked) cell.dataset.lockedLabel = `🔒 W${cfg.unlockWorld}`;
+  });
+}
+
+buildToolbar();
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 1;
   if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 1;
   if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 1;
   if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 1;
   // Tower selection 1-9, 0=10ème, Minus=11ème
-  if (e.code === "Digit0") { runner.selectedTowerType = TOWER_HOTKEYS[9]; return; }
-  if (e.code === "Minus" || e.code === "NumpadSubtract") { runner.selectedTowerType = TOWER_HOTKEYS[10]; return; }
+  const trySelect = (idx) => {
+    const type = TOWER_HOTKEYS[idx];
+    if (!type) return;
+    const cfg = TOWER_TYPES[type];
+    if (!cfg || (cfg.unlockWorld || 1) > getCurrentWorld()) return;
+    runner.selectedTowerType = type;
+    refreshToolbarSelection();
+  };
+  if (e.code === "Digit0") { trySelect(9); return; }
+  if (e.code === "Minus" || e.code === "NumpadSubtract") { trySelect(10); return; }
   const m = e.code.match(/^Digit([1-9])$/);
-  if (m) {
-    const idx = parseInt(m[1], 10) - 1;
-    if (TOWER_HOTKEYS[idx]) runner.selectedTowerType = TOWER_HOTKEYS[idx];
-  }
+  if (m) trySelect(parseInt(m[1], 10) - 1);
 });
 window.addEventListener("keyup", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 0;
@@ -512,8 +566,150 @@ function updateTowerPreview() {
   `;
 }
 
+const radialEl = document.getElementById("radial-menu");
+const sellToastEl = document.getElementById("sell-toast");
+const sellToastMsgEl = document.getElementById("sell-toast-msg");
+const sellUndoBtnEl = document.getElementById("sell-undo-btn");
+let _radialOpenBp = null;
+let _radialPendingUndo = null;
+let _radialPendingTimer = 0;
+const _radialVec = new THREE.Vector3();
+
+function _upgradeCost(tower) {
+  const baseCost = tower.cfg.cost || 50;
+  const lvl = tower.upgradeLevel || 1;
+  if (lvl === 1) return Math.round(baseCost * 1.0);
+  if (lvl === 2) return Math.round(baseCost * 1.5);
+  return 0;
+}
+
+function openRadial(bp) {
+  if (!bp || !bp.tower || !radialEl) return;
+  _radialOpenBp = bp;
+  radialEl.classList.add("open");
+  refreshRadialButtons();
+}
+function closeRadial() {
+  if (!_radialOpenBp) return;
+  _radialOpenBp = null;
+  radialEl?.classList.remove("open");
+}
+
+function refreshRadialButtons() {
+  if (!_radialOpenBp || !radialEl) return;
+  const t = _radialOpenBp.tower;
+  if (!t) { closeRadial(); return; }
+  const upBtn = radialEl.querySelector('[data-radial="upgrade"]');
+  const sellBtn = radialEl.querySelector('[data-radial="sell"]');
+  const cost = _upgradeCost(t);
+  const isMax = (t.upgradeLevel || 1) >= 3;
+  if (upBtn) {
+    const lbl = upBtn.querySelector(".lbl");
+    upBtn.classList.toggle("disabled", isMax || runner.coins < cost);
+    if (lbl) lbl.textContent = isMax ? "MAX" : `↑ ${cost}¢`;
+  }
+  if (sellBtn) {
+    const refund = Math.round(_radialOpenBp.totalInvested * 0.8);
+    const lbl = sellBtn.querySelector(".lbl");
+    if (lbl) lbl.textContent = `+${refund}¢`;
+  }
+}
+
+function updateRadialMenu() {
+  if (_radialPendingUndo) {
+    _radialPendingTimer -= 1 / 60;
+    if (_radialPendingTimer <= 0) {
+      sellToastEl.style.display = "none";
+      _radialPendingUndo = null;
+    }
+  }
+  const onBp = runner._heroOnBuildPoint;
+  if (onBp && onBp.occupied) {
+    if (_radialOpenBp !== onBp) openRadial(onBp);
+  } else if (_radialOpenBp) {
+    closeRadial();
+  }
+  if (_radialOpenBp && radialEl) {
+    _radialVec.set(_radialOpenBp.pos.x, 1.6, _radialOpenBp.pos.z);
+    _radialVec.project(camera);
+    if (_radialVec.z < 1) {
+      const sx = (_radialVec.x * 0.5 + 0.5) * window.innerWidth;
+      const sy = (-_radialVec.y * 0.5 + 0.5) * window.innerHeight;
+      radialEl.style.left = `${Math.round(sx)}px`;
+      radialEl.style.top = `${Math.round(sy)}px`;
+    }
+    refreshRadialButtons();
+  }
+}
+
+if (radialEl) {
+  radialEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".radial-btn");
+    if (!btn || !_radialOpenBp || !_radialOpenBp.tower) return;
+    if (btn.classList.contains("disabled")) return;
+    const action = btn.dataset.radial;
+    const bp = _radialOpenBp;
+    const t = bp.tower;
+    if (action === "upgrade") {
+      const cost = _upgradeCost(t);
+      const newLvl = (t.upgradeLevel || 1) + 1;
+      if (newLvl > 3) return;
+      if (runner.coins < cost) return;
+      runner.coins -= cost;
+      bp.totalInvested += cost;
+      t.upgradeTo(newLvl);
+      refreshHUD();
+      refreshRadialButtons();
+    } else if (action === "info") {
+      const cfg = t.cfg;
+      sellToastMsgEl.textContent = `${cfg.label} L${t.upgradeLevel || 1} · 🎯${t.range || cfg.range} · 💥${(t.damage || cfg.damage).toFixed(1)} · 💀${t.kills || 0}`;
+      sellUndoBtnEl.style.display = "none";
+      sellToastEl.style.display = "block";
+      _radialPendingTimer = 3.0;
+      _radialPendingUndo = { _info: true };
+      setTimeout(() => { sellUndoBtnEl.style.display = ""; }, 3100);
+    } else if (action === "sell") {
+      const cfgType = t.type;
+      const investedSnapshot = bp.totalInvested;
+      const upgradeLevelSnap = t.upgradeLevel || 1;
+      const refund = bp.detachTower();
+      runner.coins += refund;
+      const idx = runner.towers.indexOf(t);
+      if (idx >= 0) runner.towers.splice(idx, 1);
+      t.destroy();
+      closeRadial();
+      _radialPendingUndo = { bp, type: cfgType, invested: investedSnapshot, refund, level: upgradeLevelSnap };
+      _radialPendingTimer = 3.0;
+      sellToastMsgEl.textContent = `Tour vendue +${refund}¢`;
+      sellToastEl.style.display = "block";
+      refreshHUD();
+    }
+  });
+}
+
+if (sellUndoBtnEl) {
+  sellUndoBtnEl.addEventListener("click", () => {
+    if (!_radialPendingUndo) return;
+    const { bp, type, invested, refund, level } = _radialPendingUndo;
+    if (runner.coins < refund) {
+      sellToastEl.style.display = "none";
+      _radialPendingUndo = null;
+      return;
+    }
+    runner.coins -= refund;
+    const tower = new (Tower)(scene, bp.pos.clone(), type);
+    if (level > 1) tower.upgradeTo(Math.min(3, level));
+    runner.towers.push(tower);
+    bp.attachTower(tower, invested);
+    sellToastEl.style.display = "none";
+    _radialPendingUndo = null;
+    refreshHUD();
+  });
+}
+
 function refreshHUD() {
   ui.coins.textContent = Math.floor(runner.coins);
+  refreshToolbarSelection();
   ui.gems.textContent = SaveSystem.getGems();
   ui.wave.textContent = "Vague " + runner.wave;
   ui.castleHpMax.textContent = runner.castleHPMax;
@@ -621,6 +817,13 @@ document.addEventListener("crowdef:level-loaded", () => {
   ui.bossBanner.classList.remove("show", "charging");
   _bossRef = null;
   applyTheme(runner.level.theme || "plaine");
+  // Default selection back to a tower the player can build in this world
+  const w = getCurrentWorld();
+  const curCfg = TOWER_TYPES[runner.selectedTowerType];
+  if (!curCfg || (curCfg.unlockWorld || 1) > w) {
+    runner.selectedTowerType = "archer";
+  }
+  refreshToolbarSelection();
 });
 document.addEventListener("crowdef:skin-equipped", (e) => {
   if (e.detail.category === "castle") {
@@ -1238,6 +1441,7 @@ function tick() {
   refreshHUD();
   trackBossFromRunner();
   updateTowerPreview();
+  updateRadialMenu();
 
   if (runner.hero) {
     CAM_TARGET.x += (runner.hero.group.position.x - CAM_TARGET.x) * 0.06;

@@ -9,57 +9,71 @@ export const TOWER_TYPES = {
     range: 8, fireRateMs: 700, damage: 1, projColor: 0xffd23f, projSpeed: 22,
     asset: "tower_archer", scale: 0.8, label: "Archer", aoe: 0, pierce: 0,
     fallbackColor: 0x3a6abf,
-  },
-  mage: {
-    range: 7, fireRateMs: 1200, damage: 2, projColor: 0xa050ff, projSpeed: 14,
-    asset: "tower_mage", scale: 0.7, label: "Mage", aoe: 1.5, pierce: 0,
-    fallbackColor: 0x6a3aa0,
+    cost: 30, icon: "🏹", unlockWorld: 1,
   },
   tank: {
     range: 5, fireRateMs: 220, damage: 0.5, projColor: 0xff8855, projSpeed: 26,
     asset: "tower_tank", scale: 0.85, label: "Tank", aoe: 0, pierce: 0,
     fallbackColor: 0x8a4a22,
+    cost: 50, icon: "🛡️", unlockWorld: 1,
+  },
+  mage: {
+    range: 7, fireRateMs: 1200, damage: 2, projColor: 0xa050ff, projSpeed: 14,
+    asset: "tower_mage", scale: 0.7, label: "Mage", aoe: 1.5, pierce: 0,
+    fallbackColor: 0x6a3aa0,
+    cost: 70, icon: "🔮", unlockWorld: 1,
   },
   ballista: {
     range: 14, fireRateMs: 1500, damage: 4, projColor: 0xcccccc, projSpeed: 30,
     asset: "tower_ballista", scale: 0.75, label: "Baliste", aoe: 0, pierce: 2,
     fallbackColor: 0x4a4a4a,
+    cost: 100, icon: "🎯", unlockWorld: 2,
+  },
+  mine: {
+    range: 1.8, fireRateMs: 0, damage: 8, projColor: 0xff3030, projSpeed: 0,
+    asset: "tower_mine", scale: 0.6, label: "Mine", aoe: 2.5, pierce: 0,
+    fallbackColor: 0xaa2020, behavior: "cluster", clusterCount: 3, cooldownMs: 8000,
+    cost: 60, icon: "💣", unlockWorld: 2,
   },
   cannon: {
     range: 9, fireRateMs: 2000, damage: 5, projColor: 0xff7530, projSpeed: 16,
     asset: "tower_cannon", scale: 0.7, label: "Catapulte", aoe: 2.2, pierce: 0,
     fallbackColor: 0x4a3a2a, parabolic: true,
-  },
-  crossbow: {
-    range: 16, fireRateMs: 1800, damage: 5, projColor: 0xc0e8ff, projSpeed: 32,
-    asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
-    fallbackColor: 0x6a4a2a,
+    cost: 130, icon: "🪨", unlockWorld: 3,
   },
   fan: {
     range: 5, fireRateMs: 0, damage: 0, projColor: 0xa8e0ff, projSpeed: 0,
     asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.04,
-    pendingMechanic: true,
+    cost: 90, icon: "🌀", unlockWorld: 3,
   },
-  mine: {
-    range: 1.8, fireRateMs: 0, damage: 8, projColor: 0xff3030, projSpeed: 0,
-    asset: "tower_mine", scale: 0.6, label: "Mine", aoe: 2.5, pierce: 0,
-    fallbackColor: 0xaa2020, behavior: "oneShot",
-    pendingMechanic: true,
+  frost: {
+    range: 3, fireRateMs: 0, damage: 0, projColor: 0xc0e8ff, projSpeed: 0,
+    asset: "tower_frost", scale: 0.7, label: "Glacier", aoe: 0, pierce: 0,
+    fallbackColor: 0x88ccee, behavior: "slow", slowMul: 0.5, slowDurationMs: 4000,
+    cost: 80, icon: "❄️", unlockWorld: 3,
   },
-  magnet: {
-    range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
-    asset: "tower_magnet", scale: 0.7, label: "Aimant", aoe: 0, pierce: 0,
-    fallbackColor: 0xff4488, behavior: "pull", pullStrength: 0.03,
-    pendingMechanic: true,
+  crossbow: {
+    range: 16, fireRateMs: 1800, damage: 5, projColor: 0xc0e8ff, projSpeed: 32,
+    asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
+    fallbackColor: 0x6a4a2a,
+    cost: 110, icon: "🏯", unlockWorld: 4,
   },
   portal: {
     range: 4, fireRateMs: 0, damage: 0, projColor: 0xb088ff, projSpeed: 0,
     asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
-    fallbackColor: 0x6a3aa0, behavior: "teleport",
-    pendingMechanic: true,
+    fallbackColor: 0x6a3aa0, behavior: "buffAura", buffMul: 1.5,
+    cost: 150, icon: "🌌", unlockWorld: 4,
+  },
+  magnet: {
+    range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
+    asset: "tower_magnet", scale: 0.7, label: "Aimant", aoe: 0, pierce: 0,
+    fallbackColor: 0xff4488, behavior: "coinPull", coinMul: 1.5,
+    cost: 100, icon: "🧲", unlockWorld: 4,
   },
 };
+
+export const TOWER_ORDER = ["archer", "tank", "mage", "ballista", "mine", "cannon", "fan", "frost", "crossbow", "portal", "magnet"];
 
 export class Tower {
   constructor(scene, position, type = "archer") {

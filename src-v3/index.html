@@ -414,6 +414,90 @@
         will-change: transform, opacity;
       }
       .coin-fly.flying { opacity: 0.4; }
+
+      #tower-toolbar {
+        position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+        display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 56px; gap: 6px;
+        padding: 8px; background: rgba(14, 20, 26, 0.85);
+        border: 2px solid #3a4a5a; border-radius: 14px;
+        pointer-events: auto; z-index: 18;
+        box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+        max-width: 480px;
+      }
+      .tt-cell {
+        position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 70px; height: 56px;
+        background: rgba(28, 40, 52, 0.9); border: 2px solid #4a5a6a; border-radius: 10px;
+        font-size: 22px; cursor: pointer; user-select: none;
+        transition: transform 0.08s ease, border-color 0.12s ease, background 0.12s ease;
+        color: #fff;
+      }
+      .tt-cell:hover { background: rgba(40, 56, 72, 0.95); }
+      .tt-cell:active { transform: translateY(1px); }
+      .tt-cell .tt-cost {
+        position: absolute; bottom: 1px; right: 4px;
+        font-size: 10px; font-weight: 700; color: #ffd23f;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      }
+      .tt-cell .tt-key {
+        position: absolute; top: 1px; left: 3px;
+        font-size: 9px; font-weight: 700; color: #88a; opacity: 0.85;
+      }
+      .tt-cell.selected { border-color: #ffd23f; background: rgba(60, 50, 20, 0.95); box-shadow: 0 0 12px rgba(255, 210, 63, 0.6); }
+      .tt-cell.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.8); }
+      .tt-cell.locked .tt-cost { color: #88a; }
+      .tt-cell.locked::after {
+        content: attr(data-locked-label);
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.55);
+        border-radius: 8px;
+      }
+      .tt-cell.poor { opacity: 0.55; }
+      @media (max-width: 640px) {
+        #tower-toolbar { gap: 4px; padding: 5px; bottom: 8px; }
+        .tt-cell { width: 50px; height: 44px; font-size: 18px; border-radius: 8px; }
+        .tt-cell .tt-cost { font-size: 9px; }
+      }
+
+      #radial-menu {
+        position: fixed; pointer-events: none; z-index: 24;
+        width: 0; height: 0;
+      }
+      #radial-menu.open { pointer-events: auto; }
+      .radial-btn {
+        position: absolute; width: 60px; height: 60px;
+        border-radius: 50%; border: 3px solid #ffd23f;
+        background: rgba(20, 28, 36, 0.95);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        font-size: 22px; color: #fff; cursor: pointer; user-select: none;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 0 rgba(0,0,0,0.5), 0 0 14px rgba(255,210,63,0.45);
+      }
+      .radial-btn .lbl {
+        position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+        font-size: 10px; font-weight: 700; color: #ffd23f;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.9); white-space: nowrap;
+      }
+      .radial-btn.disabled { opacity: 0.45; cursor: not-allowed; border-color: #6a7a8a; }
+      #radial-menu.open .radial-btn { transform: translate(-50%, -50%) scale(1); }
+      #radial-menu .radial-btn:nth-child(1) { /* upgrade — top */ }
+      #radial-menu .radial-btn:nth-child(2) { /* info — bottom-left */ }
+      #radial-menu .radial-btn:nth-child(3) { /* sell — bottom-right */ }
+
+      #sell-toast {
+        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+        padding: 10px 18px; background: rgba(20, 28, 36, 0.95);
+        border: 2px solid #ffd23f; border-radius: 12px; color: #fff;
+        font-size: 14px; font-weight: 700;
+        display: none; z-index: 30; pointer-events: auto;
+        box-shadow: 0 6px 0 rgba(0,0,0,0.5);
+      }
+      #sell-toast button {
+        margin-left: 12px; padding: 4px 10px;
+        background: #ffd23f; color: #1a1a1a; border: none; border-radius: 6px;
+        font-weight: 800; cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -447,6 +531,16 @@
       </div>
     </div>
     <div id="danger-vignette"></div>
+
+    <div id="tower-toolbar"></div>
+
+    <div id="radial-menu">
+      <button class="radial-btn" data-radial="upgrade" style="left:0;top:-70px;"><span class="lbl">↑</span>⬆️</button>
+      <button class="radial-btn" data-radial="info" style="left:-65px;top:35px;"><span class="lbl">Info</span>📊</button>
+      <button class="radial-btn" data-radial="sell" style="left:65px;top:35px;"><span class="lbl">+</span>💰</button>
+    </div>
+
+    <div id="sell-toast"><span id="sell-toast-msg">Tour vendue</span><button id="sell-undo-btn">Annuler</button></div>
 
     <div id="boss-banner">
       <div class="boss-name" id="boss-banner-name">—</div>

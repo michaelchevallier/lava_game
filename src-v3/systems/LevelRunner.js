@@ -44,6 +44,7 @@ export class LevelRunner {
     this.buildPoints = [];
     this.selectedTowerType = "archer";
     this._activeBuildPoint = null;
+    this._heroOnBuildPoint = null;
 
     this._waveActive = true;
     this._spawnTimer = 0;
@@ -168,6 +169,7 @@ export class LevelRunner {
     if (!hero) return;
     const closest = this.findClosestBuildPoint(hero.group.position, 4.5);
     let activeNear = null;
+    let onBp = null;
     for (const bp of this.buildPoints) {
       if (bp === closest) continue;
       bp.setHaloState("idle");
@@ -177,6 +179,7 @@ export class LevelRunner {
       const dz = hero.group.position.z - closest.pos.z;
       const d2 = dx * dx + dz * dz;
       const onPoint = d2 < BUILD_POINT_RADIUS * BUILD_POINT_RADIUS;
+      if (onPoint) onBp = closest;
       if (closest.occupied) {
         closest.setHaloState(onPoint ? "occupied" : "near");
       } else if (onPoint) {
@@ -188,6 +191,7 @@ export class LevelRunner {
       }
     }
     this._activeBuildPoint = activeNear;
+    this._heroOnBuildPoint = onBp;
   }
 
   setSpeed(n) { this.gameSpeed = Math.max(0.1, Math.min(8, n)); }
