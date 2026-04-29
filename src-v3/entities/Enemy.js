@@ -246,8 +246,9 @@ export class Enemy {
       const facing = this._lastTangent;
       const ox = hitOrigin.x - this.group.position.x;
       const oz = hitOrigin.z - this.group.position.z;
-      const dot = facing.x * ox + facing.z * oz;
-      if (dot > 0) {
+      const olen = Math.hypot(ox, oz) || 1;
+      const cosAngle = (facing.x * ox + facing.z * oz) / olen;
+      if (cosAngle > 0.6) {
         const blocked = Math.min(this.shieldHP, dmg);
         this.shieldHP -= blocked;
         actualDmg = dmg - blocked;

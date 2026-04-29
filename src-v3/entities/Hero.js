@@ -78,6 +78,10 @@ export class Hero {
     this.lifesteal = 0;
     this.waveRegen = 0;
     this.xpMul = 1;
+    this.fireball = false;
+    this.ricochet = false;
+    this.lightning = false;
+    this.pierceExplode = false;
   }
 
   applyMetaBonuses(bonuses) {
@@ -125,6 +129,10 @@ export class Hero {
     if (perk.pierceCount) this.pierceCount += perk.pierceCount;
     if (perk.lifesteal) this.lifesteal += perk.lifesteal;
     if (perk.waveRegen) this.waveRegen += perk.waveRegen;
+    if (perk.fireball) this.fireball = true;
+    if (perk.ricochet) this.ricochet = true;
+    if (perk.lightning) this.lightning = true;
+    if (perk.pierceExplode) this.pierceExplode = true;
   }
 
   _buildFallback() {
@@ -194,6 +202,7 @@ export class Hero {
       if (this.cooldown <= 0) {
         this.cooldown = FIRE_RATE_MS * this.fireRateMul;
         this._fire(target);
+        if (this.lightning) this._lightningStrike(enemies, target);
       }
     } else if (this.moveDir.lengthSq() > 0.01) {
       this.group.rotation.y = Math.atan2(this.moveDir.x, this.moveDir.y);
@@ -205,25 +214,50 @@ export class Hero {
       p.mesh.position.x += p.dir.x * PROJ_SPEED * dt;
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
       let consumed = false;
+      let hitTarget = null;
       for (const e of enemies) {
         if (e.dead || e._dying) continue;
-        if (p._hitSet && p._hitSet.has(e)) continue;
+        if (p._hitSet.has(e)) continue;
         const dx = e.group.position.x - p.mesh.position.x;
         const dz = e.group.position.z - p.mesh.position.z;
         if (dx * dx + dz * dz < 0.36) {
-          let dmg = DAMAGE * this.damageMul;
-          if (this.critChance > 0 && Math.random() < this.critChance) dmg *= 2;
-          e.takeDamage(dmg, p.mesh.position);
-          if (this.pierceCount > 0) {
-            if (!p._hitSet) p._hitSet = new Set();
-            p._hitSet.add(e);
-            p._pierceLeft = (p._pierceLeft ?? this.pierceCount) - 1;
+          hitTarget = e;
+          break;
+        }
+      }
+      if (hitTarget) {
+        const baseDmg = DAMAGE * this.damageMul * (Math.random() < this.critChance ? 2 : 1);
+        if (p._aoeOnHit) {
+          this._aoeBlast(p.mesh.position, 2.0, baseDmg * 0.7, enemies);
+          consumed = true;
+        } else {
+          hitTarget.takeDamage(baseDmg, p.mesh.position);
+          p._hitSet.add(hitTarget);
+          if (p._ricochetLeft > 0) {
+            const next = this._findRicochetTarget(hitTarget, enemies, p._hitSet, 4.0);
+            if (next) {
+              p._ricochetLeft -= 1;
+              const ndx = next.group.position.x - hitTarget.group.position.x;
+              const ndz = next.group.position.z - hitTarget.group.position.z;
+              const nlen = Math.hypot(ndx, ndz) || 1;
+              p.dir.set(ndx / nlen, 0, ndz / nlen);
+              p.life = Math.max(p.life, 0.7);
+              p.mesh.position.copy(hitTarget.group.position);
+              p.mesh.position.y = 0.9;
+              p.mesh.material.color.setHex(0x66ddff);
+            } else {
+              consumed = true;
+            }
+          } else if (p._pierceLeft > 0) {
+            p._pierceLeft -= 1;
             if (p._pierceLeft <= 0) consumed = true;
           } else {
             consumed = true;
           }
-          break;
         }
+      }
+      if (consumed && p._explodeOnConsume) {
+        this._aoeBlast(p.mesh.position, 1.5, DAMAGE * this.damageMul * 0.5, enemies);
       }
       if (consumed || p.life <= 0) {
         this.scene.remove(p.mesh);
@@ -232,6 +266,58 @@ export class Hero {
         this.projectiles.splice(i, 1);
       }
     }
+  }
+
+  _aoeBlast(center, radius, dmg, enemies) {
+    const r2 = radius * radius;
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      const dx = e.group.position.x - center.x;
+      const dz = e.group.position.z - center.z;
+      if (dx * dx + dz * dz < r2) {
+        e.takeDamage(dmg, center);
+      }
+    }
+    Particles.emit(
+      { x: center.x, y: center.y + 0.2, z: center.z },
+      0xff8a30, 18,
+      { speed: 5, life: 0.45, scale: 0.5, yLift: 0.6 },
+    );
+  }
+
+  _findRicochetTarget(from, enemies, hitSet, range) {
+    let best = null;
+    let bestDist = range * range;
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      if (hitSet.has(e)) continue;
+      const dx = e.group.position.x - from.group.position.x;
+      const dz = e.group.position.z - from.group.position.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 < bestDist) { bestDist = d2; best = e; }
+    }
+    return best;
+  }
+
+  _lightningStrike(enemies, primary) {
+    const range = RANGE * this.rangeMul;
+    const myPos = this.group.position;
+    const candidates = [];
+    for (const e of enemies) {
+      if (e.dead || e._dying || e === primary) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz < range * range) candidates.push(e);
+    }
+    if (!candidates.length) return;
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+    const dmg = DAMAGE * this.damageMul * 0.6;
+    target.takeDamage(dmg, target.group.position);
+    Particles.emit(
+      { x: target.group.position.x, y: target.group.position.y + 1.2, z: target.group.position.z },
+      0xa8e0ff, 12,
+      { speed: 6, life: 0.3, scale: 0.32, yLift: -1.0 },
+    );
   }
 
   _fire(target) {
@@ -245,6 +331,7 @@ export class Hero {
 
     const shots = 1 + this.multiShot;
     const spreadDeg = shots > 1 ? 12 : 0;
+    const projColor = this.fireball ? 0xff7530 : (this.ricochet ? 0x66ddff : (this.pierceExplode ? 0xff44aa : 0xfff4d6));
     for (let s = 0; s < shots; s++) {
       const angle = shots > 1 ? (s - (shots - 1) / 2) * (spreadDeg * Math.PI / 180) : 0;
       const cos = Math.cos(angle), sin = Math.sin(angle);
@@ -252,8 +339,8 @@ export class Hero {
       const dz = baseDirX * sin + baseDirZ * cos;
 
       const proj = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xfff4d6 }),
+        new THREE.SphereGeometry(0.14, 8, 8),
+        new THREE.MeshBasicMaterial({ color: projColor }),
       );
       proj.position.copy(start);
       this.scene.add(proj);
@@ -261,8 +348,12 @@ export class Hero {
       this.projectiles.push({
         mesh: proj,
         dir: new THREE.Vector3(dx, 0, dz),
-        life: 1.2,
+        life: 1.4,
         _pierceLeft: this.pierceCount,
+        _ricochetLeft: this.ricochet ? 3 : 0,
+        _aoeOnHit: this.fireball,
+        _explodeOnConsume: this.pierceExplode,
+        _hitSet: new Set(),
       });
     }
 

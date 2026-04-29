@@ -294,7 +294,12 @@ export class LevelRunner {
   }
 
   _spawnEnemy(type = "basic") {
-    const pathIdx = this.paths.length > 1 ? Math.floor(Math.random() * this.paths.length) : 0;
+    let pathIdx = 0;
+    if (this.paths.length > 1) {
+      this._spawnRRCounter = (this._spawnRRCounter || 0) + 1;
+      pathIdx = this._spawnRRCounter % this.paths.length;
+      if (Math.random() < 0.15) pathIdx = Math.floor(Math.random() * this.paths.length);
+    }
     const targetPath = this.paths[pathIdx];
     const e = new Enemy(this.scene, targetPath, type);
     this.enemies.push(e);
