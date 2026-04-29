@@ -155,7 +155,7 @@ export class LevelRunner {
     if (bp.paidThisLevel >= baseCost) {
       const tower = new Tower(this.scene, bp.pos.clone(), type);
       this.towers.push(tower);
-      bp.attachTower(tower, baseCost);
+      bp.attachTower(tower);
       emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z } });
     }
   }

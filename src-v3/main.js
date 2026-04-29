@@ -700,7 +700,8 @@ if (sellUndoBtnEl) {
     const tower = new (Tower)(scene, bp.pos.clone(), type);
     if (level > 1) tower.upgradeTo(Math.min(3, level));
     runner.towers.push(tower);
-    bp.attachTower(tower, invested);
+    bp.attachTower(tower);
+    bp.totalInvested = invested;
     sellToastEl.style.display = "none";
     _radialPendingUndo = null;
     refreshHUD();

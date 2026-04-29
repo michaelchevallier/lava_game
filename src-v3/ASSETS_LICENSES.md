@@ -36,7 +36,7 @@ Liste des assets 3D externes utilisés dans le jeu, avec leurs licences et auteu
 | Spike Mine | Aaron Clifford | CC-BY (à vérifier) | https://poly.pizza/m/4VRVeCH1sHm | `public/towers/spike_mine.glb` |
 | Magnet | Poly by Google | CC-BY | https://poly.pizza/m/dD2RIIea6WR | `public/towers/magnet_polygoogle.glb` |
 | Teleporter Base | Quaternius | CC0 | https://poly.pizza/m/OIezStCmak | `public/towers/teleporter_base.glb` |
-| Snowman (frost) | (à compléter par Mike) | (à vérifier sur poly.pizza) | (URL à compléter) | `public/towers/snowman.glb` |
+| Snowman (frost) | Carlos Sanchez Witt | CC-BY 3.0 | https://poly.pizza/m/cKYkfU3kdWC | `public/towers/snowman.glb` |
 
 ## Audio
 
@@ -49,3 +49,4 @@ Pour les assets CC-BY ci-dessus, ajouter une page "Crédits" dans le menu (ou un
 - "Giant Crossbow" by Aimé Tribolet (CC-BY)
 - "Spike Mine" by Aaron Clifford (CC-BY)
 - "Magnet" by Poly by Google (CC-BY)
+- "Snowman" by Carlos Sanchez Witt (CC-BY 3.0)

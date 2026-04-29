@@ -64,10 +64,10 @@ export class BuildPoint {
     this.fill.geometry = new THREE.CircleGeometry(BUILD_POINT_RADIUS - 0.18, 24, -Math.PI / 2, -angle);
   }
 
-  attachTower(tower, costPaid) {
+  attachTower(tower) {
     this.tower = tower;
     this.occupied = true;
-    this.totalInvested += costPaid;
+    // totalInvested is already accumulated tick-by-tick during drain in LevelRunner._tryBuild
     this.paidThisLevel = 0;
     this.fill.visible = false;
   }
