@@ -5,7 +5,7 @@ export default {
   name: "Volcan — Dragon",
   theme: "volcan",
   paths: (() => {
-    const main = mazeXXL({ rooms: 30, startX: -3500, ampZ: 250 }).paths[0];
+    const main = mazeXXL({ rooms: 25, startX: -3000, ampZ: 200 }).paths[0];
     // Lane courte arrière depuis x positif (ennemis qui contournent par derrière)
     const back = [[60, 0, -3], [50, 0, 5], [40, 0, -2], [30, 0, 3], [20, 0, -2], [10, 0, 1], [4, 0, 3], [0, 0, 5]];
     return [main, back];

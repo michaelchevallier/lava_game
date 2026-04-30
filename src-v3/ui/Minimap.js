@@ -98,7 +98,7 @@ export const Minimap = {
       const ep = W2P(entry.x, entry.z);
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.arc(ep.x, ep.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(ep.x, ep.y, 6, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -121,9 +121,9 @@ export const Minimap = {
         if (e.dead || e._dying) continue;
         const p = W2P(e.group.position.x, e.group.position.z);
         const isBoss = e.isBoss;
-        ctx.fillStyle = isBoss ? "#ffaa20" : "#ff4040";
+        ctx.fillStyle = isBoss ? "#ffd23f" : "#ff4040";
         ctx.beginPath();
-        ctx.arc(p.x, p.y, isBoss ? 4 : 2.2, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, isBoss ? 5 : 3, 0, Math.PI * 2);
         ctx.fill();
       }
     }

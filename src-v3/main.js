@@ -152,7 +152,6 @@ function buildMapEdge() {
   const woodMat = new THREE.MeshLambertMaterial({ color: 0x6a4a2a });
   const postMat = new THREE.MeshLambertMaterial({ color: 0x4a3a1a });
   const fenceGeom = new THREE.BoxGeometry(GROUND_SIZE, 0.5, 0.15);
-  const postGeom = new THREE.BoxGeometry(0.2, 0.7, 0.2);
   const sides = [
     [0, -MAP_HALF, 0],
     [0, MAP_HALF, 0],
@@ -165,23 +164,22 @@ function buildMapEdge() {
     wall.rotation.y = rot;
     scene.add(wall);
   }
-  // Posts every ~80u sparsely, only near the visible camera target initially.
-  // Posts placed sparse on full perimeter (count cap to avoid 1000+ meshes).
-  const postSpacing = 80;
+  const postGeom = new THREE.BoxGeometry(0.2, 0.7, 0.2);
+  const postSpacing = 8;
   const postsPerSide = Math.floor(GROUND_SIZE / postSpacing);
+  const totalPosts = (postsPerSide + 1) * 4;
+  const inst = new THREE.InstancedMesh(postGeom, postMat, totalPosts);
+  const m4 = new THREE.Matrix4();
+  let idx = 0;
   for (let i = 0; i <= postsPerSide; i++) {
     const t = -MAP_HALF + i * postSpacing;
-    for (const z of [-MAP_HALF, MAP_HALF]) {
-      const p = new THREE.Mesh(postGeom, postMat);
-      p.position.set(t, 0.35, z);
-      scene.add(p);
-    }
-    for (const x of [-MAP_HALF, MAP_HALF]) {
-      const p = new THREE.Mesh(postGeom, postMat);
-      p.position.set(x, 0.35, t);
-      scene.add(p);
-    }
+    m4.makeTranslation(t, 0.35, -MAP_HALF); inst.setMatrixAt(idx++, m4);
+    m4.makeTranslation(t, 0.35, MAP_HALF); inst.setMatrixAt(idx++, m4);
+    m4.makeTranslation(-MAP_HALF, 0.35, t); inst.setMatrixAt(idx++, m4);
+    m4.makeTranslation(MAP_HALF, 0.35, t); inst.setMatrixAt(idx++, m4);
   }
+  inst.instanceMatrix.needsUpdate = true;
+  scene.add(inst);
 }
 buildMapEdge();
 
