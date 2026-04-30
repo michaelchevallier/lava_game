@@ -127,6 +127,46 @@ src-v2/
 4. Pour une feature non-triviale : 1 sprint = 1-2 commits qui buildent et tournent. Push après.
 5. Test live via Chrome MCP : `https://michaelchevallier.github.io/lava_game/v2/`
 
+## Workflow blocs lourds (POST.X) — tickets parallèles Sonnet
+
+Pour tout bloc qui touche plusieurs systèmes ou dépasse ~5 commits, on découpe en **tickets atomiques** que des Sonnet `feature-dev` exécutent en parallèle.
+
+### Étapes
+
+1. **Plan opus** : Mike valide le scope global via `/plan` puis ExitPlanMode. Plan saved dans `/Users/mike/.claude/plans/`.
+2. **Découpe en tickets** dans le plan file, format :
+   - `TICKET-XX` titre court + brief auto-suffisant (fichiers cibles, fonctions, comportement attendu, build+commit+push)
+   - Chaque ticket = 1 track séquentiel de N commits atomiques (1 Sonnet le prend en charge entier).
+   - Identifier les dépendances entre tickets (ex: TICKET-CB1 bloqué par TICKET-SE).
+3. **Sprints parallélisés** :
+   - **Sprint 1** : tous les tickets sans dépendances mutuelles lancés en parallèle.
+     - 1 message avec N appels `Agent` simultanés, `subagent_type: feature-dev`, `isolation: "worktree"`.
+     - Chaque Sonnet bosse dans sa worktree, push après chaque commit sur sa branche dédiée.
+   - **Sprint 2+** : tickets bloqués lancés après merge du sprint précédent.
+4. **Merge** : opus orchestre les merges des branches worktree dans `phaser-pivot`, résout les conflits manuels prévus dans la section "Conflits prévisibles" du plan.
+5. **Validation** : `npm run build:kingshot` + `npm run test:crowdef` après chaque merge. Live test Chrome MCP par opus.
+
+### Brief pour ticket Sonnet
+
+Doit contenir, minimum :
+- **Type** (feature-dev / bug-fixer / quality-maintainer)
+- **Estimé** (en commits + jours)
+- **Bloqué par** (autres tickets) si applicable
+- **Brief** : contexte 1-2 phrases + état actuel à refactorer
+- **Commits à livrer** : liste séquentielle, chacun avec titre `<type>(v3): <quoi>` + détails par fichier (chemin absolu, lignes ciblées, comportement attendu)
+- **Verification** : commandes build/test + live test scenarios
+- **Files critiques** : liste paths absolus modifiés/créés
+
+### Pourquoi worktree
+
+`isolation: "worktree"` crée une copie isolée du repo pour chaque agent. Évite les conflits sur fichiers communs (`Tower.js`, `LevelRunner.js`) quand 2 Sonnet bossent sur des refactors qui touchent les mêmes fichiers. Le merge final est manuel mais prévisible (la section "Conflits prévisibles" du plan liste les zones de friction connues).
+
+### Pièges identifiés
+
+- **Tower.js + LevelRunner.js conflits** : les 2 fichiers les plus touchés. Toujours lister explicitement les zones modifiées dans chaque ticket pour anticiper.
+- **Imports dupliqués** : 2 Sonnet peuvent ajouter la même import au top du fichier. Merge prend les 2 → dedup manuel.
+- **Test:crowdef baseline** : actuellement 23/25 (2 fails préexistants : `towers built >= 1`, `endless has 30 waves`). Tout ticket doit maintenir 23/25, pas régresser.
+
 ## Tester en local
 
 ```bash
