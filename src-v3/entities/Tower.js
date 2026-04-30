@@ -46,12 +46,14 @@ export const TOWER_TYPES = {
     asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.07,
     cost: 70, icon: "🌀", unlockWorld: 3,
+    synergies: [{ type: "applyToEnemy", filter: {}, effect: { push: { strength: 0.07 } }, range: 5 }],
   },
   frost: {
     range: 3, fireRateMs: 0, damage: 0, projColor: 0xc0e8ff, projSpeed: 0,
     asset: "tower_frost", scale: 0.7, label: "Glacier", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "slow", slowMul: 0.5, slowDurationMs: 4000,
     cost: 80, icon: "❄️", unlockWorld: 3,
+    synergies: [{ type: "applyToEnemy", filter: {}, effect: { slow: { mul: 0.5, durMs: 4000 } }, range: 3 }],
   },
   crossbow: {
     range: 16, fireRateMs: 1800, damage: 5, projColor: 0xc0e8ff, projSpeed: 32,
@@ -64,12 +66,14 @@ export const TOWER_TYPES = {
     asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
     fallbackColor: 0x6a3aa0, behavior: "buffAura", buffMul: 1.5,
     cost: 130, icon: "🌌", unlockWorld: 4,
+    synergies: [{ type: "aura", filter: {}, effect: { dmgMul: 1.5 }, range: 5.5 }],
   },
   magnet: {
     range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
     asset: "tower_magnet", scale: 0.7, label: "Aimant", aoe: 0, pierce: 0,
     fallbackColor: 0xff4488, behavior: "coinPull", coinMul: 1.5,
     cost: 100, icon: "🧲", unlockWorld: 4,
+    synergies: [{ type: "passive", effect: { coinMul: 1.5 }, range: 6 }],
   },
   aaa: {
     range: 12, fireRateMs: 600, damage: 4, projColor: 0x88ccff, projSpeed: 28,
@@ -108,6 +112,7 @@ export class Tower {
     this.projectiles = [];
     this.kills = 0;
     this.totalDamage = 0;
+    this._buffMul = 1;
   }
 
   _loadModel(assetKey, scale) {
@@ -234,10 +239,8 @@ export class Tower {
     if (behavior === "cluster") return this._tickCluster(dt, enemies);
     if (behavior === "slow") return this._tickSlow(dt, enemies);
     if (behavior === "buffAura") return this._tickBuffAura(dt);
-    if (behavior === "coinPull") return; // passive, handled in LevelRunner kill
+    if (behavior === "coinPull") return;
     this.cooldown -= dt * 1000;
-    // Portal aura buff: re-evaluate damage multiplier (cached 1×/sec)
-    this._evalAuraBuff(towers, dt);
 
     let target = null;
     let bestDist = this.range;
@@ -320,7 +323,8 @@ export class Tower {
 
   _dealDamage(enemy, dmg, origin) {
     if (enemy._dying || enemy.dead) return;
-    const finalDmg = (this.cfg.flyerDmgMul && enemy.isFlyer) ? dmg * this.cfg.flyerDmgMul : dmg;
+    const buffed = dmg * (this._buffMul || 1);
+    const finalDmg = (this.cfg.flyerDmgMul && enemy.isFlyer) ? buffed * this.cfg.flyerDmgMul : buffed;
     const hpBefore = enemy.hp;
     enemy.takeDamage(finalDmg, origin);
     const dealt = Math.max(0, hpBefore - enemy.hp);
@@ -331,16 +335,12 @@ export class Tower {
   _tickPush(dt, enemies) {
     const r2 = this.range * this.range;
     const myPos = this.group.position;
-    const strength = (this.cfg.pushStrength || 0.04) * dt;
     let any = false;
     for (const e of enemies) {
-      if (e.dead || e._dying || e.t == null) continue;
+      if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
-      if (dx * dx + dz * dz < r2) {
-        e.t = Math.max(0, e.t - strength);
-        any = true;
-      }
+      if (dx * dx + dz * dz < r2) { any = true; break; }
     }
     if (this.model && any) {
       this.model.rotation.y += 8 * dt;
@@ -401,19 +401,12 @@ export class Tower {
   _tickSlow(dt, enemies) {
     const r2 = this.range * this.range;
     const myPos = this.group.position;
-    const mul = this.cfg.slowMul || 0.5;
-    const dur = this.cfg.slowDurationMs || 4000;
-    const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
     let any = false;
     for (const e of enemies) {
       if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
-      if (dx * dx + dz * dz < r2) {
-        e._slowMul = mul;
-        e._slowUntil = now + dur;
-        any = true;
-      }
+      if (dx * dx + dz * dz < r2) { any = true; break; }
     }
     this._frostVfxT = (this._frostVfxT || 0) - dt;
     if (this._frostVfxT <= 0) {
@@ -428,25 +421,6 @@ export class Tower {
   }
 
   _tickBuffAura(_dt) {
-    // Passive — read by other towers via _evalAuraBuff
-  }
-
-  _evalAuraBuff(towers, dt) {
-    if (!towers) return;
-    this._auraEvalT = (this._auraEvalT || 0) - dt;
-    if (this._auraEvalT > 0) return;
-    this._auraEvalT = 1.0;
-    let mul = 1;
-    for (const t of towers) {
-      if (t === this || t.cfg.behavior !== "buffAura") continue;
-      const dx = t.group.position.x - this.group.position.x;
-      const dz = t.group.position.z - this.group.position.z;
-      const r = t.cfg.range || 4;
-      if (dx * dx + dz * dz < r * r) {
-        mul = Math.max(mul, t.cfg.buffMul || 1.5);
-      }
-    }
-    this.damage = (this.cfg.damage || 1) * mul;
   }
 
   _fire(target) {

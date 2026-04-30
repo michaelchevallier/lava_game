@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { makePathLine } from "./systems/Path.js";
 import { LevelRunner } from "./systems/LevelRunner.js";
+import { Synergies } from "./systems/Synergies.js";
 import { Particles } from "./systems/Particles.js";
 import { JuiceFX } from "./systems/JuiceFX.js";
 import { Audio } from "./systems/Audio.js";
@@ -1710,6 +1711,47 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+
+window.__pd_synergy_test = function() {
+  const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+  const mkTower = (type, x, z) => ({
+    cfg: TOWER_TYPES[type],
+    group: { position: { x, y: 0, z } },
+    _buffMul: 1,
+  });
+  const mkEnemy = (x, z) => ({
+    dead: false, _dying: false, t: 0.5,
+    group: { position: { x, y: 0, z } },
+    _slowMul: 1, _slowUntil: 0,
+  });
+
+  const frost1 = mkTower("frost", 0, 0);
+  const frost2 = mkTower("frost", 1, 0);
+  const enemy = mkEnemy(1, 0);
+
+  Synergies.resolve([frost1, frost2], [enemy], 0.016);
+
+  const pass1 = Math.abs(enemy._slowMul - 0.5) < 0.001;
+  const pass2 = enemy._slowUntil > now;
+  console.log("[synergy_test] slowMul =", enemy._slowMul, pass1 ? "PASS" : "FAIL (expected 0.5)");
+  console.log("[synergy_test] slowUntil > now:", pass2 ? "PASS" : "FAIL");
+
+  const portal = mkTower("portal", 0, 0);
+  const archer = mkTower("archer", 1, 0);
+  archer._buffMul = 1;
+  Synergies.resolve([portal, archer], [], 0.016);
+  const pass3 = Math.abs(archer._buffMul - 1.5) < 0.001;
+  console.log("[synergy_test] archer._buffMul =", archer._buffMul, pass3 ? "PASS" : "FAIL (expected 1.5)");
+
+  const magnet = mkTower("magnet", 0, 0);
+  Synergies.resolve([magnet], [], 0.016);
+  const coinMul = Synergies.getCoinMulAt({ x: 1, z: 0 });
+  const pass4 = Math.abs(coinMul - 1.5) < 0.001;
+  console.log("[synergy_test] coinMul at (1,0) =", coinMul, pass4 ? "PASS" : "FAIL (expected 1.5)");
+
+  console.log("[synergy_test] result:", (pass1 && pass2 && pass3 && pass4) ? "ALL PASS" : "SOME FAILURES");
+  return { slowMul: enemy._slowMul, slowUntil: enemy._slowUntil, buffMul: archer._buffMul, coinMul };
+};
 
 window.__cd = {
   runner,
