@@ -643,6 +643,10 @@ function cancelBluePill() {
 
 function tickBluePill() {
   if (!_bluePillState || !runner.hero) return;
+  if (runner.hero.moveDir.lengthSq() > 0.01) {
+    cancelBluePill();
+    return;
+  }
   const now = performance.now();
   const elapsed = now - _bluePillState.startedAt;
   if (now - _bluePillState.lastPulseAt > 80) {
