@@ -93,12 +93,59 @@ scene.add(sun);
 const fill = new THREE.HemisphereLight(0xb0e0ff, 0x4a6a3a, 0.55);
 scene.add(fill);
 
+function makeGroundTexture(baseHex) {
+  const size = 512;
+  const cv = document.createElement("canvas");
+  cv.width = size; cv.height = size;
+  const ctx = cv.getContext("2d");
+  const r = (baseHex >> 16) & 0xff, g = (baseHex >> 8) & 0xff, b = baseHex & 0xff;
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.fillRect(0, 0, size, size);
+  const variations = 600;
+  for (let i = 0; i < variations; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const radius = 4 + Math.random() * 14;
+    const tone = (Math.random() - 0.5) * 60;
+    const rr = Math.max(0, Math.min(255, r + tone));
+    const gg = Math.max(0, Math.min(255, g + tone * 0.85));
+    const bb = Math.max(0, Math.min(255, b + tone * 0.6));
+    const alpha = 0.12 + Math.random() * 0.18;
+    ctx.fillStyle = `rgba(${Math.round(rr)}, ${Math.round(gg)}, ${Math.round(bb)}, ${alpha})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, radius, radius * (0.6 + Math.random() * 0.4), Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Sparse darker tufts
+  for (let i = 0; i < 80; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    ctx.fillStyle = `rgba(${Math.max(0, r - 30)}, ${Math.max(0, g - 35)}, ${Math.max(0, b - 25)}, 0.32)`;
+    ctx.beginPath();
+    ctx.arc(x, y, 2 + Math.random() * 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 4);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 const groundGeom = new THREE.PlaneGeometry(80, 80, 1, 1);
-const groundMat = new THREE.MeshLambertMaterial({ color: 0x6fc16d });
+const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: makeGroundTexture(0x6fc16d) });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
+
+function refreshGroundTexture(baseHex) {
+  if (groundMat.map) groundMat.map.dispose();
+  groundMat.map = makeGroundTexture(baseHex);
+  groundMat.color.setHex(0xffffff);
+  groundMat.needsUpdate = true;
+}
 
 const dirtMat = new THREE.MeshLambertMaterial({ color: 0xcca06a });
 const decor = [];
@@ -114,27 +161,26 @@ const THEME_PALETTE = {
   },
   foret: {
     big: ["nature_pine1", "nature_pine2", "nature_pine3"],
-    twisted: ["nature_twisted1"],
     medium: ["nature_bush", "nature_fern"],
     small: ["nature_mushroom"],
     rocks: ["nature_rock1", "nature_rock2"],
-    feature: ["nature_mushroom", "nature_twisted1"],
-    bigCount: 6, twistedCount: 2, mediumCount: 4, smallCount: 5, rockCount: 2,
+    feature: ["nature_mushroom", "nature_pine3"],
+    bigCount: 6, mediumCount: 4, smallCount: 5, rockCount: 2,
   },
   desert: {
-    big: ["nature_dead1", "nature_dead2"],
+    big: ["nature_rock3", "nature_rock2"],
     medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock3", "nature_pebble1"],
-    feature: ["nature_dead2", "nature_rock3"],
+    feature: ["nature_rock3", "nature_rock1"],
     bigCount: 4, mediumCount: 5, smallCount: 5, rockCount: 3,
   },
   volcan: {
-    big: ["nature_dead1", "nature_dead2", "nature_dead3"],
+    big: ["nature_rock1", "nature_rock2", "nature_rock3"],
     medium: ["nature_rock1", "nature_rock2", "nature_rock3"],
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock1", "nature_rock2"],
-    feature: ["nature_dead3", "nature_rock1"],
+    feature: ["nature_rock1", "nature_rock3"],
     bigCount: 4, mediumCount: 5, smallCount: 4, rockCount: 4,
   },
 };
@@ -171,8 +217,6 @@ function placeFeatureProp(level, palette) {
   }
 }
 
-const TALL_OCCLUDERS = /^(nature_commontree|nature_pine|nature_dead|nature_twisted)/;
-
 function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = false) {
   const gltf = AssetLoader.get(assetKey);
   if (!gltf || !gltf.scene) return;
@@ -180,15 +224,14 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
   cloned.scale.setScalar(scale);
   cloned.position.set(x, 0, z);
   cloned.rotation.y = rot != null ? rot : Math.random() * Math.PI * 2;
-  const canOcclude = TALL_OCCLUDERS.test(assetKey);
-  cloned.userData.canOccludeHero = canOcclude;
+  cloned.userData.canOccludeHero = true;
   cloned.userData._fadeOpacity = 1;
   cloned.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = withShadow;
       o.receiveShadow = false;
       o.frustumCulled = true;
-      if (canOcclude && o.material) {
+      if (o.material) {
         o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
         const list = Array.isArray(o.material) ? o.material : [o.material];
         for (const m of list) { m.transparent = true; m.opacity = 1; }
@@ -204,26 +247,34 @@ const _decorScreen = new THREE.Vector3();
 function updateDecorFade(dt) {
   if (!runner.hero) return;
   const heroPos = runner.hero.group.position;
-  _heroScreen.copy(heroPos).project(camera);
-  _heroScreen.y += 0.06; // shift toward hero head
-  const heroDist = camera.position.distanceTo(heroPos);
-  for (const d of decor) {
-    if (!d.userData.canOccludeHero) continue;
-    _decorScreen.copy(d.position).project(camera);
+  _heroScreen.copy(heroPos);
+  _heroScreen.y += 0.6; // hero head
+  _heroScreen.project(camera);
+  const heroCamDist = camera.position.distanceTo(heroPos);
+  // Aggregate occluders: decor + towers + castle + bp halos = anything tall on the path
+  const occluders = decor;
+  for (const d of occluders) {
+    if (!d.userData) d.userData = {};
+    _decorScreen.copy(d.position);
+    _decorScreen.y += 0.8;
+    _decorScreen.project(camera);
     const sx = _decorScreen.x - _heroScreen.x;
     const sy = _decorScreen.y - _heroScreen.y;
-    const decorDist = camera.position.distanceTo(d.position);
-    const screenRadiusSq = 0.04;
-    const occluding = decorDist < heroDist - 0.3 && (sx * sx + sy * sy) < screenRadiusSq;
-    const target = occluding ? 0.22 : 1.0;
-    const cur = d.userData._fadeOpacity || 1;
-    const next = cur + (target - cur) * Math.min(1, dt * 8);
-    if (Math.abs(next - cur) < 0.005 && next === target) continue;
+    const decorCamDist = camera.position.distanceTo(d.position);
+    const aspectAdj = sx * sx * 1.4 + sy * sy; // wider X tolerance for top-down camera
+    const occluding = decorCamDist < heroCamDist + 0.5 && aspectAdj < 0.06;
+    const target = occluding ? 0.18 : 1.0;
+    const cur = d.userData._fadeOpacity ?? 1;
+    if (Math.abs(target - cur) < 0.005) continue;
+    const next = cur + (target - cur) * Math.min(1, dt * 10);
     d.userData._fadeOpacity = next;
     d.traverse((o) => {
       if (!o.isMesh || !o.material) return;
       const list = Array.isArray(o.material) ? o.material : [o.material];
-      for (const m of list) m.opacity = next;
+      for (const m of list) {
+        if (!m.transparent) m.transparent = true;
+        m.opacity = next;
+      }
     });
   }
 }
@@ -270,7 +321,7 @@ function applyTheme(themeId) {
   const t = getTheme(themeId);
   scene.background = new THREE.Color(t.bg);
   scene.fog = new THREE.Fog(t.fog, 30, 80);
-  ground.material.color.setHex(t.ground);
+  refreshGroundTexture(t.ground);
   dirtMat.color.setHex(t.dirt);
   clearDecor();
   const palette = THEME_PALETTE[themeId] || THEME_PALETTE.plaine;
