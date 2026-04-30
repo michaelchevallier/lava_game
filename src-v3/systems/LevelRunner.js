@@ -190,6 +190,15 @@ export class LevelRunner {
         closest.setHaloState("near");
       }
     }
+    if (this._activeBuildPoint && this._activeBuildPoint !== activeNear && !this._activeBuildPoint.occupied) {
+      const stale = this._activeBuildPoint;
+      if (stale.paidThisLevel > 0) {
+        this.coins += stale.paidThisLevel;
+        stale.totalInvested = Math.max(0, stale.totalInvested - stale.paidThisLevel);
+        stale.paidThisLevel = 0;
+        stale.updateBuildFill(0);
+      }
+    }
     this._activeBuildPoint = activeNear;
     this._heroOnBuildPoint = onBp;
   }
