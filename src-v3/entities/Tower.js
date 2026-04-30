@@ -343,7 +343,16 @@ export class Tower {
 
   _tickCluster(dt, enemies) {
     this.cooldown -= dt * 1000;
-    if (this.cooldown > 0) return;
+    if (this.cooldown > 0) {
+      // Cooldown — model dim
+      if (this.model) this.model.scale.setScalar((this.cfg.scale * 1.5) * 0.85);
+      return;
+    }
+    // Armed — gentle pulse
+    if (this.model) {
+      const pulse = 1 + Math.sin((this._armT = (this._armT || 0) + dt) * 4) * 0.05;
+      this.model.scale.setScalar((this.cfg.scale * 1.5) * pulse);
+    }
     const myPos = this.group.position;
     const triggerR2 = 4 * 4;
     let inRange = 0;

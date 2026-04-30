@@ -554,7 +554,11 @@ function updateTowerPreview() {
   let extras = [];
   if (cfg.aoe > 0) extras.push(`AoE ${cfg.aoe}`);
   if (cfg.pierce > 0) extras.push(`pierce ×${cfg.pierce}`);
-  if (cfg.pendingMechanic) extras.push("WIP");
+  if (cfg.behavior === "push") extras.push(`💨 push ${(cfg.pushStrength || 0.04).toFixed(2)}`);
+  else if (cfg.behavior === "cluster") extras.push(`💣 cluster ≥3 / cd ${(cfg.cooldownMs / 1000).toFixed(0)}s`);
+  else if (cfg.behavior === "slow") extras.push(`❄️ slow ×${cfg.slowMul} / ${(cfg.slowDurationMs / 1000).toFixed(0)}s`);
+  else if (cfg.behavior === "buffAura") extras.push(`✨ aura dmg ×${cfg.buffMul}`);
+  else if (cfg.behavior === "coinPull") extras.push(`🪙 reward ×${cfg.coinMul}`);
   const cdSec = (cfg.fireRateMs / 1000).toFixed(2);
   const cost = runner._defaultTowerCost(type);
   towerPreviewStats.innerHTML = `
