@@ -95,22 +95,24 @@ export class BuildPoint {
 export function generateBuildPointGrid(scene, paths) {
   const points = [];
   const seen = [];
-  const SAMPLES = 50;
   const OFFSETS = [1.4, 2.6];
   const DEDUP_SQ = 1.5 * 1.5;
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi];
-    const samples = path.getSpacedPoints(SAMPLES);
+    // Scale samples by path length so long mazes get plenty of build points
+    const len = path.getLength();
+    const samplesCount = Math.max(30, Math.min(200, Math.floor(len / 2.5)));
+    const samples = path.getSpacedPoints(samplesCount);
     for (let i = 0; i < samples.length; i++) {
       const p = samples[i];
-      const t = i / SAMPLES;
+      const t = i / samplesCount;
       const tan = path.getTangentAt(Math.min(0.999, t)).normalize();
       const perp = new THREE.Vector3(-tan.z, 0, tan.x);
       for (const sign of [-1, 1]) {
         for (const off of OFFSETS) {
           const x = p.x + perp.x * sign * off;
           const z = p.z + perp.z * sign * off;
-          if (Math.abs(x) > 40 || Math.abs(z) > 18) continue;
+          if (Math.abs(x) > 200 || Math.abs(z) > 50) continue;
           let dup = false;
           for (const s of seen) {
             const dx = s.x - x;

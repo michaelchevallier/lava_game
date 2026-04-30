@@ -133,7 +133,7 @@ function makeGroundTexture(baseHex) {
   return tex;
 }
 
-const groundGeom = new THREE.PlaneGeometry(180, 180, 1, 1);
+const groundGeom = new THREE.PlaneGeometry(400, 400, 1, 1);
 const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: makeGroundTexture(0x6fc16d) });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
@@ -153,7 +153,7 @@ const decor = [];
 const THEME_PALETTE = {
   plaine: {
     big: ["nature_commontree1", "nature_commontree2", "nature_commontree3"],
-    medium: ["nature_bush", "nature_bushflower"],
+    medium: ["nature_bushflower"],
     small: ["nature_flower3", "nature_flower4"],
     rocks: ["nature_rock1", "nature_pebble1"],
     feature: ["nature_commontree3", "nature_bushflower"],

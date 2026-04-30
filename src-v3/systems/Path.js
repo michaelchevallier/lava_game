@@ -11,7 +11,11 @@ export function buildPath(rawPoints) {
   return new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.5);
 }
 
-function buildRibbon(curve, halfWidth, yOffset, samples = 140) {
+function buildRibbon(curve, halfWidth, yOffset, samples = null) {
+  if (samples == null) {
+    const len = curve.getLength();
+    samples = Math.max(80, Math.min(400, Math.floor(len * 1.5)));
+  }
   const samplesArr = curve.getSpacedPoints(samples);
   const positions = [];
   const indices = [];
@@ -50,24 +54,27 @@ function makePathTexture() {
   canvas.height = 256;
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = "#8a5a28";
+  // Base white — material.color tints to theme palette
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, 256, 256);
-
+  // Darker patches (multiply blend with theme color)
   for (let i = 0; i < 120; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
     const r = 4 + Math.random() * 8;
-    ctx.fillStyle = `rgba(${130 + Math.random() * 40}, ${85 + Math.random() * 30}, ${45 + Math.random() * 20}, 0.5)`;
+    const tone = 200 + Math.random() * 40;
+    ctx.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${0.3 + Math.random() * 0.3})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-
+  // Pebbles/dirt darker spots
   for (let i = 0; i < 80; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
     const r = 2 + Math.random() * 4;
-    ctx.fillStyle = `rgba(60, 35, 15, ${0.4 + Math.random() * 0.4})`;
+    const tone = 130 + Math.random() * 50;
+    ctx.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${0.4 + Math.random() * 0.3})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -148,15 +155,15 @@ export function makePathLine(curve, mat, opts = {}) {
   const innerColor = opts.innerColor != null ? opts.innerColor : 0xc89060;
   const borderColor = opts.borderColor != null ? opts.borderColor : 0x3a2410;
 
-  const borderHalf = 2.8;
-  const innerHalf = 2.1;
+  const borderHalf = 3.4;
+  const innerHalf = 2.8;
   const borderMat = new THREE.MeshBasicMaterial({
     color: borderColor,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
   });
-  const borderGeom = buildRibbon(curve, borderHalf, 0.05);
+  const borderGeom = buildRibbon(curve, borderHalf, 0.08);
   const borderMesh = new THREE.Mesh(borderGeom, borderMat);
   borderMesh.renderOrder = 1;
   group.add(borderMesh);
@@ -168,7 +175,7 @@ export function makePathLine(curve, mat, opts = {}) {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
-  const innerGeom = buildRibbon(curve, innerHalf, 0.10);
+  const innerGeom = buildRibbon(curve, innerHalf, 0.14);
   const innerMesh = new THREE.Mesh(innerGeom, innerMat);
   innerMesh.renderOrder = 2;
   group.add(innerMesh);

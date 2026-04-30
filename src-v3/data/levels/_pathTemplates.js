@@ -98,3 +98,30 @@ export function maze(opts = {}) {
     ],
   };
 }
+
+// MEGA-MAZE — chemin extrêmement long en zigzag-spirale pour endless/W4-final.
+// Génère programmatiquement N "rooms" zigzag chained pour avoir une path sur ~300u.
+export function megaMaze(opts = {}) {
+  const exit = opts.exit || DEF_EXIT;
+  const rooms = opts.rooms || 6;
+  const startX = opts.startX || -120;
+  const endX = opts.endX || 0;
+  const ampZ = opts.ampZ || 32;
+  const points = [];
+  const stepX = (endX - startX) / rooms;
+  for (let r = 0; r < rooms; r++) {
+    const x0 = startX + r * stepX;
+    const x1 = startX + (r + 1) * stepX;
+    const dirSign = r % 2 === 0 ? 1 : -1;
+    // zigzag inside the room: 4 waypoints
+    points.push([x0, 0, dirSign * ampZ * 0.3]);
+    points.push([x0 + stepX * 0.25, 0, -dirSign * ampZ * 0.7]);
+    points.push([x0 + stepX * 0.5, 0, dirSign * ampZ * 0.5]);
+    points.push([x0 + stepX * 0.75, 0, -dirSign * ampZ * 0.4]);
+    points.push([x1, 0, dirSign * ampZ * 0.2]);
+  }
+  // Final approach
+  points.push([endX + 1, 0, 3]);
+  points.push(exit);
+  return { paths: [points] };
+}

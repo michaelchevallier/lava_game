@@ -63,13 +63,24 @@ export default {
   id: "endless",
   name: "Endless",
   theme: "plaine",
-  // Path maze serpentine très long pour endless
-  pathPoints: [
-    [-34, 0, -12], [-30, 0, -8], [-28, 0, -12], [-24, 0, -10], [-22, 0, -4],
-    [-26, 0, 2], [-22, 0, 8], [-18, 0, 12], [-14, 0, 10], [-12, 0, 4],
-    [-14, 0, -2], [-10, 0, -6], [-6, 0, -10], [-2, 0, -12], [2, 0, -10],
-    [6, 0, -6], [4, 0, 0], [6, 0, 4], [3, 0, 6], [1, 0, 4], [2, 0, 6],
-  ],
+  // Mega-maze: ~10 rooms × 5 waypoints = 50+ points, path length ~280u
+  pathPoints: (() => {
+    const pts = [];
+    const rooms = 10, startX = -180, endX = 0, ampZ = 40;
+    const stepX = (endX - startX) / rooms;
+    for (let r = 0; r < rooms; r++) {
+      const x0 = startX + r * stepX;
+      const dir = r % 2 === 0 ? 1 : -1;
+      pts.push([x0, 0, dir * ampZ * 0.3]);
+      pts.push([x0 + stepX * 0.2, 0, -dir * ampZ * 0.7]);
+      pts.push([x0 + stepX * 0.45, 0, dir * ampZ * 0.5]);
+      pts.push([x0 + stepX * 0.7, 0, -dir * ampZ * 0.4]);
+      pts.push([x0 + stepX * 0.9, 0, dir * ampZ * 0.2]);
+    }
+    pts.push([1, 0, 3]);
+    pts.push([2, 0, 6]);
+    return pts;
+  })(),
   waves: {
     list: buildEndlessWaves(40),
   },
