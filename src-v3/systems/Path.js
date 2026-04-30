@@ -14,7 +14,7 @@ export function buildPath(rawPoints) {
 function buildRibbon(curve, halfWidth, yOffset, samples = null) {
   if (samples == null) {
     const len = curve.getLength();
-    samples = Math.max(80, Math.min(400, Math.floor(len * 1.5)));
+    samples = Math.max(80, Math.min(2000, Math.floor(len * 1.5)));
   }
   const samplesArr = curve.getSpacedPoints(samples);
   const positions = [];

@@ -58,9 +58,11 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x6fc16d);
 scene.fog = new THREE.Fog(0x7fd07c, 30, 80);
 
-const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 600);
 const CAM_TARGET = new THREE.Vector3(-2, 0, -1);
 const CAM_OFFSET = new THREE.Vector3(0, 30, 22);
+const GROUND_SIZE = 8000;
+const MAP_HALF = GROUND_SIZE / 2;
 
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
@@ -127,18 +129,109 @@ function makeGroundTexture(baseHex) {
   }
   const tex = new THREE.CanvasTexture(cv);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(4, 4);
+  tex.repeat.set(40, 40);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
 }
 
-const groundGeom = new THREE.PlaneGeometry(400, 400, 1, 1);
+const groundGeom = new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1);
 const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: makeGroundTexture(0x6fc16d) });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
+
+function buildMapEdge() {
+  const woodMat = new THREE.MeshLambertMaterial({ color: 0x6a4a2a });
+  const postMat = new THREE.MeshLambertMaterial({ color: 0x4a3a1a });
+  const fenceGeom = new THREE.BoxGeometry(GROUND_SIZE, 0.5, 0.15);
+  const postGeom = new THREE.BoxGeometry(0.2, 0.7, 0.2);
+  const sides = [
+    [0, -MAP_HALF, 0],
+    [0, MAP_HALF, 0],
+    [-MAP_HALF, 0, Math.PI / 2],
+    [MAP_HALF, 0, Math.PI / 2],
+  ];
+  for (const [px, pz, rot] of sides) {
+    const wall = new THREE.Mesh(fenceGeom, woodMat);
+    wall.position.set(px, 0.25, pz);
+    wall.rotation.y = rot;
+    scene.add(wall);
+  }
+  // Posts every ~80u sparsely, only near the visible camera target initially.
+  // Posts placed sparse on full perimeter (count cap to avoid 1000+ meshes).
+  const postSpacing = 80;
+  const postsPerSide = Math.floor(GROUND_SIZE / postSpacing);
+  for (let i = 0; i <= postsPerSide; i++) {
+    const t = -MAP_HALF + i * postSpacing;
+    for (const z of [-MAP_HALF, MAP_HALF]) {
+      const p = new THREE.Mesh(postGeom, postMat);
+      p.position.set(t, 0.35, z);
+      scene.add(p);
+    }
+    for (const x of [-MAP_HALF, MAP_HALF]) {
+      const p = new THREE.Mesh(postGeom, postMat);
+      p.position.set(x, 0.35, t);
+      scene.add(p);
+    }
+  }
+}
+buildMapEdge();
+
+let _cloudTexCache = null;
+function makeCloudTexture() {
+  if (_cloudTexCache) return _cloudTexCache;
+  const size = 128;
+  const cv = document.createElement("canvas");
+  cv.width = size; cv.height = size;
+  const ctx = cv.getContext("2d");
+  const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, "rgba(255,255,255,0.95)");
+  grad.addColorStop(0.5, "rgba(220,225,235,0.55)");
+  grad.addColorStop(1, "rgba(200,210,225,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  _cloudTexCache = tex;
+  return tex;
+}
+
+const fogSprites = [];
+function buildSpawnFog() {
+  const cloudTex = makeCloudTexture();
+  const fogDepth = 30;
+  const perSide = 20;
+  const sides = 4;
+  for (let side = 0; side < sides; side++) {
+    for (let i = 0; i < perSide; i++) {
+      const t = (i + Math.random()) / perSide;
+      const tangent = -MAP_HALF + t * GROUND_SIZE;
+      const depth = MAP_HALF - 20 - Math.random() * fogDepth;
+      let x, z;
+      if (side === 0) { x = tangent; z = -depth; }
+      else if (side === 1) { x = tangent; z = depth; }
+      else if (side === 2) { x = -depth; z = tangent; }
+      else { x = depth; z = tangent; }
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: cloudTex, opacity: 0.55, transparent: true, depthWrite: false,
+      }));
+      sprite.position.set(x, 2 + Math.random() * 2, z);
+      sprite.scale.set(8 + Math.random() * 4, 5 + Math.random() * 3, 1);
+      scene.add(sprite);
+      fogSprites.push({ sprite, baseY: sprite.position.y, phase: Math.random() * Math.PI * 2 });
+    }
+  }
+}
+buildSpawnFog();
+
+function tickSpawnFog(t) {
+  for (const f of fogSprites) {
+    f.sprite.position.y = f.baseY + Math.sin(t * 0.3 + f.phase) * 0.5;
+    f.sprite.material.opacity = 0.5 + Math.sin(t * 0.4 + f.phase) * 0.15;
+  }
+}
 
 function refreshGroundTexture(baseHex) {
   if (groundMat.map) groundMat.map.dispose();
@@ -1582,6 +1675,7 @@ function tick() {
 
   runner.tick(dt);
   Particles.tick(dt);
+  tickSpawnFog(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
   SHAKE_OFFSET.copy(shake);
   refreshHUD();
