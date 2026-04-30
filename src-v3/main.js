@@ -624,14 +624,46 @@ window.addEventListener("keyup", (e) => {
 });
 
 const BLUE_PILL_CHANNEL_MS = 2000;
+const BLUE_PILL_COLOR = 0x4488ff;
+const BLUE_PILL_GLOW = 0x66ccff;
 let _bluePillState = null;
+const _bluePillRings = [];
+let _bluePillLight = null;
+let _bluePillBeam = null;
+let _bluePillAura = null;
 
 function startBluePill() {
   if (!runner.hero || _bluePillState) return;
   if (!runner.castles || runner.castles.every((c) => c.isDead)) return;
-  _bluePillState = { startedAt: performance.now(), lastPulseAt: 0 };
+  _bluePillState = { startedAt: performance.now(), lastRingAt: 0, lastSparkleAt: 0 };
   runner.hero.channelingPill = true;
   document.getElementById("hint-bluepill")?.classList.add("active");
+
+  _bluePillLight = new THREE.PointLight(BLUE_PILL_GLOW, 0, 10);
+  _bluePillLight.position.copy(runner.hero.group.position);
+  _bluePillLight.position.y = 1.0;
+  scene.add(_bluePillLight);
+
+  const beamGeom = new THREE.CylinderGeometry(1.4, 1.6, 8, 32, 1, true);
+  const beamMat = new THREE.MeshBasicMaterial({
+    color: BLUE_PILL_COLOR, transparent: true, opacity: 0.0,
+    side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  _bluePillBeam = new THREE.Mesh(beamGeom, beamMat);
+  _bluePillBeam.position.set(runner.hero.group.position.x, 4, runner.hero.group.position.z);
+  _bluePillBeam.renderOrder = 6;
+  scene.add(_bluePillBeam);
+
+  const auraGeom = new THREE.SphereGeometry(0.9, 24, 16);
+  const auraMat = new THREE.MeshBasicMaterial({
+    color: BLUE_PILL_GLOW, transparent: true, opacity: 0.0,
+    depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  _bluePillAura = new THREE.Mesh(auraGeom, auraMat);
+  _bluePillAura.position.copy(runner.hero.group.position);
+  _bluePillAura.position.y = 0.7;
+  _bluePillAura.renderOrder = 6;
+  scene.add(_bluePillAura);
 }
 
 function cancelBluePill() {
@@ -639,9 +671,59 @@ function cancelBluePill() {
   _bluePillState = null;
   if (runner.hero) runner.hero.channelingPill = false;
   document.getElementById("hint-bluepill")?.classList.remove("active");
+  if (_bluePillLight) {
+    scene.remove(_bluePillLight);
+    _bluePillLight.dispose?.();
+    _bluePillLight = null;
+  }
+  if (_bluePillBeam) {
+    scene.remove(_bluePillBeam);
+    _bluePillBeam.geometry.dispose();
+    _bluePillBeam.material.dispose();
+    _bluePillBeam = null;
+  }
+  if (_bluePillAura) {
+    scene.remove(_bluePillAura);
+    _bluePillAura.geometry.dispose();
+    _bluePillAura.material.dispose();
+    _bluePillAura = null;
+  }
 }
 
-function tickBluePill() {
+function _spawnBluePillRing() {
+  if (!runner.hero) return;
+  const geom = new THREE.RingGeometry(0.95, 1.0, 48);
+  const mat = new THREE.MeshBasicMaterial({
+    color: BLUE_PILL_COLOR, transparent: true, opacity: 0.95,
+    side: THREE.DoubleSide, depthWrite: false,
+  });
+  const ring = new THREE.Mesh(geom, mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(runner.hero.group.position.x, 0.06, runner.hero.group.position.z);
+  ring.scale.setScalar(0.4);
+  ring.renderOrder = 7;
+  scene.add(ring);
+  _bluePillRings.push({ mesh: ring, life: 1.1, maxLife: 1.1 });
+}
+
+function _tickBluePillRings(dt) {
+  for (let i = _bluePillRings.length - 1; i >= 0; i--) {
+    const r = _bluePillRings[i];
+    r.life -= dt;
+    const t = 1 - r.life / r.maxLife;
+    r.mesh.scale.setScalar(0.4 + t * 4.2);
+    r.mesh.material.opacity = 0.95 * (1 - t);
+    if (r.life <= 0) {
+      scene.remove(r.mesh);
+      r.mesh.geometry.dispose();
+      r.mesh.material.dispose();
+      _bluePillRings.splice(i, 1);
+    }
+  }
+}
+
+function tickBluePill(dt) {
+  _tickBluePillRings(dt);
   if (!_bluePillState || !runner.hero) return;
   if (runner.hero.moveDir.lengthSq() > 0.01) {
     cancelBluePill();
@@ -649,10 +731,40 @@ function tickBluePill() {
   }
   const now = performance.now();
   const elapsed = now - _bluePillState.startedAt;
-  if (now - _bluePillState.lastPulseAt > 80) {
-    _bluePillState.lastPulseAt = now;
-    const hp = runner.hero.group.position;
-    Particles.emit({ x: hp.x, y: 0.4, z: hp.z }, 0x66ddff, 10, { speed: 3, life: 0.7, scale: 0.45, yLift: 0.4 });
+  const progress = Math.min(1, elapsed / BLUE_PILL_CHANNEL_MS);
+  const hp = runner.hero.group.position;
+
+  if (now - _bluePillState.lastRingAt > 220) {
+    _bluePillState.lastRingAt = now;
+    _spawnBluePillRing();
+  }
+  if (now - _bluePillState.lastSparkleAt > 50) {
+    _bluePillState.lastSparkleAt = now;
+    const ang = Math.random() * Math.PI * 2;
+    const r = 0.6 + Math.random() * 0.6;
+    Particles.emit(
+      { x: hp.x + Math.cos(ang) * r, y: 0.1, z: hp.z + Math.sin(ang) * r },
+      BLUE_PILL_GLOW, 2,
+      { speed: 1.2, life: 1.0 + Math.random() * 0.4, scale: 0.32, yLift: 3.5 },
+    );
+  }
+  if (_bluePillLight) {
+    _bluePillLight.position.set(hp.x, 1.0, hp.z);
+    const flicker = 0.85 + Math.sin(now * 0.014) * 0.15;
+    _bluePillLight.intensity = (2 + progress * 5) * flicker;
+  }
+  if (_bluePillBeam) {
+    _bluePillBeam.position.set(hp.x, 4, hp.z);
+    _bluePillBeam.material.opacity = 0.15 + progress * 0.45;
+    const beamScale = 0.8 + progress * 0.6;
+    _bluePillBeam.scale.set(beamScale, 1, beamScale);
+    _bluePillBeam.rotation.y = now * 0.002;
+  }
+  if (_bluePillAura) {
+    _bluePillAura.position.set(hp.x, 0.7, hp.z);
+    const pulse = 0.9 + Math.sin(now * 0.008) * 0.15;
+    _bluePillAura.scale.setScalar((1 + progress * 0.5) * pulse);
+    _bluePillAura.material.opacity = 0.25 + progress * 0.35;
   }
   if (elapsed >= BLUE_PILL_CHANNEL_MS) {
     teleportHeroToNearestCastle();
@@ -1805,7 +1917,7 @@ function tick() {
   runner.setMove(mx, mz);
 
   runner.tick(dt);
-  tickBluePill();
+  tickBluePill(dt);
   Particles.tick(dt);
   tickSpawnFog(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
