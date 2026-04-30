@@ -72,8 +72,13 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 const SHAKE_OFFSET = new THREE.Vector3();
+const _scaledOffset = new THREE.Vector3();
+let _camZoomTarget = 1;
+let _camZoomCur = 1;
 function refitCamera() {
-  camera.position.copy(CAM_TARGET).add(CAM_OFFSET).add(SHAKE_OFFSET);
+  _camZoomCur += (_camZoomTarget - _camZoomCur) * 0.1;
+  _scaledOffset.copy(CAM_OFFSET).multiplyScalar(_camZoomCur);
+  camera.position.copy(CAM_TARGET).add(_scaledOffset).add(SHAKE_OFFSET);
   camera.lookAt(CAM_TARGET);
 }
 refitCamera();
@@ -629,6 +634,11 @@ window.addEventListener("keydown", (e) => {
     runner.selectedTowerType = type;
     refreshToolbarSelection();
   };
+  if (e.code === "Tab" && !e.repeat) {
+    e.preventDefault();
+    _camZoomTarget = (_camZoomTarget > 1.5) ? 1 : 3;
+    return;
+  }
   if (e.code === "Digit0") { trySelect(9); return; }
   if (e.code === "Minus" || e.code === "NumpadSubtract") { trySelect(10); return; }
   if (e.code === "Equal" || e.code === "NumpadAdd") { trySelect(11); return; }
