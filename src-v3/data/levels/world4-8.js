@@ -1,30 +1,14 @@
+import { mazeXXL } from "./_pathTemplates.js";
+
 export default {
   id: "world4-8",
   name: "Volcan — Dragon",
   theme: "volcan",
   paths: (() => {
-    // Mega-maze 7 rooms par lane chacune, 2 lanes opposées + 1 court
-    const make = (zSign) => {
-      const pts = [];
-      const rooms = 7, startX = -130, endX = 0, ampZ = 32;
-      const stepX = (endX - startX) / rooms;
-      for (let r = 0; r < rooms; r++) {
-        const x0 = startX + r * stepX;
-        const dir = r % 2 === 0 ? 1 : -1;
-        pts.push([x0, 0, zSign * dir * ampZ * 0.35]);
-        pts.push([x0 + stepX * 0.25, 0, -zSign * dir * ampZ * 0.7]);
-        pts.push([x0 + stepX * 0.5, 0, zSign * dir * ampZ * 0.5]);
-        pts.push([x0 + stepX * 0.75, 0, -zSign * dir * ampZ * 0.3]);
-      }
-      pts.push([0, 0, 5]);
-      return pts;
-    };
-    return [
-      make(1),
-      make(-1),
-      // Lane courte arrière (depuis x positif)
-      [[60, 0, -3], [50, 0, 5], [40, 0, -2], [30, 0, 3], [20, 0, -2], [10, 0, 1], [4, 0, 3], [0, 0, 5]],
-    ];
+    const main = mazeXXL({ rooms: 30, startX: -3500, ampZ: 250 }).paths[0];
+    // Lane courte arrière depuis x positif (ennemis qui contournent par derrière)
+    const back = [[60, 0, -3], [50, 0, 5], [40, 0, -2], [30, 0, 3], [20, 0, -2], [10, 0, 1], [4, 0, 3], [0, 0, 5]];
+    return [main, back];
   })(),
   waves: {
     list: [
@@ -39,5 +23,5 @@ export default {
   castleHP: 280,
   startCoins: 320,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS FINAL : 3 chemins ! Le Dragon arrive avec ses minions de toutes parts.",
+  briefing: "BOSS FINAL : méga-maze 5000u + lane arrière. Le Dragon arrive.",
 };

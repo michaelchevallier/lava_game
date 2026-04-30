@@ -101,12 +101,12 @@ export function generateBuildPointGrid(scene, paths) {
   const points = [];
   const seen = [];
   const OFFSETS = [1.4, 2.6];
-  const DEDUP_SQ = 1.5 * 1.5;
+  const DEDUP_SQ = 3.5 * 3.5;
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi];
     // Scale samples by path length so long mazes get plenty of build points
     const len = path.getLength();
-    const samplesCount = Math.max(30, Math.min(200, Math.floor(len / 2.5)));
+    const samplesCount = Math.max(30, Math.min(1500, Math.floor(len / 2.5)));
     const samples = path.getSpacedPoints(samplesCount);
     for (let i = 0; i < samples.length; i++) {
       const p = samples[i];

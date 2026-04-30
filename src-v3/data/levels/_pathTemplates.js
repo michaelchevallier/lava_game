@@ -99,6 +99,30 @@ export function maze(opts = {}) {
   };
 }
 
+// MAZE XXL — méga-path programmatic pour la grande map 8000u (paths ~5000u).
+// 30-40 rooms × 5 waypoints zigzag par room → path ~4000-5000u sur ground 8000u.
+export function mazeXXL(opts = {}) {
+  const rooms = opts.rooms || 30;
+  const startX = opts.startX || -3500;
+  const endX = opts.endX || 0;
+  const ampZ = opts.ampZ || 250;
+  const exit = opts.exit || [2, 0, 6];
+  const pts = [];
+  const stepX = (endX - startX) / rooms;
+  for (let r = 0; r < rooms; r++) {
+    const x0 = startX + r * stepX;
+    const dir = r % 2 === 0 ? 1 : -1;
+    pts.push([x0, 0, dir * ampZ * 0.3]);
+    pts.push([x0 + stepX * 0.2, 0, -dir * ampZ * 0.7]);
+    pts.push([x0 + stepX * 0.45, 0, dir * ampZ * 0.5]);
+    pts.push([x0 + stepX * 0.7, 0, -dir * ampZ * 0.4]);
+    pts.push([x0 + stepX * 0.9, 0, dir * ampZ * 0.2]);
+  }
+  pts.push([1, 0, 3]);
+  pts.push(exit);
+  return { paths: [pts] };
+}
+
 // MEGA-MAZE — chemin extrêmement long en zigzag-spirale pour endless/W4-final.
 // Génère programmatiquement N "rooms" zigzag chained pour avoir une path sur ~300u.
 export function megaMaze(opts = {}) {
