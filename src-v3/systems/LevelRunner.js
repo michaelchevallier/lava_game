@@ -23,12 +23,11 @@ export class LevelRunner {
     this.metaBonuses = computeActiveBonuses(SaveSystem);
     this.skinBonuses = computeSkinBonuses(SaveSystem);
 
-    const castleMul = (this.metaBonuses.castleHPMul || 1) * (this.skinBonuses.castleHPMul || 1);
     const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
 
     this.state = "play";
-    this.castleHP = Math.round(level.castleHP * castleMul);
-    this.castleHPMax = Math.round(level.castleHP * castleMul);
+    this.castles = [];
+    this.castleLossMode = level.castleLossMode || "all";
     this.coins = level.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
@@ -50,6 +49,14 @@ export class LevelRunner {
     this._spawnTimer = 0;
     this._waveBreakTimer = 0;
     this._initWave(0);
+  }
+
+  get castleHP() {
+    return this.castles.reduce((s, c) => s + (c.isDead ? 0 : c.hp), 0);
+  }
+
+  get castleHPMax() {
+    return this.castles.reduce((s, c) => s + c.hpMax, 0);
   }
 
   _initWave(idx) {
@@ -79,6 +86,34 @@ export class LevelRunner {
     return this.wave < this.level.waves.list.length;
   }
 
+  loadCastles() {
+    const castleMul = (this.metaBonuses.castleHPMul || 1) * (this.skinBonuses.castleHPMul || 1);
+    this.castles = [];
+
+    if (Array.isArray(this.level.castles) && this.level.castles.length > 0) {
+      const entries = this.level.castles.slice(0, 3);
+      for (let i = 0; i < entries.length; i++) {
+        const def = entries[i];
+        const hp = Math.round((def.hp || this.level.castleHP || 100) * castleMul);
+        const pathIdx = def.pathIdx ?? 0;
+        const pathForCastle = this.paths[Math.min(pathIdx, this.paths.length - 1)] || this.path;
+        const pos = Array.isArray(def.pos)
+          ? { x: def.pos[0], y: def.pos[1] ?? 0, z: def.pos[2] }
+          : pathForCastle.getPointAt(1);
+        this.castles.push({ index: i, hp, hpMax: hp, pathIdx, pos, isDead: false, _visual: null });
+      }
+    } else {
+      const count = Math.min(3, this.paths.length);
+      const baseHP = this.level.castleHP || 100;
+      const perCastle = count > 1 ? Math.round(baseHP / count) : baseHP;
+      for (let i = 0; i < count; i++) {
+        const hp = Math.round(perCastle * castleMul);
+        const endPt = this.paths[i].getPointAt(1);
+        this.castles.push({ index: i, hp, hpMax: hp, pathIdx: i, pos: endPt, isDead: false, _visual: null });
+      }
+    }
+  }
+
   setup() {
     const rawPaths = Array.isArray(this.level.paths) && this.level.paths.length > 0
       ? this.level.paths
@@ -86,11 +121,12 @@ export class LevelRunner {
     this.paths = rawPaths.map((pts) => buildPath(pts));
     this.path = this.paths[0];
     this.pathLength = this.path.getLength();
+    this.loadCastles();
 
     if (!this._summonHandler) {
       this._summonHandler = (ev) => {
         const type = ev.detail.type || "basic";
-        const e = new Enemy(this.scene, this.path, type);
+        const e = new Enemy(this.scene, this.path, type, 0);
         e.t = Math.max(0, Math.min(0.95, ev.detail.t || 0.5));
         this.enemies.push(e);
       };
@@ -248,7 +284,9 @@ export class LevelRunner {
         this._waveActive = false;
         this._waveBreakTimer = 0;
         if (this.hero && this.hero.waveRegen > 0) {
-          this.castleHP = Math.min(this.castleHPMax, this.castleHP + this.hero.waveRegen);
+          for (const c of this.castles) {
+            if (!c.isDead) c.hp = Math.min(c.hpMax, c.hp + this.hero.waveRegen);
+          }
         }
         emit("crowdef:wave-cleared", { wave: this.wave });
       }
@@ -273,7 +311,7 @@ export class LevelRunner {
       const e = this.enemies[i];
       e.tick(adt);
       if (e.reachedEnd) {
-        this.onCastleHit(e.damage || 5);
+        this.onCastleHit(e.damage || 5, e.pathIdx);
         e.destroy();
         this.enemies.splice(i, 1);
         continue;
@@ -295,7 +333,9 @@ export class LevelRunner {
         if (this.hero) {
           this.hero.gainXp(1);
           if (this.hero.lifesteal > 0) {
-            this.castleHP = Math.min(this.castleHPMax, this.castleHP + this.hero.lifesteal);
+            for (const c of this.castles) {
+              if (!c.isDead) { c.hp = Math.min(c.hpMax, c.hp + this.hero.lifesteal); break; }
+            }
           }
         }
         const cfg = ENEMY_TYPES[e.type];
@@ -353,12 +393,39 @@ export class LevelRunner {
     for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
   }
 
-  onCastleHit(dmg) {
-    this.castleHP = Math.max(0, this.castleHP - dmg);
+  _isLevelLost() {
+    if (this.castles.length === 0) return false;
+    if (this.castleLossMode === "any") return this.castles.some((c) => c.isDead);
+    return this.castles.every((c) => c.isDead);
+  }
+
+  onCastleHit(dmg, pathIdx = 0) {
+    let castle = this.castles.find((c) => c.pathIdx === pathIdx && !c.isDead);
+    if (!castle) castle = this.castles.find((c) => !c.isDead);
+    if (!castle) return;
+
+    castle.hp = Math.max(0, castle.hp - dmg);
+    if (castle._visual) {
+      castle._visual.hp = castle.hp;
+      castle._visual._updateTint();
+    }
+    if (castle.hp <= 0 && !castle.isDead) {
+      castle.isDead = true;
+      if (castle._visual) {
+        castle._visual.isDead = true;
+        castle._visual._applyGrayscale();
+        Particles.emit(
+          { x: castle.pos.x, y: 1.5, z: castle.pos.z },
+          0x6a4a2a, 24,
+          { speed: 5, life: 0.6, scale: 0.5, yLift: 1.0 },
+        );
+      }
+      document.dispatchEvent(new CustomEvent("crowdef:castle-destroyed", { detail: { castleIdx: castle.index } }));
+    }
     JuiceFX.shake(0.4, 350);
     Audio.sfxCastleHit();
-    emit("crowdef:castle-hit", { dmg, castleHP: this.castleHP });
-    if (this.castleHP <= 0 && this.state === "play") {
+    emit("crowdef:castle-hit", { dmg, castleHP: this.castleHP, castleIdx: castle.index });
+    if (this._isLevelLost() && this.state === "play") {
       this.state = "lost";
       JuiceFX.shake(0.7, 700);
       Audio.sfxLevelLost();
@@ -388,7 +455,7 @@ export class LevelRunner {
       if (Math.random() < 0.15) pathIdx = Math.floor(Math.random() * this.paths.length);
     }
     const targetPath = this.paths[pathIdx];
-    const e = new Enemy(this.scene, targetPath, type);
+    const e = new Enemy(this.scene, targetPath, type, pathIdx);
     this.enemies.push(e);
   }
 
@@ -410,6 +477,7 @@ export class LevelRunner {
     this.enemies = [];
     this.towers = [];
     this.buildPoints = [];
+    this.castles = [];
     this.hero = null;
   }
 
@@ -418,11 +486,10 @@ export class LevelRunner {
     this.level = newLevel;
     this.metaBonuses = computeActiveBonuses(SaveSystem);
     this.skinBonuses = computeSkinBonuses(SaveSystem);
-    const castleMul = (this.metaBonuses.castleHPMul || 1) * (this.skinBonuses.castleHPMul || 1);
     const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
     this.state = "play";
-    this.castleHP = Math.round(newLevel.castleHP * castleMul);
-    this.castleHPMax = Math.round(newLevel.castleHP * castleMul);
+    this.castles = [];
+    this.castleLossMode = newLevel.castleLossMode || "all";
     this.coins = newLevel.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;

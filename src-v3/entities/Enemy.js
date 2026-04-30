@@ -116,7 +116,7 @@ export const ENEMY_TYPES = {
 };
 
 export class Enemy {
-  constructor(scene, curve, type = "basic") {
+  constructor(scene, curve, type = "basic", pathIdx = 0) {
     const cfg = ENEMY_TYPES[type] || ENEMY_TYPES.basic;
     this.scene = scene;
     this.curve = curve;
@@ -127,6 +127,7 @@ export class Enemy {
     this.damage = cfg.damage;
     this.reward = cfg.reward;
     this.type = type;
+    this.pathIdx = pathIdx;
     this.shieldHP = cfg.shieldHP || 0;
     this.shieldHPMax = this.shieldHP;
     this.dead = false;
