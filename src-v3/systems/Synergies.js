@@ -51,13 +51,21 @@ export const Synergies = {
   },
 };
 
+function _matchesAuraFilter(filter, target) {
+  if (filter.hasPierceOrAoe === true) return (target.cfg.pierce || 0) > 0 || (target.cfg.aoe || 0) > 0;
+  if (filter.hasPierceOrAoe === false) return !((target.cfg.pierce || 0) > 0 || (target.cfg.aoe || 0) > 0);
+  return true;
+}
+
 function _applyAura(source, syn, towers) {
   const r = syn.range || source.cfg.range || 4;
   const r2 = r * r;
   const srcPos = source.group.position;
   const effect = syn.effect || {};
+  const filter = syn.filter || {};
   for (const t of towers) {
     if (t === source) continue;
+    if (!_matchesAuraFilter(filter, t)) continue;
     const dx = t.group.position.x - srcPos.x;
     const dz = t.group.position.z - srcPos.z;
     if (dx * dx + dz * dz < r2) {

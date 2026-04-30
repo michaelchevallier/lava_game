@@ -74,7 +74,10 @@ export const TOWER_TYPES = {
     asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
     fallbackColor: 0x6a3aa0, behavior: "buffAura", buffMul: 1.5,
     cost: 130, icon: "🌌", unlockWorld: 4,
-    synergies: [{ type: "aura", filter: {}, effect: { dmgMul: 1.5, pierceBonus: 1, multiShotBonus: 1 }, range: 5.5 }],
+    synergies: [
+      { type: "aura", filter: { hasPierceOrAoe: true }, effect: { pierceBonus: 1 }, range: 5.5 },
+      { type: "aura", filter: { hasPierceOrAoe: false }, effect: { dmgMul: 1.5 }, range: 5.5 },
+    ],
   },
   magnet: {
     range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
