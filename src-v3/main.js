@@ -171,6 +171,8 @@ function placeFeatureProp(level, palette) {
   }
 }
 
+const TALL_OCCLUDERS = /^(nature_commontree|nature_pine|nature_dead|nature_twisted)/;
+
 function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = false) {
   const gltf = AssetLoader.get(assetKey);
   if (!gltf || !gltf.scene) return;
@@ -178,15 +180,52 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
   cloned.scale.setScalar(scale);
   cloned.position.set(x, 0, z);
   cloned.rotation.y = rot != null ? rot : Math.random() * Math.PI * 2;
+  const canOcclude = TALL_OCCLUDERS.test(assetKey);
+  cloned.userData.canOccludeHero = canOcclude;
+  cloned.userData._fadeOpacity = 1;
   cloned.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = withShadow;
       o.receiveShadow = false;
       o.frustumCulled = true;
+      if (canOcclude && o.material) {
+        o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
+        const list = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of list) { m.transparent = true; m.opacity = 1; }
+      }
     }
   });
   scene.add(cloned);
   decor.push(cloned);
+}
+
+const _heroScreen = new THREE.Vector3();
+const _decorScreen = new THREE.Vector3();
+function updateDecorFade(dt) {
+  if (!runner.hero) return;
+  const heroPos = runner.hero.group.position;
+  _heroScreen.copy(heroPos).project(camera);
+  _heroScreen.y += 0.06; // shift toward hero head
+  const heroDist = camera.position.distanceTo(heroPos);
+  for (const d of decor) {
+    if (!d.userData.canOccludeHero) continue;
+    _decorScreen.copy(d.position).project(camera);
+    const sx = _decorScreen.x - _heroScreen.x;
+    const sy = _decorScreen.y - _heroScreen.y;
+    const decorDist = camera.position.distanceTo(d.position);
+    const screenRadiusSq = 0.04;
+    const occluding = decorDist < heroDist - 0.3 && (sx * sx + sy * sy) < screenRadiusSq;
+    const target = occluding ? 0.22 : 1.0;
+    const cur = d.userData._fadeOpacity || 1;
+    const next = cur + (target - cur) * Math.min(1, dt * 8);
+    if (Math.abs(next - cur) < 0.005 && next === target) continue;
+    d.userData._fadeOpacity = next;
+    d.traverse((o) => {
+      if (!o.isMesh || !o.material) return;
+      const list = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of list) m.opacity = next;
+    });
+  }
 }
 
 function clearDecor() {
@@ -1456,6 +1495,7 @@ function tick() {
   trackBossFromRunner();
   updateTowerPreview();
   updateRadialMenu();
+  updateDecorFade(dt);
 
   if (runner.hero) {
     CAM_TARGET.x += (runner.hero.group.position.x - CAM_TARGET.x) * 0.06;
