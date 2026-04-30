@@ -1675,6 +1675,45 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+const COMBO_LABELS = {
+  freezeFlyer:    { icons: "❄️🚀", label: "Freeze flyer" },
+  slowOnHit:      { icons: "🪨❄️", label: "Slow projectile" },
+  pushTowardsMine:{ icons: "🌀💣", label: "Push to mine" },
+  propagateAoE:   { icons: "🔮🏯", label: "Pierce AoE" },
+  pierceBonus:    { icons: "🌌🎯", label: "Pierce buff" },
+  pullActive:     { icons: "🛡️🧲", label: "Tank pull" },
+  multiShotBonus: { icons: "🌌🏹", label: "Multi-shot" },
+  iceArrows:      { icons: "🏯❄️", label: "Ice arrows" },
+};
+
+function updateComboTracker() {
+  const el = document.getElementById("combo-tracker");
+  if (!el) return;
+  const active = new Set();
+  for (const t of runner.towers) {
+    if (t._freezeOnHit) active.add("freezeFlyer");
+    if (t._slowOnHit) active.add("slowOnHit");
+    if (t._pushTarget) active.add("pushTowardsMine");
+    if (t._propagateAoE) active.add("propagateAoE");
+    if (t._pierceBonus) active.add("pierceBonus");
+    if (t._pullActive) active.add("pullActive");
+    if (t._multiShotBonus) active.add("multiShotBonus");
+    if (t._appliesSlow) active.add("iceArrows");
+  }
+  const key = [...active].sort().join("|");
+  if (el.dataset.lastKey === key) return;
+  el.dataset.lastKey = key;
+  el.innerHTML = "";
+  for (const k of active) {
+    const cfg = COMBO_LABELS[k];
+    if (!cfg) continue;
+    const pill = document.createElement("div");
+    pill.className = "combo-pill";
+    pill.innerHTML = `<span>${cfg.icons}</span><span>${cfg.label}</span>`;
+    el.appendChild(pill);
+  }
+}
+
 const clock = new THREE.Clock();
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -1700,6 +1739,7 @@ function tick() {
   updateTowerPreview();
   updateRadialMenu();
   Minimap.update(runner);
+  updateComboTracker();
   updateDecorFade(dt);
 
   if (runner.hero) {
