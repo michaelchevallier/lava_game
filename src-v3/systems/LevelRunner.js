@@ -27,6 +27,7 @@ export class LevelRunner {
 
     this.state = "play";
     this.castles = [];
+    this.castleLossMode = level.castleLossMode || "all";
     this.coins = level.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
@@ -392,6 +393,12 @@ export class LevelRunner {
     for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
   }
 
+  _isLevelLost() {
+    if (this.castles.length === 0) return false;
+    if (this.castleLossMode === "any") return this.castles.some((c) => c.isDead);
+    return this.castles.every((c) => c.isDead);
+  }
+
   onCastleHit(dmg, pathIdx = 0) {
     let castle = this.castles.find((c) => c.pathIdx === pathIdx && !c.isDead);
     if (!castle) castle = this.castles.find((c) => !c.isDead);
@@ -482,6 +489,7 @@ export class LevelRunner {
     const coinsBonus = this.metaBonuses.startCoinsBonus || 0;
     this.state = "play";
     this.castles = [];
+    this.castleLossMode = newLevel.castleLossMode || "all";
     this.coins = newLevel.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
