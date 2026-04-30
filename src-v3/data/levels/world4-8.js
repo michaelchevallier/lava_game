@@ -21,6 +21,11 @@ export default {
     ],
   },
   castleHP: 280,
+  castleLossMode: "all",
+  castles: [
+    { pos: [2, 0, 6], hp: 200, pathIdx: 0 },
+    { pos: [0, 0, 5], hp: 80, pathIdx: 1 },
+  ],
   startCoins: 320,
   heroSpawn: [-2, 0, -1],
   briefing: "BOSS FINAL : méga-maze 5000u + lane arrière. Le Dragon arrive.",
