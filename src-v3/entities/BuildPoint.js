@@ -95,7 +95,7 @@ export class BuildPoint {
 export function generateBuildPointGrid(scene, paths) {
   const points = [];
   const seen = [];
-  const SAMPLES = 30;
+  const SAMPLES = 50;
   const OFFSETS = [1.4, 2.6];
   const DEDUP_SQ = 1.5 * 1.5;
   for (let pi = 0; pi < paths.length; pi++) {
@@ -110,7 +110,7 @@ export function generateBuildPointGrid(scene, paths) {
         for (const off of OFFSETS) {
           const x = p.x + perp.x * sign * off;
           const z = p.z + perp.z * sign * off;
-          if (Math.abs(x) > 16 || Math.abs(z) > 11) continue;
+          if (Math.abs(x) > 40 || Math.abs(z) > 18) continue;
           let dup = false;
           for (const s of seen) {
             const dx = s.x - x;

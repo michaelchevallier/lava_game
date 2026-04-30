@@ -133,7 +133,7 @@ function makeGroundTexture(baseHex) {
   return tex;
 }
 
-const groundGeom = new THREE.PlaneGeometry(120, 120, 1, 1);
+const groundGeom = new THREE.PlaneGeometry(180, 180, 1, 1);
 const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: makeGroundTexture(0x6fc16d) });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
@@ -491,7 +491,8 @@ function buildToolbar() {
     cell.addEventListener("click", () => {
       const world = getCurrentWorld();
       if ((cfg.unlockWorld || 1) > world) return;
-      runner.selectedTowerType = type;
+      // Toggle: re-clicking the active cell deselects (cancel build mode)
+      runner.selectedTowerType = (runner.selectedTowerType === type) ? null : type;
       refreshToolbarSelection();
     });
     toolbarEl.appendChild(cell);
@@ -501,7 +502,7 @@ function buildToolbar() {
 
 function refreshToolbarSelection() {
   if (!toolbarEl) return;
-  const sel = runner.selectedTowerType || "archer";
+  const sel = runner.selectedTowerType; // null when no build mode active
   const world = getCurrentWorld();
   const coins = runner.coins || 0;
   toolbarEl.querySelectorAll(".tt-cell").forEach((cell) => {
@@ -509,7 +510,7 @@ function refreshToolbarSelection() {
     const cfg = TOWER_TYPES[type];
     if (!cfg) return;
     const locked = (cfg.unlockWorld || 1) > world;
-    cell.classList.toggle("selected", type === sel && !locked);
+    cell.classList.toggle("selected", sel != null && type === sel && !locked);
     cell.classList.toggle("locked", locked);
     cell.classList.toggle("poor", !locked && coins < cfg.cost);
     if (locked) cell.dataset.lockedLabel = `🔒 W${cfg.unlockWorld}`;
@@ -667,8 +668,8 @@ function updateTowerPreview() {
     towerPreviewEl.style.display = "none";
     return;
   }
-  const type = runner.selectedTowerType || "archer";
-  const cfg = TOWER_TYPES[type];
+  const type = runner.selectedTowerType;
+  const cfg = type ? TOWER_TYPES[type] : null;
   if (!cfg) {
     towerPreviewEl.style.display = "none";
     return;
@@ -966,11 +967,8 @@ document.addEventListener("crowdef:level-loaded", () => {
   _bossRef = null;
   applyTheme(runner.level.theme || "plaine");
   // Default selection back to a tower the player can build in this world
-  const w = getCurrentWorld();
-  const curCfg = TOWER_TYPES[runner.selectedTowerType];
-  if (!curCfg || (curCfg.unlockWorld || 1) > w) {
-    runner.selectedTowerType = "archer";
-  }
+  // No tower preselected — opt-in build mode
+  runner.selectedTowerType = null;
   refreshToolbarSelection();
 });
 document.addEventListener("crowdef:skin-equipped", (e) => {

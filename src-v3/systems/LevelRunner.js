@@ -42,7 +42,7 @@ export class LevelRunner {
     this.enemies = [];
     this.towers = [];
     this.buildPoints = [];
-    this.selectedTowerType = "archer";
+    this.selectedTowerType = null;
     this._activeBuildPoint = null;
     this._heroOnBuildPoint = null;
 
@@ -142,7 +142,8 @@ export class LevelRunner {
   }
 
   _tryBuild(bp, dt) {
-    const type = this.selectedTowerType || "archer";
+    const type = this.selectedTowerType;
+    if (!type) return; // build only when player actively selected a tower
     const cfg = this._findUnlockedTowerCfg(type);
     if (!cfg) return;
     if (this.coins <= 0) return;
@@ -156,6 +157,7 @@ export class LevelRunner {
       const tower = new Tower(this.scene, bp.pos.clone(), type);
       this.towers.push(tower);
       bp.attachTower(tower);
+      this.selectedTowerType = null; // auto-deselect après build complete (UX opt-in)
       emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z } });
     }
   }
@@ -174,6 +176,7 @@ export class LevelRunner {
       if (bp === closest) continue;
       bp.setHaloState("idle");
     }
+    const hasBuildIntent = !!this.selectedTowerType;
     if (closest) {
       const dx = hero.group.position.x - closest.pos.x;
       const dz = hero.group.position.z - closest.pos.z;
@@ -181,13 +184,16 @@ export class LevelRunner {
       const onPoint = d2 < BUILD_POINT_RADIUS * BUILD_POINT_RADIUS;
       if (onPoint) onBp = closest;
       if (closest.occupied) {
+        // Always show occupied halo when hero approaches (radial menu trigger)
         closest.setHaloState(onPoint ? "occupied" : "near");
-      } else if (onPoint) {
+      } else if (hasBuildIntent && onPoint) {
         closest.setHaloState("active");
         activeNear = closest;
         this._tryBuild(closest, dt);
-      } else {
+      } else if (hasBuildIntent) {
         closest.setHaloState("near");
+      } else {
+        closest.setHaloState("idle");
       }
     }
     if (this._activeBuildPoint && this._activeBuildPoint !== activeNear && !this._activeBuildPoint.occupied) {

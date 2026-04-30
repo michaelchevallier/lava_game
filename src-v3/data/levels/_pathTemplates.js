@@ -7,76 +7,93 @@ const DEF_EXIT = [2, 0, 6];
 
 function clone(p) { return [p[0], p[1], p[2]]; }
 
-// MERGE Y — 2 entrées opposées (nord/sud) qui convergent vers un point milieu
-// puis tronc commun jusqu'à la sortie. Tension : couvrir 2 entrées + 1 tronc.
+// MERGE Y — 2 entrées opposées (nord/sud) qui convergent puis tronc commun.
 export function mergeY(opts = {}) {
-  const startA = opts.startA || [-22, 0, -10];
-  const startB = opts.startB || [-22, 0, 10];
-  const merge = opts.merge || [-2, 0, 0];
+  const startA = opts.startA || [-32, 0, -14];
+  const startB = opts.startB || [-32, 0, 14];
+  const merge = opts.merge || [-4, 0, 0];
   const exit = opts.exit || DEF_EXIT;
   return {
     paths: [
-      [startA, [-17, 0, -8], [-12, 0, -5], [-7, 0, -3], clone(merge), [0, 0, 2], exit],
-      [startB, [-17, 0, 8], [-12, 0, 5], [-7, 0, 3], clone(merge), [0, 0, 2], exit],
+      [startA, [-26, 0, -12], [-22, 0, -8], [-18, 0, -10], [-14, 0, -6], [-10, 0, -8], [-7, 0, -4], clone(merge), [0, 0, 2], exit],
+      [startB, [-26, 0, 12], [-22, 0, 8], [-18, 0, 10], [-14, 0, 6], [-10, 0, 8], [-7, 0, 4], clone(merge), [0, 0, 2], exit],
     ],
   };
 }
 
-// SPLIT V — entrée commune, divergence mid-path, convergence finale.
-// Tension : joueur doit deviner où renforcer (ennemis random sur les branches).
+// SPLIT V — entrée commune, divergence en zigzag, convergence finale.
 export function splitV(opts = {}) {
-  const start = opts.start || [-22, 0, 0];
-  const split = opts.split || [-8, 0, 0];
+  const start = opts.start || [-32, 0, 0];
+  const split = opts.split || [-10, 0, 0];
   const merge = opts.merge || [4, 0, 2];
   const exit = opts.exit || DEF_EXIT;
   return {
     paths: [
-      [start, [-17, 0, 2], [-13, 0, 1], clone(split), [-4, 0, -4], [0, 0, -3], [2, 0, -1], clone(merge), exit],
-      [start, [-17, 0, -2], [-13, 0, -1], clone(split), [-4, 0, 4], [0, 0, 5], [2, 0, 4], clone(merge), exit],
+      [start, [-28, 0, 4], [-24, 0, -2], [-20, 0, 6], [-15, 0, 1], clone(split), [-4, 0, -8], [-1, 0, -4], [2, 0, -7], [3, 0, -2], clone(merge), exit],
+      [start, [-28, 0, -4], [-24, 0, 2], [-20, 0, -6], [-15, 0, -1], clone(split), [-4, 0, 8], [-1, 0, 4], [2, 0, 7], [3, 0, 2], clone(merge), exit],
     ],
   };
 }
 
-// PARALLÈLES + CROSSOVER — 2 lanes qui se croisent au milieu.
-// Tension : pas de stratégie lane-locking, ennemis swappent lateralement.
+// PARALLÈLES + CROSSOVER — 2 lanes serpentines qui se croisent.
 export function parallels(opts = {}) {
-  const startA = opts.startA || [-22, 0, -6];
-  const startB = opts.startB || [-22, 0, 6];
-  const cross = opts.cross || [-3, 0, 0];
+  const startA = opts.startA || [-32, 0, -10];
+  const startB = opts.startB || [-32, 0, 10];
+  const cross = opts.cross || [-4, 0, 0];
   const exit = opts.exit || DEF_EXIT;
   return {
     paths: [
-      [startA, [-17, 0, -6], [-12, 0, -5], [-7, 0, -3], clone(cross), [1, 0, 3], [4, 0, 4], exit],
-      [startB, [-17, 0, 6], [-12, 0, 5], [-7, 0, 3], clone(cross), [1, 0, -1], [4, 0, 3], exit],
+      [startA, [-26, 0, -8], [-22, 0, -12], [-17, 0, -6], [-13, 0, -10], [-9, 0, -4], clone(cross), [-1, 0, 4], [3, 0, 6], exit],
+      [startB, [-26, 0, 8], [-22, 0, 12], [-17, 0, 6], [-13, 0, 10], [-9, 0, 4], clone(cross), [-1, 0, -3], [3, 0, 5], exit],
     ],
   };
 }
 
-// ENCERCLEMENT — 1 path court direct + 1 long qui contourne par l'extérieur.
-// Tension : choisir quelle lane prioriser (le court arrive vite).
+// ENCERCLEMENT — 1 court + 1 long qui contourne avec maze loops.
 export function encirclement(opts = {}) {
-  const start = opts.start || [-22, 0, 0];
+  const start = opts.start || [-32, 0, 0];
   const exit = opts.exit || DEF_EXIT;
-  const longSwing = opts.longSwing || -12;
+  const longSwing = opts.longSwing || -16;
   return {
     paths: [
-      // Court : ligne quasi-droite vers le château
-      [start, [-15, 0, -1], [-9, 0, 0], [-3, 0, 1], [1, 0, 3], exit],
-      // Long : descend, contourne, remonte
-      [start, [-18, 0, -4], [-13, 0, -7], [-7, 0, longSwing], [0, 0, longSwing], [5, 0, -5], [6, 0, 2], exit],
+      // Court : zigzag court mais avec quelques détours
+      [start, [-26, 0, 2], [-22, 0, -2], [-17, 0, 1], [-12, 0, -1], [-7, 0, 2], [-3, 0, 0], [1, 0, 3], exit],
+      // Long : maze descendant, contournement, remontée serpentine
+      [start, [-28, 0, -4], [-24, 0, -8], [-20, 0, -12], [-14, 0, longSwing], [-7, 0, longSwing], [-1, 0, longSwing + 3], [4, 0, -10], [7, 0, -4], [6, 0, 2], exit],
     ],
   };
 }
 
-// SERPENTINE — chemin unique très long en S. Pour W4 + endless.
+// SERPENTINE — chemin unique LONG en S serré (maze feel). Pour W4+ et endless.
 export function serpentine(opts = {}) {
-  const start = opts.start || [-22, 0, -8];
+  const start = opts.start || [-32, 0, -12];
   const exit = opts.exit || DEF_EXIT;
   return {
     paths: [
       [
-        start, [-18, 0, -4], [-15, 0, 4], [-12, 0, 8], [-7, 0, 6], [-4, 0, 0],
-        [-2, 0, -6], [2, 0, -8], [5, 0, -4], [4, 0, 1], [1, 0, 4], exit,
+        start,
+        [-28, 0, -10], [-24, 0, -6], [-22, 0, 0], [-20, 0, 8], [-16, 0, 12],
+        [-12, 0, 10], [-10, 0, 4], [-12, 0, -2], [-9, 0, -8], [-5, 0, -12],
+        [0, 0, -10], [4, 0, -6], [6, 0, -2], [4, 0, 2], [1, 0, 4], exit,
+      ],
+    ],
+  };
+}
+
+// MAZE — 2 chemins ultra serpentins avec cross loops, end-game W4-7/W4-8 only.
+export function maze(opts = {}) {
+  const exit = opts.exit || DEF_EXIT;
+  return {
+    paths: [
+      [
+        [-34, 0, -10], [-30, 0, -6], [-28, 0, -10], [-24, 0, -8], [-22, 0, -12],
+        [-18, 0, -10], [-16, 0, -4], [-12, 0, -8], [-10, 0, -2], [-6, 0, -6],
+        [-4, 0, 0], [-6, 0, 4], [-2, 0, 6], [2, 0, 4], exit,
+      ],
+      [
+        [-34, 0, 10], [-30, 0, 6], [-28, 0, 10], [-24, 0, 8], [-22, 0, 12],
+        [-18, 0, 10], [-16, 0, 4], [-12, 0, 8], [-10, 0, 2], [-6, 0, 6],
+        [-4, 0, 0], [-6, 0, -4], [-2, 0, -2], [2, 0, 4], exit,
       ],
     ],
   };
