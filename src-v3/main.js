@@ -242,28 +242,23 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
   decor.push(cloned);
 }
 
-const _heroScreen = new THREE.Vector3();
-const _decorScreen = new THREE.Vector3();
+const _xrayDir = new THREE.Vector3();
+const _xrayRay = new THREE.Raycaster();
 function updateDecorFade(dt) {
   if (!runner.hero) return;
   const heroPos = runner.hero.group.position;
-  _heroScreen.copy(heroPos);
-  _heroScreen.y += 0.6; // hero head
-  _heroScreen.project(camera);
+  _xrayDir.set(heroPos.x, heroPos.y + 0.7, heroPos.z).sub(camera.position).normalize();
+  _xrayRay.set(camera.position, _xrayDir);
   const heroCamDist = camera.position.distanceTo(heroPos);
-  // Aggregate occluders: decor + towers + castle + bp halos = anything tall on the path
-  const occluders = decor;
-  for (const d of occluders) {
+  _xrayRay.far = heroCamDist - 0.4;
+  const hitSet = new Set();
+  for (const d of decor) {
+    const hits = _xrayRay.intersectObject(d, true);
+    if (hits && hits.length > 0) hitSet.add(d);
+  }
+  for (const d of decor) {
     if (!d.userData) d.userData = {};
-    _decorScreen.copy(d.position);
-    _decorScreen.y += 0.8;
-    _decorScreen.project(camera);
-    const sx = _decorScreen.x - _heroScreen.x;
-    const sy = _decorScreen.y - _heroScreen.y;
-    const decorCamDist = camera.position.distanceTo(d.position);
-    const aspectAdj = sx * sx * 1.4 + sy * sy; // wider X tolerance for top-down camera
-    const occluding = decorCamDist < heroCamDist + 0.5 && aspectAdj < 0.06;
-    const target = occluding ? 0.18 : 1.0;
+    const target = hitSet.has(d) ? 0.18 : 1.0;
     const cur = d.userData._fadeOpacity ?? 1;
     if (Math.abs(target - cur) < 0.005) continue;
     const next = cur + (target - cur) * Math.min(1, dt * 10);
@@ -398,25 +393,74 @@ function rebuildLevelDecor() {
   const baseColor = parseHexColor(castleSkin?.color || "#dcdcdc");
   const roofColor = parseHexColor(castleSkin?.roofColor || "#3a6abf");
 
-  castle = new THREE.Group();
-  const castleBase = new THREE.Mesh(
-    new THREE.BoxGeometry(3, 1.2, 3),
-    new THREE.MeshLambertMaterial({ color: baseColor }),
-  );
-  castleBase.position.y = 0.6;
-  castleBase.castShadow = true;
-  castle.add(castleBase);
-  const castleRoof = new THREE.Mesh(
-    new THREE.ConeGeometry(2.2, 1.6, 4),
-    new THREE.MeshLambertMaterial({ color: roofColor }),
-  );
-  castleRoof.position.y = 1.2 + 0.8;
-  castleRoof.rotation.y = Math.PI / 4;
-  castleRoof.castShadow = true;
-  castle.add(castleRoof);
+  castle = buildCastleGroup(baseColor, roofColor);
   const endPoint = runner.path.getPointAt(1);
   castle.position.set(endPoint.x, 0, endPoint.z);
   scene.add(castle);
+}
+
+function buildCastleGroup(stoneHex, roofHex) {
+  const g = new THREE.Group();
+  const stoneMat = new THREE.MeshLambertMaterial({ color: stoneHex });
+  const stoneDarkMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(stoneHex).multiplyScalar(0.7) });
+  const roofMat = new THREE.MeshLambertMaterial({ color: roofHex });
+  const doorMat = new THREE.MeshLambertMaterial({ color: 0x3a2410 });
+  const flagMat = new THREE.MeshLambertMaterial({ color: 0xc63a3a, side: THREE.DoubleSide });
+
+  // Main keep (octagonal-ish via boxes)
+  const keep = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.8, 2.6), stoneMat);
+  keep.position.y = 0.9;
+  keep.castShadow = true;
+  g.add(keep);
+
+  // Crenelations (8 small boxes around top of keep)
+  const crenW = 0.35, crenH = 0.32;
+  const positions = [
+    [-1.0, -1.3], [0, -1.3], [1.0, -1.3],
+    [-1.3, 0], [1.3, 0],
+    [-1.0, 1.3], [0, 1.3], [1.0, 1.3],
+  ];
+  for (const [px, pz] of positions) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(crenW, crenH, crenW), stoneDarkMat);
+    c.position.set(px, 1.8 + crenH / 2 + 0.02, pz);
+    c.castShadow = true;
+    g.add(c);
+  }
+
+  // 4 corner towers (cylinders + cones)
+  const towerOffsets = [[-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5], [1.5, 1.5]];
+  for (const [tx, tz] of towerOffsets) {
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 2.4, 8), stoneMat);
+    tower.position.set(tx, 1.2, tz);
+    tower.castShadow = true;
+    g.add(tower);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.7, 8), roofMat);
+    cap.position.set(tx, 2.4 + 0.35, tz);
+    cap.castShadow = true;
+    g.add(cap);
+  }
+
+  // Central roof
+  const centralRoof = new THREE.Mesh(new THREE.ConeGeometry(1.9, 1.3, 4), roofMat);
+  centralRoof.position.y = 1.8 + 0.65 + 0.34;
+  centralRoof.rotation.y = Math.PI / 4;
+  centralRoof.castShadow = true;
+  g.add(centralRoof);
+
+  // Door (a small dark box on front face — facing -z = path side)
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.05), doorMat);
+  door.position.set(0, 0.4, -1.31);
+  g.add(door);
+
+  // Flag pole + flag on central roof
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.8, 6), stoneDarkMat);
+  pole.position.y = 1.8 + 1.3 + 0.4;
+  g.add(pole);
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.32), flagMat);
+  flag.position.set(0.25, 1.8 + 1.3 + 0.55, 0);
+  g.add(flag);
+
+  return g;
 }
 
 rebuildLevelDecor();
