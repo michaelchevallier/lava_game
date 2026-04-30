@@ -60,6 +60,7 @@ export class Hero {
     this.cooldown = 0;
     this.projectiles = [];
     this.moveDir = new THREE.Vector2(0, 0);
+    this.running = false;
 
     this.level = 1;
     this.xp = 0;
@@ -168,7 +169,7 @@ export class Hero {
     this.cooldown -= dt * 1000;
     if (this.anim) this.anim.tick(dt);
 
-    const moveSpeed = MOVE_SPEED * this.moveSpeedMul;
+    const moveSpeed = MOVE_SPEED * this.moveSpeedMul * (this.running ? 1.8 : 1);
     if (this.moveDir.lengthSq() > 0.01) {
       this.group.position.x += this.moveDir.x * moveSpeed * dt;
       this.group.position.z += this.moveDir.y * moveSpeed * dt;
@@ -195,7 +196,7 @@ export class Hero {
       if (d < bestDist) { bestDist = d; target = e; }
     }
 
-    if (target) {
+    if (target && !this.channelingPill) {
       const dx = target.group.position.x - myPos.x;
       const dz = target.group.position.z - myPos.z;
       this.group.rotation.y = Math.atan2(dx, dz);

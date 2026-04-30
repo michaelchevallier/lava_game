@@ -18,6 +18,7 @@ export class BuildPoint {
     this.tower = null;
     this.totalInvested = 0;
     this.paidThisLevel = 0;
+    this.buildingType = null;
     this._lastRatio = -1;
 
     this.ring = new THREE.Mesh(
@@ -72,8 +73,8 @@ export class BuildPoint {
   attachTower(tower) {
     this.tower = tower;
     this.occupied = true;
-    // totalInvested is already accumulated tick-by-tick during drain in LevelRunner._tryBuild
     this.paidThisLevel = 0;
+    this.buildingType = null;
     this.fill.visible = false;
   }
 
@@ -81,6 +82,7 @@ export class BuildPoint {
     const refund = Math.round(this.totalInvested * 0.8);
     this.tower = null;
     this.occupied = false;
+    this.buildingType = null;
     this.totalInvested = 0;
     this.paidThisLevel = 0;
     this.fill.visible = false;

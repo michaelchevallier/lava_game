@@ -180,11 +180,18 @@ export class LevelRunner {
 
   _tryBuild(bp, dt) {
     const type = this.selectedTowerType;
-    if (!type) return; // build only when player actively selected a tower
+    if (!type) return;
     const cfg = this._findUnlockedTowerCfg(type);
     if (!cfg) return;
-    if (this.coins <= 0) return;
     const baseCost = (cfg.cost) || this._defaultTowerCost(type);
+    if (bp.buildingType && bp.buildingType !== type && bp.paidThisLevel > 0) {
+      this.coins += bp.paidThisLevel;
+      bp.totalInvested = Math.max(0, bp.totalInvested - bp.paidThisLevel);
+      bp.paidThisLevel = 0;
+      bp.updateBuildFill(0);
+    }
+    bp.buildingType = type;
+    if (this.coins <= 0) return;
     const drain = Math.min(this.coins, BUILD_DRAIN_PER_SEC * dt);
     this.coins -= drain;
     bp.paidThisLevel += drain;
@@ -194,7 +201,7 @@ export class LevelRunner {
       const tower = new Tower(this.scene, bp.pos.clone(), type);
       this.towers.push(tower);
       bp.attachTower(tower);
-      this.selectedTowerType = null; // auto-deselect après build complete (UX opt-in)
+      this.selectedTowerType = null;
       emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z } });
     }
   }
@@ -233,28 +240,15 @@ export class LevelRunner {
       if (closest.occupied) {
         closest.setHaloState(onPoint ? "occupied" : "near");
       } else if (hasBuildIntent && onPoint) {
-        if (canAfford) {
-          closest.setHaloState("active");
-          activeNear = closest;
-          this._tryBuild(closest, dt);
-        } else {
-          closest.setHaloState("active-poor");
-        }
+        closest.setHaloState(canAfford ? "active" : "active-poor");
+        activeNear = closest;
+        this._tryBuild(closest, dt);
       } else if (hasBuildIntent) {
         closest.setHaloState(canAfford ? "near" : "near-poor");
       } else if (d2 > VIS_RADIUS_SQ) {
         closest.setHaloState("hidden");
       } else {
         closest.setHaloState("idle");
-      }
-    }
-    if (this._activeBuildPoint && this._activeBuildPoint !== activeNear && !this._activeBuildPoint.occupied) {
-      const stale = this._activeBuildPoint;
-      if (stale.paidThisLevel > 0) {
-        this.coins += stale.paidThisLevel;
-        stale.totalInvested = Math.max(0, stale.totalInvested - stale.paidThisLevel);
-        stale.paidThisLevel = 0;
-        stale.updateBuildFill(0);
       }
     }
     this._activeBuildPoint = activeNear;

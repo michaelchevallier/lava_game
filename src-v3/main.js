@@ -582,6 +582,16 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 1;
   if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 1;
   if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 1;
+  if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && !e.repeat) {
+    if (runner.hero) runner.hero.running = true;
+    document.getElementById("hint-shift")?.classList.add("active");
+    return;
+  }
+  if (e.code === "KeyB" && !e.repeat) {
+    if (_bluePillState) cancelBluePill();
+    else startBluePill();
+    return;
+  }
   // Tower selection 1-9, 0=10ème, Minus=11ème
   const trySelect = (idx) => {
     const type = TOWER_HOTKEYS[idx];
@@ -607,7 +617,68 @@ window.addEventListener("keyup", (e) => {
   if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 0;
   if (e.code === "KeyA" || e.code === "ArrowLeft") keys.a = 0;
   if (e.code === "KeyD" || e.code === "ArrowRight") keys.d = 0;
+  if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+    if (runner.hero) runner.hero.running = false;
+    document.getElementById("hint-shift")?.classList.remove("active");
+  }
 });
+
+const BLUE_PILL_CHANNEL_MS = 2000;
+let _bluePillState = null;
+
+function startBluePill() {
+  if (!runner.hero || _bluePillState) return;
+  if (!runner.castles || runner.castles.every((c) => c.isDead)) return;
+  _bluePillState = { startedAt: performance.now(), lastPulseAt: 0 };
+  runner.hero.channelingPill = true;
+  document.getElementById("hint-bluepill")?.classList.add("active");
+}
+
+function cancelBluePill() {
+  if (!_bluePillState) return;
+  _bluePillState = null;
+  if (runner.hero) runner.hero.channelingPill = false;
+  document.getElementById("hint-bluepill")?.classList.remove("active");
+}
+
+function tickBluePill() {
+  if (!_bluePillState || !runner.hero) return;
+  const now = performance.now();
+  const elapsed = now - _bluePillState.startedAt;
+  if (now - _bluePillState.lastPulseAt > 80) {
+    _bluePillState.lastPulseAt = now;
+    const hp = runner.hero.group.position;
+    Particles.emit({ x: hp.x, y: 0.4, z: hp.z }, 0x66ddff, 10, { speed: 3, life: 0.7, scale: 0.45, yLift: 0.4 });
+  }
+  if (elapsed >= BLUE_PILL_CHANNEL_MS) {
+    teleportHeroToNearestCastle();
+    cancelBluePill();
+  }
+}
+
+const _heroPosEl = document.getElementById("hero-pos");
+if (_heroPosEl && DEBUG_MODE) _heroPosEl.style.display = "block";
+function updateHeroPosDebug() {
+  if (!DEBUG_MODE || !_heroPosEl || !runner.hero) return;
+  const p = runner.hero.group.position;
+  _heroPosEl.textContent = `x: ${p.x.toFixed(1)}  z: ${p.z.toFixed(1)}`;
+}
+
+function teleportHeroToNearestCastle() {
+  if (!runner.hero || !runner.castles || runner.castles.length === 0) return;
+  const hp = runner.hero.group.position;
+  let best = null, bestD2 = Infinity;
+  for (const c of runner.castles) {
+    if (c.isDead) continue;
+    const dx = c.pos.x - hp.x, dz = c.pos.z - hp.z;
+    const d2 = dx * dx + dz * dz;
+    if (d2 < bestD2) { bestD2 = d2; best = c; }
+  }
+  if (!best) return;
+  runner.hero.group.position.set(best.pos.x, 0, best.pos.z);
+  Particles.emit({ x: best.pos.x, y: 0.5, z: best.pos.z }, 0x66ddff, 30, { speed: 6, life: 0.6, scale: 0.6, yLift: 1.2 });
+  Audio.sfxLevelUp?.();
+}
 
 const joystick = { active: false, sx: 0, sy: 0, dx: 0, dy: 0, id: -1 };
 const joyEl = document.getElementById("joystick");
@@ -1730,6 +1801,7 @@ function tick() {
   runner.setMove(mx, mz);
 
   runner.tick(dt);
+  tickBluePill();
   Particles.tick(dt);
   tickSpawnFog(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
@@ -1740,6 +1812,7 @@ function tick() {
   updateRadialMenu();
   Minimap.update(runner);
   updateComboTracker();
+  updateHeroPosDebug();
   updateDecorFade(dt);
 
   if (runner.hero) {
