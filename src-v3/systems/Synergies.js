@@ -9,10 +9,14 @@ export const Synergies = {
       t._pierceBonus = 0;
       t._multiShotBonus = 0;
       t._pullActive = false;
+      t._rangeMul = 1;
+      t._fireRateMul = 1;
     }
     for (const e of enemies) {
-      e._slowMul = 1;
-      e._slowUntil = 0;
+      if ((e._slowUntil ?? 0) < now) {
+        e._slowMul = 1;
+        e._slowUntil = 0;
+      }
     }
 
     this._coinPullSources = [];
@@ -98,7 +102,7 @@ function _applyCrossEffect(source, syn, towers) {
       source._propagateAoE = effect.propagateAoE;
     }
     if (effect.pullToTank) {
-      source._pullActive = true;
+      nearFrom._pullActive = true;
     }
     if (effect.appliesSlow) {
       source._appliesSlow = effect.appliesSlow;
