@@ -19,6 +19,7 @@ import {
 import { getTheme } from "./data/themes.js";
 import { getCutsceneForLevel } from "./data/cutscenes.js";
 import { Minimap } from "./ui/Minimap.js";
+import { Castle } from "./entities/Castle.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -450,6 +451,7 @@ runner.setup();
 
 let pathLines = [];
 let castle = null;
+let _castleObjects = [];
 
 function disposeMeshGroup(group) {
   if (!group) return;
@@ -463,6 +465,12 @@ function disposeMeshGroup(group) {
   });
 }
 
+function disposeCastleObjects() {
+  for (const c of _castleObjects) c.destroy();
+  _castleObjects = [];
+  castle = null;
+}
+
 function parseHexColor(s) {
   if (typeof s === "number") return s;
   if (typeof s !== "string") return 0xdcdcdc;
@@ -472,7 +480,7 @@ function parseHexColor(s) {
 function rebuildLevelDecor() {
   for (const pl of pathLines) disposeMeshGroup(pl);
   pathLines = [];
-  disposeMeshGroup(castle);
+  disposeCastleObjects();
 
   const themeForPath = getTheme(runner.level.theme || "plaine");
   for (const p of (runner.paths || [runner.path])) {
@@ -490,74 +498,24 @@ function rebuildLevelDecor() {
   const baseColor = parseHexColor(castleSkin?.color || "#dcdcdc");
   const roofColor = parseHexColor(castleSkin?.roofColor || "#3a6abf");
 
-  castle = buildCastleGroup(baseColor, roofColor);
-  const endPoint = runner.path.getPointAt(1);
-  castle.position.set(endPoint.x, 0, endPoint.z);
-  scene.add(castle);
-}
-
-function buildCastleGroup(stoneHex, roofHex) {
-  const g = new THREE.Group();
-  const stoneMat = new THREE.MeshLambertMaterial({ color: stoneHex });
-  const stoneDarkMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(stoneHex).multiplyScalar(0.7) });
-  const roofMat = new THREE.MeshLambertMaterial({ color: roofHex });
-  const doorMat = new THREE.MeshLambertMaterial({ color: 0x3a2410 });
-  const flagMat = new THREE.MeshLambertMaterial({ color: 0xc63a3a, side: THREE.DoubleSide });
-
-  // Main keep (octagonal-ish via boxes)
-  const keep = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.8, 2.6), stoneMat);
-  keep.position.y = 0.9;
-  keep.castShadow = true;
-  g.add(keep);
-
-  // Crenelations (8 small boxes around top of keep)
-  const crenW = 0.35, crenH = 0.32;
-  const positions = [
-    [-1.0, -1.3], [0, -1.3], [1.0, -1.3],
-    [-1.3, 0], [1.3, 0],
-    [-1.0, 1.3], [0, 1.3], [1.0, 1.3],
-  ];
-  for (const [px, pz] of positions) {
-    const c = new THREE.Mesh(new THREE.BoxGeometry(crenW, crenH, crenW), stoneDarkMat);
-    c.position.set(px, 1.8 + crenH / 2 + 0.02, pz);
-    c.castShadow = true;
-    g.add(c);
+  if (runner.castles && runner.castles.length > 0) {
+    for (const rc of runner.castles) {
+      const co = new Castle(scene, rc.index, baseColor, roofColor);
+      co.setPosition(rc.pos.x, 0, rc.pos.z);
+      co.pathIdx = rc.pathIdx;
+      co.hp = rc.hp;
+      co.hpMax = rc.hpMax;
+      rc._visual = co;
+      _castleObjects.push(co);
+    }
+    castle = _castleObjects[0]?.group || null;
+  } else {
+    const co = new Castle(scene, 0, baseColor, roofColor);
+    const endPoint = runner.path.getPointAt(1);
+    co.setPosition(endPoint.x, 0, endPoint.z);
+    _castleObjects.push(co);
+    castle = co.group;
   }
-
-  // 4 corner towers (cylinders + cones)
-  const towerOffsets = [[-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5], [1.5, 1.5]];
-  for (const [tx, tz] of towerOffsets) {
-    const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 2.4, 8), stoneMat);
-    tower.position.set(tx, 1.2, tz);
-    tower.castShadow = true;
-    g.add(tower);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.7, 8), roofMat);
-    cap.position.set(tx, 2.4 + 0.35, tz);
-    cap.castShadow = true;
-    g.add(cap);
-  }
-
-  // Central roof
-  const centralRoof = new THREE.Mesh(new THREE.ConeGeometry(1.9, 1.3, 4), roofMat);
-  centralRoof.position.y = 1.8 + 0.65 + 0.34;
-  centralRoof.rotation.y = Math.PI / 4;
-  centralRoof.castShadow = true;
-  g.add(centralRoof);
-
-  // Door (a small dark box on front face — facing -z = path side)
-  const door = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.05), doorMat);
-  door.position.set(0, 0.4, -1.31);
-  g.add(door);
-
-  // Flag pole + flag on central roof
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.8, 6), stoneDarkMat);
-  pole.position.y = 1.8 + 1.3 + 0.4;
-  g.add(pole);
-  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.32), flagMat);
-  flag.position.set(0.25, 1.8 + 1.3 + 0.55, 0);
-  g.add(flag);
-
-  return g;
 }
 
 rebuildLevelDecor();
