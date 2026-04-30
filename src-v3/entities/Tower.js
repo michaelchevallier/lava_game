@@ -40,13 +40,17 @@ export const TOWER_TYPES = {
     asset: "tower_cannon", scale: 0.7, label: "Catapulte", aoe: 2.2, pierce: 0,
     fallbackColor: 0x4a3a2a, parabolic: true,
     cost: 130, icon: "🪨", unlockWorld: 3,
+    synergies: [{ type: "crossEffect", from: "frost", effect: { slowOnHit: { mul: 0.5, durMs: 2000 } }, range: 4 }],
   },
   fan: {
     range: 5, fireRateMs: 0, damage: 0, projColor: 0xa8e0ff, projSpeed: 0,
     asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.07,
     cost: 70, icon: "🌀", unlockWorld: 3,
-    synergies: [{ type: "applyToEnemy", filter: {}, effect: { push: { strength: 0.07 } }, range: 5 }],
+    synergies: [
+      { type: "crossEffect", from: "mine", effect: { pushTowardsMine: true }, range: 5 },
+      { type: "applyToEnemy", filter: {}, effect: { push: { strength: 0.07 } }, range: 5 },
+    ],
   },
   frost: {
     range: 3, fireRateMs: 0, damage: 0, projColor: 0xc0e8ff, projSpeed: 0,
@@ -60,20 +64,27 @@ export const TOWER_TYPES = {
     asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
     fallbackColor: 0x6a4a2a,
     cost: 140, icon: "🏯", unlockWorld: 4,
+    synergies: [
+      { type: "crossEffect", from: "mage", effect: { propagateAoE: { radius: 1, dmg: 1.5 } }, range: 5 },
+      { type: "crossEffect", from: "frost", effect: { appliesSlow: { mul: 0.7, durMs: 1500 } }, range: 4 },
+    ],
   },
   portal: {
     range: 5.5, fireRateMs: 0, damage: 0, projColor: 0xb088ff, projSpeed: 0,
     asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
     fallbackColor: 0x6a3aa0, behavior: "buffAura", buffMul: 1.5,
     cost: 130, icon: "🌌", unlockWorld: 4,
-    synergies: [{ type: "aura", filter: {}, effect: { dmgMul: 1.5 }, range: 5.5 }],
+    synergies: [{ type: "aura", filter: {}, effect: { dmgMul: 1.5, pierceBonus: 1, multiShotBonus: 1 }, range: 5.5 }],
   },
   magnet: {
     range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
     asset: "tower_magnet", scale: 0.7, label: "Aimant", aoe: 0, pierce: 0,
     fallbackColor: 0xff4488, behavior: "coinPull", coinMul: 1.5,
     cost: 100, icon: "🧲", unlockWorld: 4,
-    synergies: [{ type: "passive", effect: { coinMul: 1.5 }, range: 6 }],
+    synergies: [
+      { type: "passive", effect: { coinMul: 1.5 }, range: 6 },
+      { type: "crossEffect", from: "tank", effect: { pullToTank: true }, range: 4 },
+    ],
   },
   aaa: {
     range: 12, fireRateMs: 600, damage: 4, projColor: 0x88ccff, projSpeed: 28,
@@ -81,6 +92,7 @@ export const TOWER_TYPES = {
     fallbackColor: 0x4a6aaa,
     cost: 110, icon: "🚀", unlockWorld: 3,
     flyerOnly: true, flyerDmgMul: 2,
+    synergies: [{ type: "crossEffect", from: "frost", effect: { freezeOnHit: { durMs: 800 } }, range: 4 }],
   },
 };
 
@@ -113,6 +125,15 @@ export class Tower {
     this.kills = 0;
     this.totalDamage = 0;
     this._buffMul = 1;
+    this._freezeOnHit = 0;
+    this._slowOnHit = null;
+    this._pushTarget = null;
+    this._propagateAoE = null;
+    this._pierceBonus = 0;
+    this._multiShotBonus = 0;
+    this._pullActive = false;
+    this._appliesSlow = null;
+    this._lastSynergyKey = "";
   }
 
   _loadModel(assetKey, scale) {
@@ -303,12 +324,21 @@ export class Tower {
     if (this.aoe > 0) {
       const center = projectile.mesh.position;
       const r2 = this.aoe * this.aoe;
+      const aoeHit = [];
       for (const e of enemies) {
         if (e.dead || e._dying) continue;
         const dx = e.group.position.x - center.x;
         const dz = e.group.position.z - center.z;
         if (dx * dx + dz * dz <= r2) {
           this._dealDamage(e, this.damage, projectile.mesh.position);
+          aoeHit.push(e);
+        }
+      }
+      if (this._slowOnHit) {
+        const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+        for (const e of aoeHit) {
+          e._slowMul = Math.min(e._slowMul ?? 1, this._slowOnHit.mul);
+          e._slowUntil = Math.max(e._slowUntil ?? 0, now + this._slowOnHit.durMs);
         }
       }
       Particles.emit(
@@ -318,6 +348,27 @@ export class Tower {
       );
     } else {
       this._dealDamage(enemy, this.damage, projectile.mesh.position);
+      if (this._propagateAoE) {
+        const r2 = this._propagateAoE.radius * this._propagateAoE.radius;
+        for (const e2 of enemies) {
+          if (e2 === enemy || e2.dead || e2._dying) continue;
+          const dx = e2.group.position.x - enemy.group.position.x;
+          const dz = e2.group.position.z - enemy.group.position.z;
+          if (dx * dx + dz * dz <= r2) {
+            this._dealDamage(e2, this._propagateAoE.dmg, enemy.group.position);
+          }
+        }
+        Particles.emit(
+          { x: enemy.group.position.x, y: 0.5, z: enemy.group.position.z },
+          0xa050ff, 8,
+          { speed: 3, life: 0.3, scale: 0.3 },
+        );
+      }
+      if (this._appliesSlow) {
+        const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+        enemy._slowMul = Math.min(enemy._slowMul ?? 1, this._appliesSlow.mul);
+        enemy._slowUntil = Math.max(enemy._slowUntil ?? 0, now + this._appliesSlow.durMs);
+      }
     }
   }
 
@@ -330,6 +381,10 @@ export class Tower {
     const dealt = Math.max(0, hpBefore - enemy.hp);
     this.totalDamage += dealt;
     if (enemy._dying && hpBefore > 0) this.kills++;
+    if (this._freezeOnHit && enemy.isFlyer) {
+      const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      enemy._frozenUntil = now + this._freezeOnHit;
+    }
   }
 
   _tickPush(dt, enemies) {
@@ -432,7 +487,7 @@ export class Tower {
     const baseDirX = baseTx / baseLen;
     const baseDirZ = baseTz / baseLen;
 
-    const shots = 1 + this.multiShot;
+    const shots = 1 + this.multiShot + (this._multiShotBonus || 0);
     const spreadDeg = shots > 1 ? 12 : 0;
     for (let s = 0; s < shots; s++) {
       const angle = shots > 1 ? (s - (shots - 1) / 2) * (spreadDeg * Math.PI / 180) : 0;
@@ -463,7 +518,7 @@ export class Tower {
         mesh: proj,
         dir: new THREE.Vector3(dx, 0, dz),
         life: this.range / this.cfg.projSpeed * 1.4,
-        _pierceLeft: this.pierce,
+        _pierceLeft: this.pierce + (this._pierceBonus || 0),
       };
       if (this.cfg.parabolic) {
         const dist = Math.hypot(target.group.position.x - start.x, target.group.position.z - start.z);

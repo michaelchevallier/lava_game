@@ -166,6 +166,8 @@ export class Enemy {
     this.aoeBlastRadius = cfg.aoeBlastRadius || 0;
     this.aoeBlastDamage = cfg.aoeBlastDamage || 0;
     this._aoeTimer = this.aoeBlastMs > 0 ? 4000 : 0;
+    this._frozenUntil = 0;
+    this._frozenTinted = false;
 
     this.group = new THREE.Group();
 
@@ -409,6 +411,30 @@ export class Enemy {
     }
 
     let effSpeed = this.speed;
+    if (this._frozenUntil) {
+      const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      if (now < this._frozenUntil) {
+        effSpeed = 0;
+        if (this.model && !this._frozenTinted) {
+          this.model.traverse((o) => {
+            if (o.isMesh && o.material && o.material.emissive) {
+              o.material.emissive.setHex(0x66ddff);
+            }
+          });
+          this._frozenTinted = true;
+        }
+      } else {
+        this._frozenUntil = 0;
+        if (this._frozenTinted && this.model) {
+          this.model.traverse((o) => {
+            if (o.isMesh && o.material && o.material.emissive) {
+              o.material.emissive.setHex(0x000000);
+            }
+          });
+          this._frozenTinted = false;
+        }
+      }
+    }
     if (this.chargeMs > 0) {
       if (this._chargeActive) {
         this._chargeTimer -= dt * 1000;

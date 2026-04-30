@@ -4,7 +4,12 @@ export const Synergies = {
   resolve(towers, enemies, dt) {
     const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
 
-    for (const t of towers) t._buffMul = 1;
+    for (const t of towers) {
+      t._buffMul = 1;
+      t._pierceBonus = 0;
+      t._multiShotBonus = 0;
+      t._pullActive = false;
+    }
     for (const e of enemies) {
       e._slowMul = 1;
       e._slowUntil = 0;
@@ -19,11 +24,14 @@ export const Synergies = {
           if (syn.type === "aura") _applyAura(t, syn, towers);
           else if (syn.type === "applyToEnemy") _applyToEnemies(t, syn, enemies, dt, now);
           else if (syn.type === "passive") _registerPassive(t, syn, this._coinPullSources);
+          else if (syn.type === "crossEffect") _applyCrossEffect(t, syn, towers);
         }
       } else {
         _fallbackBehavior(t, towers, enemies, dt, now, this._coinPullSources);
       }
     }
+
+    _applyPullActive(towers, enemies, dt);
   },
 
   getCoinMulAt(pos) {
@@ -52,6 +60,82 @@ function _applyAura(source, syn, towers) {
       if (effect.dmgMul != null) t._buffMul = Math.max(t._buffMul, effect.dmgMul);
       if (effect.rangeMul != null) t._rangeMul = Math.max(t._rangeMul ?? 1, effect.rangeMul);
       if (effect.fireRateMul != null) t._fireRateMul = Math.max(t._fireRateMul ?? 1, effect.fireRateMul);
+      if (effect.pierceBonus != null) t._pierceBonus = Math.max(t._pierceBonus ?? 0, effect.pierceBonus);
+      if (effect.multiShotBonus != null) t._multiShotBonus = Math.max(t._multiShotBonus ?? 0, effect.multiShotBonus);
+    }
+  }
+}
+
+function _applyCrossEffect(source, syn, towers) {
+  const r = syn.range || 4;
+  const r2 = r * r;
+  const srcPos = source.group.position;
+  const effect = syn.effect || {};
+
+  let nearFrom = null;
+  for (const t of towers) {
+    if (t === source) continue;
+    if (t.type !== syn.from) continue;
+    const dx = t.group.position.x - srcPos.x;
+    const dz = t.group.position.z - srcPos.z;
+    if (dx * dx + dz * dz < r2) { nearFrom = t; break; }
+  }
+
+  const prevKey = source._lastSynergyKey || "";
+
+  if (nearFrom) {
+    if (effect.freezeOnHit) {
+      source._freezeOnHit = effect.freezeOnHit.durMs ?? 800;
+    }
+    if (effect.slowOnHit) {
+      source._slowOnHit = effect.slowOnHit;
+    }
+    if (effect.pushTowardsMine) {
+      source._pushTarget = { x: nearFrom.group.position.x, z: nearFrom.group.position.z };
+    }
+    if (effect.propagateAoE) {
+      source._propagateAoE = effect.propagateAoE;
+    }
+    if (effect.pullToTank) {
+      source._pullActive = true;
+    }
+    if (effect.appliesSlow) {
+      source._appliesSlow = effect.appliesSlow;
+    }
+
+    const newKey = syn.from + "_active";
+    if (prevKey !== newKey) {
+      source._lastSynergyKey = newKey;
+      const midX = (srcPos.x + nearFrom.group.position.x) / 2;
+      const midZ = (srcPos.z + nearFrom.group.position.z) / 2;
+      import("./Particles.js").then(({ Particles }) => {
+        Particles.emit({ x: midX, y: 0.6, z: midZ }, 0xffd23f, 6, { speed: 2, life: 0.4, scale: 0.3, yLift: 0.5 });
+      });
+    }
+  } else {
+    if (effect.freezeOnHit) source._freezeOnHit = 0;
+    if (effect.slowOnHit) source._slowOnHit = null;
+    if (effect.pushTowardsMine) source._pushTarget = null;
+    if (effect.propagateAoE) source._propagateAoE = null;
+    if (effect.pullToTank) source._pullActive = false;
+    if (effect.appliesSlow) source._appliesSlow = null;
+
+    if (prevKey !== "") source._lastSynergyKey = "";
+  }
+}
+
+function _applyPullActive(towers, enemies, dt) {
+  for (const tank of towers) {
+    if (!tank._pullActive) continue;
+    const r2 = tank.range * tank.range;
+    const myPos = tank.group.position;
+    for (const e of enemies) {
+      if (e.dead || e._dying || e.t == null) continue;
+      const dx = e.group.position.x - myPos.x;
+      const dz = e.group.position.z - myPos.z;
+      if (dx * dx + dz * dz < r2) {
+        e.t = Math.max(0, e.t - 0.005 * dt);
+      }
     }
   }
 }
@@ -73,6 +157,14 @@ function _applyToEnemies(source, syn, enemies, dt, now) {
       if (effect.push && e.t != null) {
         const strength = (effect.push.strength || 0.04) * dt;
         e.t = Math.max(0, e.t - strength);
+        if (source._pushTarget) {
+          const pdx = source._pushTarget.x - e.group.position.x;
+          const pdz = source._pushTarget.z - e.group.position.z;
+          const plen = Math.hypot(pdx, pdz) || 1;
+          const pushStrength = effect.push.strength || 0.07;
+          e.group.position.x += (pdx / plen) * pushStrength * dt * 5;
+          e.group.position.z += (pdz / plen) * pushStrength * dt * 5;
+        }
       }
     }
   }
