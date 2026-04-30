@@ -659,6 +659,7 @@ const ui = {
   castleHpMax: document.getElementById("castle-hp-max"),
   castleHpFill: document.getElementById("castle-hp-fill"),
   castleHpBox: document.getElementById("castle-hp"),
+  castleHpMulti: document.getElementById("castle-hp-multi"),
   briefing: document.getElementById("briefing"),
   briefingName: document.getElementById("briefing-name"),
   briefingText: document.getElementById("briefing-text"),
@@ -920,17 +921,59 @@ if (sellUndoBtnEl) {
   });
 }
 
+function _rebuildMultiCastleBars() {
+  if (!ui.castleHpMulti) return;
+  ui.castleHpMulti.innerHTML = "";
+  const castles = runner.castles || [];
+  for (const c of castles) {
+    const ratio = c.hpMax > 0 ? Math.max(0, c.hp / c.hpMax) : 0;
+    const div = document.createElement("div");
+    div.className = "castle-bar" + (c.isDead ? " dead" : ratio < 0.2 ? " danger" : ratio < 0.5 ? " warn" : "");
+    const lbl = document.createElement("span");
+    lbl.className = "cb-label";
+    lbl.textContent = c.isDead ? `☠️ ${c.index + 1}` : `🏰 ${c.index + 1}`;
+    const track = document.createElement("div");
+    track.className = "cb-track";
+    const fill = document.createElement("div");
+    fill.className = "cb-fill";
+    fill.style.width = (ratio * 100).toFixed(1) + "%";
+    track.appendChild(fill);
+    const val = document.createElement("span");
+    val.className = "cb-val";
+    val.textContent = `${Math.ceil(c.hp)}/${c.hpMax}`;
+    div.appendChild(lbl);
+    div.appendChild(track);
+    div.appendChild(val);
+    ui.castleHpMulti.appendChild(div);
+  }
+}
+
 function refreshHUD() {
   ui.coins.textContent = Math.floor(runner.coins);
   refreshToolbarSelection();
   ui.gems.textContent = SaveSystem.getGems();
   ui.wave.textContent = "Vague " + runner.wave;
-  ui.castleHpMax.textContent = runner.castleHPMax;
-  ui.castleHpCur.textContent = Math.max(0, Math.ceil(runner.castleHP));
-  const ratio = runner.castleHPMax > 0 ? Math.max(0, runner.castleHP / runner.castleHPMax) : 0;
-  ui.castleHpFill.style.width = (ratio * 100).toFixed(1) + "%";
-  ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
-  ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+  const castles = runner.castles || [];
+  if (castles.length <= 1) {
+    ui.castleHpBox.classList.remove("multi");
+    if (ui.castleHpMulti) ui.castleHpMulti.innerHTML = "";
+    ui.castleHpFill.style.display = "";
+    ui.castleHpMax.textContent = runner.castleHPMax;
+    ui.castleHpCur.textContent = Math.max(0, Math.ceil(runner.castleHP));
+    const ratio = runner.castleHPMax > 0 ? Math.max(0, runner.castleHP / runner.castleHPMax) : 0;
+    ui.castleHpFill.style.width = (ratio * 100).toFixed(1) + "%";
+    ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
+    ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+  } else {
+    ui.castleHpBox.classList.add("multi");
+    ui.castleHpMax.textContent = runner.castleHPMax;
+    ui.castleHpCur.textContent = Math.max(0, Math.ceil(runner.castleHP));
+    const ratio = runner.castleHPMax > 0 ? Math.max(0, runner.castleHP / runner.castleHPMax) : 0;
+    ui.castleHpFill.style.display = "none";
+    ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
+    ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+    _rebuildMultiCastleBars();
+  }
   if (runner.hero) {
     ui.heroLevel.textContent = runner.hero.level;
     ui.heroXp.textContent = runner.hero.xp;

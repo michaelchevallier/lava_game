@@ -72,6 +72,17 @@
       #castle-hp.danger .bar .fill { background: linear-gradient(90deg, #e15454, #ff9090); }
       #castle-hp.flash { animation: castle-flash 0.18s ease; }
       @keyframes castle-flash { 0% { transform: scale(1); } 50% { transform: scale(1.04); border-color: #ff5050; } 100% { transform: scale(1); } }
+      #castle-hp.multi { padding-bottom: 6px; }
+      #castle-hp-multi { display: flex; flex-direction: column; gap: 4px; }
+      .castle-bar { display: flex; align-items: center; gap: 6px; }
+      .castle-bar .cb-label { font-size: 11px; white-space: nowrap; min-width: 36px; }
+      .castle-bar .cb-track { flex: 1; height: 12px; border-radius: 4px; background: #1d2a36; overflow: hidden; border: 1px solid rgba(0,0,0,0.4); }
+      .castle-bar .cb-fill { height: 100%; background: linear-gradient(90deg, #5fe079, #8fee9b); transition: width 0.25s ease; }
+      .castle-bar .cb-val { font-size: 11px; min-width: 32px; text-align: right; opacity: 0.85; }
+      .castle-bar.warn .cb-fill { background: linear-gradient(90deg, #f0c83d, #ffe273); }
+      .castle-bar.danger .cb-fill { background: linear-gradient(90deg, #e15454, #ff9090); }
+      .castle-bar.dead .cb-fill { background: #4a4a4a; }
+      .castle-bar.dead .cb-label { opacity: 0.5; }
 
       #touch-zone {
         position: fixed; left: 0; bottom: 0; width: 50%; height: 60%;
@@ -516,6 +527,7 @@
         <div id="castle-hp">
           <div class="label"><span class="name">Château</span><span class="value"><span id="castle-hp-cur">100</span>/<span id="castle-hp-max">100</span></span></div>
           <div class="bar"><div class="fill" id="castle-hp-fill"></div></div>
+          <div id="castle-hp-multi"></div>
         </div>
         <div class="right">
           <button id="shop-btn" type="button" aria-label="Boutique méta" title="Boutique (U)">🛒</button>
