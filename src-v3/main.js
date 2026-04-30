@@ -1212,7 +1212,8 @@ document.addEventListener("crowdef:hero-levelup", (e) => {
 function showNextPerkChoice() {
   if (_perkQueue <= 0 || !runner.hero) return;
   const perkCount = (runner.metaBonuses && runner.metaBonuses.perkChoiceCount) || 3;
-  const choices = rollPerkChoices(runner.hero, perkCount);
+  const levelUpsLeft = runner.hero.maxLevel - runner.hero.level;
+  const choices = rollPerkChoices(runner.hero, perkCount, levelUpsLeft);
   if (!choices.length) {
     _perkQueue = 0;
     return;

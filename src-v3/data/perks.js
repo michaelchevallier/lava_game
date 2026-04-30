@@ -97,6 +97,7 @@ export const PERKS = [
     category: "transform",
     stackable: false,
     fireball: true,
+    transform: true,
   },
   {
     id: "ricochet",
@@ -106,6 +107,7 @@ export const PERKS = [
     category: "transform",
     stackable: false,
     ricochet: true,
+    transform: true,
   },
   {
     id: "lightning",
@@ -115,6 +117,7 @@ export const PERKS = [
     category: "transform",
     stackable: false,
     lightning: true,
+    transform: true,
   },
   {
     id: "pierce_explode",
@@ -124,12 +127,30 @@ export const PERKS = [
     category: "transform",
     stackable: false,
     pierceExplode: true,
+    transform: true,
   },
 ];
 
-export function rollPerkChoices(hero, count = 3) {
+export function rollPerkChoices(hero, count = 3, totalLevelUpsLeft = 5) {
   const available = PERKS.filter((p) => p.stackable || !hero.perks.includes(p.id));
   if (!available.length) return [];
+
+  const hasTransform = hero.perks.some((id) => PERKS.find((p) => p.id === id && p.transform));
+  const lastChance = totalLevelUpsLeft <= 1;
+
+  if (!hasTransform && lastChance) {
+    const availTransforms = available.filter((p) => p.transform);
+    if (availTransforms.length > 0) {
+      const guaranteed = availTransforms[Math.floor(Math.random() * availTransforms.length)];
+      const others = available.filter((p) => !p.transform);
+      for (let i = others.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [others[i], others[j]] = [others[j], others[i]];
+      }
+      return [guaranteed, ...others.slice(0, Math.max(0, count - 1))];
+    }
+  }
+
   const shuffled = [...available];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
