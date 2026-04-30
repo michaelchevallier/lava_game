@@ -81,7 +81,8 @@ function _applyCrossEffect(source, syn, towers) {
     if (dx * dx + dz * dz < r2) { nearFrom = t; break; }
   }
 
-  const prevKey = source._lastSynergyKey || "";
+  if (!source._synergyKeys) source._synergyKeys = {};
+  const wasActive = !!source._synergyKeys[syn.from];
 
   if (nearFrom) {
     if (effect.freezeOnHit) {
@@ -103,9 +104,8 @@ function _applyCrossEffect(source, syn, towers) {
       source._appliesSlow = effect.appliesSlow;
     }
 
-    const newKey = syn.from + "_active";
-    if (prevKey !== newKey) {
-      source._lastSynergyKey = newKey;
+    if (!wasActive) {
+      source._synergyKeys[syn.from] = true;
       const midX = (srcPos.x + nearFrom.group.position.x) / 2;
       const midZ = (srcPos.z + nearFrom.group.position.z) / 2;
       import("./Particles.js").then(({ Particles }) => {
@@ -120,7 +120,7 @@ function _applyCrossEffect(source, syn, towers) {
     if (effect.pullToTank) source._pullActive = false;
     if (effect.appliesSlow) source._appliesSlow = null;
 
-    if (prevKey !== "") source._lastSynergyKey = "";
+    source._synergyKeys[syn.from] = false;
   }
 }
 

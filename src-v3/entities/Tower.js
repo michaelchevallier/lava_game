@@ -133,7 +133,7 @@ export class Tower {
     this._multiShotBonus = 0;
     this._pullActive = false;
     this._appliesSlow = null;
-    this._lastSynergyKey = "";
+    this._synergyKeys = {};
   }
 
   _loadModel(assetKey, scale) {
