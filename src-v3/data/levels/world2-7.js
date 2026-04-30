@@ -12,7 +12,7 @@ export default {
       { types: { runner: 14, assassin: 14, brute: 7, shielded: 5 }, spawnRateMs: 430, breakMs: 4000 },
       { types: { assassin: 18, brute: 8, shielded: 7 }, spawnRateMs: 410, breakMs: 4000 },
       { types: { midboss: 1, assassin: 14, brute: 8, shielded: 6 }, spawnRateMs: 400, breakMs: 4500 },
-      { types: { midboss: 1, assassin: 18, brute: 10, shielded: 7 }, spawnRateMs: 380, breakMs: 0 },
+      { types: { midboss: 1, assassin: 18, brute: 10, shielded: 7, flyer: 2 }, spawnRateMs: 380, breakMs: 0 },
     ],
   },
   castleHP: 160,
