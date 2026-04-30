@@ -18,6 +18,7 @@ import {
 } from "./data/skins.js";
 import { getTheme } from "./data/themes.js";
 import { getCutsceneForLevel } from "./data/cutscenes.js";
+import { Minimap } from "./ui/Minimap.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 
@@ -558,6 +559,9 @@ function buildCastleGroup(stoneHex, roofHex) {
 
 rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
+
+Minimap.init(document.body);
+Minimap.refreshBounds(runner);
 
 const keys = { w: 0, a: 0, s: 0, d: 0 };
 const TOWER_HOTKEYS = TOWER_ORDER;
@@ -1178,6 +1182,7 @@ document.addEventListener("crowdef:level-loaded", () => {
   ui.perkOverlay.classList.remove("show");
   _perkQueue = 0;
   rebuildLevelDecor();
+  Minimap.refreshBounds(runner);
   refreshHUD();
   if (!maybeShowCutscene(runner.level)) {
     showBriefing(runner.level);
@@ -1682,6 +1687,7 @@ function tick() {
   trackBossFromRunner();
   updateTowerPreview();
   updateRadialMenu();
+  Minimap.update(runner);
   updateDecorFade(dt);
 
   if (runner.hero) {
