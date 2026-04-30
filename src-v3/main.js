@@ -133,7 +133,7 @@ function makeGroundTexture(baseHex) {
   return tex;
 }
 
-const groundGeom = new THREE.PlaneGeometry(80, 80, 1, 1);
+const groundGeom = new THREE.PlaneGeometry(120, 120, 1, 1);
 const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: makeGroundTexture(0x6fc16d) });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;

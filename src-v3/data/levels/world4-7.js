@@ -7,15 +7,15 @@ export default {
   ...encirclement(),
   waves: {
     list: [
-      { types: { imp: 22, flyer: 14, brute: 8 }, spawnRateMs: 410, breakMs: 4000 },
-      { types: { imp: 22, assassin: 10, brute: 9, shielded: 7 }, spawnRateMs: 390, breakMs: 4000 },
-      { types: { imp: 24, flyer: 16, brute: 10, shielded: 8 }, spawnRateMs: 380, breakMs: 4000 },
-      { types: { midboss: 1, imp: 20, assassin: 12, brute: 9 }, spawnRateMs: 370, breakMs: 4500 },
-      { types: { midboss: 1, imp: 24, brute: 11, shielded: 8 }, spawnRateMs: 360, breakMs: 0 },
+      { types: { imp: 32, flyer: 20, brute: 12 }, spawnRateMs: 320, breakMs: 4000 },
+      { types: { imp: 34, assassin: 16, brute: 14, shielded: 10 }, spawnRateMs: 300, breakMs: 4000 },
+      { types: { imp: 38, flyer: 24, brute: 15, shielded: 12 }, spawnRateMs: 290, breakMs: 4000 },
+      { types: { midboss: 2, imp: 30, assassin: 18, brute: 14 }, spawnRateMs: 280, breakMs: 4500 },
+      { types: { midboss: 2, imp: 36, brute: 16, shielded: 12 }, spawnRateMs: 270, breakMs: 0 },
     ],
   },
-  castleHP: 225,
-  startCoins: 240,
+  castleHP: 240,
+  startCoins: 260,
   heroSpawn: [-2, 0, -1],
   briefing: "Antre — court vs long encerclement. Pré-boss Dragon.",
 };
