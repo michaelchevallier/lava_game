@@ -3,6 +3,7 @@ import { buildPath } from "./Path.js";
 import { Particles } from "./Particles.js";
 import { JuiceFX } from "./JuiceFX.js";
 import { Audio } from "./Audio.js";
+import { Synergies } from "./Synergies.js";
 import { Hero } from "../entities/Hero.js";
 import { Enemy, ENEMY_TYPES } from "../entities/Enemy.js";
 import { Tower, TOWER_TYPES } from "../entities/Tower.js";
@@ -280,16 +281,7 @@ export class LevelRunner {
       }
       if (e.dead) {
         const baseReward = (e.reward || 2) * 0.55;
-        let magnetMul = 1;
-        for (const t of this.towers) {
-          if (t.cfg.behavior !== "coinPull") continue;
-          const dx = e.group.position.x - t.group.position.x;
-          const dz = e.group.position.z - t.group.position.z;
-          const r = t.cfg.range || 6;
-          if (dx * dx + dz * dz < r * r) {
-            magnetMul = Math.max(magnetMul, t.cfg.coinMul || 1.5);
-          }
-        }
+        const magnetMul = Synergies.getCoinMulAt(e.group.position);
         const reward = Math.max(1, Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1) * magnetMul));
         this.coins += reward;
         if (this.hero) {
@@ -349,6 +341,8 @@ export class LevelRunner {
     if (this.hero) this.hero.tick(adt, this.enemies);
 
     this._tickBuildPoints(adt, this.hero);
+
+    Synergies.resolve(this.towers, this.enemies, adt);
 
     for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
   }
