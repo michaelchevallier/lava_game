@@ -172,26 +172,41 @@ export class LevelRunner {
     const closest = this.findClosestBuildPoint(hero.group.position, 4.5);
     let activeNear = null;
     let onBp = null;
+    const hasBuildIntent = !!this.selectedTowerType;
+    const cfg = hasBuildIntent ? this._findUnlockedTowerCfg(this.selectedTowerType) : null;
+    const cost = cfg ? (cfg.cost || this._defaultTowerCost(this.selectedTowerType)) : 0;
+    const canAfford = this.coins >= cost;
+    const VIS_RADIUS_SQ = 30 * 30;
+    const heroPos = hero.group.position;
     for (const bp of this.buildPoints) {
       if (bp === closest) continue;
-      bp.setHaloState("idle");
+      if (bp.occupied) { bp.setHaloState("occupied"); continue; }
+      const dx = heroPos.x - bp.pos.x;
+      const dz = heroPos.z - bp.pos.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 > VIS_RADIUS_SQ) bp.setHaloState("hidden");
+      else bp.setHaloState("idle");
     }
-    const hasBuildIntent = !!this.selectedTowerType;
     if (closest) {
-      const dx = hero.group.position.x - closest.pos.x;
-      const dz = hero.group.position.z - closest.pos.z;
+      const dx = heroPos.x - closest.pos.x;
+      const dz = heroPos.z - closest.pos.z;
       const d2 = dx * dx + dz * dz;
       const onPoint = d2 < BUILD_POINT_RADIUS * BUILD_POINT_RADIUS;
       if (onPoint) onBp = closest;
       if (closest.occupied) {
-        // Always show occupied halo when hero approaches (radial menu trigger)
         closest.setHaloState(onPoint ? "occupied" : "near");
       } else if (hasBuildIntent && onPoint) {
-        closest.setHaloState("active");
-        activeNear = closest;
-        this._tryBuild(closest, dt);
+        if (canAfford) {
+          closest.setHaloState("active");
+          activeNear = closest;
+          this._tryBuild(closest, dt);
+        } else {
+          closest.setHaloState("active-poor");
+        }
       } else if (hasBuildIntent) {
-        closest.setHaloState("near");
+        closest.setHaloState(canAfford ? "near" : "near-poor");
+      } else if (d2 > VIS_RADIUS_SQ) {
+        closest.setHaloState("hidden");
       } else {
         closest.setHaloState("idle");
       }

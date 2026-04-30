@@ -7,6 +7,7 @@ const HALO_NEUTRAL = 0x66ddff;
 const HALO_VALID = 0x66ff66;
 const HALO_INVALID = 0xff5555;
 const HALO_OCCUPIED = 0xffd23f;
+const HALO_POOR = 0xff9a30;
 
 export class BuildPoint {
   constructor(scene, position, pathIdx = 0) {
@@ -42,8 +43,12 @@ export class BuildPoint {
   setHaloState(state) {
     let color = HALO_NEUTRAL;
     let opacity = 0.0;
-    if (state === "near") { color = HALO_NEUTRAL; opacity = 0.35; }
+    if (state === "hidden") { opacity = 0.0; }
+    else if (state === "idle") { color = HALO_NEUTRAL; opacity = 0.18; }
+    else if (state === "near") { color = HALO_VALID; opacity = 0.5; }
+    else if (state === "near-poor") { color = HALO_POOR; opacity = 0.5; }
     else if (state === "active") { color = HALO_VALID; opacity = 0.7; }
+    else if (state === "active-poor") { color = HALO_POOR; opacity = 0.7; }
     else if (state === "invalid") { color = HALO_INVALID; opacity = 0.55; }
     else if (state === "occupied") { color = HALO_OCCUPIED; opacity = 0.45; }
     this.ring.material.color.setHex(color);
