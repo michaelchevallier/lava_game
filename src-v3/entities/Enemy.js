@@ -89,9 +89,9 @@ export const ENEMY_TYPES = {
     bossName: "Sorcier de la Forêt",
   },
   flyer: {
-    hp: 3, speed: 1.6, damage: 5, reward: 4,
+    hp: 2, speed: 1.6, damage: 5, reward: 4,
     asset: "wizard", scale: 0.45, walkAnim: "Walk",
-    bodyColor: 0x5fbcff, isFlyer: true, flyHeight: 1.4,
+    bodyColor: 0x5fbcff, isFlyer: true, ignorePath: true, flyHeight: 2.5,
   },
   corsair_boss: {
     hp: 130, speed: 0.5, damage: 40, reward: 150,
@@ -159,6 +159,7 @@ export class Enemy {
     this._summonTimer = this.summonCooldownMs > 0 ? 3000 : 0;
 
     this.isFlyer = !!cfg.isFlyer;
+    this.ignorePath = !!cfg.ignorePath;
     this.flyHeight = cfg.flyHeight || 0;
     this.aoeBlastMs = cfg.aoeBlastMs || 0;
     this.aoeBlastRadius = cfg.aoeBlastRadius || 0;
@@ -445,6 +446,24 @@ export class Enemy {
         this._slowUntil = 0;
         this._slowMul = 1;
       }
+    }
+    if (this.ignorePath) {
+      if (!this._exitTarget) {
+        this._exitTarget = this.curve.getPointAt(1);
+      }
+      const target = this._exitTarget;
+      const dx = target.x - this.group.position.x;
+      const dz = target.z - this.group.position.z;
+      const len = Math.hypot(dx, dz) || 1;
+      this.group.position.x += (dx / len) * effSpeed * dt;
+      this.group.position.z += (dz / len) * effSpeed * dt;
+      const bob = Math.sin(performance.now() * 0.003) * 0.15;
+      this.group.position.y = (this.flyHeight || 2.5) + bob;
+      const tx = dx / len, tz = dz / len;
+      this._lastTangent.set(tx, 0, tz);
+      this.group.rotation.y = Math.atan2(tx, tz);
+      if (len < 0.6) this.reachedEnd = true;
+      return;
     }
     const len = this.curve.getLength();
     this.t += (effSpeed * dt) / len;

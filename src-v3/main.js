@@ -582,7 +582,7 @@ function buildToolbar() {
     const cell = document.createElement("div");
     cell.className = "tt-cell";
     cell.dataset.towerType = type;
-    const keyLbl = idx < 9 ? `${idx + 1}` : (idx === 9 ? "0" : "-");
+    const keyLbl = idx < 9 ? `${idx + 1}` : (idx === 9 ? "0" : (idx === 10 ? "-" : "="));
     cell.innerHTML = `<span class="tt-key">${keyLbl}</span><span class="tt-icon">${cfg.icon || "🏰"}</span><span class="tt-cost">${cfg.cost}¢</span>`;
     cell.title = `${cfg.label} — ${cfg.cost}¢ (touche ${keyLbl})`;
     cell.addEventListener("click", () => {
@@ -631,6 +631,7 @@ window.addEventListener("keydown", (e) => {
   };
   if (e.code === "Digit0") { trySelect(9); return; }
   if (e.code === "Minus" || e.code === "NumpadSubtract") { trySelect(10); return; }
+  if (e.code === "Equal" || e.code === "NumpadAdd") { trySelect(11); return; }
   const m = e.code.match(/^Digit([1-9])$/);
   if (m) trySelect(parseInt(m[1], 10) - 1);
 });
