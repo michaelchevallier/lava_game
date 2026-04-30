@@ -44,8 +44,8 @@ export const TOWER_TYPES = {
   fan: {
     range: 5, fireRateMs: 0, damage: 0, projColor: 0xa8e0ff, projSpeed: 0,
     asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
-    fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.04,
-    cost: 90, icon: "🌀", unlockWorld: 3,
+    fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.07,
+    cost: 70, icon: "🌀", unlockWorld: 3,
   },
   frost: {
     range: 3, fireRateMs: 0, damage: 0, projColor: 0xc0e8ff, projSpeed: 0,
@@ -57,13 +57,13 @@ export const TOWER_TYPES = {
     range: 16, fireRateMs: 1800, damage: 5, projColor: 0xc0e8ff, projSpeed: 32,
     asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
     fallbackColor: 0x6a4a2a,
-    cost: 110, icon: "🏯", unlockWorld: 4,
+    cost: 140, icon: "🏯", unlockWorld: 4,
   },
   portal: {
-    range: 4, fireRateMs: 0, damage: 0, projColor: 0xb088ff, projSpeed: 0,
+    range: 5.5, fireRateMs: 0, damage: 0, projColor: 0xb088ff, projSpeed: 0,
     asset: "tower_portal", scale: 0.7, label: "Portail", aoe: 0, pierce: 0,
     fallbackColor: 0x6a3aa0, behavior: "buffAura", buffMul: 1.5,
-    cost: 150, icon: "🌌", unlockWorld: 4,
+    cost: 130, icon: "🌌", unlockWorld: 4,
   },
   magnet: {
     range: 6, fireRateMs: 0, damage: 0, projColor: 0xff66aa, projSpeed: 0,
@@ -328,7 +328,16 @@ export class Tower {
       }
     }
     if (this.model && any) {
-      this.model.rotation.y += 4 * dt;
+      this.model.rotation.y += 8 * dt;
+      this._pushVfxT = (this._pushVfxT || 0) - dt;
+      if (this._pushVfxT <= 0) {
+        this._pushVfxT = 0.18;
+        Particles.emit(
+          { x: myPos.x, y: 1.0, z: myPos.z },
+          0xa8e0ff, 3,
+          { speed: 5, life: 0.35, scale: 0.25, yLift: 0.2 },
+        );
+      }
     }
   }
 
@@ -371,6 +380,7 @@ export class Tower {
     const mul = this.cfg.slowMul || 0.5;
     const dur = this.cfg.slowDurationMs || 4000;
     const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    let any = false;
     for (const e of enemies) {
       if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
@@ -378,7 +388,18 @@ export class Tower {
       if (dx * dx + dz * dz < r2) {
         e._slowMul = mul;
         e._slowUntil = now + dur;
+        any = true;
       }
+    }
+    this._frostVfxT = (this._frostVfxT || 0) - dt;
+    if (this._frostVfxT <= 0) {
+      this._frostVfxT = any ? 0.25 : 0.6;
+      const intensity = any ? 4 : 1;
+      Particles.emit(
+        { x: myPos.x + (Math.random() - 0.5) * 0.6, y: 0.4, z: myPos.z + (Math.random() - 0.5) * 0.6 },
+        0xc0e8ff, intensity,
+        { speed: 1.0, life: 0.7, scale: 0.18, yLift: 0.5 },
+      );
     }
   }
 
