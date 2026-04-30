@@ -19,7 +19,7 @@ export const TOWER_TYPES = {
   },
   mage: {
     range: 7, fireRateMs: 1200, damage: 2, projColor: 0xa050ff, projSpeed: 14,
-    asset: "tower_mage", scale: 0.7, label: "Mage", aoe: 1.5, pierce: 0,
+    asset: "tower_mage", scale: 0.7, label: "Mage", aoe: 2.0, pierce: 0,
     fallbackColor: 0x6a3aa0,
     cost: 70, icon: "🔮", unlockWorld: 1,
   },
@@ -37,9 +37,9 @@ export const TOWER_TYPES = {
   },
   cannon: {
     range: 9, fireRateMs: 2000, damage: 5, projColor: 0xff7530, projSpeed: 16,
-    asset: "tower_cannon", scale: 0.7, label: "Catapulte", aoe: 2.2, pierce: 0,
+    asset: "tower_cannon", scale: 0.7, label: "Catapulte", aoe: 3.0, pierce: 0,
     fallbackColor: 0x4a3a2a, parabolic: true,
-    cost: 130, icon: "🪨", unlockWorld: 3,
+    cost: 100, icon: "🪨", unlockWorld: 3,
     synergies: [{ type: "crossEffect", from: "frost", effect: { slowOnHit: { mul: 0.5, durMs: 2000 } }, range: 4 }],
   },
   fan: {
@@ -90,7 +90,7 @@ export const TOWER_TYPES = {
     range: 12, fireRateMs: 600, damage: 4, projColor: 0x88ccff, projSpeed: 28,
     asset: "tower_aaa", scale: 0.7, label: "DCA", aoe: 0, pierce: 0,
     fallbackColor: 0x4a6aaa,
-    cost: 110, icon: "🚀", unlockWorld: 3,
+    cost: 85, icon: "🚀", unlockWorld: 3,
     flyerOnly: true, flyerDmgMul: 2,
     synergies: [{ type: "crossEffect", from: "frost", effect: { freezeOnHit: { durMs: 800 } }, range: 4 }],
   },

@@ -200,7 +200,7 @@ export class LevelRunner {
   }
 
   _defaultTowerCost(type) {
-    const COSTS = { archer: 30, tank: 50, mage: 70, ballista: 100, cannon: 130, crossbow: 110, fan: 90, mine: 60, magnet: 100, portal: 150, frost: 80, aaa: 110 };
+    const COSTS = { archer: 30, tank: 50, mage: 70, ballista: 100, cannon: 100, crossbow: 110, fan: 90, mine: 60, magnet: 100, portal: 150, frost: 80, aaa: 85 };
     return COSTS[type] || 50;
   }
 
