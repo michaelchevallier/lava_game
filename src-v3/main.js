@@ -640,6 +640,14 @@ function rebuildLevelDecor() {
 rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
 
+setTimeout(() => {
+  const splash = document.getElementById("splash");
+  if (splash) {
+    splash.classList.add("hidden");
+    setTimeout(() => splash.remove(), 700);
+  }
+}, 1800);
+
 Minimap.init(document.body);
 Minimap.refreshBounds(runner);
 

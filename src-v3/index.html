@@ -4,10 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <title>Milan Crowd Defense</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600&display=swap">
     <style>
       :root { color-scheme: dark; }
       *, *::before, *::after { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #0d1418; font-family: system-ui, sans-serif; color: #fff; -webkit-tap-highlight-color: transparent; }
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #0d1418; font-family: 'Fredoka', sans-serif; color: #fff; -webkit-tap-highlight-color: transparent; }
+      .boss-banner, .perk-title, .briefing h1, .level-result-title,
+      #splash-title, .splash-title { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+      #splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        background: radial-gradient(ellipse at center, #2a1810 0%, #0a0604 70%);
+        color: #ffd966; text-align: center;
+        transition: opacity 0.6s ease-out;
+      }
+      .splash-title { font-size: 72px; margin: 0 0 16px 0; color: #ff8030; text-shadow: 0 4px 20px rgba(255,128,48,0.6); }
+      .splash-tag { font-size: 22px; opacity: 0.85; max-width: 600px; }
+      #splash.hidden { opacity: 0; pointer-events: none; }
       #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
       #ui {
         position: fixed; inset: 0; pointer-events: none;
@@ -521,6 +536,10 @@
     </style>
   </head>
   <body>
+    <div id="splash">
+      <h1 class="splash-title">Milan : Crowd Defense</h1>
+      <p class="splash-tag">Foire en Lave — défends le château contre la foule</p>
+    </div>
     <canvas id="app"></canvas>
     <div id="fps-meter" class="good" title="Clic pour cacher / F pour toggle">60 FPS</div>
     <div id="hero-pos" style="position: fixed; left: 12px; bottom: 80px; z-index: 21; background: rgba(20,28,36,0.85); border: 1px solid #3a4a5a; border-radius: 6px; padding: 3px 8px; font-family: monospace; font-size: 11px; color: #66ddff; pointer-events: none; display: none;">x: 0 z: 0</div>
