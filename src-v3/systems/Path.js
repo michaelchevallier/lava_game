@@ -54,27 +54,31 @@ function makePathTexture() {
   canvas.height = 256;
   const ctx = canvas.getContext("2d");
 
-  // Base white — material.color tints to theme palette
-  ctx.fillStyle = "#ffffff";
+  // Base saddle brown solide
+  ctx.fillStyle = "#7a4a22";
   ctx.fillRect(0, 0, 256, 256);
-  // Darker patches (multiply blend with theme color)
-  for (let i = 0; i < 180; i++) {
+  // Patches plus clairs (terre sèche)
+  for (let i = 0; i < 200; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
     const r = 4 + Math.random() * 10;
-    const tone = 170 + Math.random() * 40;
-    ctx.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${0.35 + Math.random() * 0.35})`;
+    const lr = 130 + Math.random() * 40;
+    const lg = 80 + Math.random() * 30;
+    const lb = 40 + Math.random() * 20;
+    ctx.fillStyle = `rgba(${Math.round(lr)}, ${Math.round(lg)}, ${Math.round(lb)}, ${0.4 + Math.random() * 0.3})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  // Pebbles/dirt darker spots — plus présents et plus sombres pour signature terre
-  for (let i = 0; i < 140; i++) {
+  // Pebbles très foncés
+  for (let i = 0; i < 160; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
-    const r = 2 + Math.random() * 5;
-    const tone = 90 + Math.random() * 60;
-    ctx.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${0.5 + Math.random() * 0.35})`;
+    const r = 1.5 + Math.random() * 4;
+    const dr = 50 + Math.random() * 30;
+    const dg = 30 + Math.random() * 20;
+    const db = 15 + Math.random() * 15;
+    ctx.fillStyle = `rgba(${Math.round(dr)}, ${Math.round(dg)}, ${Math.round(db)}, ${0.6 + Math.random() * 0.3})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -152,51 +156,25 @@ function makeArrowMaterial() {
 export function makePathLine(curve, mat, opts = {}) {
   const group = new THREE.Group();
 
-  const innerColor = opts.innerColor != null ? opts.innerColor : 0x8b5a2b;
+  const innerColor = opts.innerColor != null ? opts.innerColor : 0xffffff;
   const borderColor = opts.borderColor != null ? opts.borderColor : 0x3a200a;
 
   const borderHalf = 4.5;
   const innerHalf = 3.8;
-  const borderMat = new THREE.MeshBasicMaterial({
-    color: borderColor,
-    polygonOffset: true,
-    polygonOffsetFactor: -10,
-    polygonOffsetUnits: -10,
-    depthWrite: false,
-  });
-  const borderGeom = buildRibbon(curve, borderHalf, 0.05);
+  const borderMat = new THREE.MeshBasicMaterial({ color: borderColor });
+  const borderGeom = buildRibbon(curve, borderHalf, 0.04);
   const borderMesh = new THREE.Mesh(borderGeom, borderMat);
-  borderMesh.renderOrder = 3;
+  borderMesh.renderOrder = 1;
   group.add(borderMesh);
 
   const innerMat = new THREE.MeshBasicMaterial({
     map: makePathTexture(),
     color: innerColor,
-    polygonOffset: true,
-    polygonOffsetFactor: -20,
-    polygonOffsetUnits: -20,
-    depthWrite: false,
   });
   const innerGeom = buildRibbon(curve, innerHalf, 0.06);
   const innerMesh = new THREE.Mesh(innerGeom, innerMat);
-  innerMesh.renderOrder = 4;
+  innerMesh.renderOrder = 2;
   group.add(innerMesh);
-
-  const arrowMat = makeArrowMaterial();
-  const arrowGeom = new THREE.PlaneGeometry(0.7, 0.7);
-  const len = curve.getLength();
-  const spacing = 3.5;
-  const count = Math.max(2, Math.floor(len / spacing));
-  for (let i = 1; i < count; i++) {
-    const t = i / count;
-    const p = curve.getPointAt(t);
-    const tangent = curve.getTangentAt(t).normalize();
-    const arrow = new THREE.Mesh(arrowGeom, arrowMat);
-    arrow.rotation.x = -Math.PI / 2;
-    arrow.rotation.z = -Math.atan2(tangent.x, tangent.z);
-    arrow.position.set(p.x, 0.02, p.z);
-    group.add(arrow);
-  }
 
   return group;
 }

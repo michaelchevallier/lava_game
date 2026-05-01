@@ -225,7 +225,7 @@ export class LevelRunner {
     const cfg = hasBuildIntent ? this._findUnlockedTowerCfg(this.selectedTowerType) : null;
     const cost = cfg ? (cfg.cost || this._defaultTowerCost(this.selectedTowerType)) : 0;
     const canAfford = this.coins >= cost;
-    const VIS_RADIUS_SQ = 30 * 30;
+    const VIS_RADIUS_SQ = 5 * 5;
     const heroPos = hero.group.position;
     for (const bp of this.buildPoints) {
       if (bp === closest) continue;

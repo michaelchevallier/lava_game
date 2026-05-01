@@ -505,13 +505,9 @@ function rebuildLevelDecor() {
   disposeCastleObjects();
   disposePortals();
 
-  const themeForPath = getTheme(runner.level.theme || "plaine");
   for (const p of (runner.paths || [runner.path])) {
     if (!p) continue;
-    const pl = makePathLine(p, dirtMat, {
-      innerColor: themeForPath.pathInner,
-      borderColor: themeForPath.pathBorder,
-    });
+    const pl = makePathLine(p, dirtMat, {});
     scene.add(pl);
     pathLines.push(pl);
     const entry = p.getPointAt(0);
