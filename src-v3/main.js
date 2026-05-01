@@ -707,7 +707,7 @@ buildToolbar();
 const speedCtrl = document.getElementById("speed-control");
 function refreshSpeedUI() {
   if (!speedCtrl) return;
-  const cur = Math.round(runner.gameSpeed);
+  const cur = Math.round(runner.gameSpeed / 1.5);
   speedCtrl.querySelectorAll(".speed-btn").forEach((b) => {
     b.classList.toggle("active", parseInt(b.dataset.speed, 10) === cur);
   });
@@ -1174,8 +1174,9 @@ function refreshRadialButtons() {
   const isMax = (t.upgradeLevel || 1) >= 3;
   if (upBtn) {
     const lbl = upBtn.querySelector(".lbl");
-    upBtn.classList.toggle("disabled", isMax || runner.coins < cost);
-    if (lbl) lbl.textContent = isMax ? "MAX" : `↑ ${cost}¢`;
+    const upgrading = !!t._upgradePending;
+    upBtn.classList.toggle("disabled", isMax || upgrading || runner.coins < cost);
+    if (lbl) lbl.textContent = isMax ? "MAX" : (upgrading ? "..." : `↑ ${cost}¢`);
   }
   if (sellBtn) {
     const refund = Math.round(_radialOpenBp.totalInvested * 0.8);
@@ -1220,13 +1221,16 @@ if (radialEl) {
     const bp = _radialOpenBp;
     const t = bp.tower;
     if (action === "upgrade") {
+      if (t._upgradePending) return;
       const cost = _upgradeCost(t);
       const newLvl = (t.upgradeLevel || 1) + 1;
       if (newLvl > 3) return;
       if (runner.coins < cost) return;
       runner.coins -= cost;
       bp.totalInvested += cost;
-      t.upgradeTo(newLvl);
+      const totalMs = 2500;
+      t._upgradePending = { targetLevel: newLvl, ms: totalMs, totalMs, bp };
+      bp.updateBuildFill(0.001);
       refreshHUD();
       refreshRadialButtons();
     } else if (action === "info") {

@@ -197,7 +197,8 @@ export class Hero {
       if (d < bestDist) { bestDist = d; target = e; }
     }
 
-    if (target && !this.channelingPill) {
+    const canFire = !this.running && !this.channelingPill;
+    if (target && canFire) {
       const dx = target.group.position.x - myPos.x;
       const dz = target.group.position.z - myPos.z;
       this.group.rotation.y = Math.atan2(dx, dz);

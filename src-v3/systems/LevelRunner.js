@@ -32,7 +32,7 @@ export class LevelRunner {
     this.coins = level.startCoins + coinsBonus;
     this.wave = 1;
     this.gameTime = 0;
-    this.gameSpeed = 1.3;
+    this.gameSpeed = 1.5;
     this.paused = false;
 
     this.path = null;
@@ -260,7 +260,7 @@ export class LevelRunner {
     this._heroOnBuildPoint = onBp;
   }
 
-  setSpeed(n) { this.gameSpeed = Math.max(0.1, Math.min(8, n)); }
+  setSpeed(n) { this.gameSpeed = Math.max(0.1, Math.min(12, n * 1.5)); }
   pause() { this.paused = true; }
   resume() { this.paused = false; }
   setMove(dx, dz) { if (this.hero) this.hero.setMove(dx, dz); }
@@ -393,6 +393,23 @@ export class LevelRunner {
     Synergies.resolve(this.towers, this.enemies, adt);
 
     for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
+
+    this._tickPendingUpgrades(dtMs);
+  }
+
+  _tickPendingUpgrades(dtMs) {
+    for (const t of this.towers) {
+      const u = t._upgradePending;
+      if (!u) continue;
+      u.ms -= dtMs;
+      const ratio = Math.max(0, Math.min(1, 1 - u.ms / u.totalMs));
+      if (u.bp) u.bp.updateBuildFill(ratio);
+      if (u.ms <= 0) {
+        t.upgradeTo(u.targetLevel);
+        if (u.bp) u.bp.updateBuildFill(0);
+        t._upgradePending = null;
+      }
+    }
   }
 
   _pushHeroOutOfCastles(hero) {
