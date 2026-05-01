@@ -152,32 +152,34 @@ function makeArrowMaterial() {
 export function makePathLine(curve, mat, opts = {}) {
   const group = new THREE.Group();
 
-  const innerColor = opts.innerColor != null ? opts.innerColor : 0xb47845;
-  const borderColor = opts.borderColor != null ? opts.borderColor : 0x2a1808;
+  const innerColor = opts.innerColor != null ? opts.innerColor : 0x8b5a2b;
+  const borderColor = opts.borderColor != null ? opts.borderColor : 0x3a200a;
 
-  const borderHalf = 2.6;
-  const innerHalf = 2.0;
+  const borderHalf = 4.5;
+  const innerHalf = 3.8;
   const borderMat = new THREE.MeshBasicMaterial({
     color: borderColor,
     polygonOffset: true,
-    polygonOffsetFactor: -1,
-    polygonOffsetUnits: -1,
+    polygonOffsetFactor: -10,
+    polygonOffsetUnits: -10,
+    depthWrite: false,
   });
-  const borderGeom = buildRibbon(curve, borderHalf, 0.12);
+  const borderGeom = buildRibbon(curve, borderHalf, 0.05);
   const borderMesh = new THREE.Mesh(borderGeom, borderMat);
-  borderMesh.renderOrder = 1;
+  borderMesh.renderOrder = 3;
   group.add(borderMesh);
 
   const innerMat = new THREE.MeshBasicMaterial({
     map: makePathTexture(),
     color: innerColor,
     polygonOffset: true,
-    polygonOffsetFactor: -2,
-    polygonOffsetUnits: -2,
+    polygonOffsetFactor: -20,
+    polygonOffsetUnits: -20,
+    depthWrite: false,
   });
-  const innerGeom = buildRibbon(curve, innerHalf, 0.18);
+  const innerGeom = buildRibbon(curve, innerHalf, 0.06);
   const innerMesh = new THREE.Mesh(innerGeom, innerMat);
-  innerMesh.renderOrder = 2;
+  innerMesh.renderOrder = 4;
   group.add(innerMesh);
 
   const arrowMat = makeArrowMaterial();

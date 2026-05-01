@@ -151,7 +151,12 @@ export class LevelRunner {
     const heroPos = new THREE.Vector3(...(this.level.heroSpawn || [-2, 0, -1]));
     const heroSkinId = SaveSystem.getEquippedSkin("hero") || getDefaultSkinId("hero");
     const heroSkin = SKIN_BY_ID[heroSkinId];
-    this.hero = new Hero(this.scene, heroPos, { skinAsset: heroSkin?.asset || "knight" });
+    const mapHalf = this.level.mapHalf ?? 60;
+    this.hero = new Hero(this.scene, heroPos, {
+      skinAsset: heroSkin?.asset || "knight",
+      maxX: mapHalf - 0.5,
+      maxZ: mapHalf - 0.5,
+    });
     this.hero.applyMetaBonuses(this.metaBonuses);
     if (heroSkin?.bonus) this.hero.applySkinBonuses(heroSkin.bonus);
 

@@ -64,7 +64,7 @@ scene.fog = new THREE.Fog(0x7fd07c, 30, 80);
 const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 600);
 const CAM_TARGET = new THREE.Vector3(-2, 0, -1);
 const CAM_OFFSET = new THREE.Vector3(0, 30, 22);
-const GROUND_SIZE = 240;
+const GROUND_SIZE = 120;
 const MAP_HALF = GROUND_SIZE / 2;
 
 function resize() {
@@ -137,7 +137,7 @@ function makeGroundTexture(baseHex) {
   }
   const tex = new THREE.CanvasTexture(cv);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(6, 6);
+  tex.repeat.set(4, 4);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
@@ -204,40 +204,7 @@ function makeCloudTexture() {
   return tex;
 }
 
-const fogSprites = [];
-function buildSpawnFog() {
-  const cloudTex = makeCloudTexture();
-  const fogDepth = 8;
-  const perSide = 14;
-  const sides = 4;
-  for (let side = 0; side < sides; side++) {
-    for (let i = 0; i < perSide; i++) {
-      const t = (i + Math.random()) / perSide;
-      const tangent = -MAP_HALF + t * GROUND_SIZE;
-      const depth = MAP_HALF - 6 - Math.random() * fogDepth;
-      let x, z;
-      if (side === 0) { x = tangent; z = -depth; }
-      else if (side === 1) { x = tangent; z = depth; }
-      else if (side === 2) { x = -depth; z = tangent; }
-      else { x = depth; z = tangent; }
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: cloudTex, opacity: 0.55, transparent: true, depthWrite: false,
-      }));
-      sprite.position.set(x, 1.5 + Math.random() * 1.2, z);
-      sprite.scale.set(4 + Math.random() * 2, 2.5 + Math.random() * 1.5, 1);
-      scene.add(sprite);
-      fogSprites.push({ sprite, baseY: sprite.position.y, phase: Math.random() * Math.PI * 2 });
-    }
-  }
-}
-buildSpawnFog();
-
-function tickSpawnFog(t) {
-  for (const f of fogSprites) {
-    f.sprite.position.y = f.baseY + Math.sin(t * 0.3 + f.phase) * 0.5;
-    f.sprite.material.opacity = 0.5 + Math.sin(t * 0.4 + f.phase) * 0.15;
-  }
-}
+function tickSpawnFog() {}
 
 function refreshGroundTexture(baseHex) {
   if (groundMat.map) groundMat.map.dispose();
@@ -452,6 +419,7 @@ runner.setup();
 
 let pathLines = [];
 let castle = null;
+const portals = [];
 let _castleObjects = [];
 
 function disposeMeshGroup(group) {
@@ -478,10 +446,64 @@ function parseHexColor(s) {
   return parseInt(s.replace("#", ""), 16);
 }
 
+function disposePortals() {
+  for (const p of portals) {
+    scene.remove(p.group);
+    p.group.traverse((c) => {
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) {
+        if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+        else c.material.dispose();
+      }
+    });
+  }
+  portals.length = 0;
+}
+
+function buildPortal(pos) {
+  const grp = new THREE.Group();
+  const baseGeom = new THREE.TorusGeometry(1.6, 0.35, 12, 32);
+  const baseMat = new THREE.MeshLambertMaterial({ color: 0x4a2a6a, emissive: 0x6a3aa0, emissiveIntensity: 0.6 });
+  const torus = new THREE.Mesh(baseGeom, baseMat);
+  torus.rotation.x = Math.PI / 2;
+  torus.position.y = 1.4;
+  torus.castShadow = true;
+  grp.add(torus);
+  const innerGeom = new THREE.CircleGeometry(1.45, 32);
+  const innerMat = new THREE.MeshBasicMaterial({
+    color: 0xb088ff, transparent: true, opacity: 0.55,
+    side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const disc = new THREE.Mesh(innerGeom, innerMat);
+  disc.rotation.x = -Math.PI / 2;
+  disc.position.y = 1.4;
+  grp.add(disc);
+  const ringGeom = new THREE.RingGeometry(2.2, 2.4, 48);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xb088ff, transparent: true, opacity: 0.45,
+    side: THREE.DoubleSide, depthWrite: false,
+  });
+  const groundRing = new THREE.Mesh(ringGeom, ringMat);
+  groundRing.rotation.x = -Math.PI / 2;
+  groundRing.position.y = 0.04;
+  grp.add(groundRing);
+  grp.position.set(pos.x, 0, pos.z);
+  scene.add(grp);
+  portals.push({ group: grp, disc, torus, phase: Math.random() * Math.PI * 2 });
+}
+
+function tickPortals(t) {
+  for (const p of portals) {
+    p.torus.rotation.z = t * 0.6 + p.phase;
+    p.disc.material.opacity = 0.45 + Math.sin(t * 2 + p.phase) * 0.15;
+  }
+}
+
 function rebuildLevelDecor() {
   for (const pl of pathLines) disposeMeshGroup(pl);
   pathLines = [];
   disposeCastleObjects();
+  disposePortals();
 
   const themeForPath = getTheme(runner.level.theme || "plaine");
   for (const p of (runner.paths || [runner.path])) {
@@ -492,6 +514,8 @@ function rebuildLevelDecor() {
     });
     scene.add(pl);
     pathLines.push(pl);
+    const entry = p.getPointAt(0);
+    buildPortal(entry);
   }
 
   const castleSkinId = SaveSystem.getEquippedSkin("castle") || "castle_default";
@@ -1919,6 +1943,7 @@ function tick() {
   runner.tick(dt);
   tickBluePill(dt);
   Particles.tick(dt);
+  tickPortals(performance.now() * 0.001);
   tickSpawnFog(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
   SHAKE_OFFSET.copy(shake);

@@ -12,8 +12,7 @@ const RANGE = 12;
 const DAMAGE = 1;
 const PROJ_SPEED = 22;
 const MOVE_SPEED = 6;
-const BOUND_X = 115;
-const BOUND_Z = 115;
+const DEFAULT_BOUND = 59.5;
 const MODEL_SCALE = 0.6;
 const XP_CURVE = [30, 50, 75, 100, 130];
 const MAX_LEVEL = 1 + XP_CURVE.length;
@@ -61,6 +60,8 @@ export class Hero {
     this.projectiles = [];
     this.moveDir = new THREE.Vector2(0, 0);
     this.running = false;
+    this.maxX = options.maxX ?? DEFAULT_BOUND;
+    this.maxZ = options.maxZ ?? DEFAULT_BOUND;
 
     this.level = 1;
     this.xp = 0;
@@ -173,8 +174,8 @@ export class Hero {
     if (this.moveDir.lengthSq() > 0.01) {
       this.group.position.x += this.moveDir.x * moveSpeed * dt;
       this.group.position.z += this.moveDir.y * moveSpeed * dt;
-      this.group.position.x = Math.max(-BOUND_X, Math.min(BOUND_X, this.group.position.x));
-      this.group.position.z = Math.max(-BOUND_Z, Math.min(BOUND_Z, this.group.position.z));
+      this.group.position.x = Math.max(-this.maxX, Math.min(this.maxX, this.group.position.x));
+      this.group.position.z = Math.max(-this.maxZ, Math.min(this.maxZ, this.group.position.z));
       if (this.anim) {
         const runName = this.anim.has("Run") ? "Run" : (this.anim.has("Walk") ? "Walk" : null);
         if (runName) this.anim.play(runName);
