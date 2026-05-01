@@ -399,7 +399,7 @@ const THEME_PALETTE = {
     small: ["nature_flower3", "nature_flower4"],
     rocks: ["nature_rock1", "nature_pebble1"],
     feature: ["nature_commontree3", "nature_bushflower"],
-    bigCount: 18, mediumCount: 14, smallCount: 28, rockCount: 12,
+    bigCount: 12, mediumCount: 10, smallCount: 18, rockCount: 8,
   },
   foret: {
     big: ["nature_pine1", "nature_pine2", "nature_pine3"],
@@ -476,6 +476,7 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
   cloned.rotation.y = rot != null ? rot : Math.random() * Math.PI * 2;
   cloned.userData.canOccludeHero = true;
   cloned.userData._fadeOpacity = 1;
+  cloned.userData._isFadeable = true;
   cloned.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = withShadow;
@@ -483,8 +484,6 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
       o.frustumCulled = true;
       if (o.material) {
         o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
-        const list = Array.isArray(o.material) ? o.material : [o.material];
-        for (const m of list) { m.transparent = true; m.opacity = 1; }
       }
     }
   });
@@ -494,30 +493,52 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
 
 const _xrayDir = new THREE.Vector3();
 const _xrayRay = new THREE.Raycaster();
+const _decorVec = new THREE.Vector3();
+const DECOR_FOG_FAR_SQ = 32 * 32;
+let _xrayFrame = 0;
+let _xrayHitSet = new Set();
 function updateDecorFade(dt) {
-  if (!runner.hero) return;
-  const heroPos = runner.hero.group.position;
-  _xrayDir.set(heroPos.x, heroPos.y + 0.7, heroPos.z).sub(camera.position).normalize();
-  _xrayRay.set(camera.position, _xrayDir);
-  const heroCamDist = camera.position.distanceTo(heroPos);
-  _xrayRay.far = heroCamDist - 0.4;
-  const hitSet = new Set();
   for (const d of decor) {
-    const hits = _xrayRay.intersectObject(d, true);
-    if (hits && hits.length > 0) hitSet.add(d);
+    _decorVec.copy(d.position).sub(camera.position);
+    const distSq = _decorVec.lengthSq();
+    d.visible = distSq < DECOR_FOG_FAR_SQ;
+  }
+  if (!runner.hero) return;
+  _xrayFrame = (_xrayFrame + 1) % 3;
+  if (_xrayFrame === 0) {
+    const heroPos = runner.hero.group.position;
+    _xrayDir.set(heroPos.x, heroPos.y + 0.7, heroPos.z).sub(camera.position).normalize();
+    _xrayRay.set(camera.position, _xrayDir);
+    const heroCamDist = camera.position.distanceTo(heroPos);
+    _xrayRay.far = heroCamDist - 0.4;
+    _xrayHitSet.clear();
+    for (const d of decor) {
+      if (!d.visible) continue;
+      const hits = _xrayRay.intersectObject(d, true);
+      if (hits && hits.length > 0) _xrayHitSet.add(d);
+    }
   }
   for (const d of decor) {
     if (!d.userData) d.userData = {};
-    const target = hitSet.has(d) ? 0.18 : 1.0;
+    const target = _xrayHitSet.has(d) ? 0.18 : 1.0;
     const cur = d.userData._fadeOpacity ?? 1;
     if (Math.abs(target - cur) < 0.005) continue;
     const next = cur + (target - cur) * Math.min(1, dt * 10);
     d.userData._fadeOpacity = next;
+    const needTransparent = next < 0.999;
     d.traverse((o) => {
       if (!o.isMesh || !o.material) return;
       const list = Array.isArray(o.material) ? o.material : [o.material];
       for (const m of list) {
-        if (!m.transparent) m.transparent = true;
+        if (needTransparent && !m.transparent) {
+          m.transparent = true;
+          m.needsUpdate = true;
+        } else if (!needTransparent && m.transparent) {
+          m.transparent = false;
+          m.opacity = 1;
+          m.needsUpdate = true;
+          continue;
+        }
         m.opacity = next;
       }
     });
