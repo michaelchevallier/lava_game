@@ -103,7 +103,7 @@ scene.add(sun);
 const fill = new THREE.HemisphereLight(0xb0e0ff, 0x4a6a3a, 0.55);
 scene.add(fill);
 
-function makeGroundTexture(baseHex, pathCurves) {
+function makeGroundTexture(baseHex, pathCurves, pathInnerHex, pathBorderHex) {
   const hasPaths = pathCurves && pathCurves.length > 0;
   const size = hasPaths ? 2048 : 512;
   const cv = document.createElement("canvas");
@@ -148,6 +148,16 @@ function makeGroundTexture(baseHex, pathCurves) {
     const innerWidthPx = pathWorldWidth * pxPerUnit;
     const borderWidthPx = innerWidthPx + 8;
 
+    const innerHex = pathInnerHex != null ? pathInnerHex : 0x7a4a22;
+    const borderHex = pathBorderHex != null ? pathBorderHex : 0x2a1808;
+    const ir = (innerHex >> 16) & 0xff, ig = (innerHex >> 8) & 0xff, ib = innerHex & 0xff;
+    const br = (borderHex >> 16) & 0xff, bg = (borderHex >> 8) & 0xff, bb = borderHex & 0xff;
+    const innerCss = `rgb(${ir},${ig},${ib})`;
+    const borderCss = `rgb(${br},${bg},${bb})`;
+    const innerLightCss = `rgba(${Math.min(255, ir + 40)},${Math.min(255, ig + 30)},${Math.min(255, ib + 25)},0.35)`;
+    const detailDarkRgb = [Math.max(0, ir - 60), Math.max(0, ig - 50), Math.max(0, ib - 35)];
+    const detailLightRgb = [Math.min(255, ir + 50), Math.min(255, ig + 40), Math.min(255, ib + 30)];
+
     const traceCurve = (pts) => {
       const first = worldToCanvas(pts[0].x, pts[0].z);
       ctx.beginPath();
@@ -166,17 +176,17 @@ function makeGroundTexture(baseHex, pathCurves) {
       ctx.lineJoin = "round";
 
       traceCurve(pts);
-      ctx.strokeStyle = "#2a1808";
+      ctx.strokeStyle = borderCss;
       ctx.lineWidth = borderWidthPx;
       ctx.stroke();
 
       traceCurve(pts);
-      ctx.strokeStyle = "#7a4a22";
+      ctx.strokeStyle = innerCss;
       ctx.lineWidth = innerWidthPx;
       ctx.stroke();
 
       traceCurve(pts);
-      ctx.strokeStyle = "rgba(150, 100, 50, 0.35)";
+      ctx.strokeStyle = innerLightCss;
       ctx.lineWidth = innerWidthPx * 0.55;
       ctx.stroke();
 
@@ -188,18 +198,18 @@ function makeGroundTexture(baseHex, pathCurves) {
         const tx = pts[idx + 1].x - pts[idx].x;
         const tz = pts[idx + 1].z - pts[idx].z;
         const tlen = Math.hypot(tx, tz) || 1;
-        const px = -tz / tlen, pz = tx / tlen;
+        const ppx = -tz / tlen, ppz = tx / tlen;
         const off = (Math.random() * 2 - 1) * detailHalf;
-        const cx = c.cx + px * pxPerUnit * (off / pxPerUnit);
-        const cy = c.cy + pz * pxPerUnit * (off / pxPerUnit);
+        const cx = c.cx + ppx * off;
+        const cy = c.cy + ppz * off;
         const dark = Math.random() < 0.5;
         if (dark) {
-          ctx.fillStyle = `rgba(40, 22, 8, ${0.35 + Math.random() * 0.25})`;
+          ctx.fillStyle = `rgba(${detailDarkRgb[0]},${detailDarkRgb[1]},${detailDarkRgb[2]},${0.35 + Math.random() * 0.25})`;
           ctx.beginPath();
           ctx.arc(cx, cy, 1 + Math.random() * 2, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          ctx.fillStyle = `rgba(170, 120, 70, ${0.18 + Math.random() * 0.18})`;
+          ctx.fillStyle = `rgba(${detailLightRgb[0]},${detailLightRgb[1]},${detailLightRgb[2]},${0.18 + Math.random() * 0.18})`;
           ctx.beginPath();
           ctx.arc(cx, cy, 2 + Math.random() * 4, 0, Math.PI * 2);
           ctx.fill();
@@ -284,10 +294,13 @@ function makeCloudTexture() {
 
 function tickSpawnFog() {}
 
+let currentThemeId = "plaine";
+
 function refreshGroundTexture(baseHex) {
   if (groundMat.map) groundMat.map.dispose();
   const curves = runner ? (runner.paths || [runner.path]).filter(Boolean) : [];
-  groundMat.map = makeGroundTexture(baseHex, curves);
+  const t = getTheme(currentThemeId);
+  groundMat.map = makeGroundTexture(baseHex, curves, t.pathInner, t.pathBorder);
   groundMat.color.setHex(0xffffff);
   groundMat.needsUpdate = true;
 }
@@ -458,6 +471,7 @@ function isOnPath(x, z, runner) {
 }
 
 function applyTheme(themeId) {
+  currentThemeId = themeId;
   const t = getTheme(themeId);
   scene.background = new THREE.Color(t.bg);
   scene.fog = new THREE.Fog(t.fog, 30, 80);
@@ -586,10 +600,7 @@ function rebuildLevelDecor() {
 
   const curves = (runner.paths || [runner.path]).filter(Boolean);
 
-  if (groundMat.map) groundMat.map.dispose();
-  groundMat.map = makeGroundTexture(0x6fc16d, curves);
-  groundMat.map.needsUpdate = true;
-  groundMat.needsUpdate = true;
+  refreshGroundTexture(getTheme(currentThemeId).ground);
 
   for (const p of curves) {
     const entry = p.getPointAt(0);
