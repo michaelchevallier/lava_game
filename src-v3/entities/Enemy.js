@@ -83,7 +83,7 @@ export const ENEMY_TYPES = {
   },
   warlord_boss: {
     hp: 100, speed: 0.55, damage: 35, reward: 120,
-    asset: "soldier", scale: 1.2, walkAnim: "Walk",
+    asset: "wizard", scale: 1.2, walkAnim: "Walk",
     bodyColor: 0xff7a00, isBoss: true,
     summonsMinions: true, summonCooldownMs: 5000, summonType: "runner",
     bossName: "Sorcier de la Forêt",
@@ -520,6 +520,18 @@ export class Enemy {
       this.group.position.y = this.flyHeight + bob;
     }
     this.group.rotation.y = Math.atan2(tangent.x, tangent.z);
+
+    if (!this.isFlyer) {
+      this._dustTimer = (this._dustTimer || 0) - dt;
+      if (this._dustTimer <= 0) {
+        this._dustTimer = 0.25;
+        Particles.emit(
+          { x: this.group.position.x, y: 0.05, z: this.group.position.z },
+          0xc8a878, 1,
+          { speed: 0.4, life: 0.4, scale: 0.18, yLift: 0.1 },
+        );
+      }
+    }
   }
 
   destroy() {

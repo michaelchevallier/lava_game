@@ -94,7 +94,15 @@ export const Audio = {
   sfxHeroShoot()   { tone(820, 0.04, "square", 0.10); },
   sfxTowerShoot()  { sweepTone(680, 380, 0.10, "sawtooth", 0.16); },
   sfxEnemyHit()    { tone(380, 0.04, "sawtooth", 0.14); },
-  sfxEnemyDie()    { noise(0.18, 0.20, 800); tone(180, 0.16, "sawtooth", 0.18); },
+  sfxEnemyDie(tier = "basic") {
+    if (tier === "boss") {
+      noise(0.25, 0.28, 300); tone(160, 0.20, "sawtooth", 0.22); setTimeout(() => tone(100, 0.30, "sawtooth", 0.18), 120); setTimeout(() => tone(60, 0.35, "sawtooth", 0.14), 280);
+    } else if (tier === "brute") {
+      noise(0.15, 0.22, 500); tone(140, 0.18, "sawtooth", 0.20); setTimeout(() => sweepTone(200, 80, 0.20, "sawtooth", 0.16), 80);
+    } else {
+      noise(0.08, 0.18, 1200); tone(320, 0.08, "sawtooth", 0.14);
+    }
+  },
   sfxTowerBuilt()  { seq([{ f: 660, d: 0.10 }, { f: 880, d: 0.10 }, { f: 1175, d: 0.14 }]); },
   sfxWaveStart()   { noise(0.10, 0.22, 200); tone(140, 0.20, "sawtooth", 0.20); },
   sfxCastleHit()   { noise(0.20, 0.30, 300); tone(70, 0.30, "sawtooth", 0.22); },
@@ -105,6 +113,7 @@ export const Audio = {
   sfxAchievement() { seq([{ f: 523, d: 0.10, type: "triangle", g: 0.22 }, { f: 659, d: 0.10, type: "triangle", g: 0.22, delay: 90 }, { f: 784, d: 0.10, type: "triangle", g: 0.22, delay: 180 }, { f: 1046, d: 0.30, type: "triangle", g: 0.26, delay: 280 }]); },
   sfxPerkPick()    { seq([{ f: 783, d: 0.08, type: "triangle", g: 0.18 }, { f: 1175, d: 0.18, type: "triangle", g: 0.20, delay: 70 }]); },
   sfxSkinEquip()   { tone(880, 0.10, "sine", 0.16); setTimeout(() => tone(1175, 0.14, "sine", 0.16), 80); },
+  sfxBoom()        { tone(80, 0.15, "triangle", 0.22); noise(0.10, 0.28, 400); },
   sfxBossCharge()  { sweepTone(60, 220, 0.30, "sawtooth", 0.22); },
   sfxLevelUp()     { seq([{ f: 659, d: 0.10, type: "triangle", g: 0.18 }, { f: 880, d: 0.10, type: "triangle", g: 0.20, delay: 80 }, { f: 1175, d: 0.10, type: "triangle", g: 0.22, delay: 160 }, { f: 1568, d: 0.18, type: "triangle", g: 0.24, delay: 240 }]); },
   sfxWaveClear()   { tone(880, 0.15, "square", 0.18); setTimeout(() => tone(1320, 0.15, "square", 0.18), 160); },

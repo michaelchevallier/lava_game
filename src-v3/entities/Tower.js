@@ -287,6 +287,15 @@ export class Tower {
     if (behavior === "buffAura") return this._tickBuffAura(dt);
     if (behavior === "coinPull") return;
     this.cooldown -= dt * 1000;
+    if (this._recoilTimer > 0) {
+      this._recoilTimer -= dt;
+      if (this._recoilTimer <= 0) {
+        if (this.model) this.model.position.set(0, 0, 0);
+      } else {
+        const offset = -0.08 * (this._recoilTimer / 0.12);
+        if (this.model) this.model.position.set(this._recoilDirX * offset, 0, this._recoilDirZ * offset);
+      }
+    }
 
     let target = null;
     let bestDist = this.range;
@@ -474,7 +483,7 @@ export class Tower {
       0xff7530, 24,
       { speed: 6, life: 0.55, scale: 0.5, yLift: 1.0 },
     );
-    Audio.sfxBoom?.();
+    Audio.sfxBoom();
     this.cooldown = this.cfg.cooldownMs || 8000;
   }
 
@@ -556,6 +565,9 @@ export class Tower {
       this.projectiles.push(projData);
     }
     Audio.sfxTowerShoot();
+    this._recoilTimer = 0.12;
+    this._recoilDirX = baseDirX;
+    this._recoilDirZ = baseDirZ;
   }
 
   destroy() {
