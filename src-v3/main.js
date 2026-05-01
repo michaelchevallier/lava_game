@@ -91,7 +91,7 @@ window.addEventListener("resize", resize);
 const sun = new THREE.DirectionalLight(0xfff4d6, 1.4);
 sun.position.set(15, 25, 10);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(1024, 1024);
 sun.shadow.camera.left = -25;
 sun.shadow.camera.right = 25;
 sun.shadow.camera.top = 25;
@@ -1288,6 +1288,7 @@ function refreshRadialButtons() {
   }
 }
 
+let _lastRingTower = null;
 function updateRadialMenu() {
   if (_radialPendingUndo) {
     _radialPendingTimer -= 1 / 60;
@@ -1297,6 +1298,12 @@ function updateRadialMenu() {
     }
   }
   const onBp = runner._heroOnBuildPoint;
+  const nearTower = onBp?.tower || null;
+  if (nearTower !== _lastRingTower) {
+    if (_lastRingTower) _lastRingTower.showRangeRing(false);
+    if (nearTower) nearTower.showRangeRing(true);
+    _lastRingTower = nearTower;
+  }
   if (onBp && onBp.occupied) {
     if (_radialOpenBp !== onBp) openRadial(onBp);
   } else if (_radialOpenBp) {
@@ -2272,13 +2279,15 @@ function tick() {
   runner.tick(dt);
   tickBluePill(dt);
   Particles.tick(dt);
-  for (const s of _cloudSprites) {
-    if (!s.visible) continue;
-    s.position.x += s.userData.driftSpeed * dt;
-    if (s.position.x > MAP_HALF + 20) s.position.x = -MAP_HALF - 20;
+  if (runner.gameSpeed <= 3) {
+    for (const s of _cloudSprites) {
+      if (!s.visible) continue;
+      s.position.x += s.userData.driftSpeed * dt;
+      if (s.position.x > MAP_HALF + 20) s.position.x = -MAP_HALF - 20;
+    }
   }
   tickPortals(performance.now() * 0.001);
-  tickWeather(performance.now() * 0.001);
+  if (!document.hidden) tickWeather(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
   SHAKE_OFFSET.copy(shake);
   refreshHUD();

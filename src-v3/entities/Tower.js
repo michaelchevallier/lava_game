@@ -275,14 +275,19 @@ export class Tower {
     }
     const r = this.range;
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(r - 0.05, r, 48),
-      new THREE.MeshBasicMaterial({ color: 0x66ddff, opacity: 0.12, transparent: true, side: THREE.DoubleSide, depthWrite: false }),
+      new THREE.RingGeometry(r - 0.05, r, 32),
+      new THREE.MeshBasicMaterial({ color: 0x66ddff, opacity: 0.18, transparent: true, side: THREE.DoubleSide, depthWrite: false }),
     );
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.03;
     ring.renderOrder = 3;
+    ring.visible = false;
     this.group.add(ring);
     this._rangeRing = ring;
+  }
+
+  showRangeRing(visible) {
+    if (this._rangeRing) this._rangeRing.visible = visible;
   }
 
   tick(dt, enemies, towers = null) {
@@ -460,10 +465,10 @@ export class Tower {
       this.model.rotation.y += 8 * dt;
       this._pushVfxT = (this._pushVfxT || 0) - dt;
       if (this._pushVfxT <= 0) {
-        this._pushVfxT = 0.18;
+        this._pushVfxT = 0.35;
         Particles.emit(
           { x: myPos.x, y: 1.0, z: myPos.z },
-          0xa8e0ff, 3,
+          0xa8e0ff, 2,
           { speed: 5, life: 0.35, scale: 0.25, yLift: 0.2 },
         );
       }
@@ -537,8 +542,8 @@ export class Tower {
     }
     this._frostVfxT = (this._frostVfxT || 0) - dt;
     if (this._frostVfxT <= 0) {
-      this._frostVfxT = any ? 0.25 : 0.6;
-      const intensity = any ? 4 : 1;
+      this._frostVfxT = any ? 0.4 : 1.0;
+      const intensity = any ? 3 : 1;
       Particles.emit(
         { x: myPos.x + (Math.random() - 0.5) * 0.6, y: 0.4, z: myPos.z + (Math.random() - 0.5) * 0.6 },
         0xc0e8ff, intensity,

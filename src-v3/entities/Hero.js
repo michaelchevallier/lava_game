@@ -253,16 +253,20 @@ export class Hero {
     }
 
     const projColor = this.fireball ? 0xff7530 : (this.ricochet ? 0x66ddff : (this.pierceExplode ? 0xff44aa : 0xfff4d6));
+    this._trailFrame = ((this._trailFrame || 0) + 1) % 2;
+    const emitTrail = this._trailFrame === 0;
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
       p.life -= dt;
       p.mesh.position.x += p.dir.x * PROJ_SPEED * dt;
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
-      Particles.emit(
-        { x: p.mesh.position.x, y: p.mesh.position.y, z: p.mesh.position.z },
-        projColor, 1,
-        { speed: 0, life: 0.2, scale: 0.15, yLift: 0 },
-      );
+      if (emitTrail) {
+        Particles.emit(
+          { x: p.mesh.position.x, y: p.mesh.position.y, z: p.mesh.position.z },
+          projColor, 1,
+          { speed: 0, life: 0.2, scale: 0.15, yLift: 0 },
+        );
+      }
       let consumed = false;
       let hitTarget = null;
       for (const e of enemies) {

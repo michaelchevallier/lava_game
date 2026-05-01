@@ -371,7 +371,7 @@ export class LevelRunner {
         else if (e.isBoss) vfxColor = 0xffd700;
         else if (e.hpMax >= 12) vfxColor = 0xff8030;
         else vfxColor = 0xffffff;
-        const burstCount = e.isBoss ? 40 : 24;
+        const burstCount = e.isBoss ? 28 : 14;
         Particles.emit(
           { x: e.group.position.x, y: e.group.position.y + 0.5, z: e.group.position.z },
           vfxColor,
@@ -517,7 +517,7 @@ export class LevelRunner {
     Particles.emit(
       { x: entry.x, y: 0.5, z: entry.z },
       cfg.isBoss ? 0xffaa00 : 0xb088ff,
-      cfg.isBoss ? 30 : 12,
+      cfg.isBoss ? 20 : 6,
       { speed: 4, life: 0.5, scale: 0.45, yLift: 1.5 },
     );
     this.enemies.push(e);

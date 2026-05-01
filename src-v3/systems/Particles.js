@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const POOL_SIZE = 300;
+const POOL_SIZE = 500;
 const TEXTURE_SIZE = 64;
 
 let scene = null;

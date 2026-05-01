@@ -11,24 +11,34 @@ import { JuiceFX } from "../systems/JuiceFX.js";
 const HIT_FLASH_DURATION = 0.09;
 const POPUP_LIFE = 0.5;
 
-let _popupCanvasCache = null;
+const _dmgTexCache = new Map();
+const _dmgCanvas = document.createElement("canvas");
+_dmgCanvas.width = 96;
+_dmgCanvas.height = 48;
+
 function makeDamageSprite(value) {
-  if (!_popupCanvasCache) _popupCanvasCache = document.createElement("canvas");
-  const canvas = document.createElement("canvas");
-  canvas.width = 96;
-  canvas.height = 48;
-  const ctx = canvas.getContext("2d");
-  const text = `-${Math.round(value)}`;
-  ctx.font = "bold 36px sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = "rgba(0,0,0,0.85)";
-  ctx.strokeText(text, 48, 24);
-  ctx.fillStyle = "#fff2a8";
-  ctx.fillText(text, 48, 24);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const key = Math.round(value);
+  let tex = _dmgTexCache.get(key);
+  if (!tex) {
+    const ctx = _dmgCanvas.getContext("2d");
+    ctx.clearRect(0, 0, 96, 48);
+    const text = `-${key}`;
+    ctx.font = "bold 36px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "rgba(0,0,0,0.85)";
+    ctx.strokeText(text, 48, 24);
+    ctx.fillStyle = "#fff2a8";
+    ctx.fillText(text, 48, 24);
+    const offscreen = document.createElement("canvas");
+    offscreen.width = 96;
+    offscreen.height = 48;
+    offscreen.getContext("2d").drawImage(_dmgCanvas, 0, 0);
+    tex = new THREE.CanvasTexture(offscreen);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    _dmgTexCache.set(key, tex);
+  }
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(1.2, 0.6, 1);
@@ -533,7 +543,7 @@ export class Enemy {
     if (!this.isFlyer) {
       this._dustTimer = (this._dustTimer || 0) - dt;
       if (this._dustTimer <= 0) {
-        this._dustTimer = 0.25;
+        this._dustTimer = 0.5;
         Particles.emit(
           { x: this.group.position.x, y: 0.05, z: this.group.position.z },
           0xc8a878, 1,
