@@ -341,6 +341,14 @@ const THEME_PALETTE = {
     feature: ["nature_rock1", "nature_rock3"],
     bigCount: 14, mediumCount: 20, smallCount: 22, rockCount: 22,
   },
+  foire: {
+    big: ["nature_commontree1", "nature_commontree2"],
+    medium: ["nature_bushflower", "nature_bush"],
+    small: ["nature_flower3", "nature_flower4", "nature_mushroom"],
+    rocks: ["nature_pebble1", "nature_pebble2"],
+    feature: ["nature_commontree1", "nature_bushflower"],
+    bigCount: 16, mediumCount: 18, smallCount: 30, rockCount: 8,
+  },
 };
 
 function _hashLevelId(id) {
@@ -1425,6 +1433,14 @@ document.addEventListener("crowdef:wave-cleared", (e) => {
     bannerEl.classList.add("show");
     setTimeout(() => bannerEl.classList.remove("show"), 1200);
   }
+});
+document.addEventListener("crowdef:endless-tier-reached", (e) => {
+  const { wave, gems } = e.detail;
+  const total = SaveSystem.addGems(gems);
+  spawnToast(`Palier vague ${wave} !`, `+${gems} 💎 (total : ${total})`);
+  spawnGemsPopup(gems);
+  Audio.sfxGemGain();
+  ui.gems.textContent = total;
 });
 document.addEventListener("crowdef:level-won", () => {
   MusicManager.play("menu");
