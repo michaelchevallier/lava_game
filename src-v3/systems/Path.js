@@ -8,13 +8,13 @@ const DEFAULT_POINTS = [
 export function buildPath(rawPoints) {
   const src = rawPoints || DEFAULT_POINTS;
   const points = src.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
-  return new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.5);
+  return new THREE.CatmullRomCurve3(points, false, "centripetal", 0.5);
 }
 
 function buildRibbon(curve, halfWidth, yOffset, samples = null) {
   if (samples == null) {
     const len = curve.getLength();
-    samples = Math.max(80, Math.min(2000, Math.floor(len * 1.5)));
+    samples = Math.max(120, Math.min(3000, Math.floor(len * 4)));
   }
   const samplesArr = curve.getSpacedPoints(samples);
   const positions = [];
@@ -159,10 +159,15 @@ export function makePathLine(curve, mat, opts = {}) {
   const innerColor = opts.innerColor != null ? opts.innerColor : 0xffffff;
   const borderColor = opts.borderColor != null ? opts.borderColor : 0x3a200a;
 
-  const borderHalf = 4.5;
-  const innerHalf = 3.8;
-  const borderMat = new THREE.MeshBasicMaterial({ color: borderColor });
-  const borderGeom = buildRibbon(curve, borderHalf, 0.04);
+  const borderHalf = 2.1;
+  const innerHalf = 1.7;
+  const borderMat = new THREE.MeshBasicMaterial({
+    color: borderColor,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -4,
+  });
+  const borderGeom = buildRibbon(curve, borderHalf, 0.02);
   const borderMesh = new THREE.Mesh(borderGeom, borderMat);
   borderMesh.renderOrder = 1;
   group.add(borderMesh);
@@ -170,8 +175,11 @@ export function makePathLine(curve, mat, opts = {}) {
   const innerMat = new THREE.MeshBasicMaterial({
     map: makePathTexture(),
     color: innerColor,
+    polygonOffset: true,
+    polygonOffsetFactor: -3,
+    polygonOffsetUnits: -6,
   });
-  const innerGeom = buildRibbon(curve, innerHalf, 0.06);
+  const innerGeom = buildRibbon(curve, innerHalf, 0.04);
   const innerMesh = new THREE.Mesh(innerGeom, innerMat);
   innerMesh.renderOrder = 2;
   group.add(innerMesh);
