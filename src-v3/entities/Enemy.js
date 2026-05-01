@@ -106,7 +106,7 @@ export const ENEMY_TYPES = {
     bodyColor: 0xff3a10, isFiery: true,
   },
   dragon_boss: {
-    hp: 180, speed: 0.5, damage: 50, reward: 200,
+    hp: 130, speed: 0.5, damage: 50, reward: 200,
     asset: "wizard", scale: 1.5, walkAnim: "Walk",
     bodyColor: 0xff3a10, isBoss: true, isFlyer: true, flyHeight: 2.0,
     aoeBlastMs: 6000, aoeBlastRadius: 5.0, aoeBlastDamage: 35,
@@ -415,6 +415,15 @@ export class Enemy {
           detail: { type: this.summonType, x: this.group.position.x, z: this.group.position.z, t: this.t },
         }));
       }
+    }
+
+    if (this.type === "dragon_boss" && !this._enraged && this.hp <= 60) {
+      this._enraged = true;
+      this.speed *= 1.4;
+      this.summonCooldownMs *= 0.6;
+      document.dispatchEvent(new CustomEvent("crowdef:boss-phase", {
+        detail: { name: "Dragon enragé" },
+      }));
     }
 
     let effSpeed = this.speed;

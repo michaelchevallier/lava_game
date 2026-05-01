@@ -7,8 +7,8 @@ export default {
   ...mergeY(),
   waves: {
     list: [
-      { types: { runner: 12, flyer: 6, brute: 3 }, spawnRateMs: 500, breakMs: 4000 },
-      { types: { basic: 10, runner: 12, flyer: 8 }, spawnRateMs: 470, breakMs: 4000 },
+      { types: { runner: 18, brute: 3 }, spawnRateMs: 500, breakMs: 4000 },
+      { types: { basic: 10, runner: 20 }, spawnRateMs: 470, breakMs: 4000 },
       { types: { flyer: 14, runner: 10, brute: 5 }, spawnRateMs: 440, breakMs: 4000 },
       { types: { runner: 14, flyer: 10, shielded: 6 }, spawnRateMs: 420, breakMs: 4500 },
       { types: { flyer: 14, brute: 7, shielded: 6 }, spawnRateMs: 400, breakMs: 0 },

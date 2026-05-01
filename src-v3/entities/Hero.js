@@ -75,15 +75,26 @@ export class Hero {
     this.moveSpeedMul = 1;
     this.coinGainMul = 1;
     this.critChance = 0;
+    this.critMul = 2;
+    this.critStaggerMs = 0;
     this.multiShot = 0;
     this.pierceCount = 0;
     this.lifesteal = 0;
     this.waveRegen = 0;
+    this.moveAttackPierceBonus = 0;
     this.xpMul = 1;
     this.fireball = false;
+    this.fireballRadius = 2;
+    this.fireballDmgMul = 0.7;
     this.ricochet = false;
+    this.ricochetBounces = 3;
+    this.ricochetDecay = 0.8;
     this.lightning = false;
+    this.lightningTargets = 1;
+    this.lightningDmgMul = 0.6;
     this.pierceExplode = false;
+    this.pierceExplodeRadius = 1.5;
+    this.pierceExplodeDmgMul = 0.5;
   }
 
   applyMetaBonuses(bonuses) {
@@ -125,16 +136,35 @@ export class Hero {
     if (perk.fireRate != null) this.fireRateMul *= 1 - perk.fireRate;
     if (perk.damage != null) this.damageMul *= 1 + perk.damage;
     if (perk.moveSpeed != null) this.moveSpeedMul *= 1 + perk.moveSpeed;
+    if (perk.moveAttackPierceBonus != null) this.moveAttackPierceBonus += perk.moveAttackPierceBonus;
     if (perk.coinGain != null) this.coinGainMul *= 1 + perk.coinGain;
     if (perk.critChance != null) this.critChance += perk.critChance;
+    if (perk.critMul != null) this.critMul = perk.critMul;
+    if (perk.critStaggerMs != null) this.critStaggerMs = perk.critStaggerMs;
     if (perk.multiShot) this.multiShot += perk.multiShot;
     if (perk.pierceCount) this.pierceCount += perk.pierceCount;
     if (perk.lifesteal) this.lifesteal += perk.lifesteal;
     if (perk.waveRegen) this.waveRegen += perk.waveRegen;
-    if (perk.fireball) this.fireball = true;
-    if (perk.ricochet) this.ricochet = true;
-    if (perk.lightning) this.lightning = true;
-    if (perk.pierceExplode) this.pierceExplode = true;
+    if (perk.fireball) {
+      this.fireball = true;
+      if (perk.fireballRadius != null) this.fireballRadius = perk.fireballRadius;
+      if (perk.fireballDmgMul != null) this.fireballDmgMul = perk.fireballDmgMul;
+    }
+    if (perk.ricochet) {
+      this.ricochet = true;
+      if (perk.ricochetBounces != null) this.ricochetBounces = perk.ricochetBounces;
+      if (perk.ricochetDecay != null) this.ricochetDecay = perk.ricochetDecay;
+    }
+    if (perk.lightning) {
+      this.lightning = true;
+      if (perk.lightningTargets != null) this.lightningTargets = perk.lightningTargets;
+      if (perk.lightningDmgMul != null) this.lightningDmgMul = perk.lightningDmgMul;
+    }
+    if (perk.pierceExplode) {
+      this.pierceExplode = true;
+      if (perk.pierceExplodeRadius != null) this.pierceExplodeRadius = perk.pierceExplodeRadius;
+      if (perk.pierceExplodeDmgMul != null) this.pierceExplodeDmgMul = perk.pierceExplodeDmgMul;
+    }
   }
 
   _buildFallback() {
@@ -229,9 +259,15 @@ export class Hero {
         }
       }
       if (hitTarget) {
-        const baseDmg = DAMAGE * this.damageMul * (Math.random() < this.critChance ? 2 : 1);
+        const isCrit = Math.random() < this.critChance;
+        const critMul = isCrit ? this.critMul : 1;
+        const baseDmg = DAMAGE * this.damageMul * critMul * (p._ricochetDmgMul != null ? p._ricochetDmgMul : 1);
+        if (isCrit && this.critStaggerMs > 0) {
+          const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+          hitTarget._frozenUntil = Math.max(hitTarget._frozenUntil || 0, now + this.critStaggerMs);
+        }
         if (p._aoeOnHit) {
-          this._aoeBlast(p.mesh.position, 2.0, baseDmg * 0.7, enemies);
+          this._aoeBlast(p.mesh.position, this.fireballRadius, baseDmg * this.fireballDmgMul, enemies);
           consumed = true;
         } else {
           hitTarget.takeDamage(baseDmg, p.mesh.position);
@@ -240,6 +276,7 @@ export class Hero {
             const next = this._findRicochetTarget(hitTarget, enemies, p._hitSet, 4.0);
             if (next) {
               p._ricochetLeft -= 1;
+              p._ricochetDmgMul = (p._ricochetDmgMul != null ? p._ricochetDmgMul : 1) * this.ricochetDecay;
               const ndx = next.group.position.x - hitTarget.group.position.x;
               const ndz = next.group.position.z - hitTarget.group.position.z;
               const nlen = Math.hypot(ndx, ndz) || 1;
@@ -260,7 +297,7 @@ export class Hero {
         }
       }
       if (consumed && p._explodeOnConsume) {
-        this._aoeBlast(p.mesh.position, 1.5, DAMAGE * this.damageMul * 0.5, enemies);
+        this._aoeBlast(p.mesh.position, this.pierceExplodeRadius, DAMAGE * this.damageMul * this.pierceExplodeDmgMul, enemies);
       }
       if (consumed || p.life <= 0) {
         this.scene.remove(p.mesh);
@@ -313,14 +350,22 @@ export class Hero {
       if (dx * dx + dz * dz < range * range) candidates.push(e);
     }
     if (!candidates.length) return;
-    const target = candidates[Math.floor(Math.random() * candidates.length)];
-    const dmg = DAMAGE * this.damageMul * 0.6;
-    target.takeDamage(dmg, target.group.position);
-    Particles.emit(
-      { x: target.group.position.x, y: target.group.position.y + 1.2, z: target.group.position.z },
-      0xa8e0ff, 12,
-      { speed: 6, life: 0.3, scale: 0.32, yLift: -1.0 },
-    );
+    const dmg = DAMAGE * this.damageMul * this.lightningDmgMul;
+    const count = Math.min(this.lightningTargets, candidates.length);
+    const shuffled = [...candidates];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    for (let i = 0; i < count; i++) {
+      const target = shuffled[i];
+      target.takeDamage(dmg, target.group.position);
+      Particles.emit(
+        { x: target.group.position.x, y: target.group.position.y + 1.2, z: target.group.position.z },
+        0xa8e0ff, 12,
+        { speed: 6, life: 0.3, scale: 0.32, yLift: -1.0 },
+      );
+    }
   }
 
   _fire(target) {
@@ -348,12 +393,14 @@ export class Hero {
       proj.position.copy(start);
       this.scene.add(proj);
 
+      const movePierceBonus = (this.moveAttackPierceBonus > 0 && this.moveDir.lengthSq() > 0.01) ? this.moveAttackPierceBonus : 0;
       this.projectiles.push({
         mesh: proj,
         dir: new THREE.Vector3(dx, 0, dz),
         life: 1.4,
-        _pierceLeft: this.pierceCount,
-        _ricochetLeft: this.ricochet ? 3 : 0,
+        _pierceLeft: this.pierceCount + movePierceBonus,
+        _ricochetLeft: this.ricochet ? this.ricochetBounces : 0,
+        _ricochetDmgMul: 1,
         _aoeOnHit: this.fireball,
         _explodeOnConsume: this.pierceExplode,
         _hitSet: new Set(),

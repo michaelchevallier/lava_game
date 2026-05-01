@@ -43,7 +43,7 @@ export const TOWER_TYPES = {
     synergies: [{ type: "crossEffect", from: "frost", effect: { slowOnHit: { mul: 0.5, durMs: 2000 } }, range: 4 }],
   },
   fan: {
-    range: 5, fireRateMs: 0, damage: 0, projColor: 0xa8e0ff, projSpeed: 0,
+    range: 5, fireRateMs: 0, damage: 0.5, projColor: 0xa8e0ff, projSpeed: 0,
     asset: "tower_fan", scale: 0.8, label: "Soufflerie", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "push", pushStrength: 0.07,
     cost: 70, icon: "🌀", unlockWorld: 3,
@@ -56,7 +56,7 @@ export const TOWER_TYPES = {
     range: 3, fireRateMs: 0, damage: 0, projColor: 0xc0e8ff, projSpeed: 0,
     asset: "tower_frost", scale: 0.7, label: "Glacier", aoe: 0, pierce: 0,
     fallbackColor: 0x88ccee, behavior: "slow", slowMul: 0.5, slowDurationMs: 4000,
-    cost: 80, icon: "❄️", unlockWorld: 3,
+    cost: 60, icon: "❄️", unlockWorld: 3,
     synergies: [{ type: "applyToEnemy", filter: {}, effect: { slow: { mul: 0.5, durMs: 4000 } }, range: 3 }],
   },
   crossbow: {
@@ -187,9 +187,12 @@ export class Tower {
       this.range = base.range * 1.4;
       if (this.type === "archer") this.multiShot = 1;
       else if (this.type === "mage") this.aoe = 2.5;
-      else if (this.type === "tank") this.pierce = 1;
+      else if (this.type === "tank") this.pierce = 2;
       else if (this.type === "ballista") this.pierce = 4;
       else if (this.type === "skyguard") { this.aoe = 2.5; this.fireRateMs = 450; this.pierce = 0; }
+      else if (this.type === "cannon") this._barrageCount = 2;
+      else if (this.type === "crossbow") this._finalExplosion = { aoe: 2, dmg: base.damage * 2.5 };
+      else if (this.type === "mine") this._chainExplosion = true;
     }
     let assetKey = base.asset;
     if (level === 2) assetKey = base.asset + "_l2";
@@ -282,6 +285,11 @@ export class Tower {
     if (target && this.cooldown <= 0) {
       this.cooldown = this.fireRateMs;
       this._fire(target);
+      if (this._barrageCount > 1) {
+        for (let b = 1; b < this._barrageCount; b++) {
+          this._fireAngled(target, b * 10);
+        }
+      }
     }
 
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -307,7 +315,12 @@ export class Tower {
             if (!p._hitSet) p._hitSet = new Set();
             p._hitSet.add(e);
             p._pierceLeft = (p._pierceLeft ?? this.pierce) - 1;
-            if (p._pierceLeft <= 0) consumed = true;
+            if (p._pierceLeft <= 0) {
+              if (this._finalExplosion) {
+                this._aoeExplode(p.mesh.position, this._finalExplosion.aoe, this._finalExplosion.dmg, enemies);
+              }
+              consumed = true;
+            }
           } else {
             consumed = true;
           }
@@ -394,12 +407,19 @@ export class Tower {
     const r2 = this.range * this.range;
     const myPos = this.group.position;
     let any = false;
+    this._pushDmgT = (this._pushDmgT || 0) - dt;
     for (const e of enemies) {
       if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
-      if (dx * dx + dz * dz < r2) { any = true; break; }
+      if (dx * dx + dz * dz < r2) {
+        any = true;
+        if (this.damage > 0 && this._pushDmgT <= 0) {
+          this._dealDamage(e, this.damage, myPos);
+        }
+      }
     }
+    if (this._pushDmgT <= 0) this._pushDmgT = 0.5;
     if (this.model && any) {
       this.model.rotation.y += 8 * dt;
       this._pushVfxT = (this._pushVfxT || 0) - dt;
@@ -441,11 +461,15 @@ export class Tower {
     }
     if (inRange < (this.cfg.clusterCount || 3)) return;
     const aoe2 = (this.cfg.aoe || 2.5) * (this.cfg.aoe || 2.5);
+    const chainTargets = [];
     for (const e of enemies) {
       if (e.dead || e._dying) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
-      if (dx * dx + dz * dz <= aoe2) this._dealDamage(e, this.cfg.damage || 8, this.group.position);
+      if (dx * dx + dz * dz <= aoe2) {
+        this._dealDamage(e, this.cfg.damage || 8, this.group.position);
+        chainTargets.push(e);
+      }
     }
     Particles.emit(
       { x: myPos.x, y: 0.6, z: myPos.z },
@@ -453,6 +477,15 @@ export class Tower {
       { speed: 6, life: 0.55, scale: 0.5, yLift: 1.0 },
     );
     Audio.sfxBoom?.();
+    if (this._chainExplosion && chainTargets.length > 0) {
+      const chainSnap = chainTargets.slice(0, 2).map((e) => ({ x: e.group.position.x, z: e.group.position.z }));
+      const chainDmg = (this.cfg.damage || 8) * (this._buffMul || 1);
+      setTimeout(() => {
+        for (const pos of chainSnap) {
+          this._aoeExplode({ x: pos.x, y: 0.5, z: pos.z }, 1.5, chainDmg, enemies);
+        }
+      }, 800);
+    }
     this.cooldown = this.cfg.cooldownMs || 8000;
   }
 
@@ -479,6 +512,56 @@ export class Tower {
   }
 
   _tickBuffAura(_dt) {
+  }
+
+  _aoeExplode(center, radius, dmg, enemies) {
+    const r2 = radius * radius;
+    for (const e of enemies) {
+      if (e.dead || e._dying) continue;
+      const dx = e.group.position.x - center.x;
+      const dz = e.group.position.z - center.z;
+      if (dx * dx + dz * dz <= r2) this._dealDamage(e, dmg, center);
+    }
+    Particles.emit(
+      { x: center.x, y: center.y || 0.5, z: center.z },
+      0xff7530, 16,
+      { speed: 5, life: 0.45, scale: 0.45, yLift: 0.8 },
+    );
+  }
+
+  _fireAngled(target, angleDeg) {
+    const start = new THREE.Vector3().copy(this.group.position);
+    start.y = 1.45;
+    const baseTx = target.group.position.x - start.x;
+    const baseTz = target.group.position.z - start.z;
+    const baseLen = Math.hypot(baseTx, baseTz) || 1;
+    const angle = angleDeg * Math.PI / 180;
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const dx = (baseTx / baseLen) * cos - (baseTz / baseLen) * sin;
+    const dz = (baseTx / baseLen) * sin + (baseTz / baseLen) * cos;
+
+    const proj = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 10, 10),
+      new THREE.MeshBasicMaterial({ color: this.cfg.projColor }),
+    );
+    proj.position.copy(start);
+    this.scene.add(proj);
+
+    const projData = {
+      mesh: proj,
+      dir: new THREE.Vector3(dx, 0, dz),
+      life: this.range / this.cfg.projSpeed * 1.4,
+      _pierceLeft: this.pierce + (this._pierceBonus || 0),
+    };
+    if (this.cfg.parabolic) {
+      const dist = Math.hypot(target.group.position.x - start.x, target.group.position.z - start.z);
+      projData._arc = true;
+      projData._arcT = 0;
+      projData._arcStartY = start.y;
+      projData._arcPeak = start.y + Math.min(4.5, dist * 0.35);
+      projData._arcDuration = dist / this.cfg.projSpeed;
+    }
+    this.projectiles.push(projData);
   }
 
   _fire(target) {
