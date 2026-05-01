@@ -475,6 +475,11 @@ function applyTheme(themeId) {
   const t = getTheme(themeId);
   scene.background = new THREE.Color(t.bg);
   scene.fog = new THREE.Fog(t.fog, 30, 80);
+  sun.color.setHex(t.sunColor);
+  sun.intensity = t.sunIntensity;
+  fill.color.setHex(t.fillSky);
+  fill.groundColor.setHex(t.fillGround);
+  fill.intensity = t.fillIntensity;
   refreshGroundTexture(t.ground);
   dirtMat.color.setHex(t.dirt);
   clearDecor();

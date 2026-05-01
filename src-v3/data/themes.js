@@ -8,6 +8,11 @@ export const THEMES = {
     treeLeaves: 0x2f8a3a,
     pathInner: 0xe5c89a,
     pathBorder: 0xa07840,
+    sunColor: 0xfff4d6,
+    sunIntensity: 1.4,
+    fillSky: 0xb0e0ff,
+    fillGround: 0x4a6a3a,
+    fillIntensity: 0.55,
   },
   foret: {
     bg: 0x2c4a32,
@@ -18,6 +23,11 @@ export const THEMES = {
     treeLeaves: 0x1a4a22,
     pathInner: 0xd4b888,
     pathBorder: 0x6a4a2a,
+    sunColor: 0x9bc8a8,
+    sunIntensity: 0.9,
+    fillSky: 0x4a6a5a,
+    fillGround: 0x1a2a18,
+    fillIntensity: 0.7,
   },
   desert: {
     bg: 0xd4a868,
@@ -28,6 +38,11 @@ export const THEMES = {
     treeLeaves: 0xa8a050,
     pathInner: 0xf0d8a0,
     pathBorder: 0x9a6830,
+    sunColor: 0xffd9a0,
+    sunIntensity: 1.6,
+    fillSky: 0xffe8c0,
+    fillGround: 0x8a6030,
+    fillIntensity: 0.4,
   },
   volcan: {
     bg: 0x4a1a0a,
@@ -38,6 +53,11 @@ export const THEMES = {
     treeLeaves: 0x6a2010,
     pathInner: 0xc88858,
     pathBorder: 0x6a3010,
+    sunColor: 0xff8050,
+    sunIntensity: 1.0,
+    fillSky: 0x4a2010,
+    fillGround: 0x1a0808,
+    fillIntensity: 0.75,
   },
 };
 
