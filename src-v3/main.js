@@ -1675,10 +1675,6 @@ window.addEventListener("keydown", (e) => {
     if (ui.worldmap.classList.contains("show")) closeWorldMap();
     else showWorldMap();
   }
-  if (e.code === "KeyU" && !e.repeat) {
-    if (ui.shop.classList.contains("show")) closeShop();
-    else showShop();
-  }
 });
 
 function renderShop() {
