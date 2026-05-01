@@ -564,10 +564,13 @@
     <div id="combo-tracker" style="position: fixed; right: 18px; bottom: 96px; display: flex; flex-direction: column; gap: 4px; z-index: 19; pointer-events: none;"></div>
 
     <div id="radial-menu">
-      <button class="radial-btn" data-radial="upgrade" style="left:0;top:-70px;"><span class="lbl">↑</span>⬆️</button>
-      <button class="radial-btn" data-radial="info" style="left:-65px;top:35px;"><span class="lbl">Info</span>📊</button>
-      <button class="radial-btn" data-radial="sell" style="left:65px;top:35px;"><span class="lbl">+</span>💰</button>
+      <button class="radial-btn" data-radial="upgrade" style="left:0;top:-70px;"><span class="hk">U</span><span class="lbl">↑</span>⬆️</button>
+      <button class="radial-btn" data-radial="info" style="left:-65px;top:35px;"><span class="hk">I</span><span class="lbl">Info</span>📊</button>
+      <button class="radial-btn" data-radial="sell" style="left:65px;top:35px;"><span class="hk">V</span><span class="lbl">+</span>💰</button>
     </div>
+    <style>
+      .radial-btn .hk { position: absolute; top: -6px; right: -6px; background: #1d2a36; border: 2px solid #ffd23f; color: #ffd23f; font-size: 11px; font-weight: 800; padding: 1px 5px; border-radius: 8px; line-height: 1; }
+    </style>
 
     <div id="sell-toast"><span id="sell-toast-msg">Tour vendue</span><button id="sell-undo-btn">Annuler</button></div>
 

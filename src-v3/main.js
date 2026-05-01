@@ -612,6 +612,20 @@ window.addEventListener("keydown", (e) => {
     else startBluePill();
     return;
   }
+  if (_radialOpenBp && !e.repeat) {
+    if (e.code === "KeyU") {
+      radialEl?.querySelector('[data-radial="upgrade"]')?.click();
+      return;
+    }
+    if (e.code === "KeyI") {
+      radialEl?.querySelector('[data-radial="info"]')?.click();
+      return;
+    }
+    if (e.code === "KeyV") {
+      radialEl?.querySelector('[data-radial="sell"]')?.click();
+      return;
+    }
+  }
   // Tower selection 1-9, 0=10ème, Minus=11ème
   const trySelect = (idx) => {
     const type = TOWER_HOTKEYS[idx];
