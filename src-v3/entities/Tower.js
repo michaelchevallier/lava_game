@@ -89,17 +89,17 @@ export const TOWER_TYPES = {
       { type: "crossEffect", from: "tank", effect: { pullToTank: true }, range: 4 },
     ],
   },
-  aaa: {
+  skyguard: {
     range: 12, fireRateMs: 600, damage: 4, projColor: 0x88ccff, projSpeed: 28,
-    asset: "tower_aaa", scale: 0.7, label: "DCA", aoe: 0, pierce: 0,
+    asset: "tower_aaa", scale: 0.7, label: "Garde-Ciel", aoe: 0, pierce: 0,
     fallbackColor: 0x4a6aaa,
     cost: 85, icon: "🚀", unlockWorld: 3,
-    flyerOnly: true, flyerDmgMul: 2,
+    flyerOnly: true, flyerDmgMul: 1.5,
     synergies: [{ type: "crossEffect", from: "frost", effect: { freezeOnHit: { durMs: 800 } }, range: 4 }],
   },
 };
 
-export const TOWER_ORDER = ["archer", "tank", "mage", "ballista", "mine", "cannon", "fan", "frost", "crossbow", "portal", "magnet", "aaa"];
+export const TOWER_ORDER = ["archer", "tank", "mage", "ballista", "mine", "cannon", "fan", "frost", "crossbow", "portal", "magnet", "skyguard"];
 
 export class Tower {
   constructor(scene, position, type = "archer") {
@@ -178,7 +178,7 @@ export class Tower {
     if (level === 2) {
       this.damage = base.damage * 1.5;
       this.range = base.range * 1.2;
-      if (this.type === "aaa") {
+      if (this.type === "skyguard") {
         this.pierce = 3;
         this.fireRateMs = 500;
       }
@@ -189,7 +189,7 @@ export class Tower {
       else if (this.type === "mage") this.aoe = 2.5;
       else if (this.type === "tank") this.pierce = 1;
       else if (this.type === "ballista") this.pierce = 4;
-      else if (this.type === "aaa") { this.aoe = 2.5; this.fireRateMs = 450; this.pierce = 0; }
+      else if (this.type === "skyguard") { this.aoe = 2.5; this.fireRateMs = 450; this.pierce = 0; }
     }
     let assetKey = base.asset;
     if (level === 2) assetKey = base.asset + "_l2";
@@ -378,7 +378,7 @@ export class Tower {
   _dealDamage(enemy, dmg, origin) {
     if (enemy._dying || enemy.dead) return;
     const buffed = dmg * (this._buffMul || 1);
-    const finalDmg = (this.cfg.flyerDmgMul && enemy.isFlyer) ? buffed * this.cfg.flyerDmgMul : buffed;
+    const finalDmg = (this.cfg.flyerDmgMul && enemy.isFlyer && !enemy.immuneToFlyerBonus) ? buffed * this.cfg.flyerDmgMul : buffed;
     const hpBefore = enemy.hp;
     enemy.takeDamage(finalDmg, origin);
     const dealt = Math.max(0, hpBefore - enemy.hp);

@@ -111,7 +111,7 @@ export const ENEMY_TYPES = {
     bodyColor: 0xff3a10, isBoss: true, isFlyer: true, flyHeight: 2.0,
     aoeBlastMs: 6000, aoeBlastRadius: 5.0, aoeBlastDamage: 35,
     summonsMinions: true, summonCooldownMs: 4500, summonType: "imp",
-    bossName: "Dragon de Lave",
+    bossName: "Dragon de Lave", immuneToFlyerBonus: true,
   },
 };
 
@@ -161,6 +161,7 @@ export class Enemy {
     this._summonTimer = this.summonCooldownMs > 0 ? 3000 : 0;
 
     this.isFlyer = !!cfg.isFlyer;
+    this.immuneToFlyerBonus = !!cfg.immuneToFlyerBonus;
     this.ignorePath = !!cfg.ignorePath;
     this.flyHeight = cfg.flyHeight || 0;
     this.aoeBlastMs = cfg.aoeBlastMs || 0;

@@ -47,6 +47,15 @@ function ensureCached() {
       totalKills: parsed.totalKills || 0,
     };
     if (cached.version !== VERSION) cached.version = VERSION;
+    // T8 migration: rename "aaa" → "skyguard" in owned/equipped skins
+    if (Array.isArray(cached.skinsOwned)) {
+      cached.skinsOwned = cached.skinsOwned.map(s => s === "aaa" ? "skyguard" : s);
+    }
+    if (cached.skinsEquipped) {
+      for (const k of Object.keys(cached.skinsEquipped)) {
+        if (cached.skinsEquipped[k] === "aaa") cached.skinsEquipped[k] = "skyguard";
+      }
+    }
     return cached;
   } catch (e) {
     cached = defaultSave();
