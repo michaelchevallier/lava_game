@@ -30,6 +30,9 @@ import world4_5 from "./world4-5.js";
 import world4_6 from "./world4-6.js";
 import world4_7 from "./world4-7.js";
 import world4_8 from "./world4-8.js";
+import world5_1 from "./world5-1.js";
+import world5_2 from "./world5-2.js";
+import world5_3 from "./world5-3.js";
 import endless from "./endless.js";
 
 export const LEVELS_BY_ID = {
@@ -41,6 +44,7 @@ export const LEVELS_BY_ID = {
   "world3-5": world3_5, "world3-6": world3_6, "world3-7": world3_7, "world3-8": world3_8,
   "world4-1": world4_1, "world4-2": world4_2, "world4-3": world4_3, "world4-4": world4_4,
   "world4-5": world4_5, "world4-6": world4_6, "world4-7": world4_7, "world4-8": world4_8,
+  "world5-1": world5_1, "world5-2": world5_2, "world5-3": world5_3,
   endless,
 };
 
@@ -49,6 +53,7 @@ export const LEVEL_ORDER = [
   "world2-1", "world2-2", "world2-3", "world2-4", "world2-5", "world2-6", "world2-7", "world2-8",
   "world3-1", "world3-2", "world3-3", "world3-4", "world3-5", "world3-6", "world3-7", "world3-8",
   "world4-1", "world4-2", "world4-3", "world4-4", "world4-5", "world4-6", "world4-7", "world4-8",
+  "world5-1", "world5-2", "world5-3",
 ];
 
 export function getLevel(id) {

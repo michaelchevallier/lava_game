@@ -289,6 +289,13 @@ export class LevelRunner {
           }
         }
         emit("crowdef:wave-cleared", { wave: this.wave });
+        if (this.level.isEndless) {
+          const tierGems = { 10: 5, 20: 15, 30: 40, 40: 100 };
+          const gems = tierGems[this.wave];
+          if (gems != null) {
+            emit("crowdef:endless-tier-reached", { wave: this.wave, gems });
+          }
+        }
       }
     } else {
       this._waveBreakTimer += dtMs;

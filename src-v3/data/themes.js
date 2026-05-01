@@ -59,6 +59,21 @@ export const THEMES = {
     fillGround: 0x1a0808,
     fillIntensity: 0.75,
   },
+  foire: {
+    bg: 0xff8a4a,
+    fog: 0xffb478,
+    ground: 0xffa860,
+    dirt: 0xffe0b0,
+    treeTrunk: 0xa0522d,
+    treeLeaves: 0xff66ee,
+    pathInner: 0xff66cc,
+    pathBorder: 0x6a1a3a,
+    sunColor: 0xfff0d0,
+    sunIntensity: 1.5,
+    fillSky: 0xffaa66,
+    fillGround: 0xc06030,
+    fillIntensity: 0.5,
+  },
 };
 
 export function getTheme(themeId) {

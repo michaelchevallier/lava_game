@@ -15,6 +15,7 @@ function defaultSave() {
     achievements: [],
     totalKills: 0,
     lastPlayedAt: 0,
+    endlessLeaderboard: [],
   };
 }
 
@@ -45,6 +46,7 @@ function ensureCached() {
       skinsEquipped: { ...def.skinsEquipped, ...(parsed.skinsEquipped || {}) },
       achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
       totalKills: parsed.totalKills || 0,
+      endlessLeaderboard: Array.isArray(parsed.endlessLeaderboard) ? parsed.endlessLeaderboard : [],
     };
     if (cached.version !== VERSION) cached.version = VERSION;
     // T8 migration: rename "aaa" → "skyguard" in owned/equipped skins
@@ -232,6 +234,18 @@ export const SaveSystem = {
     s.totalKills = (s.totalKills || 0) + n;
     persist();
     return s.totalKills;
+  },
+
+  getLeaderboard() {
+    return [...(ensureCached().endlessLeaderboard || [])];
+  },
+  addLeaderboardEntry(wave, date) {
+    const s = ensureCached();
+    if (!Array.isArray(s.endlessLeaderboard)) s.endlessLeaderboard = [];
+    s.endlessLeaderboard.push({ wave, date });
+    s.endlessLeaderboard.sort((a, b) => b.wave - a.wave);
+    if (s.endlessLeaderboard.length > 5) s.endlessLeaderboard.length = 5;
+    persist();
   },
 
   reset() {

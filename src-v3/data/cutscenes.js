@@ -39,6 +39,15 @@ export const CUTSCENES = {
       "C'est le combat pour sauver Milan Park. Ne laisse rien tomber.",
     ],
   },
+  world5: {
+    title: "La Foire en Lave — Portes Ouvertes !",
+    icon: "🎡",
+    paragraphs: [
+      "La Foire en Lave ouvre ses grilles aux visiteurs...",
+      "...mais quelque chose tourne mal. Les visiteurs deviennent fous.",
+      "Le Maître de Cérémonie compte sur toi pour défendre la Grande Roue.",
+    ],
+  },
 };
 
 export function getCutsceneForLevel(levelId) {
@@ -46,5 +55,6 @@ export function getCutsceneForLevel(levelId) {
   if (levelId === "world2-1") return { id: "world2", ...CUTSCENES.world2 };
   if (levelId === "world3-1") return { id: "world3", ...CUTSCENES.world3 };
   if (levelId === "world4-1") return { id: "world4", ...CUTSCENES.world4 };
+  if (levelId === "world5-1") return { id: "world5", ...CUTSCENES.world5 };
   return null;
 }

@@ -341,6 +341,14 @@ const THEME_PALETTE = {
     feature: ["nature_rock1", "nature_rock3"],
     bigCount: 14, mediumCount: 20, smallCount: 22, rockCount: 22,
   },
+  foire: {
+    big: ["nature_commontree1", "nature_commontree2"],
+    medium: ["nature_bushflower", "nature_bush"],
+    small: ["nature_flower3", "nature_flower4", "nature_mushroom"],
+    rocks: ["nature_pebble1", "nature_pebble2"],
+    feature: ["nature_commontree1", "nature_bushflower"],
+    bigCount: 16, mediumCount: 18, smallCount: 30, rockCount: 8,
+  },
 };
 
 function _hashLevelId(id) {
@@ -1426,6 +1434,14 @@ document.addEventListener("crowdef:wave-cleared", (e) => {
     setTimeout(() => bannerEl.classList.remove("show"), 1200);
   }
 });
+document.addEventListener("crowdef:endless-tier-reached", (e) => {
+  const { wave, gems } = e.detail;
+  const total = SaveSystem.addGems(gems);
+  spawnToast(`Palier vague ${wave} !`, `+${gems} 💎 (total : ${total})`);
+  spawnGemsPopup(gems);
+  Audio.sfxGemGain();
+  ui.gems.textContent = total;
+});
 document.addEventListener("crowdef:level-won", () => {
   MusicManager.play("menu");
 });
@@ -1576,6 +1592,9 @@ function showResult(won, detail) {
     castleHP: won ? detail.castleHP : 0,
     stars,
   });
+  if (runner.level && runner.level.isEndless) {
+    SaveSystem.addLeaderboardEntry(detail.wave, Date.now());
+  }
 }
 
 document.addEventListener("crowdef:level-lost", (e) => {
@@ -1686,10 +1705,15 @@ function showWorldMap() {
     const num = id === "endless" ? "∞" : (id.split("-")[1] || "?");
     if (id === "endless") {
       const bestWave = SaveSystem.getBestWave();
+      const lb = SaveSystem.getLeaderboard();
+      const lbHtml = lb.length
+        ? lb.slice(0, 3).map((e, i) => `<span>#${i + 1} V${e.wave}</span>`).join(" ")
+        : "Aucun record";
       tile.innerHTML = `
         <div class="level-num">${num}</div>
         <div class="level-name">${lvl.name}</div>
-        <div class="level-stars">Vague ${bestWave}</div>
+        <div class="level-stars">Best : V${bestWave}</div>
+        <div class="level-lb" style="font-size:0.65em;opacity:0.8;margin-top:2px">${lbHtml}</div>
       `;
     } else {
       tile.innerHTML = `

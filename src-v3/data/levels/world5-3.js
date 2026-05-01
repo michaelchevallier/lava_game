@@ -1,0 +1,42 @@
+export default {
+  id: "world5-3",
+  name: "Foire — Stand de Tir",
+  theme: "foire",
+  paths: [
+    [
+      [-58, 0, -10],
+      [-48, 0, -6],
+      [-38, 0, 0],
+      [-28, 0, 8],
+      [-18, 0, 12],
+      [-10, 0, 6],
+      [-4, 0, -2],
+      [2, 0, -10],
+      [6, 0, 4],
+    ],
+    [
+      [-58, 0, 10],
+      [-48, 0, 6],
+      [-38, 0, 0],
+      [-28, 0, -6],
+      [-18, 0, -10],
+      [-10, 0, -4],
+      [-4, 0, 4],
+      [2, 0, 10],
+      [6, 0, 4],
+    ],
+  ],
+  waves: {
+    list: [
+      { types: { basic: 20, runner: 20, imp: 6 }, spawnRateMs: 340, breakMs: 4000 },
+      { types: { runner: 26, imp: 14, brute: 4 }, spawnRateMs: 300, breakMs: 4500 },
+      { types: { imp: 22, runner: 20, shielded: 6 }, spawnRateMs: 270, breakMs: 4500 },
+      { types: { basic: 24, runner: 18, imp: 14, brute: 4 }, spawnRateMs: 250, breakMs: 5000 },
+      { types: { runner: 34, imp: 18, brute: 6, shielded: 5 }, spawnRateMs: 220, breakMs: 0 },
+    ],
+  },
+  castleHP: 180,
+  startCoins: 240,
+  heroSpawn: [-2, 0, -1],
+  briefing: "Le Stand de Tir s'est retourné contre toi — deux colonnes en S convergent vers la Grande Roue. Couvre les deux flancs.",
+};
