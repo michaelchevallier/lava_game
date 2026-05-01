@@ -305,7 +305,8 @@ function tickSpawnFog() {}
 
 function refreshGroundTexture(baseHex) {
   if (groundMat.map) groundMat.map.dispose();
-  groundMat.map = makeGroundTexture(baseHex);
+  const curves = runner ? (runner.paths || [runner.path]).filter(Boolean) : [];
+  groundMat.map = makeGroundTexture(baseHex, curves);
   groundMat.color.setHex(0xffffff);
   groundMat.needsUpdate = true;
 }
