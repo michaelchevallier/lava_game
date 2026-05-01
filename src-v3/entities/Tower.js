@@ -22,12 +22,14 @@ export const TOWER_TYPES = {
     asset: "tower_mage", scale: 0.7, label: "Mage", aoe: 2.0, pierce: 0,
     fallbackColor: 0x6a3aa0,
     cost: 70, icon: "🔮", unlockWorld: 1,
+    canHitFlyers: true,
   },
   ballista: {
     range: 14, fireRateMs: 1500, damage: 4, projColor: 0xcccccc, projSpeed: 30,
     asset: "tower_ballista", scale: 0.75, label: "Baliste", aoe: 0, pierce: 2,
     fallbackColor: 0x4a4a4a,
     cost: 100, icon: "🎯", unlockWorld: 2,
+    canHitFlyers: true,
   },
   mine: {
     range: 1.8, fireRateMs: 0, damage: 5, projColor: 0xff3030, projSpeed: 0,
@@ -64,6 +66,7 @@ export const TOWER_TYPES = {
     asset: "tower_crossbow", scale: 0.7, label: "Baliste géante", aoe: 0, pierce: 4,
     fallbackColor: 0x6a4a2a,
     cost: 140, icon: "🏯", unlockWorld: 4,
+    canHitFlyers: true,
     synergies: [
       { type: "crossEffect", from: "mage", effect: { propagateAoE: { radius: 1, dmg: 1.5 } }, range: 5 },
       { type: "crossEffect", from: "frost", effect: { appliesSlow: { mul: 0.7, durMs: 1500 } }, range: 4 },
@@ -304,9 +307,11 @@ export class Tower {
     let bestDist = this.range;
     const myPos = this.group.position;
     const flyerOnly = !!this.cfg.flyerOnly;
+    const canHitFlyers = !!this.cfg.canHitFlyers;
     for (const e of enemies) {
       if (e.dead || e._dying) continue;
       if (flyerOnly && !e.isFlyer) continue;
+      if (e.isFlyer && !flyerOnly && !canHitFlyers) continue;
       const dx = e.group.position.x - myPos.x;
       const dz = e.group.position.z - myPos.z;
       const d = Math.hypot(dx, dz);

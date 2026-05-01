@@ -1592,6 +1592,9 @@ function showResult(won, detail) {
     castleHP: won ? detail.castleHP : 0,
     stars,
   });
+  if (runner.level && runner.level.isEndless) {
+    SaveSystem.addLeaderboardEntry(detail.wave, Date.now());
+  }
 }
 
 document.addEventListener("crowdef:level-lost", (e) => {
@@ -1702,10 +1705,15 @@ function showWorldMap() {
     const num = id === "endless" ? "∞" : (id.split("-")[1] || "?");
     if (id === "endless") {
       const bestWave = SaveSystem.getBestWave();
+      const lb = SaveSystem.getLeaderboard();
+      const lbHtml = lb.length
+        ? lb.slice(0, 3).map((e, i) => `<span>#${i + 1} V${e.wave}</span>`).join(" ")
+        : "Aucun record";
       tile.innerHTML = `
         <div class="level-num">${num}</div>
         <div class="level-name">${lvl.name}</div>
-        <div class="level-stars">Vague ${bestWave}</div>
+        <div class="level-stars">Best : V${bestWave}</div>
+        <div class="level-lb" style="font-size:0.65em;opacity:0.8;margin-top:2px">${lbHtml}</div>
       `;
     } else {
       tile.innerHTML = `
