@@ -23,6 +23,7 @@ import { Minimap } from "./ui/Minimap.js";
 import { Castle } from "./entities/Castle.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
+import { Tutorial } from "./systems/Tutorial.js";
 
 SaveSystem.load();
 Audio.setMuted(SaveSystem.isMuted());
@@ -514,6 +515,7 @@ JuiceFX.init();
 
 const runner = new LevelRunner(scene, world1_1);
 runner.setup();
+Tutorial.tryStart(runner);
 
 let pathLines = [];
 let castle = null;
@@ -2133,6 +2135,8 @@ function updateWaveCountdown() {
   }
 }
 
+document.getElementById("tutorial-skip")?.addEventListener("click", () => Tutorial.skip());
+
 const clock = new THREE.Clock();
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -2164,6 +2168,7 @@ function tick() {
   updateWaveCountdown();
   updateHeroPosDebug();
   updateDecorFade(dt);
+  Tutorial.tick();
 
   if (runner.hero) {
     CAM_TARGET.x += (runner.hero.group.position.x - CAM_TARGET.x) * 0.06;

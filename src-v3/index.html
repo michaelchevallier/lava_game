@@ -761,6 +761,52 @@
       </div>
     </div>
 
+    <div id="tutorial-overlay" class="hidden">
+      <div class="tutorial-box">
+        <p id="tutorial-text" class="tutorial-text"></p>
+        <button id="tutorial-skip" class="tutorial-skip">Passer</button>
+      </div>
+    </div>
+    <style>
+      #tutorial-overlay {
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        z-index: 30; pointer-events: auto;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        opacity: 0;
+      }
+      #tutorial-overlay.hidden { display: none; }
+      #tutorial-overlay.visible { opacity: 1; }
+      .tutorial-box {
+        background: rgba(10, 16, 24, 0.92);
+        border: 2px solid #ffd23f;
+        border-radius: 14px;
+        padding: 14px 20px;
+        max-width: 480px; min-width: 280px;
+        display: flex; align-items: center; gap: 14px;
+        box-shadow: 0 6px 0 rgba(0,0,0,0.5), 0 0 20px rgba(255,210,63,0.3);
+        animation: tut-slide-in 0.3s cubic-bezier(0.22, 1.5, 0.36, 1);
+      }
+      @keyframes tut-slide-in {
+        from { transform: translateY(16px) scale(0.95); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+      }
+      .tutorial-text {
+        flex: 1; margin: 0;
+        font-family: 'Fredoka', sans-serif;
+        font-size: 15px; line-height: 1.4; color: #fff;
+      }
+      .tutorial-text strong { color: #ffd23f; }
+      .tutorial-skip {
+        flex-shrink: 0;
+        background: rgba(40,52,68,0.9); color: #aaa;
+        border: 1px solid #4a5a6a; border-radius: 8px;
+        padding: 5px 10px; font-size: 12px; font-weight: 700;
+        cursor: pointer; font-family: 'Fredoka', sans-serif;
+        transition: background 0.1s ease, color 0.1s ease;
+      }
+      .tutorial-skip:hover { background: rgba(60,76,96,0.95); color: #fff; }
+    </style>
+
     <script type="module" src="/main.js"></script>
   </body>
 </html>

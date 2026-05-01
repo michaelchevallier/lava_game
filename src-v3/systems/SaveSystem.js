@@ -15,6 +15,7 @@ function defaultSave() {
     achievements: [],
     totalKills: 0,
     lastPlayedAt: 0,
+    tutorialDone: false,
   };
 }
 
@@ -232,6 +233,12 @@ export const SaveSystem = {
     s.totalKills = (s.totalKills || 0) + n;
     persist();
     return s.totalKills;
+  },
+
+  getTutorialDone() { return !!ensureCached().tutorialDone; },
+  setTutorialDone() {
+    ensureCached().tutorialDone = true;
+    persist();
   },
 
   reset() {
