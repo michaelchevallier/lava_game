@@ -16,6 +16,7 @@ function defaultSave() {
     totalKills: 0,
     lastPlayedAt: 0,
     endlessLeaderboard: [],
+    tutorialDone: false,
   };
 }
 
@@ -245,6 +246,11 @@ export const SaveSystem = {
     s.endlessLeaderboard.push({ wave, date });
     s.endlessLeaderboard.sort((a, b) => b.wave - a.wave);
     if (s.endlessLeaderboard.length > 5) s.endlessLeaderboard.length = 5;
+    persist();
+  },
+  getTutorialDone() { return !!ensureCached().tutorialDone; },
+  setTutorialDone() {
+    ensureCached().tutorialDone = true;
     persist();
   },
 
