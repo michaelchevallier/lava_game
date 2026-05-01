@@ -99,13 +99,13 @@ export function maze(opts = {}) {
   };
 }
 
-// MAZE XXL — méga-path programmatic pour la grande map 8000u (paths ~5000u).
-// 30-40 rooms × 5 waypoints zigzag par room → path ~4000-5000u sur ground 8000u.
+// MAZE XXL — path programmatic serpentine pour map 240u (path ~150-200u).
+// 6-8 rooms × 5 waypoints zigzag par room → path total ~150-200u sur ground 240u.
 export function mazeXXL(opts = {}) {
-  const rooms = opts.rooms || 30;
-  const startX = opts.startX || -3500;
+  const rooms = opts.rooms || 7;
+  const startX = opts.startX || -110;
   const endX = opts.endX || 0;
-  const ampZ = opts.ampZ || 250;
+  const ampZ = opts.ampZ || 30;
   const exit = opts.exit || [2, 0, 6];
   const pts = [];
   const stepX = (endX - startX) / rooms;

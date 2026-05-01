@@ -5,9 +5,9 @@ export default {
   name: "Volcan — Dragon",
   theme: "volcan",
   paths: (() => {
-    const main = mazeXXL({ rooms: 25, startX: -3000, ampZ: 200 }).paths[0];
+    const main = mazeXXL({ rooms: 8, startX: -110, ampZ: 32 }).paths[0];
     // Lane courte arrière depuis x positif (ennemis qui contournent par derrière)
-    const back = [[60, 0, -3], [50, 0, 5], [40, 0, -2], [30, 0, 3], [20, 0, -2], [10, 0, 1], [4, 0, 3], [0, 0, 5]];
+    const back = [[110, 0, -3], [85, 0, 5], [60, 0, -2], [40, 0, 3], [20, 0, -2], [10, 0, 1], [4, 0, 3], [0, 0, 5]];
     return [main, back];
   })(),
   waves: {
@@ -28,5 +28,5 @@ export default {
   ],
   startCoins: 320,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS FINAL : méga-maze 5000u + lane arrière. Le Dragon arrive.",
+  briefing: "BOSS FINAL : 2 chemins (serpentine + lane arrière). Le Dragon arrive.",
 };

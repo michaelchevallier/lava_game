@@ -64,7 +64,7 @@ scene.fog = new THREE.Fog(0x7fd07c, 30, 80);
 const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 600);
 const CAM_TARGET = new THREE.Vector3(-2, 0, -1);
 const CAM_OFFSET = new THREE.Vector3(0, 30, 22);
-const GROUND_SIZE = 8000;
+const GROUND_SIZE = 240;
 const MAP_HALF = GROUND_SIZE / 2;
 
 function resize() {
@@ -137,7 +137,7 @@ function makeGroundTexture(baseHex) {
   }
   const tex = new THREE.CanvasTexture(cv);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(40, 40);
+  tex.repeat.set(6, 6);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
@@ -167,7 +167,7 @@ function buildMapEdge() {
     scene.add(wall);
   }
   const postGeom = new THREE.BoxGeometry(0.2, 0.7, 0.2);
-  const postSpacing = 8;
+  const postSpacing = 4;
   const postsPerSide = Math.floor(GROUND_SIZE / postSpacing);
   const totalPosts = (postsPerSide + 1) * 4;
   const inst = new THREE.InstancedMesh(postGeom, postMat, totalPosts);
@@ -207,14 +207,14 @@ function makeCloudTexture() {
 const fogSprites = [];
 function buildSpawnFog() {
   const cloudTex = makeCloudTexture();
-  const fogDepth = 30;
-  const perSide = 20;
+  const fogDepth = 8;
+  const perSide = 14;
   const sides = 4;
   for (let side = 0; side < sides; side++) {
     for (let i = 0; i < perSide; i++) {
       const t = (i + Math.random()) / perSide;
       const tangent = -MAP_HALF + t * GROUND_SIZE;
-      const depth = MAP_HALF - 20 - Math.random() * fogDepth;
+      const depth = MAP_HALF - 6 - Math.random() * fogDepth;
       let x, z;
       if (side === 0) { x = tangent; z = -depth; }
       else if (side === 1) { x = tangent; z = depth; }
@@ -223,8 +223,8 @@ function buildSpawnFog() {
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
         map: cloudTex, opacity: 0.55, transparent: true, depthWrite: false,
       }));
-      sprite.position.set(x, 2 + Math.random() * 2, z);
-      sprite.scale.set(8 + Math.random() * 4, 5 + Math.random() * 3, 1);
+      sprite.position.set(x, 1.5 + Math.random() * 1.2, z);
+      sprite.scale.set(4 + Math.random() * 2, 2.5 + Math.random() * 1.5, 1);
       scene.add(sprite);
       fogSprites.push({ sprite, baseY: sprite.position.y, phase: Math.random() * Math.PI * 2 });
     }
@@ -256,7 +256,7 @@ const THEME_PALETTE = {
     small: ["nature_flower3", "nature_flower4"],
     rocks: ["nature_rock1", "nature_pebble1"],
     feature: ["nature_commontree3", "nature_bushflower"],
-    bigCount: 6, mediumCount: 3, smallCount: 5, rockCount: 2,
+    bigCount: 18, mediumCount: 14, smallCount: 28, rockCount: 12,
   },
   foret: {
     big: ["nature_pine1", "nature_pine2", "nature_pine3"],
@@ -264,7 +264,7 @@ const THEME_PALETTE = {
     small: ["nature_mushroom"],
     rocks: ["nature_rock1", "nature_rock2"],
     feature: ["nature_mushroom", "nature_pine3"],
-    bigCount: 6, mediumCount: 4, smallCount: 5, rockCount: 2,
+    bigCount: 22, mediumCount: 18, smallCount: 24, rockCount: 12,
   },
   desert: {
     big: ["nature_rock3", "nature_rock2"],
@@ -272,7 +272,7 @@ const THEME_PALETTE = {
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock3", "nature_pebble1"],
     feature: ["nature_rock3", "nature_rock1"],
-    bigCount: 4, mediumCount: 5, smallCount: 5, rockCount: 3,
+    bigCount: 14, mediumCount: 20, smallCount: 26, rockCount: 18,
   },
   volcan: {
     big: ["nature_rock1", "nature_rock2", "nature_rock3"],
@@ -280,7 +280,7 @@ const THEME_PALETTE = {
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock1", "nature_rock2"],
     feature: ["nature_rock1", "nature_rock3"],
-    bigCount: 4, mediumCount: 5, smallCount: 4, rockCount: 4,
+    bigCount: 14, mediumCount: 20, smallCount: 22, rockCount: 22,
   },
 };
 
@@ -436,11 +436,11 @@ function applyTheme(themeId) {
       placed++;
     }
   }
-  spawnSet(palette.big, palette.bigCount, 1.0, 1.6, 9, 22);
-  if (palette.twisted) spawnSet(palette.twisted, palette.twistedCount || 0, 0.35, 0.55, 9, 22);
-  spawnSet(palette.medium, palette.mediumCount, 0.8, 1.4, 8, 20);
-  spawnSet(palette.small, palette.smallCount, 0.7, 1.3, 6, 18);
-  spawnSet(palette.rocks, palette.rockCount, 0.6, 1.2, 7, 18);
+  spawnSet(palette.big, palette.bigCount, 0.8, 1.4, 8, 105);
+  if (palette.twisted) spawnSet(palette.twisted, palette.twistedCount || 0, 0.35, 0.55, 8, 105);
+  spawnSet(palette.medium, palette.mediumCount, 0.6, 1.1, 6, 105);
+  spawnSet(palette.small, palette.smallCount, 0.5, 1.0, 4, 110);
+  spawnSet(palette.rocks, palette.rockCount, 0.5, 1.0, 5, 110);
   if (runner.level) placeFeatureProp(runner.level, palette);
 }
 

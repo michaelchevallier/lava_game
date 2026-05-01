@@ -65,8 +65,8 @@ export default {
   id: "endless",
   name: "Endless",
   theme: "plaine",
-  // Méga-maze 40 rooms × 5 waypoints = path ~5000u sur ground 8000u
-  ...mazeXXL({ rooms: 40, startX: -4500, ampZ: 300 }),
+  // Serpentine 8 rooms × 5 waypoints = path ~180u sur ground 240u
+  ...mazeXXL({ rooms: 8, startX: -110, ampZ: 35 }),
   waves: {
     list: buildEndlessWaves(40),
   },

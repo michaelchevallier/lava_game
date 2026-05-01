@@ -119,7 +119,7 @@ export function generateBuildPointGrid(scene, paths) {
         for (const off of OFFSETS) {
           const x = p.x + perp.x * sign * off;
           const z = p.z + perp.z * sign * off;
-          if (Math.abs(x) > 4000 || Math.abs(z) > 4000) continue;
+          if (Math.abs(x) > 120 || Math.abs(z) > 120) continue;
           let dup = false;
           for (const s of seen) {
             const dx = s.x - x;

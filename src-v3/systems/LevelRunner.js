@@ -179,12 +179,12 @@ export class LevelRunner {
   }
 
   _tryBuild(bp, dt) {
-    const type = this.selectedTowerType;
+    const type = this.selectedTowerType || bp.buildingType;
     if (!type) return;
     const cfg = this._findUnlockedTowerCfg(type);
     if (!cfg) return;
     const baseCost = (cfg.cost) || this._defaultTowerCost(type);
-    if (bp.buildingType && bp.buildingType !== type && bp.paidThisLevel > 0) {
+    if (this.selectedTowerType && bp.buildingType && bp.buildingType !== this.selectedTowerType && bp.paidThisLevel > 0) {
       this.coins += bp.paidThisLevel;
       bp.totalInvested = Math.max(0, bp.totalInvested - bp.paidThisLevel);
       bp.paidThisLevel = 0;

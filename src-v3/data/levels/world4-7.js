@@ -4,7 +4,7 @@ export default {
   id: "world4-7",
   name: "Volcan — Antre",
   theme: "volcan",
-  ...mazeXXL({ rooms: 30, startX: -3500, ampZ: 250 }),
+  ...mazeXXL({ rooms: 8, startX: -110, ampZ: 35 }),
   waves: {
     list: [
       { types: { imp: 32, flyer: 20, brute: 12 }, spawnRateMs: 320, breakMs: 4000 },
@@ -17,5 +17,5 @@ export default {
   castleHP: 240,
   startCoins: 260,
   heroSpawn: [-2, 0, -1],
-  briefing: "Antre — méga-maze 30 rooms. Pré-boss Dragon.",
+  briefing: "Antre — serpentine 8 rooms. Pré-boss Dragon.",
 };
