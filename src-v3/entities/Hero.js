@@ -14,7 +14,7 @@ const PROJ_SPEED = 22;
 const MOVE_SPEED = 6;
 const DEFAULT_BOUND = 59.5;
 const MODEL_SCALE = 0.6;
-const XP_CURVE = [30, 50, 75, 100, 130];
+const XP_CURVE = [20, 45, 75, 100, 130];
 const MAX_LEVEL = 1 + XP_CURVE.length;
 
 export class Hero {
@@ -95,6 +95,7 @@ export class Hero {
     this.pierceExplode = false;
     this.pierceExplodeRadius = 1.5;
     this.pierceExplodeDmgMul = 0.5;
+    this._attackAnimTimer = 0;
   }
 
   applyMetaBonuses(bonuses) {
@@ -200,17 +201,27 @@ export class Hero {
     this.cooldown -= dt * 1000;
     if (this.anim) this.anim.tick(dt);
 
+    if (this._attackAnimTimer > 0) {
+      this._attackAnimTimer -= dt;
+      if (this._attackAnimTimer <= 0 && this.anim) {
+        const resumeName = this.moveDir.lengthSq() > 0.01
+          ? (this.anim.has("Run") ? "Run" : (this.anim.has("Walk") ? "Walk" : null))
+          : (this.anim.has("Idle") ? "Idle" : (this.anim.has("Walk") ? "Walk" : null));
+        if (resumeName) this.anim.play(resumeName);
+      }
+    }
+
     const moveSpeed = MOVE_SPEED * this.moveSpeedMul * (this.running ? 1.8 : 1);
     if (this.moveDir.lengthSq() > 0.01) {
       this.group.position.x += this.moveDir.x * moveSpeed * dt;
       this.group.position.z += this.moveDir.y * moveSpeed * dt;
       this.group.position.x = Math.max(-this.maxX, Math.min(this.maxX, this.group.position.x));
       this.group.position.z = Math.max(-this.maxZ, Math.min(this.maxZ, this.group.position.z));
-      if (this.anim) {
+      if (this.anim && this._attackAnimTimer <= 0) {
         const runName = this.anim.has("Run") ? "Run" : (this.anim.has("Walk") ? "Walk" : null);
         if (runName) this.anim.play(runName);
       }
-    } else if (this.anim) {
+    } else if (this.anim && this._attackAnimTimer <= 0) {
       const idleName = this.anim.has("Idle") ? "Idle" : (this.anim.has("Walk") ? "Walk" : null);
       if (idleName) this.anim.play(idleName);
     }
@@ -241,11 +252,17 @@ export class Hero {
       this.group.rotation.y = Math.atan2(this.moveDir.x, this.moveDir.y);
     }
 
+    const projColor = this.fireball ? 0xff7530 : (this.ricochet ? 0x66ddff : (this.pierceExplode ? 0xff44aa : 0xfff4d6));
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
       p.life -= dt;
       p.mesh.position.x += p.dir.x * PROJ_SPEED * dt;
       p.mesh.position.z += p.dir.z * PROJ_SPEED * dt;
+      Particles.emit(
+        { x: p.mesh.position.x, y: p.mesh.position.y, z: p.mesh.position.z },
+        projColor, 1,
+        { speed: 0, life: 0.2, scale: 0.15, yLift: 0 },
+      );
       let consumed = false;
       let hitTarget = null;
       for (const e of enemies) {
@@ -369,6 +386,10 @@ export class Hero {
   }
 
   _fire(target) {
+    if (this.anim?.has?.("Attack")) {
+      this.anim.play("Attack");
+      this._attackAnimTimer = 0.25;
+    }
     const start = new THREE.Vector3().copy(this.group.position);
     start.y = 0.9;
     const baseTx = target.group.position.x - start.x;
@@ -387,7 +408,7 @@ export class Hero {
       const dz = baseDirX * sin + baseDirZ * cos;
 
       const proj = new THREE.Mesh(
-        new THREE.SphereGeometry(0.14, 8, 8),
+        new THREE.SphereGeometry(0.22, 8, 8),
         new THREE.MeshBasicMaterial({ color: projColor }),
       );
       proj.position.copy(start);

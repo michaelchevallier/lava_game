@@ -372,7 +372,7 @@ export class LevelRunner {
           { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
         );
         JuiceFX.shake(e.isBoss ? 0.3 : 0.12, e.isBoss ? 200 : 100);
-        Audio.sfxEnemyDie();
+        Audio.sfxEnemyDie(e.isBoss ? "boss" : (e.hpMax >= 12 ? "brute" : "basic"));
         emit("crowdef:enemy-killed", {
           type: e.type || "basic",
           reward,

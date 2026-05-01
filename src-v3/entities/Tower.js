@@ -122,6 +122,8 @@ export class Tower {
 
     this.model = null;
     this._loadModel(cfg.asset, cfg.scale);
+    this._rangeRing = null;
+    this._buildRangeRing();
 
     this.cooldown = 0;
     this.projectiles = [];
@@ -202,6 +204,7 @@ export class Tower {
     this._disposeModel();
     const scaleBoost = 1 + (level - 1) * 0.06;
     this._loadModel(assetKey, base.scale * scaleBoost);
+    this._buildRangeRing();
     this._drawTierPips(level);
     if (level === 3) this._tintGold();
   }
@@ -260,6 +263,25 @@ export class Tower {
     this.group.add(this.head);
   }
 
+  _buildRangeRing() {
+    if (this._rangeRing) {
+      this.group.remove(this._rangeRing);
+      this._rangeRing.geometry.dispose();
+      this._rangeRing.material.dispose();
+      this._rangeRing = null;
+    }
+    const r = this.range;
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(r - 0.05, r, 48),
+      new THREE.MeshBasicMaterial({ color: 0x66ddff, opacity: 0.12, transparent: true, side: THREE.DoubleSide, depthWrite: false }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.03;
+    ring.renderOrder = 3;
+    this.group.add(ring);
+    this._rangeRing = ring;
+  }
+
   tick(dt, enemies, towers = null) {
     const behavior = this.cfg.behavior;
     if (behavior === "push") return this._tickPush(dt, enemies);
@@ -268,6 +290,15 @@ export class Tower {
     if (behavior === "buffAura") return this._tickBuffAura(dt);
     if (behavior === "coinPull") return;
     this.cooldown -= dt * 1000;
+    if (this._recoilTimer > 0) {
+      this._recoilTimer -= dt;
+      if (this._recoilTimer <= 0) {
+        if (this.model) this.model.position.set(0, 0, 0);
+      } else {
+        const offset = -0.08 * (this._recoilTimer / 0.12);
+        if (this.model) this.model.position.set(this._recoilDirX * offset, 0, this._recoilDirZ * offset);
+      }
+    }
 
     let target = null;
     let bestDist = this.range;
@@ -476,7 +507,7 @@ export class Tower {
       0xff7530, 24,
       { speed: 6, life: 0.55, scale: 0.5, yLift: 1.0 },
     );
-    Audio.sfxBoom?.();
+    Audio.sfxBoom();
     if (this._chainExplosion && chainTargets.length > 0) {
       const chainSnap = chainTargets.slice(0, 2).map((e) => ({ x: e.group.position.x, z: e.group.position.z }));
       const chainDmg = (this.cfg.damage || 8) * (this._buffMul || 1);
@@ -617,6 +648,9 @@ export class Tower {
       this.projectiles.push(projData);
     }
     Audio.sfxTowerShoot();
+    this._recoilTimer = 0.12;
+    this._recoilDirX = baseDirX;
+    this._recoilDirZ = baseDirZ;
   }
 
   destroy() {

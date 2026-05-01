@@ -1117,10 +1117,10 @@ function updateTowerPreview() {
   towerPreviewEl.style.display = "block";
   towerPreviewName.textContent = cfg.label || type;
   let extras = [];
-  if (cfg.aoe > 0) extras.push(`AoE ${cfg.aoe}`);
-  if (cfg.pierce > 0) extras.push(`pierce ×${cfg.pierce}`);
+  if (cfg.aoe > 0) extras.push(`Explosion (rayon ${cfg.aoe})`);
+  if (cfg.pierce > 0) extras.push(`Perce ${cfg.pierce} ennemi${cfg.pierce > 1 ? "s" : ""}`);
   if (cfg.behavior === "push") extras.push(`💨 push ${(cfg.pushStrength || 0.04).toFixed(2)}`);
-  else if (cfg.behavior === "cluster") extras.push(`💣 cluster ≥3 / cd ${(cfg.cooldownMs / 1000).toFixed(0)}s`);
+  else if (cfg.behavior === "cluster") extras.push(`💣 Piège : déclenché sur ${cfg.clusterCount || 3}+ cibles / rechg. ${(cfg.cooldownMs / 1000).toFixed(0)}s`);
   else if (cfg.behavior === "slow") extras.push(`❄️ slow ×${cfg.slowMul} / ${(cfg.slowDurationMs / 1000).toFixed(0)}s`);
   else if (cfg.behavior === "buffAura") extras.push(`✨ aura dmg ×${cfg.buffMul}`);
   else if (cfg.behavior === "coinPull") extras.push(`🪙 reward ×${cfg.coinMul}`);
@@ -1238,7 +1238,7 @@ if (radialEl) {
       const lvl = t.upgradeLevel || 1;
       const parts = [`${cfg.label} L${lvl}`, `🎯${(t.range || cfg.range).toFixed(1)}u`];
       if (cfg.behavior === "push") parts.push(`💨 push ${(cfg.pushStrength || 0.04).toFixed(3)}/s`);
-      else if (cfg.behavior === "cluster") parts.push(`💣 ${cfg.damage} AoE${cfg.aoe} cd${(cfg.cooldownMs / 1000).toFixed(0)}s`);
+      else if (cfg.behavior === "cluster") parts.push(`💣 Explosion(${cfg.aoe}) rechg.${(cfg.cooldownMs / 1000).toFixed(0)}s`);
       else if (cfg.behavior === "slow") parts.push(`❄️ ×${cfg.slowMul} ${(cfg.slowDurationMs / 1000).toFixed(0)}s`);
       else if (cfg.behavior === "buffAura") parts.push(`✨ aura ×${cfg.buffMul}`);
       else if (cfg.behavior === "coinPull") parts.push(`🪙 ×${cfg.coinMul}`);
@@ -1333,6 +1333,7 @@ function refreshHUD() {
     ui.castleHpFill.style.width = (ratio * 100).toFixed(1) + "%";
     ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
     ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+    document.getElementById("danger-vignette")?.classList.toggle("low-hp", ratio < 0.2);
   } else {
     ui.castleHpBox.classList.add("multi");
     ui.castleHpMax.textContent = runner.castleHPMax;
@@ -1341,6 +1342,7 @@ function refreshHUD() {
     ui.castleHpFill.style.display = "none";
     ui.castleHpBox.classList.toggle("warn", ratio < 0.5 && ratio >= 0.2);
     ui.castleHpBox.classList.toggle("danger", ratio < 0.2);
+    document.getElementById("danger-vignette")?.classList.toggle("low-hp", ratio < 0.2);
     _rebuildMultiCastleBars();
   }
   if (runner.hero) {
@@ -1412,9 +1414,17 @@ document.addEventListener("crowdef:wave-start", (e) => {
     SaveSystem.recordWaveReached(e.detail.wave);
   }
 });
-document.addEventListener("crowdef:wave-cleared", () => {
+document.addEventListener("crowdef:wave-cleared", (e) => {
   if (MusicManager.getCurrentTrack() === "boss") return;
   MusicManager.play("calm");
+  Audio.sfxWaveClear?.();
+  const bannerEl = document.getElementById("wave-clear-banner");
+  const numEl = document.getElementById("wave-clear-num");
+  if (bannerEl && numEl) {
+    numEl.textContent = e.detail?.wave ?? runner.wave;
+    bannerEl.classList.add("show");
+    setTimeout(() => bannerEl.classList.remove("show"), 1200);
+  }
 });
 document.addEventListener("crowdef:level-won", () => {
   MusicManager.play("menu");
@@ -1454,6 +1464,16 @@ document.addEventListener("crowdef:skin-equipped", (e) => {
     runner.restart();
   }
 });
+document.addEventListener("crowdef:synergy-activated", (e) => {
+  const comboEl = document.getElementById("combo-tracker");
+  if (!comboEl) return;
+  const toast = document.createElement("div");
+  toast.className = "synergy-toast";
+  toast.textContent = `⚡ ${e.detail.label}`;
+  comboEl.appendChild(toast);
+  setTimeout(() => toast.remove(), 1500);
+});
+
 document.addEventListener("crowdef:wave-start", refreshHUD);
 document.addEventListener("crowdef:enemy-killed", (e) => {
   refreshHUD();
@@ -2058,14 +2078,14 @@ window.addEventListener("keydown", (e) => {
 });
 
 const COMBO_LABELS = {
-  freezeFlyer:    { icons: "❄️🚀", label: "Freeze flyer" },
-  slowOnHit:      { icons: "🪨❄️", label: "Slow projectile" },
-  pushTowardsMine:{ icons: "🌀💣", label: "Push to mine" },
-  propagateAoE:   { icons: "🔮🏯", label: "Pierce AoE" },
-  pierceBonus:    { icons: "🌌🎯", label: "Pierce buff" },
-  pullActive:     { icons: "🛡️🧲", label: "Tank pull" },
-  multiShotBonus: { icons: "🌌🏹", label: "Multi-shot" },
-  iceArrows:      { icons: "🏯❄️", label: "Ice arrows" },
+  freezeFlyer:    { icons: "❄️🚀", label: "Gel Volant" },
+  slowOnHit:      { icons: "🪨❄️", label: "Projectile Ralentissant" },
+  pushTowardsMine:{ icons: "🌀💣", label: "Piège Magnétisé" },
+  propagateAoE:   { icons: "🔮🏯", label: "Perforation en Chaîne" },
+  pierceBonus:    { icons: "🌌🎯", label: "Bonus Perforant" },
+  pullActive:     { icons: "🛡️🧲", label: "Attraction du Bouclier" },
+  multiShotBonus: { icons: "🌌🏹", label: "Tir Multiple" },
+  iceArrows:      { icons: "🏯❄️", label: "Flèches Glacées" },
 };
 
 function updateComboTracker() {
@@ -2093,6 +2113,23 @@ function updateComboTracker() {
     pill.className = "combo-pill";
     pill.innerHTML = `<span>${cfg.icons}</span><span>${cfg.label}</span>`;
     el.appendChild(pill);
+  }
+}
+
+function updateWaveCountdown() {
+  const el = document.getElementById("wave-countdown");
+  const numEl = document.getElementById("wave-countdown-num");
+  const secEl = document.getElementById("wave-countdown-sec");
+  if (!el || !numEl || !secEl) return;
+  const inBreak = runner.state === "play" && !runner._waveActive;
+  if (inBreak) {
+    const breakMs = runner._currentBreakMs ?? 4000;
+    const remaining = Math.max(0, breakMs - runner._waveBreakTimer);
+    numEl.textContent = runner.wave + 1;
+    secEl.textContent = Math.ceil(remaining / 1000);
+    el.classList.add("show");
+  } else {
+    el.classList.remove("show");
   }
 }
 
@@ -2124,6 +2161,7 @@ function tick() {
   updateRadialMenu();
   Minimap.update(runner);
   updateComboTracker();
+  updateWaveCountdown();
   updateHeroPosDebug();
   updateDecorFade(dt);
 
