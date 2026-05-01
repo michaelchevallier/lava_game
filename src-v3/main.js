@@ -292,7 +292,90 @@ function makeCloudTexture() {
   return tex;
 }
 
-function tickSpawnFog() {}
+let _skyGradCache = {};
+function makeSkyGradient(topHex, bottomHex) {
+  const key = `${topHex}_${bottomHex}`;
+  if (_skyGradCache[key]) return _skyGradCache[key];
+  const cv = document.createElement("canvas");
+  cv.width = 2; cv.height = 64;
+  const ctx = cv.getContext("2d");
+  const tr = (topHex >> 16) & 0xff, tg = (topHex >> 8) & 0xff, tb = topHex & 0xff;
+  const br = (bottomHex >> 16) & 0xff, bg = (bottomHex >> 8) & 0xff, bb = bottomHex & 0xff;
+  const grad = ctx.createLinearGradient(0, 0, 0, 64);
+  grad.addColorStop(0, `rgb(${tr},${tg},${tb})`);
+  grad.addColorStop(1, `rgb(${br},${bg},${bb})`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 2, 64);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  _skyGradCache[key] = tex;
+  return tex;
+}
+
+const _cloudSprites = [];
+function buildCloudLayer() {
+  const cloudTex = makeCloudTexture();
+  for (let i = 0; i < 12; i++) {
+    const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.7, depthWrite: false });
+    const s = new THREE.Sprite(mat);
+    s.position.set((Math.random() * 2 - 1) * 60, 25 + Math.random() * 8, (Math.random() * 2 - 1) * 60);
+    s.scale.set(15 + Math.random() * 8, 8 + Math.random() * 4, 1);
+    s.userData.driftSpeed = 0.3 + Math.random() * 0.5;
+    scene.add(s);
+    _cloudSprites.push(s);
+  }
+}
+
+let _weatherLastT = -1;
+const _weatherAcc = { spores: 0, sand: 0, embers: 0, confetti: 0 };
+function tickWeather(t) {
+  const theme = getTheme(currentThemeId);
+  const weatherType = theme.weather || "none";
+  if (_weatherLastT < 0) { _weatherLastT = t; return; }
+  const dt = Math.min(t - _weatherLastT, 0.1);
+  _weatherLastT = t;
+  if (weatherType === "none") return;
+
+  if (weatherType === "spores") {
+    _weatherAcc.spores += dt;
+    if (_weatherAcc.spores >= 0.12) {
+      _weatherAcc.spores = 0;
+      Particles.emit(
+        { x: (Math.random() * 2 - 1) * 50, y: 1 + Math.random() * 6, z: (Math.random() * 2 - 1) * 50 },
+        0x9bff7a, 1, { speed: 0.3, life: 4, scale: 0.15, yLift: 0.2 },
+      );
+    }
+  } else if (weatherType === "sand") {
+    _weatherAcc.sand += dt;
+    if (_weatherAcc.sand >= 0.08) {
+      _weatherAcc.sand = 0;
+      Particles.emit(
+        { x: (Math.random() * 2 - 1) * 55, y: 0.5 + Math.random() * 1.5, z: (Math.random() * 2 - 1) * 55 },
+        0xffe0b0, 1, { speed: 1.5, life: 2.5 + Math.random() * 0.5, scale: 0.18 + Math.random() * 0.08, yLift: 0 },
+      );
+    }
+  } else if (weatherType === "embers") {
+    _weatherAcc.embers += dt;
+    if (_weatherAcc.embers >= 0.06) {
+      _weatherAcc.embers = 0;
+      Particles.emit(
+        { x: (Math.random() * 2 - 1) * 50, y: 0.5 + Math.random() * 3, z: (Math.random() * 2 - 1) * 50 },
+        0xff5520, 1, { speed: 1, life: 2, scale: 0.18, yLift: 1.5 },
+      );
+    }
+  } else if (weatherType === "confetti") {
+    _weatherAcc.confetti += dt;
+    if (_weatherAcc.confetti >= 0.1) {
+      _weatherAcc.confetti = 0;
+      const colors = [0xff80c0, 0xffee44, 0x44eeff, 0xff44ff, 0x88ff44];
+      Particles.emit(
+        { x: (Math.random() * 2 - 1) * 50, y: 15 + Math.random() * 8, z: (Math.random() * 2 - 1) * 50 },
+        colors[Math.floor(Math.random() * colors.length)], 1,
+        { speed: 0.5, life: 3, scale: 0.2, yLift: -0.5 },
+      );
+    }
+  }
+}
 
 let currentThemeId = "plaine";
 
@@ -481,7 +564,11 @@ function isOnPath(x, z, runner) {
 function applyTheme(themeId) {
   currentThemeId = themeId;
   const t = getTheme(themeId);
-  scene.background = new THREE.Color(t.bg);
+  if (t.skyTop != null && t.skyBottom != null) {
+    scene.background = makeSkyGradient(t.skyTop, t.skyBottom);
+  } else {
+    scene.background = new THREE.Color(t.bg);
+  }
   scene.fog = new THREE.Fog(t.fog, 30, 80);
   sun.color.setHex(t.sunColor);
   sun.intensity = t.sunIntensity;
@@ -490,6 +577,11 @@ function applyTheme(themeId) {
   fill.intensity = t.fillIntensity;
   refreshGroundTexture(t.ground);
   dirtMat.color.setHex(t.dirt);
+  const cloudOpacity = t.cloudOpacity ?? 0.7;
+  for (const s of _cloudSprites) {
+    s.visible = t.clouds === true;
+    s.material.opacity = cloudOpacity;
+  }
   clearDecor();
   const palette = THEME_PALETTE[themeId] || THEME_PALETTE.plaine;
   const tries = 60;
@@ -519,6 +611,7 @@ function applyTheme(themeId) {
 
 Particles.init(scene);
 JuiceFX.init();
+buildCloudLayer();
 
 const runner = new LevelRunner(scene, world1_1);
 runner.setup();
@@ -2175,8 +2268,13 @@ function tick() {
   runner.tick(dt);
   tickBluePill(dt);
   Particles.tick(dt);
+  for (const s of _cloudSprites) {
+    if (!s.visible) continue;
+    s.position.x += s.userData.driftSpeed * dt;
+    if (s.position.x > MAP_HALF + 20) s.position.x = -MAP_HALF - 20;
+  }
   tickPortals(performance.now() * 0.001);
-  tickSpawnFog(performance.now() * 0.001);
+  tickWeather(performance.now() * 0.001);
   const shake = JuiceFX.tick(dt);
   SHAKE_OFFSET.copy(shake);
   refreshHUD();
