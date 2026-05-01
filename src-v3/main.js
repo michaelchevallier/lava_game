@@ -1215,9 +1215,15 @@ function updateTowerPreview() {
     towerPreviewEl.style.display = "none";
     return;
   }
-  towerPreviewEl.style.left = `${Math.round(sx) + 30}px`;
-  towerPreviewEl.style.top = `${Math.round(sy) - 20}px`;
   towerPreviewEl.style.display = "block";
+  const tbRect = toolbarEl ? toolbarEl.getBoundingClientRect() : null;
+  const maxBottom = (tbRect ? tbRect.top : window.innerHeight) - 10;
+  const tipH = towerPreviewEl.offsetHeight || 120;
+  let top = Math.round(sy) - 20;
+  if (top + tipH > maxBottom) top = maxBottom - tipH;
+  if (top < 8) top = 8;
+  towerPreviewEl.style.left = `${Math.round(sx) + 30}px`;
+  towerPreviewEl.style.top = `${top}px`;
   towerPreviewName.textContent = cfg.label || type;
   let extras = [];
   if (cfg.aoe > 0) extras.push(`Explosion (rayon ${cfg.aoe})`);
