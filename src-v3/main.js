@@ -597,6 +597,27 @@ function refreshToolbarSelection() {
 }
 
 buildToolbar();
+
+const speedCtrl = document.getElementById("speed-control");
+function refreshSpeedUI() {
+  if (!speedCtrl) return;
+  const cur = Math.round(runner.gameSpeed);
+  speedCtrl.querySelectorAll(".speed-btn").forEach((b) => {
+    b.classList.toggle("active", parseInt(b.dataset.speed, 10) === cur);
+  });
+}
+if (speedCtrl) {
+  speedCtrl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".speed-btn");
+    if (!btn) return;
+    const s = parseInt(btn.dataset.speed, 10);
+    if (s) {
+      runner.setSpeed(s);
+      refreshSpeedUI();
+    }
+  });
+  refreshSpeedUI();
+}
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") keys.w = 1;
   if (e.code === "KeyS" || e.code === "ArrowDown") keys.s = 1;

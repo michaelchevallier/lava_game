@@ -561,6 +561,17 @@
 
     <div id="tower-toolbar"></div>
 
+    <div id="speed-control" style="position: fixed; left: 18px; bottom: 18px; z-index: 19; display: flex; gap: 4px; pointer-events: auto;">
+      <button class="speed-btn" data-speed="1">×1</button>
+      <button class="speed-btn" data-speed="2">×2</button>
+      <button class="speed-btn" data-speed="3">×3</button>
+    </div>
+    <style>
+      .speed-btn { background: rgba(20,28,36,0.85); border: 2px solid #3a4a5a; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; min-width: 40px; }
+      .speed-btn:hover { background: rgba(40,56,72,0.95); }
+      .speed-btn.active { border-color: #ffd23f; color: #ffd23f; background: rgba(60,50,20,0.95); box-shadow: 0 0 8px rgba(255,210,63,0.4); }
+    </style>
+
     <div id="combo-tracker" style="position: fixed; right: 18px; bottom: 96px; display: flex; flex-direction: column; gap: 4px; z-index: 19; pointer-events: none;"></div>
 
     <div id="radial-menu">
