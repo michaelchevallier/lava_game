@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 export const BUILD_POINT_RADIUS = 1.2;
+export const BUILD_POINT_VISUAL_RADIUS = 2.0;
 export const BUILD_DRAIN_PER_SEC = 30;
 
 const HALO_NEUTRAL = 0x66ddff;
@@ -22,7 +23,7 @@ export class BuildPoint {
     this._lastRatio = -1;
 
     this.ring = new THREE.Mesh(
-      new THREE.RingGeometry(BUILD_POINT_RADIUS - 0.12, BUILD_POINT_RADIUS, 36),
+      new THREE.RingGeometry(BUILD_POINT_VISUAL_RADIUS - 0.18, BUILD_POINT_VISUAL_RADIUS, 36),
       new THREE.MeshBasicMaterial({ color: HALO_NEUTRAL, transparent: true, opacity: 0.0, side: THREE.DoubleSide, depthWrite: false }),
     );
     this.ring.rotation.x = -Math.PI / 2;
@@ -31,7 +32,7 @@ export class BuildPoint {
     scene.add(this.ring);
 
     this.fill = new THREE.Mesh(
-      new THREE.CircleGeometry(BUILD_POINT_RADIUS - 0.18, 24, 0, 0.001),
+      new THREE.CircleGeometry(BUILD_POINT_VISUAL_RADIUS - 0.24, 24, 0, 0.001),
       new THREE.MeshBasicMaterial({ color: HALO_VALID, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }),
     );
     this.fill.rotation.x = -Math.PI / 2;
@@ -67,7 +68,7 @@ export class BuildPoint {
     this._lastRatio = ratio;
     this.fill.geometry.dispose();
     const angle = Math.max(0.001, Math.PI * 2 * ratio);
-    this.fill.geometry = new THREE.CircleGeometry(BUILD_POINT_RADIUS - 0.18, 24, -Math.PI / 2, -angle);
+    this.fill.geometry = new THREE.CircleGeometry(BUILD_POINT_VISUAL_RADIUS - 0.24, 24, -Math.PI / 2, -angle);
   }
 
   attachTower(tower) {

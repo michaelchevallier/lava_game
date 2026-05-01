@@ -939,8 +939,24 @@ function teleportHeroToNearestCastle() {
     if (d2 < bestD2) { bestD2 = d2; best = c; }
   }
   if (!best) return;
-  runner.hero.group.position.set(best.pos.x, 0, best.pos.z);
-  Particles.emit({ x: best.pos.x, y: 0.5, z: best.pos.z }, 0x66ddff, 30, { speed: 6, life: 0.6, scale: 0.6, yLift: 1.2 });
+  const offset = 3.5;
+  let dirX = 0, dirZ = -1;
+  const path = runner.paths?.[best.pathIdx] || runner.path;
+  if (path) {
+    const tan = path.getTangentAt(0.999);
+    dirX = -tan.x;
+    dirZ = -tan.z;
+    const len = Math.hypot(dirX, dirZ) || 1;
+    dirX /= len; dirZ /= len;
+  } else {
+    const dx = hp.x - best.pos.x, dz = hp.z - best.pos.z;
+    const len = Math.hypot(dx, dz) || 1;
+    dirX = dx / len; dirZ = dz / len;
+  }
+  const tx = best.pos.x + dirX * offset;
+  const tz = best.pos.z + dirZ * offset;
+  runner.hero.group.position.set(tx, 0, tz);
+  Particles.emit({ x: tx, y: 0.5, z: tz }, 0x66ddff, 30, { speed: 6, life: 0.6, scale: 0.6, yLift: 1.2 });
   Audio.sfxLevelUp?.();
 }
 

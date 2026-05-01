@@ -377,13 +377,40 @@ export class LevelRunner {
       }
     }
 
-    if (this.hero) this.hero.tick(adt, this.enemies);
+    if (this.hero) {
+      this.hero.tick(adt, this.enemies);
+      this._pushHeroOutOfCastles(this.hero);
+    }
 
     this._tickBuildPoints(adt, this.hero);
 
     Synergies.resolve(this.towers, this.enemies, adt);
 
     for (const t of this.towers) t.tick(adt, this.enemies, this.towers);
+  }
+
+  _pushHeroOutOfCastles(hero) {
+    const CASTLE_RADIUS = 2.4;
+    const HERO_RADIUS = 0.45;
+    const minDist = CASTLE_RADIUS + HERO_RADIUS;
+    const minSq = minDist * minDist;
+    const hp = hero.group.position;
+    for (const c of this.castles) {
+      if (c.isDead) continue;
+      const dx = hp.x - c.pos.x;
+      const dz = hp.z - c.pos.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 >= minSq) continue;
+      if (d2 < 1e-4) {
+        hp.x = c.pos.x;
+        hp.z = c.pos.z + minDist;
+        continue;
+      }
+      const d = Math.sqrt(d2);
+      const push = (minDist - d) / d;
+      hp.x += dx * push;
+      hp.z += dz * push;
+    }
   }
 
   _isLevelLost() {
