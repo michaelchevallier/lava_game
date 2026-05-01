@@ -28,5 +28,5 @@ export default {
   ],
   startCoins: 320,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS FINAL : 2 chemins (serpentine + lane arrière). Le Dragon arrive.",
+  briefing: "BOSS FINAL : 2 chemins (serpentine + lane arrière). Le Dragon arrive. Bravo ! Tu gagnes des gemmes — utilise-les dans le menu Améliorations entre 2 niveaux.",
 };

@@ -123,6 +123,9 @@ function _applyCrossEffect(source, syn, towers) {
       import("./Particles.js").then(({ Particles }) => {
         Particles.emit({ x: midX, y: 0.6, z: midZ }, 0xffd23f, 6, { speed: 2, life: 0.4, scale: 0.3, yLift: 0.5 });
       });
+      document.dispatchEvent(new CustomEvent("crowdef:synergy-activated", {
+        detail: { from: syn.from, to: source.type, label: `${syn.from}+${source.type}` },
+      }));
     }
   } else {
     if (effect.freezeOnHit) source._freezeOnHit = 0;

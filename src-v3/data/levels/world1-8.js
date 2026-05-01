@@ -23,5 +23,5 @@ export default {
   castleHP: 160,
   startCoins: 180,
   heroSpawn: [-2, 0, -1],
-  briefing: "BOSS : le Brigand de la Plaine attaque le château ! Vague finale après 2 mid-bosses.",
+  briefing: "BOSS : le Brigand de la Plaine attaque le château ! Vague finale après 2 mid-bosses. Bravo ! Tu gagnes des gemmes — utilise-les dans le menu Améliorations entre 2 niveaux.",
 };

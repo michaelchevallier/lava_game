@@ -107,4 +107,5 @@ export const Audio = {
   sfxSkinEquip()   { tone(880, 0.10, "sine", 0.16); setTimeout(() => tone(1175, 0.14, "sine", 0.16), 80); },
   sfxBossCharge()  { sweepTone(60, 220, 0.30, "sawtooth", 0.22); },
   sfxLevelUp()     { seq([{ f: 659, d: 0.10, type: "triangle", g: 0.18 }, { f: 880, d: 0.10, type: "triangle", g: 0.20, delay: 80 }, { f: 1175, d: 0.10, type: "triangle", g: 0.22, delay: 160 }, { f: 1568, d: 0.18, type: "triangle", g: 0.24, delay: 240 }]); },
+  sfxWaveClear()   { tone(880, 0.15, "square", 0.18); setTimeout(() => tone(1320, 0.15, "square", 0.18), 160); },
 };
