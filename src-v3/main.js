@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { makePathLine } from "./systems/Path.js";
+import { makePathLine, getPathPoints2D } from "./systems/Path.js";
 import { LevelRunner } from "./systems/LevelRunner.js";
 import { Synergies } from "./systems/Synergies.js";
 import { Particles } from "./systems/Particles.js";
@@ -103,15 +103,16 @@ scene.add(sun);
 const fill = new THREE.HemisphereLight(0xb0e0ff, 0x4a6a3a, 0.55);
 scene.add(fill);
 
-function makeGroundTexture(baseHex) {
-  const size = 512;
+function makeGroundTexture(baseHex, pathCurves) {
+  const hasPaths = pathCurves && pathCurves.length > 0;
+  const size = hasPaths ? 2048 : 512;
   const cv = document.createElement("canvas");
   cv.width = size; cv.height = size;
   const ctx = cv.getContext("2d");
   const r = (baseHex >> 16) & 0xff, g = (baseHex >> 8) & 0xff, b = baseHex & 0xff;
   ctx.fillStyle = `rgb(${r},${g},${b})`;
   ctx.fillRect(0, 0, size, size);
-  const variations = 600;
+  const variations = hasPaths ? 1800 : 600;
   for (let i = 0; i < variations; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
@@ -127,7 +128,8 @@ function makeGroundTexture(baseHex) {
     ctx.fill();
   }
   // Sparse darker tufts
-  for (let i = 0; i < 80; i++) {
+  const tuftCount = hasPaths ? 240 : 80;
+  for (let i = 0; i < tuftCount; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
     ctx.fillStyle = `rgba(${Math.max(0, r - 30)}, ${Math.max(0, g - 35)}, ${Math.max(0, b - 25)}, 0.32)`;
@@ -135,9 +137,104 @@ function makeGroundTexture(baseHex) {
     ctx.arc(x, y, 2 + Math.random() * 3, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  if (hasPaths) {
+    // world coords span: -MAP_HALF..+MAP_HALF → 0..size
+    const worldToCanvas = (wx, wz) => ({
+      cx: ((wx + MAP_HALF) / GROUND_SIZE) * size,
+      cy: ((wz + MAP_HALF) / GROUND_SIZE) * size,
+    });
+    // path width in world units ~2.0, scaled to canvas pixels
+    const pathWorldWidth = 2.0;
+    const lineWidthPx = (pathWorldWidth / GROUND_SIZE) * size;
+    const borderWidthPx = lineWidthPx + (16 / GROUND_SIZE) * size;
+
+    for (const curve of pathCurves) {
+      const pts = getPathPoints2D(curve, 300);
+      if (pts.length < 2) continue;
+
+      // Border (darker)
+      ctx.save();
+      ctx.beginPath();
+      const first = worldToCanvas(pts[0].x, pts[0].z);
+      ctx.moveTo(first.cx, first.cy);
+      for (let i = 1; i < pts.length; i++) {
+        const p = worldToCanvas(pts[i].x, pts[i].z);
+        ctx.lineTo(p.cx, p.cy);
+      }
+      ctx.strokeStyle = "#3a200a";
+      ctx.lineWidth = borderWidthPx;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+      ctx.restore();
+
+      // Build clipping path for path interior (used for texture detail)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(first.cx, first.cy);
+      for (let i = 1; i < pts.length; i++) {
+        const p = worldToCanvas(pts[i].x, pts[i].z);
+        ctx.lineTo(p.cx, p.cy);
+      }
+      ctx.strokeStyle = "#7a4a22";
+      ctx.lineWidth = lineWidthPx;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      // Clip to path stroke for interior detail
+      ctx.beginPath();
+      ctx.moveTo(first.cx, first.cy);
+      for (let i = 1; i < pts.length; i++) {
+        const p = worldToCanvas(pts[i].x, pts[i].z);
+        ctx.lineTo(p.cx, p.cy);
+      }
+      ctx.lineWidth = lineWidthPx;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      // Use stroke as clip — create a path for clipping via offset trick
+      // Draw details without clip (path already rendered above, details on top)
+      for (let i = 0; i < 200; i++) {
+        const t = Math.random();
+        const pp = worldToCanvas(
+          pts[Math.floor(t * (pts.length - 1))].x + (Math.random() - 0.5) * pathWorldWidth * 0.8,
+          pts[Math.floor(t * (pts.length - 1))].z + (Math.random() - 0.5) * pathWorldWidth * 0.8,
+        );
+        const lr = 130 + Math.random() * 40;
+        const lg = 80 + Math.random() * 30;
+        const lb = 40 + Math.random() * 20;
+        ctx.fillStyle = `rgba(${Math.round(lr)}, ${Math.round(lg)}, ${Math.round(lb)}, ${0.4 + Math.random() * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(pp.cx, pp.cy, (4 + Math.random() * 10) / GROUND_SIZE * size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (let i = 0; i < 160; i++) {
+        const t = Math.random();
+        const pp = worldToCanvas(
+          pts[Math.floor(t * (pts.length - 1))].x + (Math.random() - 0.5) * pathWorldWidth * 0.8,
+          pts[Math.floor(t * (pts.length - 1))].z + (Math.random() - 0.5) * pathWorldWidth * 0.8,
+        );
+        const dr = 50 + Math.random() * 30;
+        const dg = 30 + Math.random() * 20;
+        const db = 15 + Math.random() * 15;
+        ctx.fillStyle = `rgba(${Math.round(dr)}, ${Math.round(dg)}, ${Math.round(db)}, ${0.6 + Math.random() * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(pp.cx, pp.cy, (1.5 + Math.random() * 4) / GROUND_SIZE * size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
   const tex = new THREE.CanvasTexture(cv);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(4, 4);
+  if (hasPaths) {
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.repeat.set(1, 1);
+  } else {
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 4);
+  }
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
@@ -208,7 +305,8 @@ function tickSpawnFog() {}
 
 function refreshGroundTexture(baseHex) {
   if (groundMat.map) groundMat.map.dispose();
-  groundMat.map = makeGroundTexture(baseHex);
+  const curves = runner ? (runner.paths || [runner.path]).filter(Boolean) : [];
+  groundMat.map = makeGroundTexture(baseHex, curves);
   groundMat.color.setHex(0xffffff);
   groundMat.needsUpdate = true;
 }
@@ -505,11 +603,14 @@ function rebuildLevelDecor() {
   disposeCastleObjects();
   disposePortals();
 
-  for (const p of (runner.paths || [runner.path])) {
-    if (!p) continue;
-    const pl = makePathLine(p, dirtMat, {});
-    scene.add(pl);
-    pathLines.push(pl);
+  const curves = (runner.paths || [runner.path]).filter(Boolean);
+
+  if (groundMat.map) groundMat.map.dispose();
+  groundMat.map = makeGroundTexture(0x6fc16d, curves);
+  groundMat.map.needsUpdate = true;
+  groundMat.needsUpdate = true;
+
+  for (const p of curves) {
     const entry = p.getPointAt(0);
     buildPortal(entry);
   }
