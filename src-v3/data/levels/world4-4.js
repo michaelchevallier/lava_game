@@ -1,10 +1,39 @@
-import { encirclement } from "./_pathTemplates.js";
-
 export default {
   id: "world4-4",
   name: "Volcan — Coulée",
   theme: "volcan",
-  ...encirclement(),
+  paths: [
+    [
+      [-58, 0, -14],
+      [-50, 0, -16],
+      [-42, 0, -18],
+      [-34, 0, -12],
+      [-26, 0, -4],
+      [-20, 0, -1],
+      [-16, 0, 0],
+      [-14, 0, 1],
+      [-10, 0, -6],
+      [-4, 0, -14],
+      [0, 0, -10],
+      [4, 0, -4],
+      [6, 0, 4],
+    ],
+    [
+      [-58, 0, 14],
+      [-50, 0, 16],
+      [-42, 0, 18],
+      [-34, 0, 12],
+      [-26, 0, 4],
+      [-20, 0, 1],
+      [-16, 0, 0],
+      [-14, 0, 1],
+      [-10, 0, 6],
+      [-4, 0, 14],
+      [0, 0, 10],
+      [4, 0, 4],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { imp: 18, flyer: 10, brute: 6 }, spawnRateMs: 440, breakMs: 4000 },
@@ -17,5 +46,5 @@ export default {
   castleHP: 195,
   startCoins: 240,
   heroSpawn: [-2, 0, -1],
-  briefing: "Coulée — court direct + long encerclement. 2 mid-bosses.",
+  briefing: "Pinch volcanique XL — double goulot au centre. 2 mid-bosses arrivent ensemble.",
 };

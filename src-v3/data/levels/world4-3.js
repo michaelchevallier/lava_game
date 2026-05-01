@@ -1,10 +1,39 @@
-import { splitV } from "./_pathTemplates.js";
-
 export default {
   id: "world4-3",
   name: "Volcan — Grotte",
   theme: "volcan",
-  ...splitV(),
+  paths: [
+    [
+      [-58, 0, -10],
+      [-50, 0, -12],
+      [-42, 0, -14],
+      [-34, 0, -10],
+      [-26, 0, -5],
+      [-20, 0, -2],
+      [-16, 0, 0],
+      [-14, 0, 1],
+      [-10, 0, -3],
+      [-6, 0, -8],
+      [-2, 0, -12],
+      [2, 0, -6],
+      [6, 0, 4],
+    ],
+    [
+      [-58, 0, 10],
+      [-50, 0, 12],
+      [-42, 0, 14],
+      [-34, 0, 10],
+      [-26, 0, 5],
+      [-20, 0, 2],
+      [-16, 0, 0],
+      [-14, 0, 1],
+      [-10, 0, 5],
+      [-6, 0, 9],
+      [-2, 0, 12],
+      [2, 0, 6],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { imp: 14, flyer: 10, brute: 5 }, spawnRateMs: 450, breakMs: 4000 },
@@ -17,5 +46,5 @@ export default {
   castleHP: 190,
   startCoins: 200,
   heroSpawn: [-2, 0, -1],
-  briefing: "Grotte — la galerie se sépare. Mid-boss random sur les branches.",
+  briefing: "Goulot volcanique — 2 flancs convergent en pinch point puis se séparent. 2-3 tours AoE au centre = dévastation.",
 };

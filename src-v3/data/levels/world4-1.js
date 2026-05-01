@@ -1,10 +1,24 @@
-import { mergeY } from "./_pathTemplates.js";
-
 export default {
   id: "world4-1",
   name: "Volcan — Caldera",
   theme: "volcan",
-  ...mergeY(),
+  paths: [
+    [
+      [-58, 0, 2],
+      [-50, 0, -4],
+      [-42, 0, -10],
+      [-34, 0, -14],
+      [-24, 0, -16],
+      [-14, 0, -10],
+      [-8, 0, -2],
+      [-4, 0, 6],
+      [0, 0, 12],
+      [4, 0, 8],
+      [6, 0, 2],
+      [8, 0, -2],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { basic: 14, runner: 10, imp: 5 }, spawnRateMs: 480, breakMs: 4000 },
@@ -17,5 +31,5 @@ export default {
   castleHP: 180,
   startCoins: 180,
   heroSpawn: [-2, 0, -1],
-  briefing: "Volcan — 2 chemins convergent vers la caldera. Imps brûlent vite.",
+  briefing: "Coulée en U — le chemin plonge vers le sud avant de remonter vers le château.",
 };

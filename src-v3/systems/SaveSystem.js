@@ -149,6 +149,7 @@ export const SaveSystem = {
   isLevelUnlocked(levelId, levelOrder) {
     if (levelId === "endless") return this.isLevelComplete("world1-8");
     if (!levelOrder || !levelOrder.length) return true;
+    if (this.isLevelComplete(levelId)) return true;
     const idx = levelOrder.indexOf(levelId);
     if (idx <= 0) return true;
     const prevId = levelOrder[idx - 1];

@@ -1,10 +1,32 @@
-import { parallels } from "./_pathTemplates.js";
-
 export default {
   id: "world4-6",
   name: "Volcan — Forge",
   theme: "volcan",
-  ...parallels(),
+  paths: [
+    [
+      [-58, 0, 0],
+      [-50, 0, -4],
+      [-42, 0, 2],
+      [-34, 0, -6],
+      [-26, 0, 2],
+      [-18, 0, -4],
+      [-10, 0, 2],
+      [-2, 0, -2],
+      [4, 0, 0],
+      [6, 0, 4],
+    ],
+    [
+      [-58, 0, 20],
+      [-48, 0, 18],
+      [-38, 0, 14],
+      [-28, 0, 10],
+      [-18, 0, 8],
+      [-10, 0, 6],
+      [-4, 0, 4],
+      [2, 0, 2],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { imp: 20, flyer: 14, brute: 7 }, spawnRateMs: 420, breakMs: 4000 },
@@ -17,5 +39,5 @@ export default {
   castleHP: 215,
   startCoins: 230,
   heroSpawn: [-2, 0, -1],
-  briefing: "Forge — 2 lanes croisées. Swarm d'imps des 2 côtés.",
+  briefing: "Double flanking — front principal + flank sud à x=+50. Défends les deux axes ou tu seras débordé.",
 };

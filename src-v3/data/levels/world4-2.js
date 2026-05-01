@@ -1,10 +1,26 @@
-import { parallels } from "./_pathTemplates.js";
-
 export default {
   id: "world4-2",
   name: "Volcan — Falaise",
   theme: "volcan",
-  ...parallels(),
+  paths: [
+    [
+      [-58, 0, -2],
+      [-50, 0, -8],
+      [-42, 0, -14],
+      [-34, 0, -18],
+      [-26, 0, -14],
+      [-18, 0, -8],
+      [-16, 0, -2],
+      [-14, 0, 1],
+      [-12, 0, -1],
+      [-10, 0, 4],
+      [-6, 0, 10],
+      [-2, 0, 14],
+      [2, 0, 8],
+      [4, 0, 2],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { runner: 14, imp: 10, flyer: 6 }, spawnRateMs: 460, breakMs: 4000 },
@@ -17,5 +33,5 @@ export default {
   castleHP: 185,
   startCoins: 185,
   heroSpawn: [-2, 0, -1],
-  briefing: "Falaise — 2 lanes croisées. Imps bondissent du précipice.",
+  briefing: "Falaise — coulée en U inversée. La kill zone naturelle se forme face au château.",
 };

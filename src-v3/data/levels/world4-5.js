@@ -1,10 +1,28 @@
-import { mergeY } from "./_pathTemplates.js";
-
 export default {
   id: "world4-5",
   name: "Volcan — Geyser",
   theme: "volcan",
-  ...mergeY(),
+  paths: [
+    [
+      [-58, 0, -20],
+      [-48, 0, -22],
+      [-36, 0, -24],
+      [-24, 0, -20],
+      [-14, 0, -12],
+      [-8, 0, -4],
+      [-4, 0, 4],
+      [-8, 0, 12],
+      [-16, 0, 18],
+      [-24, 0, 14],
+      [-28, 0, 6],
+      [-24, 0, -2],
+      [-18, 0, -6],
+      [-10, 0, -4],
+      [-4, 0, 0],
+      [0, 0, 4],
+      [6, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { imp: 18, flyer: 12, brute: 6 }, spawnRateMs: 430, breakMs: 4000 },
@@ -17,5 +35,5 @@ export default {
   castleHP: 205,
   startCoins: 220,
   heroSpawn: [-2, 0, -1],
-  briefing: "Geyser — 2 chemins convergent. Mélange chaotique de tous les types.",
+  briefing: "Spirale du Dragon — chemin en spirale depuis le nord. Rayon ~24u. Couvre les arcs extérieurs tôt.",
 };

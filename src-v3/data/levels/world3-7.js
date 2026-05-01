@@ -1,10 +1,34 @@
-import { parallels } from "./_pathTemplates.js";
-
 export default {
   id: "world3-7",
   name: "Désert — Pyramide",
   theme: "desert",
-  ...parallels(),
+  paths: [
+    [
+      [-32, 0, -10],
+      [-26, 0, -16],
+      [-22, 0, -12],
+      [-18, 0, -2],
+      [-14, 0, 1],
+      [-10, 0, -1],
+      [-7, 0, -8],
+      [-4, 0, -14],
+      [-1, 0, 4],
+      [3, 0, 6],
+      [2, 0, 4],
+    ],
+    [
+      [-32, 0, 10],
+      [-26, 0, 8],
+      [-22, 0, 12],
+      [-17, 0, 6],
+      [-13, 0, 10],
+      [-9, 0, 4],
+      [-4, 0, 0],
+      [-1, 0, -3],
+      [3, 0, 5],
+      [2, 0, 4],
+    ],
+  ],
   waves: {
     list: [
       { types: { flyer: 18, runner: 12, brute: 6 }, spawnRateMs: 450, breakMs: 4000 },
@@ -17,5 +41,5 @@ export default {
   castleHP: 180,
   startCoins: 195,
   heroSpawn: [-2, 0, -1],
-  briefing: "Pyramide — 2 lanes croisées. Pré-boss : prépare-toi pour le Capitaine Corsaire.",
+  briefing: "Pyramide — path principal avec goulot z=0±2 en milieu. Pré-boss : prépare-toi pour le Capitaine Corsaire.",
 };
