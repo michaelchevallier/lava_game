@@ -358,14 +358,20 @@ export class LevelRunner {
           emit("crowdef:achievement-unlocked", { id: "kills_100" });
         }
         const vfxSkinId = SaveSystem.getEquippedSkin("vfx") || getDefaultSkinId("vfx");
-        const vfxColor = SKIN_BY_ID[vfxSkinId]?.killColor || 0xc63a10;
+        const vfxSkinColor = SKIN_BY_ID[vfxSkinId]?.killColor;
+        let vfxColor;
+        if (vfxSkinColor != null) vfxColor = vfxSkinColor;
+        else if (e.isBoss) vfxColor = 0xffd700;
+        else if (e.hpMax >= 12) vfxColor = 0xff8030;
+        else vfxColor = 0xffffff;
+        const burstCount = e.isBoss ? 40 : 24;
         Particles.emit(
           { x: e.group.position.x, y: e.group.position.y + 0.5, z: e.group.position.z },
           vfxColor,
-          8,
-          { speed: 3, life: 0.55, scale: 0.45, yLift: 1.2 },
+          burstCount,
+          { speed: 4, life: 0.7, scale: 0.5, yLift: 1.6 },
         );
-        JuiceFX.shake(0.05, 80);
+        JuiceFX.shake(e.isBoss ? 0.3 : 0.12, e.isBoss ? 200 : 100);
         Audio.sfxEnemyDie();
         emit("crowdef:enemy-killed", {
           type: e.type || "basic",
@@ -475,10 +481,21 @@ export class LevelRunner {
       if (Math.random() < 0.15) pathIdx = Math.floor(Math.random() * this.paths.length);
     }
     const targetPath = this.paths[pathIdx];
-    this._laneToggle = !this._laneToggle;
     const cfg = ENEMY_TYPES[type] || ENEMY_TYPES.basic;
-    const lane = (cfg.isBoss || cfg.isFlyer) ? 0 : (this._laneToggle ? 0.7 : -0.7);
+    const LANES = [-1.4, -0.7, 0, 0.7, 1.4];
+    this._laneIdx = ((this._laneIdx ?? -1) + 1) % LANES.length;
+    const lane = (cfg.isBoss || cfg.isFlyer) ? 0 : LANES[this._laneIdx];
     const e = new Enemy(this.scene, targetPath, type, pathIdx, lane);
+    if (!cfg.isBoss) {
+      e.speed *= 0.9 + Math.random() * 0.2;
+    }
+    const entry = targetPath.getPointAt(0);
+    Particles.emit(
+      { x: entry.x, y: 0.5, z: entry.z },
+      cfg.isBoss ? 0xffaa00 : 0xb088ff,
+      cfg.isBoss ? 30 : 12,
+      { speed: 4, life: 0.5, scale: 0.45, yLift: 1.5 },
+    );
     this.enemies.push(e);
   }
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const POOL_SIZE = 100;
+const POOL_SIZE = 300;
 const TEXTURE_SIZE = 64;
 
 let scene = null;
@@ -98,7 +98,7 @@ export const Particles = {
       p.vy -= 4 * dt;
       const ratio = p.life / p.maxLife;
       p.sprite.material.opacity = ratio;
-      const s = p.scaleStart * (0.4 + ratio * 0.6);
+      const s = p.scaleStart * (0.6 + (1 - ratio) * 0.7);
       p.sprite.scale.set(s, s, s);
     }
   },
