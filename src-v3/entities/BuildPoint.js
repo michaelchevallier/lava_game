@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export const BUILD_POINT_RADIUS = 1.2;
-export const BUILD_POINT_VISUAL_RADIUS = 2.0;
+export const BUILD_POINT_VISUAL_RADIUS = 1.6;
 export const BUILD_DRAIN_PER_SEC = 30;
 
 const HALO_NEUTRAL = 0x66ddff;
@@ -103,7 +103,7 @@ export class BuildPoint {
 export function generateBuildPointGrid(scene, paths) {
   const points = [];
   const seen = [];
-  const OFFSETS = [2.6, 4.1];
+  const OFFSETS = [3.4, 4.9];
   const DEDUP_SQ = 3.5 * 3.5;
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi];

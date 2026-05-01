@@ -218,14 +218,14 @@ export class LevelRunner {
 
   _tickBuildPoints(dt, hero) {
     if (!hero) return;
-    const closest = this.findClosestBuildPoint(hero.group.position, 4.5);
+    const closest = this.findClosestBuildPoint(hero.group.position, 7.5);
     let activeNear = null;
     let onBp = null;
     const hasBuildIntent = !!this.selectedTowerType;
     const cfg = hasBuildIntent ? this._findUnlockedTowerCfg(this.selectedTowerType) : null;
     const cost = cfg ? (cfg.cost || this._defaultTowerCost(this.selectedTowerType)) : 0;
     const canAfford = this.coins >= cost;
-    const VIS_RADIUS_SQ = 5 * 5;
+    const VIS_RADIUS_SQ = 8.5 * 8.5;
     const heroPos = hero.group.position;
     for (const bp of this.buildPoints) {
       if (bp === closest) continue;
@@ -475,7 +475,10 @@ export class LevelRunner {
       if (Math.random() < 0.15) pathIdx = Math.floor(Math.random() * this.paths.length);
     }
     const targetPath = this.paths[pathIdx];
-    const e = new Enemy(this.scene, targetPath, type, pathIdx);
+    this._laneToggle = !this._laneToggle;
+    const cfg = ENEMY_TYPES[type] || ENEMY_TYPES.basic;
+    const lane = (cfg.isBoss || cfg.isFlyer) ? 0 : (this._laneToggle ? 0.7 : -0.7);
+    const e = new Enemy(this.scene, targetPath, type, pathIdx, lane);
     this.enemies.push(e);
   }
 

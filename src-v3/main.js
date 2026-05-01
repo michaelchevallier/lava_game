@@ -143,7 +143,7 @@ function makeGroundTexture(baseHex, pathCurves, pathInnerHex, pathBorderHex) {
       cx: ((wx + MAP_HALF) / GROUND_SIZE) * size,
       cy: ((wz + MAP_HALF) / GROUND_SIZE) * size,
     });
-    const pathWorldWidth = 2.0;
+    const pathWorldWidth = 3.5;
     const pxPerUnit = size / GROUND_SIZE;
     const innerWidthPx = pathWorldWidth * pxPerUnit;
     const borderWidthPx = innerWidthPx + 8;

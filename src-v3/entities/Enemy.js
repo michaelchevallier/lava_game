@@ -116,10 +116,11 @@ export const ENEMY_TYPES = {
 };
 
 export class Enemy {
-  constructor(scene, curve, type = "basic", pathIdx = 0) {
+  constructor(scene, curve, type = "basic", pathIdx = 0, laneOffset = 0) {
     const cfg = ENEMY_TYPES[type] || ENEMY_TYPES.basic;
     this.scene = scene;
     this.curve = curve;
+    this.laneOffset = laneOffset;
     this.t = 0;
     this.hpMax = cfg.hp;
     this.hp = cfg.hp;
@@ -224,6 +225,11 @@ export class Enemy {
     scene.add(this.group);
     const start = curve.getPointAt(0);
     this.group.position.copy(start);
+    if (laneOffset !== 0) {
+      const tan = curve.getTangentAt(0).normalize();
+      this.group.position.x += -tan.z * laneOffset;
+      this.group.position.z += tan.x * laneOffset;
+    }
   }
 
   _buildFallback(color = 0xc63a10) {
@@ -499,14 +505,19 @@ export class Enemy {
       this.reachedEnd = true;
     }
     const p = this.curve.getPointAt(this.t);
-    this.group.position.x = p.x;
-    this.group.position.z = p.z;
+    const tangent = this.curve.getTangentAt(this.t).normalize();
+    this._lastTangent.copy(tangent);
+    let px = p.x, pz = p.z;
+    if (this.laneOffset !== 0 && !this.isFlyer) {
+      px += -tangent.z * this.laneOffset;
+      pz += tangent.x * this.laneOffset;
+    }
+    this.group.position.x = px;
+    this.group.position.z = pz;
     if (this.isFlyer) {
       const bob = Math.sin(this.t * 20) * 0.15;
       this.group.position.y = this.flyHeight + bob;
     }
-    const tangent = this.curve.getTangentAt(this.t).normalize();
-    this._lastTangent.copy(tangent);
     this.group.rotation.y = Math.atan2(tangent.x, tangent.z);
   }
 
