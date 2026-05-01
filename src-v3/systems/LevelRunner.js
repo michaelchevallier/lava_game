@@ -207,7 +207,7 @@ export class LevelRunner {
       this.towers.push(tower);
       bp.attachTower(tower);
       this.selectedTowerType = null;
-      emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z } });
+      emit("crowdef:tower-built", { type, pos: { x: bp.pos.x, z: bp.pos.z }, tower });
     }
   }
 
@@ -317,7 +317,7 @@ export class LevelRunner {
         continue;
       }
       if (e.dead) {
-        const baseReward = (e.reward || 2) * 0.55;
+        const baseReward = (e.reward || 2) * 0.75;
         const magnetMul = Synergies.getCoinMulAt(e.group.position);
         const reward = Math.max(1, Math.round(baseReward * (this.hero ? this.hero.coinGainMul : 1) * magnetMul));
         this.coins += reward;

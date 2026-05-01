@@ -1442,7 +1442,25 @@ document.addEventListener("crowdef:enemy-killed", (e) => {
   refreshHUD();
   if (e.detail?.pos) spawnFlyingCoin(e.detail.pos);
 });
-document.addEventListener("crowdef:tower-built", refreshHUD);
+document.addEventListener("crowdef:tower-built", (e) => {
+  refreshHUD();
+  Audio.sfxTowerBuilt?.();
+  const tower = e.detail?.tower;
+  const grp = tower?.group;
+  if (grp) {
+    const start = performance.now();
+    const dur = 260;
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const t = Math.min(1, elapsed / dur);
+      const s = t < 0.5 ? 1 + 0.25 * (t / 0.5) : 1.25 - 0.25 * ((t - 0.5) / 0.5);
+      grp.scale.set(s, s, s);
+      if (t < 1) requestAnimationFrame(tick);
+      else grp.scale.set(1, 1, 1);
+    };
+    requestAnimationFrame(tick);
+  }
+});
 document.addEventListener("crowdef:castle-hit", (e) => {
   refreshHUD();
   ui.castleHpBox.classList.remove("flash");

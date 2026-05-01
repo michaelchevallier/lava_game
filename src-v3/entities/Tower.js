@@ -30,9 +30,9 @@ export const TOWER_TYPES = {
     cost: 100, icon: "🎯", unlockWorld: 2,
   },
   mine: {
-    range: 1.8, fireRateMs: 0, damage: 8, projColor: 0xff3030, projSpeed: 0,
+    range: 1.8, fireRateMs: 0, damage: 5, projColor: 0xff3030, projSpeed: 0,
     asset: "tower_mine", scale: 0.6, label: "Mine", aoe: 2.5, pierce: 0,
-    fallbackColor: 0xaa2020, behavior: "cluster", clusterCount: 3, cooldownMs: 8000,
+    fallbackColor: 0xaa2020, behavior: "cluster", clusterCount: 3, cooldownMs: 12000,
     cost: 60, icon: "💣", unlockWorld: 2,
   },
   cannon: {

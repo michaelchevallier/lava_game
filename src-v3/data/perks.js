@@ -21,10 +21,11 @@ export const PERKS = [
     id: "damage",
     name: "Frappe puissante",
     icon: "💥",
-    description: "Dégâts +50%",
+    description: "Dégâts +35% (max 2)",
     category: "offensive",
     stackable: true,
-    damage: 0.5,
+    maxStacks: 2,
+    damage: 0.35,
   },
   {
     id: "multi_shot",
@@ -132,7 +133,14 @@ export const PERKS = [
 ];
 
 export function rollPerkChoices(hero, count = 3, totalLevelUpsLeft = 5) {
-  const available = PERKS.filter((p) => p.stackable || !hero.perks.includes(p.id));
+  const available = PERKS.filter((p) => {
+    if (!p.stackable) return !hero.perks.includes(p.id);
+    if (p.maxStacks != null) {
+      const stacks = hero.perks.filter((id) => id === p.id).length;
+      return stacks < p.maxStacks;
+    }
+    return true;
+  });
   if (!available.length) return [];
 
   const hasTransform = hero.perks.some((id) => PERKS.find((p) => p.id === id && p.transform));
