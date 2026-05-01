@@ -139,91 +139,72 @@ function makeGroundTexture(baseHex, pathCurves) {
   }
 
   if (hasPaths) {
-    // world coords span: -MAP_HALF..+MAP_HALF → 0..size
     const worldToCanvas = (wx, wz) => ({
       cx: ((wx + MAP_HALF) / GROUND_SIZE) * size,
       cy: ((wz + MAP_HALF) / GROUND_SIZE) * size,
     });
-    // path width in world units ~2.0, scaled to canvas pixels
     const pathWorldWidth = 2.0;
-    const lineWidthPx = (pathWorldWidth / GROUND_SIZE) * size;
-    const borderWidthPx = lineWidthPx + (16 / GROUND_SIZE) * size;
+    const pxPerUnit = size / GROUND_SIZE;
+    const innerWidthPx = pathWorldWidth * pxPerUnit;
+    const borderWidthPx = innerWidthPx + 8;
+
+    const traceCurve = (pts) => {
+      const first = worldToCanvas(pts[0].x, pts[0].z);
+      ctx.beginPath();
+      ctx.moveTo(first.cx, first.cy);
+      for (let i = 1; i < pts.length; i++) {
+        const p = worldToCanvas(pts[i].x, pts[i].z);
+        ctx.lineTo(p.cx, p.cy);
+      }
+    };
 
     for (const curve of pathCurves) {
-      const pts = getPathPoints2D(curve, 300);
+      const pts = getPathPoints2D(curve, 240);
       if (pts.length < 2) continue;
 
-      // Border (darker)
-      ctx.save();
-      ctx.beginPath();
-      const first = worldToCanvas(pts[0].x, pts[0].z);
-      ctx.moveTo(first.cx, first.cy);
-      for (let i = 1; i < pts.length; i++) {
-        const p = worldToCanvas(pts[i].x, pts[i].z);
-        ctx.lineTo(p.cx, p.cy);
-      }
-      ctx.strokeStyle = "#3a200a";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      traceCurve(pts);
+      ctx.strokeStyle = "#2a1808";
       ctx.lineWidth = borderWidthPx;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
       ctx.stroke();
-      ctx.restore();
 
-      // Build clipping path for path interior (used for texture detail)
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(first.cx, first.cy);
-      for (let i = 1; i < pts.length; i++) {
-        const p = worldToCanvas(pts[i].x, pts[i].z);
-        ctx.lineTo(p.cx, p.cy);
-      }
+      traceCurve(pts);
       ctx.strokeStyle = "#7a4a22";
-      ctx.lineWidth = lineWidthPx;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      ctx.lineWidth = innerWidthPx;
       ctx.stroke();
 
-      // Clip to path stroke for interior detail
-      ctx.beginPath();
-      ctx.moveTo(first.cx, first.cy);
-      for (let i = 1; i < pts.length; i++) {
-        const p = worldToCanvas(pts[i].x, pts[i].z);
-        ctx.lineTo(p.cx, p.cy);
+      traceCurve(pts);
+      ctx.strokeStyle = "rgba(150, 100, 50, 0.35)";
+      ctx.lineWidth = innerWidthPx * 0.55;
+      ctx.stroke();
+
+      const detailHalf = innerWidthPx * 0.42;
+      const detailCount = Math.min(140, Math.floor(curve.getLength() * 1.4));
+      for (let i = 0; i < detailCount; i++) {
+        const idx = Math.floor(Math.random() * (pts.length - 1));
+        const c = worldToCanvas(pts[idx].x, pts[idx].z);
+        const tx = pts[idx + 1].x - pts[idx].x;
+        const tz = pts[idx + 1].z - pts[idx].z;
+        const tlen = Math.hypot(tx, tz) || 1;
+        const px = -tz / tlen, pz = tx / tlen;
+        const off = (Math.random() * 2 - 1) * detailHalf;
+        const cx = c.cx + px * pxPerUnit * (off / pxPerUnit);
+        const cy = c.cy + pz * pxPerUnit * (off / pxPerUnit);
+        const dark = Math.random() < 0.5;
+        if (dark) {
+          ctx.fillStyle = `rgba(40, 22, 8, ${0.35 + Math.random() * 0.25})`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 1 + Math.random() * 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = `rgba(170, 120, 70, ${0.18 + Math.random() * 0.18})`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 2 + Math.random() * 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-      ctx.lineWidth = lineWidthPx;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      // Use stroke as clip — create a path for clipping via offset trick
-      // Draw details without clip (path already rendered above, details on top)
-      for (let i = 0; i < 200; i++) {
-        const t = Math.random();
-        const pp = worldToCanvas(
-          pts[Math.floor(t * (pts.length - 1))].x + (Math.random() - 0.5) * pathWorldWidth * 0.8,
-          pts[Math.floor(t * (pts.length - 1))].z + (Math.random() - 0.5) * pathWorldWidth * 0.8,
-        );
-        const lr = 130 + Math.random() * 40;
-        const lg = 80 + Math.random() * 30;
-        const lb = 40 + Math.random() * 20;
-        ctx.fillStyle = `rgba(${Math.round(lr)}, ${Math.round(lg)}, ${Math.round(lb)}, ${0.4 + Math.random() * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(pp.cx, pp.cy, (4 + Math.random() * 10) / GROUND_SIZE * size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      for (let i = 0; i < 160; i++) {
-        const t = Math.random();
-        const pp = worldToCanvas(
-          pts[Math.floor(t * (pts.length - 1))].x + (Math.random() - 0.5) * pathWorldWidth * 0.8,
-          pts[Math.floor(t * (pts.length - 1))].z + (Math.random() - 0.5) * pathWorldWidth * 0.8,
-        );
-        const dr = 50 + Math.random() * 30;
-        const dg = 30 + Math.random() * 20;
-        const db = 15 + Math.random() * 15;
-        ctx.fillStyle = `rgba(${Math.round(dr)}, ${Math.round(dg)}, ${Math.round(db)}, ${0.6 + Math.random() * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(pp.cx, pp.cy, (1.5 + Math.random() * 4) / GROUND_SIZE * size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
     }
   }
 
