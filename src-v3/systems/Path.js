@@ -153,6 +153,11 @@ function makeArrowMaterial() {
   return _arrowMatCache;
 }
 
+export function getPathPoints2D(curve, samples = 300) {
+  const pts = curve.getSpacedPoints(samples);
+  return pts.map((p) => ({ x: p.x, z: p.z }));
+}
+
 export function makePathLine(curve, mat, opts = {}) {
   const group = new THREE.Group();
 
