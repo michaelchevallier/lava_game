@@ -518,14 +518,19 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
 const _xrayDir = new THREE.Vector3();
 const _xrayRay = new THREE.Raycaster();
 const _decorVec = new THREE.Vector3();
-const DECOR_FOG_FAR_SQ = 65 * 65;
+const DECOR_HIDE_SQ = 72 * 72;
+const DECOR_SHOW_SQ = 62 * 62;
 let _xrayFrame = 0;
 let _xrayHitSet = new Set();
 function updateDecorFade(dt) {
   for (const d of decor) {
     _decorVec.copy(d.position).sub(camera.position);
     const distSq = _decorVec.lengthSq();
-    d.visible = distSq < DECOR_FOG_FAR_SQ;
+    if (d.visible) {
+      if (distSq > DECOR_HIDE_SQ) d.visible = false;
+    } else {
+      if (distSq < DECOR_SHOW_SQ) d.visible = true;
+    }
   }
   if (!runner.hero) return;
   _xrayFrame = (_xrayFrame + 1) % 3;
@@ -832,6 +837,28 @@ async function prewarmShaders() {
   );
   ringPlane.position.set(offsetX + 1.2, HIDE_Y, 0);
   scene.add(ringPlane);
+
+  const NATURE_PREWARM = [
+    "nature_commontree1", "nature_pine1", "nature_rock1",
+    "nature_pebble1", "nature_bushflower", "nature_flower3",
+  ];
+  let natX = 0;
+  for (const key of NATURE_PREWARM) {
+    const gltf = AssetLoader.get(key);
+    if (!gltf || !gltf.scene) continue;
+    const clone1 = gltf.scene.clone(true);
+    clone1.position.set(natX, HIDE_Y, 5);
+    clone1.traverse((o) => {
+      if (o.isMesh && o.material) {
+        o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
+        const list = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of list) { m.transparent = true; m.opacity = 0.5; }
+      }
+      if (o.isMesh) o.frustumCulled = false;
+    });
+    scene.add(clone1);
+    natX += 0.5;
+  }
 
   Particles.emit({ x: 0, y: HIDE_Y, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
 
