@@ -423,7 +423,7 @@ const THEME_PALETTE = {
     small: ["nature_flower3", "nature_flower4"],
     rocks: ["nature_rock1", "nature_pebble1"],
     feature: ["nature_commontree3", "nature_bushflower"],
-    bigCount: 12, mediumCount: 10, smallCount: 18, rockCount: 8,
+    bigCount: 6, mediumCount: 5, smallCount: 9, rockCount: 4,
   },
   foret: {
     big: ["nature_pine1", "nature_pine2", "nature_pine3"],
@@ -431,7 +431,7 @@ const THEME_PALETTE = {
     small: ["nature_mushroom"],
     rocks: ["nature_rock1", "nature_rock2"],
     feature: ["nature_mushroom", "nature_pine3"],
-    bigCount: 22, mediumCount: 18, smallCount: 24, rockCount: 12,
+    bigCount: 11, mediumCount: 9, smallCount: 12, rockCount: 6,
   },
   desert: {
     big: ["nature_rock3", "nature_rock2"],
@@ -439,7 +439,7 @@ const THEME_PALETTE = {
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock3", "nature_pebble1"],
     feature: ["nature_rock3", "nature_rock1"],
-    bigCount: 14, mediumCount: 20, smallCount: 26, rockCount: 18,
+    bigCount: 7, mediumCount: 10, smallCount: 13, rockCount: 9,
   },
   volcan: {
     big: ["nature_rock1", "nature_rock2", "nature_rock3"],
@@ -447,7 +447,7 @@ const THEME_PALETTE = {
     small: ["nature_pebble1", "nature_pebble2"],
     rocks: ["nature_rock1", "nature_rock2"],
     feature: ["nature_rock1", "nature_rock3"],
-    bigCount: 14, mediumCount: 20, smallCount: 22, rockCount: 22,
+    bigCount: 7, mediumCount: 10, smallCount: 11, rockCount: 11,
   },
   foire: {
     big: ["nature_commontree1", "nature_commontree2"],
@@ -455,7 +455,7 @@ const THEME_PALETTE = {
     small: ["nature_flower3", "nature_flower4", "nature_mushroom"],
     rocks: ["nature_pebble1", "nature_pebble2"],
     feature: ["nature_commontree1", "nature_bushflower"],
-    bigCount: 16, mediumCount: 18, smallCount: 30, rockCount: 8,
+    bigCount: 8, mediumCount: 9, smallCount: 15, rockCount: 4,
   },
 };
 
@@ -652,11 +652,12 @@ function applyTheme(themeId) {
       placed++;
     }
   }
-  spawnSet(palette.big, palette.bigCount, 0.8, 1.4, 8, 105);
-  if (palette.twisted) spawnSet(palette.twisted, palette.twistedCount || 0, 0.35, 0.55, 8, 105);
-  spawnSet(palette.medium, palette.mediumCount, 0.6, 1.1, 6, 105);
-  spawnSet(palette.small, palette.smallCount, 0.5, 1.0, 4, 110);
-  spawnSet(palette.rocks, palette.rockCount, 0.5, 1.0, 5, 110);
+  const RING_MAX = MAP_HALF - 4;
+  spawnSet(palette.big, palette.bigCount, 0.8, 1.4, 8, RING_MAX);
+  if (palette.twisted) spawnSet(palette.twisted, palette.twistedCount || 0, 0.35, 0.55, 8, RING_MAX);
+  spawnSet(palette.medium, palette.mediumCount, 0.6, 1.1, 6, RING_MAX);
+  spawnSet(palette.small, palette.smallCount, 0.5, 1.0, 4, RING_MAX);
+  spawnSet(palette.rocks, palette.rockCount, 0.5, 1.0, 5, RING_MAX);
   if (runner.level) placeFeatureProp(runner.level, palette);
 }
 
