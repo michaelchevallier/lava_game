@@ -1,83 +1,64 @@
-let ctx = null;
-let masterGain = null;
+const BASE = (import.meta.env?.BASE_URL || "/") + "audio/sfx/";
+
+const SFX_FILES = {
+  hero_shoot: "hero_shoot.ogg",
+  tower_shoot: "tower_shoot.ogg",
+  enemy_hit: "enemy_hit.ogg",
+  enemy_die_basic: "enemy_die_basic.ogg",
+  enemy_die_medium: "enemy_die_medium.ogg",
+  enemy_die_boss: "enemy_die_boss.ogg",
+  tower_built: "tower_built.ogg",
+  tower_upgrade: "tower_upgrade.ogg",
+  wave_start: "wave_start.ogg",
+  castle_hit: "castle_hit.ogg",
+  coin_pickup: "coin_pickup.ogg",
+  gem_gain: "gem_gain.ogg",
+  achievement: "achievement.ogg",
+  perk_pick: "perk_pick.ogg",
+  skin_equip: "skin_equip.ogg",
+  boom: "boom.ogg",
+  boss_charge: "boss_charge.ogg",
+  level_up: "level_up.ogg",
+  wave_clear: "wave_clear.ogg",
+  blue_pill: "blue_pill.ogg",
+};
+
+const POOL_SIZE = 4;
+const pool = {};
+const cursor = {};
 let muted = false;
+let masterVol = 0.5;
 let started = false;
 
-function ensureCtx() {
-  if (ctx) return ctx;
-  try {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = ctx.createGain();
-    masterGain.gain.value = 0.5;
-    masterGain.connect(ctx.destination);
-  } catch (e) {
-    ctx = null;
+function ensurePool(name) {
+  if (pool[name]) return pool[name];
+  const file = SFX_FILES[name];
+  if (!file) return null;
+  const arr = [];
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const a = new Audio(BASE + file);
+    a.preload = "auto";
+    a.volume = 0;
+    arr.push(a);
   }
-  return ctx;
+  pool[name] = arr;
+  cursor[name] = 0;
+  return arr;
 }
 
-function tone(freq, duration, type = "sine", gain = 0.2, attack = 0.01, release = 0.1) {
-  const c = ensureCtx();
-  if (!c || muted) return;
-  const o = c.createOscillator();
-  const g = c.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  const t0 = c.currentTime;
-  g.gain.setValueAtTime(0, t0);
-  g.gain.linearRampToValueAtTime(gain, t0 + attack);
-  g.gain.linearRampToValueAtTime(0, t0 + duration + release);
-  o.connect(g);
-  g.connect(masterGain);
-  o.start(t0);
-  o.stop(t0 + duration + release + 0.05);
-}
-
-function sweepTone(fStart, fEnd, duration, type = "sawtooth", gain = 0.18) {
-  const c = ensureCtx();
-  if (!c || muted) return;
-  const o = c.createOscillator();
-  const g = c.createGain();
-  o.type = type;
-  const t0 = c.currentTime;
-  o.frequency.setValueAtTime(fStart, t0);
-  o.frequency.linearRampToValueAtTime(fEnd, t0 + duration);
-  g.gain.setValueAtTime(gain, t0);
-  g.gain.linearRampToValueAtTime(0, t0 + duration);
-  o.connect(g);
-  g.connect(masterGain);
-  o.start(t0);
-  o.stop(t0 + duration + 0.05);
-}
-
-function noise(duration, gain = 0.15, filterFreq = 1200) {
-  const c = ensureCtx();
-  if (!c || muted) return;
-  const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const src = c.createBufferSource();
-  const filter = c.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = filterFreq;
-  const g = c.createGain();
-  const t0 = c.currentTime;
-  g.gain.setValueAtTime(gain, t0);
-  g.gain.linearRampToValueAtTime(0, t0 + duration);
-  src.buffer = buf;
-  src.connect(filter);
-  filter.connect(g);
-  g.connect(masterGain);
-  src.start(t0);
-  src.stop(t0 + duration);
-}
-
-function seq(notes) {
-  const c = ensureCtx();
-  if (!c || muted) return;
-  notes.forEach((n, i) => {
-    setTimeout(() => tone(n.f, n.d || 0.12, n.type || "square", n.g ?? 0.2), (n.delay ?? i * 90));
-  });
+function play(name, volMul = 1) {
+  if (muted) return;
+  const arr = ensurePool(name);
+  if (!arr) return;
+  const idx = cursor[name];
+  cursor[name] = (idx + 1) % POOL_SIZE;
+  const a = arr[idx];
+  try {
+    a.currentTime = 0;
+    a.volume = Math.min(1, masterVol * volMul);
+    const p = a.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) {}
 }
 
 export const Audio = {
@@ -87,34 +68,36 @@ export const Audio = {
     document.dispatchEvent(new CustomEvent("crowdef:audio-muted", { detail: { muted } }));
   },
   toggleMuted() { this.setMuted(!muted); return muted; },
-  setVolume(v) { ensureCtx(); if (masterGain) masterGain.gain.value = Math.max(0, Math.min(1, v)); },
-  resume() { ensureCtx()?.resume?.(); },
-  start() { if (started) return; started = true; this.resume(); },
-
-  sfxHeroShoot()   { tone(820, 0.04, "square", 0.10); },
-  sfxTowerShoot()  { sweepTone(680, 380, 0.10, "sawtooth", 0.16); },
-  sfxEnemyHit()    { tone(380, 0.04, "sawtooth", 0.14); },
-  sfxEnemyDie(tier = "basic") {
-    if (tier === "boss") {
-      noise(0.25, 0.28, 300); tone(160, 0.20, "sawtooth", 0.22); setTimeout(() => tone(100, 0.30, "sawtooth", 0.18), 120); setTimeout(() => tone(60, 0.35, "sawtooth", 0.14), 280);
-    } else if (tier === "brute") {
-      noise(0.15, 0.22, 500); tone(140, 0.18, "sawtooth", 0.20); setTimeout(() => sweepTone(200, 80, 0.20, "sawtooth", 0.16), 80);
-    } else {
-      noise(0.08, 0.18, 1200); tone(320, 0.08, "sawtooth", 0.14);
-    }
+  setVolume(v) { masterVol = Math.max(0, Math.min(1, v)); },
+  resume() {},
+  start() {
+    if (started) return;
+    started = true;
+    for (const name of Object.keys(SFX_FILES)) ensurePool(name);
   },
-  sfxTowerBuilt()  { seq([{ f: 660, d: 0.10 }, { f: 880, d: 0.10 }, { f: 1175, d: 0.14 }]); },
-  sfxWaveStart()   { noise(0.10, 0.22, 200); tone(140, 0.20, "sawtooth", 0.20); },
-  sfxCastleHit()   { noise(0.20, 0.30, 300); tone(70, 0.30, "sawtooth", 0.22); },
-  sfxLevelWon()    { seq([{ f: 659, d: 0.18 }, { f: 784, d: 0.18, delay: 130 }, { f: 988, d: 0.18, delay: 280 }, { f: 1318, d: 0.30, delay: 430 }]); },
-  sfxLevelLost()   { tone(220, 0.40, "sawtooth", 0.20); setTimeout(() => tone(160, 0.50, "sawtooth", 0.20), 200); setTimeout(() => tone(110, 0.60, "sawtooth", 0.18), 480); },
 
-  sfxGemGain()     { seq([{ f: 1100, d: 0.06, type: "sine", g: 0.18 }, { f: 1480, d: 0.08, type: "sine", g: 0.18, delay: 50 }, { f: 1760, d: 0.14, type: "sine", g: 0.20, delay: 130 }]); },
-  sfxAchievement() { seq([{ f: 523, d: 0.10, type: "triangle", g: 0.22 }, { f: 659, d: 0.10, type: "triangle", g: 0.22, delay: 90 }, { f: 784, d: 0.10, type: "triangle", g: 0.22, delay: 180 }, { f: 1046, d: 0.30, type: "triangle", g: 0.26, delay: 280 }]); },
-  sfxPerkPick()    { seq([{ f: 783, d: 0.08, type: "triangle", g: 0.18 }, { f: 1175, d: 0.18, type: "triangle", g: 0.20, delay: 70 }]); },
-  sfxSkinEquip()   { tone(880, 0.10, "sine", 0.16); setTimeout(() => tone(1175, 0.14, "sine", 0.16), 80); },
-  sfxBoom()        { tone(80, 0.15, "triangle", 0.22); noise(0.10, 0.28, 400); },
-  sfxBossCharge()  { sweepTone(60, 220, 0.30, "sawtooth", 0.22); },
-  sfxLevelUp()     { seq([{ f: 659, d: 0.10, type: "triangle", g: 0.18 }, { f: 880, d: 0.10, type: "triangle", g: 0.20, delay: 80 }, { f: 1175, d: 0.10, type: "triangle", g: 0.22, delay: 160 }, { f: 1568, d: 0.18, type: "triangle", g: 0.24, delay: 240 }]); },
-  sfxWaveClear()   { tone(880, 0.15, "square", 0.18); setTimeout(() => tone(1320, 0.15, "square", 0.18), 160); },
+  sfxHeroShoot()   { play("hero_shoot", 0.6); },
+  sfxTowerShoot()  { play("tower_shoot", 0.7); },
+  sfxEnemyHit()    { play("enemy_hit", 0.55); },
+  sfxEnemyDie(tier = "basic") {
+    if (tier === "boss") play("enemy_die_boss", 1.0);
+    else if (tier === "elite" || tier === "medium") play("enemy_die_medium", 0.85);
+    else play("enemy_die_basic", 0.7);
+  },
+  sfxTowerBuilt() { play("tower_built", 0.9); },
+  sfxTowerUpgrade() { play("tower_upgrade", 0.9); },
+  sfxWaveStart()  { play("wave_start", 0.85); },
+  sfxCastleHit()  { play("castle_hit", 0.9); },
+  sfxLevelWon()   { play("achievement", 1.0); },
+  sfxLevelLost()  { play("boom", 0.8); },
+  sfxCoinPickup() { play("coin_pickup", 0.5); },
+  sfxGemGain()    { play("gem_gain", 0.7); },
+  sfxAchievement() { play("achievement", 1.0); },
+  sfxPerkPick()   { play("perk_pick", 0.85); },
+  sfxSkinEquip()  { play("skin_equip", 0.7); },
+  sfxBoom()       { play("boom", 0.95); },
+  sfxBossCharge() { play("boss_charge", 0.85); },
+  sfxLevelUp()    { play("level_up", 0.95); },
+  sfxWaveClear()  { play("wave_clear", 0.8); },
+  sfxBluePill()   { play("blue_pill", 0.85); },
 };
