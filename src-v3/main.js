@@ -494,7 +494,7 @@ function placeNatureProp(assetKey, x, z, scale = 1, rot = null, withShadow = fal
 const _xrayDir = new THREE.Vector3();
 const _xrayRay = new THREE.Raycaster();
 const _decorVec = new THREE.Vector3();
-const DECOR_FOG_FAR_SQ = 32 * 32;
+const DECOR_FOG_FAR_SQ = 65 * 65;
 let _xrayFrame = 0;
 let _xrayHitSet = new Set();
 function updateDecorFade(dt) {
@@ -763,6 +763,23 @@ function rebuildLevelDecor() {
 
 rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
+
+function prewarmShaders() {
+  const tmpDmgTex = new THREE.CanvasTexture(document.createElement("canvas"));
+  const tmpDmgMat = new THREE.SpriteMaterial({ map: tmpDmgTex, transparent: true, depthTest: false, depthWrite: false });
+  const tmpDmgSprite = new THREE.Sprite(tmpDmgMat);
+  tmpDmgSprite.position.set(0, -100, 0);
+  scene.add(tmpDmgSprite);
+  Particles.emit({ x: 0, y: -100, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
+  try { renderer.compile(scene, camera); } catch (e) {}
+  renderer.render(scene, camera);
+  setTimeout(() => {
+    scene.remove(tmpDmgSprite);
+    tmpDmgMat.dispose();
+    tmpDmgTex.dispose();
+  }, 100);
+}
+prewarmShaders();
 
 setTimeout(() => {
   const splash = document.getElementById("splash");
