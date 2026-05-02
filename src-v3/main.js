@@ -764,20 +764,61 @@ function rebuildLevelDecor() {
 rebuildLevelDecor();
 applyTheme(world1_1.theme || "plaine");
 
-function prewarmShaders() {
+async function prewarmShaders() {
+  const HIDE_Y = -200;
   const tmpDmgTex = new THREE.CanvasTexture(document.createElement("canvas"));
   const tmpDmgMat = new THREE.SpriteMaterial({ map: tmpDmgTex, transparent: true, depthTest: false, depthWrite: false });
   const tmpDmgSprite = new THREE.Sprite(tmpDmgMat);
-  tmpDmgSprite.position.set(0, -100, 0);
+  tmpDmgSprite.position.set(0, HIDE_Y, 0);
   scene.add(tmpDmgSprite);
-  Particles.emit({ x: 0, y: -100, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
-  try { renderer.compile(scene, camera); } catch (e) {}
+  Particles.emit({ x: 0, y: HIDE_Y, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
+
+  const tmpAssets = [];
+  const ASSET_KEYS = [
+    "knight", "zombie", "goblin", "soldier", "knightgolden", "wizard", "pirate",
+    "tower_archer", "tower_archer_l2", "tower_archer_l3",
+    "tower_mage", "tower_mage_l2",
+    "tower_tank", "tower_tank_l2", "tower_tank_l3",
+    "tower_ballista", "tower_ballista_l2", "tower_ballista_l3",
+    "tower_cannon", "tower_crossbow", "tower_fan", "tower_mine",
+    "tower_magnet", "tower_portal", "tower_frost",
+  ];
+  let offsetX = 0;
+  for (const key of ASSET_KEYS) {
+    const gltf = AssetLoader.get(key);
+    if (!gltf || !gltf.scene) continue;
+    const cloned = gltf.scene.clone(true);
+    cloned.position.set(offsetX, HIDE_Y, 0);
+    cloned.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
+    scene.add(cloned);
+    tmpAssets.push(cloned);
+    offsetX += 0.5;
+  }
+
+  try {
+    if (renderer.compileAsync) {
+      await renderer.compileAsync(scene, camera);
+    } else {
+      renderer.compile(scene, camera);
+    }
+  } catch (e) {}
   renderer.render(scene, camera);
+
   setTimeout(() => {
     scene.remove(tmpDmgSprite);
     tmpDmgMat.dispose();
     tmpDmgTex.dispose();
-  }, 100);
+    for (const a of tmpAssets) {
+      scene.remove(a);
+      a.traverse((c) => {
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) {
+          const list = Array.isArray(c.material) ? c.material : [c.material];
+          for (const m of list) m.dispose();
+        }
+      });
+    }
+  }, 200);
 }
 prewarmShaders();
 
