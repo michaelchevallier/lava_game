@@ -31,6 +31,13 @@ Audio.setMuted(SaveSystem.isMuted());
 Audio.setVolume(SaveSystem.getSfxVolume());
 MusicManager.setMusicVolume(SaveSystem.getMusicVolume());
 
+const _buildVersionEl = document.getElementById("build-version");
+if (_buildVersionEl) {
+  const v = typeof __BUILD_VERSION__ !== "undefined" ? __BUILD_VERSION__ : "dev";
+  _buildVersionEl.textContent = `v${v}`;
+  _buildVersionEl.title = `Build ${v} UTC`;
+}
+
 const _params = new URLSearchParams(window.location.search);
 const DEBUG_MODE = _params.get("debug") === "1";
 if (DEBUG_MODE) {
