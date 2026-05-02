@@ -112,6 +112,22 @@ scene.add(sun);
 const fill = new THREE.HemisphereLight(0xb0e0ff, 0x4a6a3a, 0.55);
 scene.add(fill);
 
+// Persistent reusable PointLights — solves the ~500ms freeze on first projectile
+// of every level. Without these, Hero muzzle-flash + BluePill each create a new
+// PointLight on demand, which changes the lights count in the scene and forces
+// Three.js to recompile shaders for ALL materials added since boot (decor,
+// portals, castle, ground texture, etc — all rebuilt per level).
+// By keeping the lights permanent and toggling intensity, the program cache key
+// stays constant at "2 PointLights" and no recompile occurs mid-game.
+const _muzzleFlashLight = new THREE.PointLight(0xfff4d6, 0, 3.5);
+_muzzleFlashLight.position.set(0, -500, 0);
+scene.add(_muzzleFlashLight);
+const _bluePillSlotLight = new THREE.PointLight(0xffffff, 0, 10);
+_bluePillSlotLight.position.set(0, -500, 0);
+scene.add(_bluePillSlotLight);
+window.__crowdef_muzzleLight = _muzzleFlashLight;
+window.__crowdef_bluePillLight = _bluePillSlotLight;
+
 function makeGroundTexture(baseHex, pathCurves, pathInnerHex, pathBorderHex) {
   const hasPaths = pathCurves && pathCurves.length > 0;
   const size = hasPaths ? 2048 : 512;
@@ -993,10 +1009,14 @@ function startBluePill() {
   runner.hero.channelingPill = true;
   document.getElementById("hint-bluepill")?.classList.add("active");
 
-  _bluePillLight = new THREE.PointLight(BLUE_PILL_GLOW, 0, 10);
+  // Reuse the persistent BluePill PointLight (see _bluePillSlotLight) so we
+  // don't change the scene light count and trigger a shader recompile.
+  _bluePillLight = _bluePillSlotLight;
+  _bluePillLight.color.setHex(BLUE_PILL_GLOW);
+  _bluePillLight.distance = 10;
+  _bluePillLight.intensity = 0;
   _bluePillLight.position.copy(runner.hero.group.position);
   _bluePillLight.position.y = 1.0;
-  scene.add(_bluePillLight);
 
   const beamGeom = new THREE.CylinderGeometry(1.4, 1.6, 8, 32, 1, true);
   const beamMat = new THREE.MeshBasicMaterial({
@@ -1026,8 +1046,8 @@ function cancelBluePill() {
   if (runner.hero) runner.hero.channelingPill = false;
   document.getElementById("hint-bluepill")?.classList.remove("active");
   if (_bluePillLight) {
-    scene.remove(_bluePillLight);
-    _bluePillLight.dispose?.();
+    _bluePillLight.intensity = 0;
+    _bluePillLight.position.set(0, -500, 0);
     _bluePillLight = null;
   }
   if (_bluePillBeam) {

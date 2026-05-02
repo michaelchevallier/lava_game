@@ -440,13 +440,21 @@ export class Hero {
       { speed: 3.5, life: 0.18, scale: 0.18, yLift: 0.2 },
     );
 
-    const flash = new THREE.PointLight(0xfff4d6, 5, 3.5);
-    flash.position.set(muzzlePos.x, muzzlePos.y, muzzlePos.z);
-    this.scene.add(flash);
-    setTimeout(() => {
-      this.scene.remove(flash);
-      flash.dispose();
-    }, 60);
+    // Reuse the persistent muzzle PointLight (see main.js __crowdef_muzzleLight).
+    // Creating/disposing a PointLight per shot changes the scene light count
+    // and forces a shader recompile (~500ms freeze on first shot of each level).
+    const flash = (typeof window !== "undefined") ? window.__crowdef_muzzleLight : null;
+    if (flash) {
+      flash.position.set(muzzlePos.x, muzzlePos.y, muzzlePos.z);
+      flash.color.setHex(0xfff4d6);
+      flash.intensity = 5;
+      flash.distance = 3.5;
+      clearTimeout(this._flashTO);
+      this._flashTO = setTimeout(() => {
+        flash.intensity = 0;
+        flash.position.set(0, -500, 0);
+      }, 60);
+    }
 
     if (this.model) {
       const ox = this.model.position.x;
