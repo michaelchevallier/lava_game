@@ -1759,7 +1759,6 @@ function computeStars(castleHP, castleHPMax) {
 }
 
 function showResult(won, detail) {
-  MusicManager.stop();
   MusicManager.playSting(won ? "victory" : "defeat");
   const stars = won ? computeStars(detail.castleHP, detail.castleHPMax) : 0;
   ui.resultTitle.textContent = won ? "Victoire !" : "Château tombé";
