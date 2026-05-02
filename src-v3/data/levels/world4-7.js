@@ -4,7 +4,7 @@ export default {
   id: "world4-7",
   name: "Volcan — Antre",
   theme: "volcan",
-  ...mazeXXL({ rooms: 8, startX: -110, ampZ: 35 }),
+  ...mazeXXL({ rooms: 7, startX: -56, ampZ: 22 }),
   waves: {
     list: [
       { types: { imp: 32, flyer: 20, brute: 12 }, spawnRateMs: 320, breakMs: 4000 },
