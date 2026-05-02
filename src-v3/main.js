@@ -796,6 +796,20 @@ async function prewarmShaders() {
   fallbackBox.position.set(offsetX, HIDE_Y, 0);
   scene.add(fallbackBox);
 
+  const projSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.22, 10, 10),
+    new THREE.MeshBasicMaterial({ color: 0xffffff }),
+  );
+  projSphere.position.set(offsetX + 0.6, HIDE_Y, 0);
+  scene.add(projSphere);
+
+  const ringPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x66ddff, transparent: true, side: THREE.DoubleSide, depthWrite: false }),
+  );
+  ringPlane.position.set(offsetX + 1.2, HIDE_Y, 0);
+  scene.add(ringPlane);
+
   Particles.emit({ x: 0, y: HIDE_Y, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
 
   try {
