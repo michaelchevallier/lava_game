@@ -21,6 +21,7 @@ import { getTheme } from "./data/themes.js";
 import { getCutsceneForLevel } from "./data/cutscenes.js";
 import { Minimap } from "./ui/Minimap.js";
 import { Castle } from "./entities/Castle.js";
+import { applyToonToScene } from "./systems/ToonMaterial.js";
 import world1_1 from "./data/levels/world1-1.js";
 import { getLevel, getNextLevelId, LEVEL_ORDER } from "./data/levels/index.js";
 import { Tutorial } from "./systems/Tutorial.js";
@@ -766,14 +767,6 @@ applyTheme(world1_1.theme || "plaine");
 
 async function prewarmShaders() {
   const HIDE_Y = -200;
-  const tmpDmgTex = new THREE.CanvasTexture(document.createElement("canvas"));
-  const tmpDmgMat = new THREE.SpriteMaterial({ map: tmpDmgTex, transparent: true, depthTest: false, depthWrite: false });
-  const tmpDmgSprite = new THREE.Sprite(tmpDmgMat);
-  tmpDmgSprite.position.set(0, HIDE_Y, 0);
-  scene.add(tmpDmgSprite);
-  Particles.emit({ x: 0, y: HIDE_Y, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
-
-  const tmpAssets = [];
   const ASSET_KEYS = [
     "knight", "zombie", "goblin", "soldier", "knightgolden", "wizard", "pirate",
     "tower_archer", "tower_archer_l2", "tower_archer_l3",
@@ -789,11 +782,21 @@ async function prewarmShaders() {
     if (!gltf || !gltf.scene) continue;
     const cloned = gltf.scene.clone(true);
     cloned.position.set(offsetX, HIDE_Y, 0);
+    cloned.visible = true;
     cloned.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
+    applyToonToScene(cloned);
     scene.add(cloned);
-    tmpAssets.push(cloned);
     offsetX += 0.5;
   }
+
+  const fallbackBox = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+    new THREE.MeshLambertMaterial({ color: 0x8a6a4a }),
+  );
+  fallbackBox.position.set(offsetX, HIDE_Y, 0);
+  scene.add(fallbackBox);
+
+  Particles.emit({ x: 0, y: HIDE_Y, z: 0 }, 0xffffff, 1, { life: 0.02, scale: 0.1 });
 
   try {
     if (renderer.compileAsync) {
@@ -803,22 +806,9 @@ async function prewarmShaders() {
     }
   } catch (e) {}
   renderer.render(scene, camera);
-
-  setTimeout(() => {
-    scene.remove(tmpDmgSprite);
-    tmpDmgMat.dispose();
-    tmpDmgTex.dispose();
-    for (const a of tmpAssets) {
-      scene.remove(a);
-      a.traverse((c) => {
-        if (c.geometry) c.geometry.dispose();
-        if (c.material) {
-          const list = Array.isArray(c.material) ? c.material : [c.material];
-          for (const m of list) m.dispose();
-        }
-      });
-    }
-  }, 200);
+  for (const obj of scene.children) {
+    if (obj.position && obj.position.y === HIDE_Y) obj.visible = false;
+  }
 }
 prewarmShaders();
 
