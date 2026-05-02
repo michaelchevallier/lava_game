@@ -65,8 +65,8 @@ export default {
   id: "endless",
   name: "Endless",
   theme: "plaine",
-  // Serpentine 8 rooms × 5 waypoints = path ~180u sur ground 240u
-  ...mazeXXL({ rooms: 8, startX: -110, ampZ: 35 }),
+  // Serpentine 8 rooms × 5 waypoints in-bounds (MAP_HALF=60)
+  ...mazeXXL({ rooms: 8, startX: -56, ampZ: 22 }),
   waves: {
     list: buildEndlessWaves(40),
   },
